@@ -513,7 +513,7 @@ void enstrophyspectheader( FILE *fout ) {
 }
 void defectheader( FILE *fout ) {
 /* Simple header for output columns */
-	fprintf( fout,"t\t charge\t\t QX\t\t QY\t\t QZ\n" );
+	fprintf( fout,"t\t QX\t\t QY\t\t QZ\t\t charge\n" );
 }
 void multiphaseheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -1354,11 +1354,24 @@ void solidout( FILE *fout,bc WALL,double t ) {
 		fflush(fout);
 	#endif
 }
-void defectout( FILE *fout,double pos[_3D],double charge ) {
-/*
-    Print defect position to file
-*/
-	fprintf( fout,"%12.5e\t%12.5e\t%12.5e\t%12.5e\t",charge,pos[0],pos[1],pos[2] );
+void topochargeout( FILE *fout,int t,cell ***CL ) {
+	/*
+	 Print topological charge data to file
+	 */
+	int i,j,k;
+
+	double topoC[XYZ[0]][XYZ[1]]; //init topo charge array
+	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) topoC[i][j] = .0;
+	//loop through non-CB boundary cells and calculate topo charge
+	for( i=1; i<XYZ[0]-1; i++ ) for( j=1; j<XYZ[1]-1; j++ ) topoC[i][j] = topoChargeLocal(CL, i, j, 0); 
+
+	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) for( k=0; k<XYZ[2]; k++ ) {
+		//Output
+		fprintf( fout,"%7i\t",t );
+		fprintf( fout,"%5d\t%5d\t%5d\t",i,j,k );
+		if( CL[i][j][k].POP == 0 ) fprintf( fout, "%06.3f\n",0.0);
+		else fprintf( fout, "%06.3f\n",topoC[i][j]);
+	}
 	#ifdef FFLSH
 		fflush(fout);
 	#endif
@@ -1817,7 +1830,7 @@ void outputResults( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],sim
 	/* ****************************************** */
 	/* ************** TRACK DEFECTS ************* */
 	/* ****************************************** */
-	//NOT DONE YET!!!
+	if (outFlag.DEFECTOUT>=OUT && runtime%outFlag.DEFECTOUT==0 && DIM==_2D) topochargeout( outFiles.fdefects, time_now, CL);
 }
 
 void outputHist( cell ***CL,int runtime, inputList in,outputFlagsList outFlag,outputFilesList outFiles ) {
