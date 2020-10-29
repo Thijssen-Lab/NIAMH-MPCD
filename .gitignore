@@ -8,3 +8,6 @@
 #ignore MCPD input/ output files
 *.inp
 *.dat
+
+#ignore OS file system bits
+.DS_Store
