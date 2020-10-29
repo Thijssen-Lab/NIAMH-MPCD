@@ -1,0 +1,750 @@
+# include <stdio.h>
+# include <stdlib.h>
+# include <string.h>
+# include<math.h>
+
+# include "../headers/SRDclss.h"
+# include "../headers/definitions.h"
+# include "../headers/globals.h"
+# include "../headers/pout.h"
+# include "../headers/mtools.h"
+
+/* ****************************************** */
+/* ****************************************** */
+/* ****************************************** */
+/* ******* ROUTINES FOR READING FILES ******* */
+/* ****************************************** */
+/* ****************************************** */
+/* ****************************************** */
+void checkRead( int flag,char failure[],char file[]) {
+	/*
+	   If a read from file fileName fails
+		 then write to fsynopsis and stop the program
+	*/
+	if(flag<0) {
+		printf( "\nError: Reached end of file before read %s from %s.\n",failure,file );
+		exit( 1 );
+	}
+	else if(flag==0) {
+		printf( "\nError: Failed to read %s from %s.\n",failure,file );
+		exit( 1 );
+	}
+}
+void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL,int *MDmode ) {
+/*
+   By reading in the addresses of the variables as
+   pointers this function sets the values to what
+   is in the input file input.inp
+*/
+	FILE *finput;
+	int i,j,MS,read;
+	double MF;
+	char STR[100],inSTR[100];
+
+	strcpy( inSTR,fpath );
+	strcat( inSTR,"input.inp" );
+	finput = fopen( inSTR, "r" );
+	if( !finput ) {					// file couldn't be opened
+		printf( "Error:\tFile '%s' could not be opened.\n",inSTR );
+		exit( 1 );
+	}
+
+	//Read the dimensionality of the system
+	read=fscanf( finput,"%d %s",&DIM,STR );
+	checkRead( read,"dimensionality",inSTR);
+	//Read system dimensions
+	for( i=0; i<_3D; i++ ) {
+		read=fscanf( finput,"%i %s",&XYZ[i],STR );
+		checkRead( read,"system size",inSTR);
+	}
+	for(i=0; i<_3D; i++ ) XYZ_P1[i] = XYZ[i]+1;
+	//Read the thermal energy KBT
+	read=fscanf( finput,"%lf %s",&(in->KBT),STR );
+	checkRead( read,"thermal energy",inSTR);
+	//Read if do initial transformation to rest frame
+	read=fscanf( finput,"%d %s",&(in->RFRAME),STR );
+	checkRead( read,"Galilean transform",inSTR);
+	//Read how often transformation to rest frame
+	read=fscanf( finput,"%d %s",&(in->zeroNetMom),STR );
+	checkRead( read,"rest frame",inSTR);
+	//Read if do random shift of cells
+	read=fscanf( finput,"%d %s",&(in->GALINV),STR );
+	checkRead( read,"random shift of cells",inSTR);
+	//Read thermostat mode/technique
+	read=fscanf( finput,"%d %s",&(in->TSTECH),STR );
+	checkRead( read,"thermostat mode",inSTR);
+	//Read collision operator technique/mode
+	read=fscanf( finput,"%d %s",&(in->RTECH),STR );
+	checkRead( read,"collision mode",inSTR);
+	//Read liquid crystal (0 if not, 1 if LC)
+	read=fscanf( finput,"%d %s",&(in->LC),STR );
+	checkRead( read,"liquid crystal mode",inSTR);
+	//Read the thermal relaxation time scale
+	read=fscanf( finput,"%lf %s",&(in->TAU),STR );
+	checkRead( read,"relaxation time",inSTR);
+	//Read the rotation angle used
+	read=fscanf( finput,"%lf %s",&(in->RA),STR );
+	checkRead( read,"rotation angle",inSTR);
+	//Read the Langevin thermostat friction coefficient
+	read=fscanf( finput,"%lf %s",&(in->FRICCO),STR );
+	checkRead( read,"friction coefficient",inSTR);
+	//Read the liquid crystal mean-field potential
+	read=fscanf( finput,"%lf %s",&(in->MFPOT),STR );
+	checkRead( read,"LC mean-field potential",inSTR);
+	//Read the constant external acceleration
+	for( i=0; i<_3D; i++ ) {
+		read=fscanf( finput,"%lf %s",&(in->GRAV[i]),STR );
+		checkRead( read,"acceleration",inSTR);
+	}
+	//Read the constant external magnetic field
+	for( i=0; i<_3D; i++ ) {
+		read=fscanf( finput,"%lf %s",&(in->MAG[i]),STR );
+		checkRead( read,"magnetic field",inSTR);
+	}
+	//Read the time (or number of loops) of the warmup
+	read=fscanf( finput,"%d %s",&(in->warmupSteps),STR );
+	checkRead( read,"warmup time",inSTR);
+	//Read the total time (or number of loops) of the simulation
+	read=fscanf( finput,"%d %s",&(in->simSteps),STR );
+	checkRead( read,"total time",inSTR);
+	//Read the time step of one iteration
+	read=fscanf( finput,"%lf %s",&(in->dt),STR );
+	checkRead( read,"time step",inSTR);
+	//Read the random seed (0 if read from time)
+	read=fscanf( finput,"%ld %s",&(in->seed),STR );
+	checkRead( read,"random seed",inSTR);
+	//Read the MD coupling mode
+	read=fscanf( finput,"%d %s",MDmode,STR );
+	checkRead( read,"MD coupling",inSTR);
+	//Read the number of MD steps per SRD step
+	read=fscanf( finput,"%d %s",&(in->stepsMD),STR );
+	checkRead( read,"MD time steps per SRD step",inSTR);
+	//Read the species properties
+	//Read the number of species
+	read=fscanf( finput,"%d %s",&NSPECI,STR );
+	checkRead( read,"number of species",inSTR);
+	//Allocate the needed amount of memory for the species SP
+	(*SP) = (spec*) malloc( NSPECI * sizeof( spec ) );
+	for( i=0; i<NSPECI; i++ ) {
+		//Read the species' mass
+		read=fscanf( finput,"%lf %s",&MF,STR );
+		checkRead( read,"mass",inSTR);
+		(*SP+i)->MASS = MF;
+		//Read the species' population
+		read=fscanf( finput,"%i %s",&MS,STR );
+		checkRead( read,"population",inSTR);
+		(*SP+i)->POP = MS;
+		//Read the species' position distribution function
+		read=fscanf( finput,"%i %s",&MS,STR );
+		checkRead( read,"positional distribution",inSTR);
+		(*SP+i)->QDIST = MS;
+		//Read the species' velocity distribution function
+		read=fscanf( finput,"%i %s",&MS,STR );
+		checkRead( read,"velocity distribution",inSTR);
+		(*SP+i)->VDIST = MS;
+		//Read the species' orienation distribution function
+		read=fscanf( finput,"%i %s",&MS,STR );
+		checkRead( read,"orientational distribution",inSTR);
+		(*SP+i)->ODIST = MS;
+		//Read the binary fluid interaction matrix for this species with all other species
+		for( j=0; j<NSPECI; j++ ) {
+			//Read the species' interaction matrix with other species
+			read=fscanf( finput,"%lf %s",&MF,STR );
+			checkRead( read,"interaction matrix",inSTR);
+			(*SP+i)->M[j] = MF;
+		}
+		//Read the species' rotational friction coefficient
+		read=fscanf( finput,"%lf %s",&MF,STR );
+		checkRead( read,"rotational friction",inSTR);
+		(*SP+i)->RFC = MF;
+		//Read the species' tumbling parameter
+		read=fscanf( finput,"%lf %s",&MF,STR );
+		checkRead( read,"effective rod length",inSTR);
+		(*SP+i)->LEN = MF;
+		//Read the species' tumbling parameter
+		read=fscanf( finput,"%lf %s",&MF,STR );
+		checkRead( read,"tumbling parameter",inSTR);
+		(*SP+i)->TUMBLE = MF;
+		//Read the species' susceptibility to shear
+		read=fscanf( finput,"%lf %s",&MF,STR );
+		checkRead( read,"shear susceptibility",inSTR);
+		(*SP+i)->CHIHI = MF;
+		//Read the species' magnetic susceptibility anisotropy
+		read=fscanf( finput,"%lf %s",&MF,STR );
+		checkRead( read,"magnetic susceptibility",inSTR);
+		(*SP+i)->CHIA = MF;
+		//Read the species' activity
+		read=fscanf( finput,"%lf %s",&MF,STR );
+		checkRead( read,"activity",inSTR);
+		(*SP+i)->ACT = MF;
+		//Read the species' damping friction coefficient
+		read=fscanf( finput,"%lf %s",&MF,STR );
+		checkRead( read,"damping friction",inSTR);
+		(*SP+i)->DAMP = MF;
+	}
+	//Total Number of particleMPCs
+	GPOP = 0;
+	for( i=0; i<NSPECI; i++ ) GPOP += (*SP+i)->POP;
+	(*pSRD) = (particleMPC*) malloc( GPOP * sizeof( particleMPC ) );
+
+	//Allocate memory for the cells
+	//Allocate rows (x first)
+	*CL = (cell***) malloc( XYZ_P1[0] * sizeof( cell** ) );
+	//For each x-element allocate the y columns
+	for( i=0; i<XYZ_P1[0]; i++ ) {
+		(*CL)[i] = (cell**) malloc( XYZ_P1[1] * sizeof( cell* ) );
+		//For each y-element allocate the z columns
+		for( j=0; j<XYZ_P1[1]; j++ ) {
+			(*CL)[i][j] = (cell*) malloc( XYZ_P1[2] * sizeof( cell ) );
+		}
+	}
+
+	fclose( finput );
+}
+void readpc( char fpath[],outputFlagsList *out ) {
+/*
+   By reading in the addresses of the variables as
+   pointers this function sets the flags which tells
+  the program what data to output
+*/
+	FILE *finput;
+	char STR[100],inSTR[100];
+	int read;
+
+	strcpy( inSTR,fpath );
+	strcat( inSTR,"printcom.inp" );
+	finput = fopen( inSTR,"r" );
+	if( !finput ) {				// file couldn't be opened
+		printf( "Error:\tFile '%s' could not be opened.\n",inSTR );
+		exit( 1 );
+	}
+	//Read debug mode
+	read=fscanf( finput,"%d %s",&DBUG,STR );
+	checkRead( read,"debug mode",inSTR);
+	//Read how often the detailed species' trajectories are printed
+	read=fscanf( finput,"%d %s",&(out->TRAJOUT),STR );
+	checkRead( read,"detailed species' trajectories",inSTR);
+	//Read which (number of) species whose detailed trajectories are printed
+	read=fscanf( finput,"%d %s",&(out->printSP),STR );
+	checkRead( read,"number of species whose detailed trajectories are printed",inSTR);
+	//Read how often the coarse data is outputted
+	read=fscanf( finput,"%d %s",&(out->COAROUT),STR );
+	checkRead( read,"coarse data",inSTR);
+	//Read how often the flow field is outputted
+	read=fscanf( finput,"%d %s",&(out->FLOWOUT),STR );
+	checkRead( read,"flow field",inSTR);
+	//Read how often the total average MPCD velocity is outputted
+	read=fscanf( finput,"%d %s",&(out->AVVELOUT),STR );
+	checkRead( read,"total average MPCD velocity",inSTR);
+	//Read how often the local director and scalar order parameter fields are outputted
+	read=fscanf( finput,"%d %s",&(out->ORDEROUT),STR );
+	checkRead( read,"director and scalar order parameter fields",inSTR);
+	//Read how often the local order parameter tensor field is outputted
+	read=fscanf( finput,"%d %s",&(out->QTENSOUT),STR );
+	checkRead( read,"order parameter tensor field",inSTR);
+	//Read how often the local order parameter tensor field in reciprical space is outputted
+	read=fscanf( finput,"%d %s",&(out->QKOUT),STR );
+	checkRead( read,"order parameter tensor field in reciprical space",inSTR);
+	//Read how often the orientational energy field is outputted
+	read=fscanf( finput,"%d %s",&(out->ENFIELDOUT),STR );
+	checkRead( read,"orientational energy field",inSTR);
+	//Read how often the colour/conc/phi field is outputted
+	read=fscanf( finput,"%d %s",&(out->SPOUT),STR );
+	checkRead( read,"colour/conc field",inSTR);
+	//Read how often the pressure field is outputted
+	read=fscanf( finput,"%d %s",&(out->PRESOUT),STR );
+	checkRead( read,"pressure field",inSTR);
+	//Read how often the orientational energy from neighbours is outputted
+	read=fscanf( finput,"%d %s",&(out->ENNEIGHBOURS),STR );
+	checkRead( read,"orientational energy from neighbours",inSTR);
+	//Read how often the total average scalar order parameter is outputted
+	read=fscanf( finput,"%d %s",&(out->AVSOUT),STR );
+	checkRead( read,"average scalar order parameter",inSTR);
+	//Read how often the standard deviation of the number per cell is outputted
+	read=fscanf( finput,"%d %s",&(out->DENSOUT),STR );
+	checkRead( read,"standard deviation of the number per cell",inSTR);
+	//Read how often the total average enstrophy is outputted
+	read=fscanf( finput,"%d %s",&(out->ENSTROPHYOUT),STR );
+	checkRead( read,"total average enstrophy",inSTR);
+	//Read how often the velocity distribution should be outputted
+	read=fscanf( finput,"%d %s",&(out->HISTVELOUT),STR );
+	checkRead( read,"velocity distribution",inSTR);
+	//Read how often the speed distribution should be outputted
+	read=fscanf( finput,"%d %s",&(out->HISTSPEEDOUT),STR );
+	checkRead( read,"speed distribution",inSTR);
+	//Read how often the vorticity distribution should be outputted
+	read=fscanf( finput,"%d %s",&(out->HISTVORTOUT),STR );
+	checkRead( read,"vorticity distribution",inSTR);
+	//Read how often the enstrophy distribution should be outputted
+	read=fscanf( finput,"%d %s",&(out->HISTENSTROUT),STR );
+	checkRead( read,"enstrophy distribution",inSTR);
+	//Read how often the director distribution should be outputted
+	read=fscanf( finput,"%d %s",&(out->HISTDIROUT),STR );
+	checkRead( read,"director distribution",inSTR);
+	//Read how often the scalar order parameter distribution should be outputted
+	read=fscanf( finput,"%d %s",&(out->HISTSOUT),STR );
+	checkRead( read,"scalar order parameter distribution",inSTR);
+	//Read how often the number per cell distribution should be outputted
+	read=fscanf( finput,"%d %s",&(out->HISTNOUT),STR );
+	checkRead( read,"number per cell distribution",inSTR);
+	//Read how often the solid trajectory data is outputted
+	read=fscanf( finput,"%d %s",&(out->SOLOUT),STR );
+	checkRead( read,"solid trajectory",inSTR);
+	//Read how often the topological defects trajectory data is outputted
+	read=fscanf( finput,"%d %s",&(out->DEFECTOUT),STR );
+	checkRead( read,"topological defects trajectory",inSTR);
+	//Read how often the energy data is outputted
+	read=fscanf( finput,"%d %s",&(out->ENOUT),STR );
+	checkRead( read,"energy",inSTR);
+	//Read how often the velocity-velocity correlation data is outputted
+	read=fscanf( finput,"%d %s",&(out->CVVOUT),STR );
+	checkRead( read,"velocity-velocity correlation",inSTR);
+	//Read how often the director-director correlation data is outputted
+	read=fscanf( finput,"%d %s",&(out->CNNOUT),STR );
+	checkRead( read,"director-director correlation",inSTR);
+	//Read how often the vorticity-vorticity correlation data is outputted
+	read=fscanf( finput,"%d %s",&(out->CWWOUT),STR );
+	checkRead( read,"vorticity-vorticity correlation",inSTR);
+	//Read how often the density-density correlation data is outputted
+	read=fscanf( finput,"%d %s",&(out->CDDOUT),STR );
+	checkRead( read,"density-density correlation",inSTR);
+	//Read how often the order-order correlation data is outputted
+	read=fscanf( finput,"%d %s",&(out->CSSOUT),STR );
+	checkRead( read,"order-order correlation",inSTR);
+	//Read how often the phase-phase (binary fluid) correlation data is outputted
+	read=fscanf( finput,"%d %s",&(out->CPPOUT),STR );
+	checkRead( read,"phase-phase (binary fluid) correlation",inSTR);
+	//Read how often the energy spectrum data is outputted
+	read=fscanf( finput,"%d %s",&(out->ENERGYSPECTOUT),STR );
+	checkRead( read,"energy spectrum",inSTR);
+	//Read how often the enstrophy spectrum data is outputted
+	read=fscanf( finput,"%d %s",&(out->ENSTROPHYSPECTOUT),STR );
+	checkRead( read,"enstrophy spectrum",inSTR);
+	//Read how often the Binder cumulant is outputted
+	read=fscanf( finput,"%d %s",&(out->BINDER),STR );
+	checkRead( read,"Binder cumulant",inSTR);
+	//Read the Binder cumulant bin size
+	read=fscanf( finput,"%d %s",&(out->BINDERBIN),STR );
+	checkRead( read,"Binder cumulant bin size",inSTR);
+	//Read how often the swimmers' positions are outputted
+	read=fscanf( finput,"%d %s",&(out->SWOUT),STR );
+	checkRead( read,"swimmers' positions",inSTR);
+	//Read how often the swimmers' orientations are outputted
+	read=fscanf( finput,"%d %s",&(out->SWORIOUT),STR );
+	checkRead( read,"swimmers' orientations",inSTR);
+	//Read if the swimmers' run/tumble statistics are recorded
+	read=fscanf( finput,"%d %s",&(out->RTOUT),STR );
+	checkRead( read,"swimmers' run/tumble",inSTR);
+	//Read if a synopsis printed
+	read=fscanf( finput,"%d %s",&(out->SYNOUT),STR );
+	checkRead( read,"synopsis",inSTR);
+	//Read if checkpointing is on
+	read=fscanf( finput,"%d %s",&(out->CHCKPNT),STR );
+	checkRead( read,"checkpointing",inSTR);
+
+	fclose( finput );
+}
+void bcin( FILE *fbc,bc *WALL,char fname[] ) {
+/*
+   By reading in the addresses of the variables as
+   pointers this function sets the values to what
+   is in the input file bc.inp
+ */
+	int x,read;
+	double l;
+	char LABEL[160];
+
+	read=fscanf( fbc,"%s",LABEL );
+	checkRead( read,"bc",fname);
+
+	read=fscanf( fbc,"%d %s",&x,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->COLL_TYPE = x;
+	read=fscanf( fbc,"%d %s",&x,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->PHANTOM = x;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->E = l;
+
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->Q[0] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->Q[1] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->Q[2] = l;
+
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->V[0] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->V[1] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->V[2] = l;
+
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->O[0] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->O[1] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->O[2] = l;
+
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->L[0] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->L[1] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->L[2] = l;
+
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->G[0] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->G[1] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->G[2] = l;
+
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->AINV[0] = l;
+	if( fneq(WALL->AINV[0],0.0) ) WALL->A[0] = 1.0/WALL->AINV[0];
+	else WALL->A[0] = 0.0;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->AINV[1] = l;
+	if( fneq(WALL->AINV[1],0.0) ) WALL->A[1] = 1.0/WALL->AINV[1];
+	else WALL->A[1] = 0.0;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->AINV[2] = l;
+	if( fneq(WALL->AINV[2],0.0) ) WALL->A[2] = 1.0/WALL->AINV[2];
+	else WALL->A[2] = 0.0;
+
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->ROTSYMM[0] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->ROTSYMM[1] = l;
+	read=fscanf( fbc,"%d %s",&x,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->ABS = x;
+
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->P[0] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->P[1] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->P[2] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->P[3] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->R = l;
+
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->DN = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->DT = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->DVN = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->DVT = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->DVxyz[0] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->DVxyz[1] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->DVxyz[2] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->MVN = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->MVT = l;
+
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->MUN = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->MUT = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->MUxyz[0] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->MUxyz[1] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->MUxyz[2] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->DUxyz[0] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->DUxyz[1] = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->DUxyz[2] = l;
+
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->KBT = l;
+	read=fscanf( fbc,"%d %s",&x,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->DSPLC = x;
+	read=fscanf( fbc,"%d %s",&x,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->INV = x;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->MASS = l;
+
+	// Set the planar flag
+	if( feq(WALL->P[0],1.0) && feq(WALL->P[1],1.0) && feq(WALL->P[2],1.0) ) {
+		// Left or right wall
+		if( fneq(WALL->A[0],0.0) && feq(WALL->A[1],0.0) && feq(WALL->A[2],0.0) ) WALL->PLANAR = 1;
+		// Top or bottom wall
+		else if( feq(WALL->A[0],0.0) && fneq(WALL->A[1],0.0) && feq(WALL->A[2],0.0) ) WALL->PLANAR = 1;
+		// Far or near wall
+		else if( feq(WALL->A[0],0.0) && feq(WALL->A[1],0.0) && fneq(WALL->A[2],0.0) ) WALL->PLANAR = 1;
+		else WALL->PLANAR = 0;
+	}
+	else WALL->PLANAR = 0;
+}
+void setPBC( bc *WALL ) {
+/*
+   Determines if a boundary is a planar periodic boundary
+*/
+	int i;
+	//Check if any axis is a planar PBC
+	for( i=0; i<_3D; i++ ) {
+		// Is the BC a plane?
+		if( feq(WALL->P[i],1.0) ) {
+			// Does it point in the correct direction?
+			if( feq( fabs(WALL->AINV[i]),1.0 ) ) {
+				// Does it keep the velocity pointed in the correct direction?
+				if( WALL->MVN>0.0 && WALL->MVT>0.0 ) {
+					//Does it modify the position?
+					if( fneq(WALL->DN,0.0) || fneq(WALL->DT,0.0) ) {
+						//Then it is a periodic boundary condition
+						XYZPBC[i]=1;
+					}
+				}
+			}
+		}
+	}
+}
+
+void readbc( char fpath[],bc **WALL ) {
+/*
+   By calling bcin this function sets each of
+   the boundaries
+*/
+	FILE *fbc;
+	int i,read;
+	char STR[100],inSTR[100];
+
+	strcpy( inSTR,fpath );
+	strcat( inSTR,"bc.inp" );
+	fbc = fopen(inSTR, "r");
+	if( !fbc ) { // file couldn't be opened
+		printf( "Error:\tFile '%s' could not be opened.\n",inSTR );
+		exit( 1 );
+	}
+
+	read=fscanf( fbc,"%s",STR );
+	checkRead( read,"bc",inSTR);
+	//Read the number of boundary conditions being used
+	read=fscanf( fbc,"%d %s",&NBC,STR );
+	checkRead( read,"bc",inSTR);
+	//Allocate the needed amount of memory for the boundary conditions WALLs
+	(*WALL) = (bc*) malloc( NBC * sizeof( bc ) );
+	//Read the parameters for each of the BCs
+	for( i=0; i<NBC; i++ ) bcin( fbc,(*WALL+i),inSTR );
+	//Determine if any BCs are periodic boundaries
+	for( i=0; i<_3D; i++ ) XYZPBC[i]=0;
+	for( i=0; i<NBC; i++ ) setPBC( (*WALL+i) );
+	fclose( fbc );
+}
+void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL,int *MDmode,bc **WALL,outputFlagsList *out,int *runtime,int *warmtime,kinTheory *theory,double *AVVEL, double *AVS,double avDIR[_3D],double *S4,double *stdN,double *KBTNOW,double AVV[_3D],double AVNOW[_3D] ) {
+/*
+   By reading in the addresses of the variables as
+   pointers this function sets the values to what
+   is in the input file input.inp
+*/
+	FILE *finput;
+	int i,j;
+	char STR[100];
+
+	strcpy( STR,fpath );
+	strcat( STR,"checkpoint.dat" );
+	finput = fopen( STR, "r" );
+	if( !finput ) {					// file couldn't be opened
+		printf( "Error:\tFile '%s' could not be opened.\n",STR );
+		exit( 1 );
+	}
+
+	if(fscanf( finput,"%d %d %d %d %lf %lf",&DIM,&XYZ[0],&XYZ[1],&XYZ[2],&(in->KBT),KBTNOW ));
+	else printf("Warning: Failed to read dimensionality, size or temperature.\n");
+	for(i=0; i<_3D; i++ ) XYZ_P1[i] = XYZ[i]+1;
+	if(fscanf( finput,"%d %d %d %d %d",&(in->RFRAME),&(in->zeroNetMom),&(in->TSTECH),&(in->RTECH),&(in->LC) ));
+	else printf("Warning: Failed to Galilean transform, rest frame, thermostat mode, collision mode or liquid crystal mode.\n");
+	if(fscanf( finput,"%lf %lf %lf %lf",&(in->TAU),&(in->RA),&(in->FRICCO),&(in->MFPOT) ));		//Read the thermal relaxation time scale
+	else printf("Warning: Failed to read relaxation time, rotation angle, friction coefficient or mean-field potential.\n");
+
+	if(fscanf( finput,"%lf %lf %lf",&(in->GRAV[0]),&(in->GRAV[1]),&(in->GRAV[2]) ));	//Read the constant external acceleration
+	else printf("Warning: Failed to read acceleration.\n");
+	if(fscanf( finput,"%lf %lf %lf",&(in->MAG[0]),&(in->MAG[1]),&(in->MAG[2]) ));	//Read the constant external magnetic field
+	else printf("Warning: Failed to read magnetic field.\n");
+
+	if(fscanf( finput,"%d %d %lf",&(in->warmupSteps),&(in->simSteps),&(in->dt) ));		//Read time
+	else printf("Warning: Failed to read time.\n");
+	if(fscanf( finput,"%ld",&(in->seed) ));	//Read the random seed (0 if read from time)
+	else printf("Warning: Failed to read random seed.\n");
+
+	if(fscanf( finput,"%d %d",MDmode,&(in->stepsMD) ));	//Read the MD coupling mode
+	else printf("Warning: Failed to read MD coupling.\n");
+	if(fscanf( finput,"%d %d",&GPOP,&NSPECI ));	//Read the number of MPC particles
+	else printf("Warning: Failed to read total number of particles or number of species.\n");
+
+	if(fscanf( finput,"%d %d %lf %lf %d %d",runtime,warmtime,&(in->C),&(in->S),&(in->GRAV_FLAG),&(in->MAG_FLAG) ));//Read program variables
+	else printf("Warning: Failed to read various program variables.\n");
+	if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&(theory->MFP), &(theory->VISC), &(theory->THERMD), &(theory->SDIFF), &(theory->sumM), AVVEL, AVS, &avDIR[0], &avDIR[1], &avDIR[2], S4, stdN, &nDNST, &mDNST ));//Read program variables
+	else printf("Warning: Failed to read various program variables.\n");
+	if(fscanf( finput,"%lf %lf %lf %lf %lf %lf",&AVV[0], &AVV[1], &AVV[2], &AVNOW[0], &AVNOW[1], &AVNOW[2] ));//Read program variables
+	else printf("Warning: Failed to read average velocities.\n");
+
+	//Read output
+	if(fscanf( finput,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",&DBUG, &(out->TRAJOUT), &(out->printSP), &(out->COAROUT), &(out->FLOWOUT), &(out->AVVELOUT), &(out->ORDEROUT), &(out->QTENSOUT), &(out->QKOUT), &(out->AVSOUT), &(out->SOLOUT), &(out->ENOUT), &(out->ENFIELDOUT), &(out->ENNEIGHBOURS), &(out->ENSTROPHYOUT), &(out->DENSOUT), &(out->CVVOUT), &(out->CNNOUT), &(out->CWWOUT), &(out->CDDOUT), &(out->CSSOUT), &(out->CPPOUT), &(out->BINDER), &(out->BINDERBIN), &(out->SYNOUT), &(out->CHCKPNT) ));
+	else printf("Warning: Failed to read output.\n");
+	if(fscanf( finput,"%d %d %d %d %d %d %d",&(out->HISTVELOUT), &(out->HISTSPEEDOUT), &(out->HISTVORTOUT), &(out->HISTENSTROUT), &(out->HISTDIROUT), &(out->HISTSOUT), &(out->HISTNOUT) ));
+	else printf("Warning: Failed to read histogram output.\n");
+	if(fscanf( finput,"%d %d %d",&(out->ENERGYSPECTOUT), &(out->ENSTROPHYSPECTOUT), &(out->DEFECTOUT) ));
+	else printf("Warning: Failed to read histogram output.\n");
+
+	//Allocate the needed amount of memory for the species SP
+	(*SP) = (spec*) malloc( NSPECI * sizeof( spec ) );
+	for( i=0; i<NSPECI; i++ ) {
+		if(fscanf( finput,"%lf %i %i %i %i %lf %lf %lf %lf %lf %lf %lf",&((*SP+i)->MASS), &((*SP+i)->POP), &((*SP+i)->QDIST), &((*SP+i)->VDIST), &((*SP+i)->ODIST), &((*SP+i)->RFC), &((*SP+i)->LEN), &((*SP+i)->TUMBLE), &((*SP+i)->CHIHI), &((*SP+i)->CHIA), &((*SP+i)->ACT), &((*SP+i)->DAMP) ));	//Read the species' mass
+		else printf("Warning: Failed to read species %i.\n",i);
+		for( j=0; j<NSPECI; j++ ) {
+			//Read the species' interaction matrix with other species
+			if(fscanf( finput,"%lf ",&((*SP+i)->M[j]) ));	//Read the species' interactions
+			else printf("Warning: Failed to read species %d interaction with %d.\n",i,j);
+		}
+	}
+	//Check total number of particleMPCs
+	j = 0;
+	for( i=0; i<NSPECI; i++ ) j += (*SP+i)->POP;
+	if(GPOP!=j) {
+		printf("Warning: GPOP does not match sum of species populations.\n");
+		GPOP=j;
+	}
+	(*pSRD) = (particleMPC*) malloc( GPOP * sizeof( particleMPC ) );
+
+	//Allocate memory for the cells
+	//Allocate rows (x first)
+	*CL = (cell***) malloc( XYZ_P1[0] * sizeof( cell** ) );
+	//For each x-element allocate the y columns
+	for( i=0; i<XYZ_P1[0]; i++ ) {
+		(*CL)[i] = (cell**) malloc( XYZ_P1[1] * sizeof( cell* ) );
+		//For each y-element allocate the z columns
+		for( j=0; j<XYZ_P1[1]; j++ ) {
+			(*CL)[i][j] = (cell*) malloc( XYZ_P1[2] * sizeof( cell ) );
+		}
+	}
+	//Read the BCs
+	if(fscanf( finput,"%d",&NBC ));		//Read the number of BCs
+	else printf("Warning: Failed to read number of BCs.\n");
+	for( i=0; i<NBC; i++ ) {
+		if(fscanf( finput,"%d %d %lf %lf %lf %lf %lf %lf %lf",&((*WALL+i)->COLL_TYPE), &((*WALL+i)->PHANTOM), &((*WALL+i)->E), &((*WALL+i)->Q[0]), &((*WALL+i)->Q[1]), &((*WALL+i)->Q[2]), &((*WALL+i)->V[0]), &((*WALL+i)->V[1]), &((*WALL+i)->V[2]) ));
+		else printf("Warning: Failed to read BC %d.\n",i);
+		if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &((*WALL+i)->L[0]), &((*WALL+i)->L[1]), &((*WALL+i)->L[2]), &((*WALL+i)->G[0]), &((*WALL+i)->G[1]), &((*WALL+i)->G[2]), &((*WALL+i)->A[0]), &((*WALL+i)->A[1]), &((*WALL+i)->A[2]),&((*WALL+i)->P[0]),&((*WALL+i)->P[1]),&((*WALL+i)->P[2]),&((*WALL+i)->P[3]), &((*WALL+i)->R) ));
+		else printf("Warning: Failed to read BC %d.\n",i);
+		if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &((*WALL+i)->DN), &((*WALL+i)->DT), &((*WALL+i)->DVN), &((*WALL+i)->DVT), &((*WALL+i)->DVxyz[0]), &((*WALL+i)->DVxyz[1]), &((*WALL+i)->DVxyz[2]), &((*WALL+i)->MVN), &((*WALL+i)->MVT), &((*WALL+i)->MUN), &((*WALL+i)->MUT), &((*WALL+i)->MUxyz[0]), &((*WALL+i)->MUxyz[1]), &((*WALL+i)->MUxyz[2]) ));
+		else printf("Warning: Failed to read BC %d.\n",i);
+		if(fscanf( finput,"%lf %lf %lf %lf %d %d %lf", &((*WALL+i)->DUxyz[0]), &((*WALL+i)->DUxyz[1]), &((*WALL+i)->DUxyz[2]), &((*WALL+i)->KBT), &((*WALL+i)->DSPLC), &((*WALL+i)->INV), &((*WALL+i)->MASS) ));
+		else printf("Warning: Failed to read BC %d.\n",i);
+		if(fscanf( finput,"%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &((*WALL+i)->PLANAR), &((*WALL+i)->W), &((*WALL+i)->VOL), &((*WALL+i)->Q_old[0]), &((*WALL+i)->Q_old[1]), &((*WALL+i)->Q_old[2]), &((*WALL+i)->I[0][0]), &((*WALL+i)->I[0][1]), &((*WALL+i)->I[0][2]), &((*WALL+i)->I[1][0]), &((*WALL+i)->I[1][1]), &((*WALL+i)->I[1][2]), &((*WALL+i)->I[2][0]), &((*WALL+i)->I[2][1]), &((*WALL+i)->I[2][2]) ));
+		else printf("Warning: Failed to read BC %d.\n",i);
+	}
+
+	//Read the MPCD particles
+	for( i=0; i<GPOP; i++ ) {
+		if(fscanf( finput,"%d %d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n",&((*pSRD+i)->S_flag), &((*pSRD+i)->SPID), &((*pSRD+i)->q), &((*pSRD+i)->Q[0]), &((*pSRD+i)->Q[1]), &((*pSRD+i)->Q[2]), &((*pSRD+i)->V[0]), &((*pSRD+i)->V[1]), &((*pSRD+i)->V[2]), &((*pSRD+i)->U[0]), &((*pSRD+i)->U[1]), &((*pSRD+i)->U[2]), &((*pSRD+i)->T[0]), &((*pSRD+i)->T[1]), &((*pSRD+i)->T[2]) ));
+		else printf("Warning: Failed to read MPCD particle %d.\n",i);
+	}
+
+	fclose( finput );
+}
+
+void readarg( int argc, char* argv[], char ip[],char op[] ) {
+	int arg;
+	int strln;
+	// Default
+	#ifdef DBG
+		if( DBUG >= DBGINIT ) printf("Read arguments\n");
+	#endif
+	strcpy(ip,"mpcd/data/");
+	strcpy(op,"mpcd/data/");
+	for(arg=1; arg<argc; arg++) {
+		// Check for a dash
+		if(argv[arg][0]=='-') {
+			switch (argv[arg][1]) {
+				case 'i':
+					arg++;
+					sprintf(ip,"%s",argv[arg]);
+					// Make sure that the directory ends with a "/"
+					strln = strlen(ip);
+					if( ip[strln-1]!='/' ) strcat( ip,"/" );
+					break;
+				case 'o':
+					arg++;
+					sprintf(op,"%s",argv[arg]);
+					// Make sure that the directory ends with a "/"
+					strln = strlen(op);
+					if( op[strln-1]!='/' ) strcat( op,"/" );
+					break;
+				case 'v':
+					printVersionSummary( );
+				case 'h':
+					printf("\nMPCv090\n");
+					printf("For the Polymer Physics Research Group\n");
+					printf("At the University of Ottawa\n");
+					printf("by Tyler Shendruk\n\nUsage:\n");
+					printf("\t-i\t[path to input files]\t\tdefault='mpcd/data/'\n\t-o\t[path to output data files]\tdefault='mpcd/data/'\n\t-v\tprint version summary\n\t-h\t[this help menu]\n\n");
+					exit(EXIT_SUCCESS);
+					break;
+				default:
+					printf("Error:\n** Invalid arument: %s\n** Try -h\n",argv[arg]);
+					exit(EXIT_FAILURE);
+			}
+		}
+	}
+}

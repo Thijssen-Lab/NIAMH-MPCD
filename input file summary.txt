@@ -1,0 +1,123 @@
+INPUT FILE SUMMARY
+
+If in doubt, go to /mpcd/headers/ definitions, globals, or SRDcls header files and search for what seems important. Also look at read.c for the actual sub that handles the linking.
+
+definitely won't use:
+swimmer.inp: controls information on swimming bacteria
+    As long as swimmerPop (L2) is 0, nothing here matters
+md.inp: for MD code, used to simulate polymers
+    As long as input.inp MR_SRD (L26) is 0 nothing matters here
+
+input.inp: Tells the program what the fluid is that we are simulating
+    L1-4: give dimensions in line 1, set DX, DY, DZ. If using 2D, set DZ=1
+    L5: KBT, thermal energy. Should always equal 1 to set the energy scale
+    L6: Zero net momentum initially. If 1, it substracts any "excess" momentum post initialisation to minimise drift. Should be 1.
+    L7: Zero net momentum time. If 1, it substracts any excess momentum every time step. This is stupid. Set it to 0.
+    L8: Establish Gallilean Invariance. If 1, use the "grid shift workaround". Should be 1.
+    L9: The thermostat type, generally want to be 0 to use Anderson collision. Full list is:
+        0 - no thermostat (or if you're using the Anderson Collision operator with included thermostat)
+        1 - VSC, velocity scaling thermostat
+        2 - BEREND, Berendesen thermostat
+        3 - HEYES, Heyes thermostat
+        4 - MAXV, not really a thermostat just sets a maximum velocity
+    L10: Rotation technique. The collision operator. 2 is for the Anderson collision operator, 3 is for the Anderson operator that conserves angular momentum. See full list in definitions.h under rotation.
+        16 may also be useful for me.
+    L11: nematicLC. flag to set if you're simulating a nematic liquid crystal or not. makes the code avoid computationally expensive bits associated with LCs.
+    L12: thermal relaxation. Used by some thermostats as a time scale. Set to 0.5
+    L13: rotation angle. if you do SRD this sets the appropriate angle
+    L14: langevin friction. if using langevin MPCD it sets a lengevin friction
+    L15: mean field potentional energy. sets how alligned an LC is (U per Tyler's 2015 paper). units of kbt, should be about 5x bigger for 3D, 15 or so for 2D
+        Around the limit (4.5) there's a phase transition
+    L16-18: constant acceleration from gravity. good way to get pressure gradient in a direction. in units of space / time^2. 
+    L19-21: constant magnetic field H. can be used to align the LC via torque.
+    L22: warm up time. only start dumping data after this. use when transient dynamics may be interesting
+    L23: total sim time. set to 100000000. in iterations of the integrator
+    L24: time step size. in terms of the model units (defined by kbt). 0.1 is a good number.
+    L25: random seed. when set to 0 the seed is "randomised" by the program. 
+    L26: MD_SRD. Flag on whether to use MD or not. Set to 0. 
+    L27: stepsMD. How many MD steps to do per MPCD steps.
+    L28: species of fluid.
+    L29-41: information on each fluid species. repeat per species
+        L29: mass of particle. should be 1
+        L30: how many MPCD particles should we have. Aim to maintain fluid density, aim for about 20 MPCD particles per cell, not including colloid space. 
+        L31-33: initial position, velocity, and orientation distribution. set to 0, 0, 2 usually. look under definitions.h in QDIST, VDIST, UDIST for info. 
+            The 2 in allignment indicates alignment with the y axis
+        L34: mobility tensor for phase seperation of multiphase fluids. set to 0
+        L35: rotational friction. gamma_R from Tyler's paper. set to 0.01
+        L36: rod length. doesn't do anything, woopsies
+        L37: tumbling parameter. lambda from Jeffery's eqn in Tyler's paper. set to 2.0
+        L38: shear susceptibility. chi_HI from Jeffery's eqn in Tyler's paper. set to 0.5 
+        L39: magnetic succeptibility. this and the magnetic field are multiplied together and are coupled that way. set to 0 unless using magnetics.
+        L40: activity. look at 4visitors.pdf, alpha is an activity term in the Anderson operator, an acceleration to the particles. injects energy into the cell without changing the momentum per cell. 
+            sweet spot for this in BabiRai's thing but can try breaking it.
+        L41: damping coefficient. applied on a per cell basis, an additional damping force on top of the fluid.  
+
+printcom.inp: used for handling printing information. if zero then it won't output, otherwise it output every MPCD iterations (NOT TIME UNITS). see pout.c for code.
+    L1: indicates program verbosity, defined per definitions.h 
+    L2: detailed output time. dumps a tonne of data. set to 0
+    L3: detailed species output. same as above but does different fluid species seperately. set to 0
+    L4: coarse fields. outputs cell parameters
+    L5: flow field.
+    L6: average velocity of system. less data than flow field
+    L7: scalar order parameter and director field. 
+    L8: q tensor field 
+    L9: inverse of q tensor (reciprocal q) field
+    L10: mpcd energies at every cell
+    L11: multiphase fluid phase
+    L12: pressure at each cell
+    L13: director field of neighbours and energy between neighbouring mpcd directors (???????)
+    L14: average scalar order parameter for entire system
+    L15: standard deviation of number of particles in each mpcd cell
+    L16: system average enstrophy. "rotaional energy", it is to vorticity as KE is to vel
+    L17-23: binned distributions of velocity, speed, vorticity, enstrophy, director, scalar order parameter, number of particles per cell
+        done per time step, so will need some smart re-binning in the analysis script
+    L24: trajectory of moving boundary conditions
+    L25: defect tracker
+        might be out of date so may need to be upgraded if you use it
+    L26: energy output
+    L27-32: correlation functions in time: vel-vel, dir-dir, vort-vort, dens-dens, order-order, phi-phi.
+        computationally expensive, use sparingly
+    L33-34: energy, enstrophy spectrum
+        might be buggy so investigate
+    L35-36: binder cumulant
+        to do with Kurt Binder binning
+    L37-39: output swimmer position, orientation, and run/ tumble state
+    L40: output synopsis file. outputted a single time. lets you verify your inputs.
+        also outputs viscosity, self diffusion coeff, schmitd number
+    L41: checkpointing. lets you restart your sim in case of failure
+        BROKEN. FIX IT, NEEDS TO BE REDONE FROM SCRATCH
+
+bc.inp: set number of BCs on L2. line break, then a "block" for each BC including. On each Block Line (BL) you have:
+    BL0: BC name
+    BL1: collision type. see defs in definitions.h for full list. Use 1 for surface rules defined on the below parameters.
+    BL2: phantom. whether ghost particles should be included for this.
+        if solid, then enable. if periodic, off
+    BL3: coefficient of restitution. represents the elasticity of the collision. Tyler has it set on -1
+    BL4-6: Q, the center position.
+    BL7-9: V, initial velocity of the center of mass of the BC. 
+    BL10-12: O, initial orientation of the boundary
+        orientations on BCs in general might be broken
+    BL13-15: L, initial angular momentum of the center of mass of the BC. 
+    BL16-18: G, gravitational acceleration applied to the colloid, for a body force 
+        should match the fluid
+    BL19-21: A, inverse of normal. See Tyler's thesis chapter.
+    BL22-23: M, (????). Leave to 4
+        idfk what these do, but can make some fancy shapes with it apparently. neato.
+    BL24: ABS, whether to take absolute value around each bit of the "p" power in Tyler's BC eqn. Should be 0
+    BL25-27: p_i, power of each term in Tyler's BC eqn.
+    BL28: p_R, the power of P in Tyler's eqn
+    BL29: R, radius of the particle in Tyler's eqn.
+    BL30-36: displacements in the direction of the normal
+        BL30, DN, is the direction of the normal for periodic BCs. set it to system size in that dimensions
+        BL31-36 give "kicks" to velocity
+    BL37-38: MVN/T multiplication to the velocity normal and tangent to the surface (for reflective or bounceback BCs)
+        for periodic BC set both to 1
+    BL39-40: MUN/T multiplication to the liquid crystal director normal and tangent to the surface. will renormalise after this!!!
+    BL41-43: same as above but for specific cardinal directions x, y, zero
+        set either of these to 1 if you're not using it
+    BL44-46: adds to the orientation
+    BL47: KBT. lets you do thermal BCs.
+    BL48: displacement. if 0, surface is fixed in place. if 1, allows momentum exchange of the boundary
+    BL49: inverse, will invert the normals of the boundary
+    BL50: mass. in units of fluid particle.
+        density of a suspended colloid should be the same, or slightly bigger than, the density of the fluid

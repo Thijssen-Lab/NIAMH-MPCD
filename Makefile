@@ -1,0 +1,56 @@
+#===================================================================================================
+# Make file for the MPC simulation program
+# Tyler Shendruk
+#====================================================================================================
+
+defines		= -DPHASE_COUNT=2 -DTYPE_COUNT=3 -DPOLY_SETS=1 -DQ_SETS=4
+conditional = -DTHERMOSTAT_DPD
+
+# name of program
+program    = mpcd/mpcd.out
+
+# shell commands to automatically build list of files from *.c and *.h in directory
+sources    = $(shell ls mpcd/subroutines/*.c) $(program:.out=.c) $(shell ls md/*.c)
+headers    = $(shell ls mpcd/headers/*.h) $(shell ls md/*.h)
+objects    = $(sources:.c=.o)
+
+# other variables
+cc         :=  gcc
+cflags     :=  -Wall
+lib        :=  -lm
+opt        :=  -O3
+
+#----------------------------------------------------------------------------------------------------
+# By default, make will build the first target, $(program) here.
+# If any of the $(objects) are more recent than $(program), then linking takes place
+$(program): $(objects)
+	@echo "LINKING:  $(program)"
+	@$(cc) $(cflags) $(opt) $(objects) $(defines) $(conditional) $(lib) -o $(program)
+	mv $(program) ./
+#----------------------------------------------------------------------------------------------------
+# If any .c file is more recent than its .o file, then they are compiled
+%.o:    %.c
+	@echo "COMPILING: $(cc) $(cflags) $(opt) $<"
+	@$(cc) -c $(cflags) $(defines) $(conditional) $(opt)  $< -o $@
+#----------------------------------------------------------------------------------------------------
+# Use the .PHONY declaration when you want to prevent the target ("debug" here) from being
+# interpreted as the name of a file.
+.PHONY:    debug
+debug:
+	make -e opt="-g"
+#----------------------------------------------------------------------------------------------------
+.PHONY:    prof
+prof:
+	make -e opt="-pg"
+#----------------------------------------------------------------------------------------------------
+.PHONY: clean
+clean:
+	@echo "Removing executable and object files"
+# 	@echo "	About to perform:  /bin/rm -f $(program) $(objects) "
+	@( /bin/rm -f $(program) $(objects) )
+#----------------------------------------------------------------------------------------------------
+.PHONY: doc
+doc:    $(sources)
+	@echo "Building documentation"
+	doxygen doc/Doxyfile
+#----------------------------------------------------------------------------------------------------
