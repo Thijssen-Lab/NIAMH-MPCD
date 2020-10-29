@@ -10,4 +10,4 @@
 *.dat
 
 #ignore OS file system bits
-.DS_Store
+*.DS_Store
