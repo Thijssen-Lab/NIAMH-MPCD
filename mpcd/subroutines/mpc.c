@@ -3263,12 +3263,14 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 		if( DBUG >= DBGTITLE ) printf( "Impulse on BCs from MPCD collisions.\n" );
 	#endif
 	//Apply impulse from MPC_BCcollision()
-	for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) {
-		for( j=0; j<DIM; j++ ) (WALL+i)->V[j] += (WALL+i)->dV[j];
-		for( j=0; j<_3D; j++ ) (WALL+i)->L[j] += (WALL+i)->dL[j];
-		zerovec(WALL[i].dV,DIM);
-		zerovec(WALL[i].dL,_3D);
-	}
+
+	if(!in.warmupSteps){
+		for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) {
+			for( j=0; j<DIM; j++ ) (WALL+i)->V[j] += (WALL+i)->dV[j];
+			for( j=0; j<_3D; j++ ) (WALL+i)->L[j] += (WALL+i)->dL[j];
+			zerovec(WALL[i].dV,DIM);
+			zerovec(WALL[i].dL,_3D);
+		}
 	/* ****************************************** */
 	/* ************* TRANSLATE BCs ************** */
 	/* ****************************************** */
@@ -3344,6 +3346,7 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 	#endif
 	//Accelerate each of the BCs
 	if( in.GRAV_FLAG ) for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) acc_BC( (WALL+i),in.dt,(WALL+i)->G );
+}
 	/* ****************************************** */
 	/* ***************** RE-BIN ***************** */
 	/* ****************************************** */
