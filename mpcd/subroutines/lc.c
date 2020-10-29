@@ -1884,3 +1884,38 @@ void velGrad1D( cell ***CL ) {
 	a=XYZ[0];
 	for( i=0; i<DIM; i++ ) CL[a][b][c].E[i][0] = backwardDeriv( CL[a][b][c].VCM[i],CL[a-1][b][c].VCM[i],1. );
 }
+
+double topoChargeLocal( cell ***CL, int i, int j, int k){
+	//A function to calculate the topological charge, and place it into charge
+	//calculate local topo charge
+	double phi = .0; //reset
+
+	phi += topoSmallestAngle( CL[i+1][j][k].DIR, CL[i+1][j+1][k].DIR);
+	phi += topoSmallestAngle( CL[i+1][j+1][k].DIR, CL[i][j+1][k].DIR);
+	phi += topoSmallestAngle( CL[i][j+1][k].DIR, CL[i-1][j+1][k].DIR);
+	phi += topoSmallestAngle( CL[i-1][j+1][k].DIR, CL[i-1][j][k].DIR);
+	phi += topoSmallestAngle( CL[i-1][j][k].DIR, CL[i-1][j-1][k].DIR);
+	phi += topoSmallestAngle( CL[i-1][j-1][k].DIR, CL[i][j-1][k].DIR);
+	phi += topoSmallestAngle( CL[i][j-1][k].DIR, CL[i+1][j-1][k].DIR);
+	phi += topoSmallestAngle( CL[i+1][j-1][k].DIR, CL[i+1][j][k].DIR);
+
+	return 0.5*phi/pi;
+}
+
+double topoSmallestAngle( double u[], double v[]){
+	//copy pasting code from python here to calculate smallest angle
+	double dot = dotprod(u, v, _2D);
+	double det = u[0]*v[1] - u[1]*v[0];
+	double phi = atan2(fabs(det), dot);
+
+	if (phi > 0.5*pi){
+		v[0] = -v[0];
+		v[1] = -v[1];
+		dot = dotprod(u, v, _2D);
+		det = u[0]*v[1] - u[1]*v[0];
+	}
+	double sign = 1.0;
+	if (det < 0) sign = -1.0;
+
+	return sign*atan2(fabs(det), dot);
+}
