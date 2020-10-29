@@ -207,7 +207,8 @@ void openenstrophyspect( FILE **f,char dir[],char fname[],char ext[] ) {
 }
 void opendefect( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
-	defectheader( *f );
+	if(DIM==_3D) printf("Warning: Topological charge field is only outputted for 2D!\n");
+	else defectheader( *f );
 }
 void openmultiphase( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
@@ -1004,7 +1005,7 @@ void initOutput( char op[],outputFlagsList *outFlag,outputFilesList *outFile,inp
 	char fileenstrophy[]="avEnstrophy";
 	char fileflow[]="flowfield";
 	char filesolids[]="solidtraj";
-	char filedefect[]="defecttraj";
+	char filedefect[]="topochargefield";
 	char fileprefix[]="detailedSP";
 	char filehistVel[]="distVel";
 	char filehistVort[]="distVort";
@@ -1125,7 +1126,8 @@ void initOutput( char op[],outputFlagsList *outFlag,outputFilesList *outFile,inp
 		fprintf(outFile->fsynopsis,"\tEnergy:\t\t%d\n",outFlag->ENOUT);
 		fprintf(outFile->fsynopsis,"\tEnergy field:\t\t%d\n",outFlag->ENFIELDOUT);
 		fprintf(outFile->fsynopsis,"\tEnergy neighbours:\t\t%d\n",outFlag->ENNEIGHBOURS);
-		fprintf(outFile->fsynopsis,"\tDefects:\t\t%dNOTCODED!!!!\n",outFlag->DEFECTOUT);
+		if(DIM==_3D) fprintf(outFile->fsynopsis,"\tTopological charge field:\t\t%d\tNot outputted in 3D!\n",outFlag->DEFECTOUT);
+		else fprintf(outFile->fsynopsis,"\tTopological charge field:\t\t%d\n",outFlag->DEFECTOUT);
 		fprintf(outFile->fsynopsis,"\tPhi/colour/species-type field:\t\t%d\n",outFlag->SPOUT);
 		fprintf(outFile->fsynopsis,"\tPressure field:\t\t%d\n",outFlag->PRESOUT);
 		fprintf(outFile->fsynopsis,"\tVelocity-velocity correlation:\t\t%d\n",outFlag->CVVOUT);
