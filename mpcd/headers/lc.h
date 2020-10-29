@@ -33,6 +33,8 @@ void velGrad2D( cell ***CL );
 void velGrad1D( cell ***CL );
 void velGradD3Q15( cell ***CL );
 void velGradD2Q9( cell ***CL );
+double topoChargeLocal( cell ***CL, int i, int j, int k);
+double topoSmallestAngle( double u[], double v[]);
 
 void larsonRotRate(double dudt[],double w[],double u[],double E[_3D][_3D],double tumbleParam);
 void brielsRotRate(double dudt[],double w[],double u[],double E[_3D][_3D]);
