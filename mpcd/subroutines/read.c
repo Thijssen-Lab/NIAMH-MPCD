@@ -290,9 +290,9 @@ void readpc( char fpath[],outputFlagsList *out ) {
 	//Read how often the solid trajectory data is outputted
 	read=fscanf( finput,"%d %s",&(out->SOLOUT),STR );
 	checkRead( read,"solid trajectory",inSTR);
-	//Read how often the topological defects trajectory data is outputted
+	//Read how often the topological charge field data is outputted
 	read=fscanf( finput,"%d %s",&(out->DEFECTOUT),STR );
-	checkRead( read,"topological defects trajectory",inSTR);
+	checkRead( read,"topological charge field",inSTR);
 	//Read how often the energy data is outputted
 	read=fscanf( finput,"%d %s",&(out->ENOUT),STR );
 	checkRead( read,"energy",inSTR);
