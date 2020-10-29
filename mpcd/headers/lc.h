@@ -41,7 +41,7 @@ void brielsRotRate(double dudt[],double w[],double u[],double E[_3D][_3D]);
 void saintillanRotRate(double dudt[],double w[],double u[],double E[_3D][_3D]);
 
 void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] );
-void torqueLCBC( bc *WALL,double n[],double torqueMPC[],double rodlength, double posColl[] );
+void torqueLCBC( bc *WALL,double n[], double U0[], double torqueMPC[],double rodlength, double posColl[] );
 
 void genrand_maierSaupe( double DIR[],double rotAx[],double rotAngle,double U[],double KBT,double S,double effM );
 void genrand_maierSaupeGAUSS_3D( double rotAx[],double rotAngle,double U[],double KBT,double S,double effM );

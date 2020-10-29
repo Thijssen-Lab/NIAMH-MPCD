@@ -977,7 +977,7 @@ void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
 /*
     This subroutine applies the BC transformation to orientation.
 */
-	double UN[_3D],UT[_3D],dU[_3D],U0[_3D];
+	double UN[_3D],UT[_3D],dU[_3D],U0[_3D],Uout[_3D];
 	double torque[_3D],r[_3D];			//Torque on MPCD particle --- Not REALLY torque ( angular impulse but time step falls out)
 	int i;
 
@@ -987,18 +987,29 @@ void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
 		UN[i]=0.0;
 		UT[i]=0.0;
 		r[i]=0.0;
+		Uout[i]=0.0;
 	}
+
+	//Make U point out of BC (Uout)
+	if(dotprod(pp->U,n,DIM)>=0) {
+		for(i=0; i<DIM; i++){Uout[i]=pp->U[i];}
+	}
+	else{
+		for(i=0; i<DIM; i++){Uout[i]=-1.*pp->U[i];}
+	}
+
 	//Calculate the new orientation
-	proj( pp->U,n,UN,DIM );		//Calculate normal component of the orientation
-	tang( pp->U,UN,UT,DIM );	//Calculate tangential component of orientation
+	proj( Uout,n,UN,DIM );		//Calculate normal component of the orientation
+	tang( Uout,UN,UT,DIM );	 //Calculate tangential component of orientation
 	//Save the original orientation if the BC can move
 	if( WALL->DSPLC ) for( i=0; i<DIM; i++ ) {
-		U0[i] = pp->U[i];
+		U0[i] = Uout[i];
 	}
+
 	//Transform the orientation
 	if( feq(WALL->MUN,0.0) && feq(WALL->MUT,0.0) ) {
 		//Addition in cartesian coordinates
-		for( i=0; i<DIM; i++ ) pp->U[i] = WALL->DUxyz[i];
+		for( i=0; i<DIM; i++ ) Uout[i] = WALL->DUxyz[i];
 	}
 	else {
 		//Multiplication wrt surface normal
@@ -1007,18 +1018,18 @@ void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
 			UT[i] *= WALL->MUT;
 		}
 		//Combine normal and tangential components
-		for( i=0; i<DIM; i++ ) pp->U[i] = UN[i] + UT[i];
+		for( i=0; i<DIM; i++ ) Uout[i] = UN[i] + UT[i];
 		//For measuring K_bend in a pure bend geometry, we want to surpress the z-hat orientation
-		pp->U[0] *= WALL->MUxyz[0];
-		if( DIM>=_2D ) pp->U[1] *= WALL->MUxyz[1];
-		if( DIM>=_3D ) pp->U[2] *= WALL->MUxyz[2];
+		Uout[0] *= WALL->MUxyz[0];
+		if( DIM>=_2D ) Uout[1] *= WALL->MUxyz[1];
+		if( DIM>=_3D ) Uout[2] *= WALL->MUxyz[2];
 	}
 	//Normalize
-	norm(pp->U,DIM);
+	norm(Uout,DIM);
 	#ifdef DBG
 		if( DBUG == DBGBCORI ) {
 			printf( "\tNew u=" );
-			pvec(pp->U,DIM);
+			pvec(Uout,DIM);
 		}
 	#endif
 
@@ -1030,13 +1041,13 @@ void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
 			torque[i]=0.0;
 		}
 		//Change in orientation
-		for( i=0; i<DIM; i++ ) dU[i] = pp->U[i] - U0[i];
+		for( i=0; i<DIM; i++ ) dU[i] = Uout[i] - U0[i];
 		//Torque (really angular impulse) on the MPCD PARTICLE
 		//Calculate the torque on the MPCD particle (opposite to surface of the wall) --- to be a real torque should divide by dt but will just multiple by dt later so don't bother
-		crossprod( pp->U,dU,torque );
+		crossprod( Uout,dU,torque );
 		for( i=0; i<_3D; i++ ) torque[i] *= ( (SP+pp->SPID)->RFC );
 		//Vector between collision point and CM
-		for( i=0; i<DIM; i++ ) r[i] = WALL->Q[i] - pp->Q[i];
+		for( i=0; i<DIM; i++ ) r[i] = -WALL->Q[i] + pp->Q[i]; //edit 14/10 changed to centre of colloid to wall.
 		#ifdef DBG
 			if( DBUG == DBGBCORI ) {
 				printf( "\tTorque on MPC=" );
@@ -1044,65 +1055,94 @@ void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
 			}
 		#endif
 		//Apply this torque to the BC
-		torqueLCBC( WALL, n, torque, (SP+pp->SPID)->LEN, r );
+		torqueLCBC( WALL, n, U0, torque, (SP+pp->SPID)->LEN, r );
 	}
 }
 
-void torqueLCBC( bc *WALL,double n[],double torqueMPC[],double rodlength, double posColl[] ) {
+void torqueLCBC( bc *WALL,double n[], double U0[], double torqueMPC[],double rodlength,  double posColl[] ) {
 	/*
-	    This subroutine applies the equal and opposite torque on the MPCD particle to the BC
-			ie Find what force would need to be applied to get that torque
-			and apply the equal and opposite force to the BC at that point
+			This subroutine uses the torque on the MPCD particle to create a force on the BC.
+			The equal and opposite force to that, is the force exerted by the BC to create that MPC torque.
+			The force exerted by the BC is converted into rotational and tranlational motion of the boundary.
 	*/
-	int i,j;
-	double torqueBC[_3D],u[_3D],force[_3D];						//Not REALLY a torque --- really an angular impulse (torque times time step but time step falls out)
-	double IIwall[_3D][_3D],dL[_3D];									//Inverse of the moment of inertia tensor and angular momentum on BC
-	double magT;
 
-	for( i=0; i<_3D; i++ ) torqueBC[i] = -torqueMPC[i];
+	int i,j;
+	double t_hat[_3D],f_hat[_3D]; //unit vectors: tangent vector to the surface of the colloid (for the tangential component of the force created by the colloid), unit vector of the MPC force acting into the colloid.
+	double MPC_force[_3D], force_n[_3D], force_t[_3D], Col_force[_3D]; // MPC force, normal component of the colloid force, tangent component of the colloid force, colloid force.
+	double IIwall[_3D][_3D],dL[_3D];									//Inverse of the moment of inertia tensor and angular momentum on BC
+	double magT, forceN, forceT;							// magnitude of the MPC torque and magntidude of the normal and tangential components of the colloid force.
+	double torqueCol[_3D];										//Torque on colloid (about the centre of rotation/mass of the colloid).
+
 	for( i=0; i<_3D; i++ ) {
-		force[i]=0.0;
-		u[i]=0.0;
+		Col_force[i]=0.0;
+		MPC_force[i]=0.0;
+		t_hat[i]=0.0;
+		f_hat[i]=0.0;
+		force_n[i]=0.0;
+		force_t[i]=0.0;
+		torqueCol[i]=0.0;
 		dL[i]=0.0;
+		U0[i]=-1.*U0[i]; //flipped it (for preference) as the torques are set up to consider the force pointing towards the boundary.
 	}
 
-	//Given the surface normal n and the direction of the torque torqueBC, find force
-	//Calculate the direction of the force
-	crossprod( torqueBC,n,u );
-	norm( u,DIM );
-	//Magnitude of the torque
-	magT=length( torqueBC,_3D );
-	//Calculate the force on the head and the body needed to produce the torque
-	if(magT>0.0) for( i=0; i<DIM; i++ ) force[i] = magT*u[i]/rodlength;
-	else for( i=0; i<DIM; i++ ) force[i] = 0.0;
+	//tangent vector --> used for calculating the component of the colloidal force that contributes to rotation.
+	crossprod( torqueMPC,n,t_hat );
+	norm( t_hat, DIM ); //tangent vector at contact point on colloid
+
+	// split nematic torque into a magnitude and unit vector
+	magT = length( torqueMPC,_3D ); //magnitude of torque
+	norm( torqueMPC, _3D); //note that now torqueMPC is a unit vector
+
+	// finding direction the MPC force is acting in at the colloid boundary
+	crossprod( torqueMPC, U0, f_hat);
+
 	#ifdef DBG
 		if( DBUG == DBGBCORI ) {
-			printf( "\tForce on the BC due to rotating an MPCD nematogen: " );
-			pvec( force,DIM );
+			printf( "\tfhat: " );
+			pvec( f_hat,_3D );
 		}
 	#endif
-	//Now apply this force to the point on the surface of the BC
 
-	//This impulse now needs to change the velocity and angular velocity of the BC
-	//Give the BC the impulse
-	for( i=0; i<DIM; i++ ) WALL->dV[i] += force[i]/(WALL->MASS);
-	//Give the BC the angular impulse
-	//Torque on the CENTRE OF MASS of the BC due to the traction force
-	//Note: torqueBC is now over written here
-	crossprod( posColl,force,torqueBC );
+	//MPC force on colloid is converted into the equal and opposite colloid force, then split into normal and tangential components.
+	// The MPC force is f= (tau/r)*(tau_hat cross r_hat) where r_hat is U0 r is rodlength/2 and tau_hat is the unit vector torqueMPC.
+	for( i=0; i<DIM; i++ ){
+		MPC_force[i] = 2.*magT*f_hat[i]/rodlength;
+		Col_force[i] = -MPC_force[i];
+	}
+	forceN=dotprod(Col_force, n, _3D);
+	forceT=dotprod(Col_force, t_hat, _3D);
+	for( i=0; i<DIM; i++ ){
+		force_n[i] = forceN*n[i]; //normal component of colloid force
+		force_t[i] = forceT*t_hat[i]; //tangent component of colloid force
+		}
+
+	#ifdef DBG
+		if( DBUG == DBGBCORI ) {
+			printf( "\tNormal force on the BC due to rotating an MPCD nematogen: " );
+			pvec( force_n,_3D );
+			printf( "\tTangential force on the BC due to rotating an MPCD nematogen" );
+			pvec( force_t,_3D);
+		}
+	#endif
+
+	//DISPLACEMENT OF COLLOID
+	//Translational movement of the wall due to the normal component of the colloidal force
+	for( i=0; i<DIM; i++ ) WALL->dV[i] += force_n[i]/(WALL->MASS);
+
+	//ROTATION OF COLLOID
+	//The torque on the colloid (about the centre of mass) due to the tangential component of the force at the boundary
+	crossprod( posColl, force_t, torqueCol); //posColl is the vector from the centre of the colloid to the force on the boundary
 	//Inverse of BC's moment of inertia tensor
 	for( i=0; i<_3D; i++ ) for( j=0; j<_3D; j++ ) IIwall[i][j] = 0.0;
 	invert3x3(IIwall,WALL->I);
 	//Angular impulse from torque and moment of inertia
-	dotprodMatVec( IIwall,torqueBC,dL,_3D );
+	dotprodMatVec( IIwall,torqueCol,dL,_3D );
 	for( i=0; i<_3D; i++) WALL->dL[i] += dL[i];
+
 	#ifdef DBG
 		if( DBUG == DBGBCORI ) {
-			printf( "\tTraction force on BC:" );
-			pvec( force,_3D );
-			printf( "\tResulting torque:" );
-			pvec( torqueBC,_3D );
-			// wait4u();
+			printf( "\tResulting Colloid torque:" );
+			pvec( torqueCol,_3D );
 		}
 	#endif
 }
