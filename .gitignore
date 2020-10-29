@@ -1,0 +1,10 @@
+#Git will ignore all files within using any of these formats! Make sure to triple check before adding here
+
+#ignore compiled code
+*.o
+*.out
+*.pyc
+
+#ignore MCPD input/ output files
+*.inp
+*.dat
