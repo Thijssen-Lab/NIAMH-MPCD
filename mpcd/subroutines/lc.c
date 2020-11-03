@@ -1959,3 +1959,38 @@ double topoSmallestAngle( double u[], double v[]){
 
 	return sign*atan2(fabs(det), dot);
 }
+
+double topoAngleLocal( cell ***CL, int x, int y, int z, double charge){
+	//A function to compute the angle of a defect, meant to be paired with the above
+	// Equation essentially taken from: https://pubs.rsc.org/en/content/articlelanding/2016/sm/c6sm01146b/
+	
+	double sumTop = 0.0;
+	double sumBot = 0.0;
+	int sign = 1;
+	if (charge < 0) sign = -1;
+
+	//loop through neighbouring cells
+	for (int i = -1; i < 2; i++) for (int j = -1; j < 2; j++) if(!(i==0 &&j==0)){
+		//compute the sum for the top and bottom here
+		// Top here
+
+
+		///TODO: do this
+
+		///TODO: test computeQ() against tensOrderParam() above a _high_ tolerance
+	}
+
+	return (charge / (1.0 - charge)) * atan2(sumTop, sumBot);
+}
+
+double **computeQ( cell CL){
+	// set up the Q tensor object we plan to return
+	double** QTensor;
+	for (int i = 0; i < DIM; i++) for (int j = 0; j < DIM; j++) QTensor[i][j] = 0.0;
+
+	outerprod(CL.DIR, CL.DIR, &QTensor, DIM);
+	for (int i = 0; i < DIM; i++) QTensor[i][i] -= 1.0/((double)DIM);
+	for (int i = 0; i < DIM; i++) for (int j = 0; j < DIM; j++) QTensor[i][j] *= CL.S;
+
+	return QTensor;
+}
