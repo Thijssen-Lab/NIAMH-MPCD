@@ -11,3 +11,6 @@
 
 #ignore OS file system bits
 *.DS_Store
+
+#ignore IDE bits
+.vscode/*
