@@ -1377,7 +1377,7 @@ void topochargeout( FILE *fout,int t,cell ***CL ) {
 		//Output
 		fprintf( fout,"%7i\t",t );
 		fprintf( fout,"%5d\t%5d\t%5d\t",i,j,k );
-		if( CL[i][j][k].POP == 0 ) fprintf( fout, "%06.3f\n",0.0);
+		if( CL[i][j][k].POP == 0 ) fprintf( fout, "%06.3f\t%12.5e\n", 0.0, 0.0);
 		else fprintf( fout, "%06.3f\t%12.5e\n",topoC[i][j], topoAngle[i][j]);
 	}
 	#ifdef FFLSH

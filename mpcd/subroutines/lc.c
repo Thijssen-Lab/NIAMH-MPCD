@@ -1972,14 +1972,19 @@ double topoAngleLocal( cell ***CL, int x, int y, int z, double charge){
 	if (charge < 0) sign = -1;
 
 	//loop through neighbouring cells to compute average 
-	for (int i = x-1; i < x+2; i++) for (int j = y-1; j < y+2; j++) if(!(i==0 &&j==0)){
+	for (int i = x-1; i < x+2; i++) for (int j = y-1; j < y+2; j++) if(!( (i==x) && (j==y))){
 		//compute necessary partials of this NEIGHBOURING cell
 		//we need partials in x and y of Q_{xx} and Q_{xy}, so compute them using finite central diff
 		//first, get the necessary Q tensors
-		double** QTop = computeQ(CL[i][j+1][z]);
-		double** QBot = computeQ(CL[i][j-1][z]);
-		double** QLeft = computeQ(CL[i-1][j][z]);
-		double** QRight = computeQ(CL[i+1][j][z]);
+		printf("%d, %d, %d\n", i, j, z);
+		double QTop[DIM][DIM]; 
+		computeQ(CL[i][j+1][z], QTop);
+		double QBot[DIM][DIM]; 
+		computeQ(CL[i][j-1][z], QBot);
+		double QLeft[DIM][DIM]; 
+		computeQ(CL[i-1][j][z], QLeft);
+		double QRight[DIM][DIM]; 
+		computeQ(CL[i+1][j][z], QRight);
 
 		//now compute derivatives of format (partial axis) Q (Q element)
 		double xQxx = centredDeriv(QLeft[0][0], QRight[0][0], 1.0);
@@ -1994,17 +1999,16 @@ double topoAngleLocal( cell ***CL, int x, int y, int z, double charge){
 		///TODO: test computeQ() against tensOrderParam() above a _high_ tolerance
 	}
 
-	return (charge / (1.0 - charge)) * atan2(sumTop, sumBot); //return angle per the equation
+	double angle = (charge / (1.0 - charge)) * atan2(sumTop, sumBot); //compute angle per the equation
+	printf("Computed angle %06.3f\n", angle);///TODO: remove, used for debug only
+	return angle;
 }
 
-double **computeQ( cell CL){
+void computeQ(cell CL, double output[][3]){
 	// set up the Q tensor object we plan to return
-	double** QTensor;
-	for (int i = 0; i < DIM; i++) for (int j = 0; j < DIM; j++) QTensor[i][j] = 0.0;
+	for (int i = 0; i < DIM; i++) for (int j = 0; j < DIM; j++) output[i][j] = 0.0;
 
-	outerprod(CL.DIR, CL.DIR, &QTensor, DIM);
-	for (int i = 0; i < DIM; i++) QTensor[i][i] -= 1.0/((double)DIM);
-	for (int i = 0; i < DIM; i++) for (int j = 0; j < DIM; j++) QTensor[i][j] *= CL.S;
-
-	return QTensor;
+	outerprod(CL.DIR, CL.DIR, output, DIM);
+	for (int i = 0; i < DIM; i++) output[i][i] -= 1.0/((double)DIM);
+	for (int i = 0; i < DIM; i++) for (int j = 0; j < DIM; j++) output[i][j] *= CL.S;
 }
