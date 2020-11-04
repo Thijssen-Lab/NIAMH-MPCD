@@ -1964,23 +1964,37 @@ double topoAngleLocal( cell ***CL, int x, int y, int z, double charge){
 	//A function to compute the angle of a defect, meant to be paired with the above
 	// Equation essentially taken from: https://pubs.rsc.org/en/content/articlelanding/2016/sm/c6sm01146b/
 	
-	double sumTop = 0.0;
+	//init summing vars
+	double sumTop = 0.0; 
 	double sumBot = 0.0;
+	// prepare sign based on charge
 	int sign = 1;
 	if (charge < 0) sign = -1;
 
-	//loop through neighbouring cells
-	for (int i = -1; i < 2; i++) for (int j = -1; j < 2; j++) if(!(i==0 &&j==0)){
-		//compute the sum for the top and bottom here
-		// Top here
+	//loop through neighbouring cells to compute average 
+	for (int i = x-1; i < x+2; i++) for (int j = y-1; j < y+2; j++) if(!(i==0 &&j==0)){
+		//compute necessary partials of this NEIGHBOURING cell
+		//we need partials in x and y of Q_{xx} and Q_{xy}, so compute them using finite central diff
+		//first, get the necessary Q tensors
+		double** QTop = computeQ(CL[i][j+1][z]);
+		double** QBot = computeQ(CL[i][j-1][z]);
+		double** QLeft = computeQ(CL[i-1][j][z]);
+		double** QRight = computeQ(CL[i+1][j][z]);
 
+		//now compute derivatives of format (partial axis) Q (Q element)
+		double xQxx = centredDeriv(QLeft[0][0], QRight[0][0], 1.0);
+		double xQxy = centredDeriv(QLeft[1][0], QRight[1][0], 1.0);
+		double yQxx = centredDeriv(QBot[0][0], QTop[0][0], 1.0);
+		double yQxy = centredDeriv(QBot[1][0], QTop[1][0], 1.0);
+		/// TODO: Computing these is a nightmare, maybe make a seperate function that computes \nabla\cdot Q and returns the result? Would need to replace the above after
 
-		///TODO: do this
+		sumTop += sign*xQxy - yQxx; // compute top here
+		sumBot += xQxx + sign*yQxy; // compute bot here
 
 		///TODO: test computeQ() against tensOrderParam() above a _high_ tolerance
 	}
 
-	return (charge / (1.0 - charge)) * atan2(sumTop, sumBot);
+	return (charge / (1.0 - charge)) * atan2(sumTop, sumBot); //return angle per the equation
 }
 
 double **computeQ( cell CL){
