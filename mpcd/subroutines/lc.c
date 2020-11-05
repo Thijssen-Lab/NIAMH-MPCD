@@ -1999,7 +1999,6 @@ double topoAngleLocal( cell ***CL, int x, int y, int z, double charge){
 	}
 
 	double angle = (charge / (1.0 - charge)) * atan2(sumTop, sumBot); //compute angle per the equation
-	printf("Computed angle %06.3f\n", angle);///TODO: remove, used for debug only
 	return angle;
 }
 
@@ -2008,7 +2007,8 @@ void computeQ(cell CL, double output[_2D][_2D]){
 	// set up the Q tensor object we plan to return
 	for (int i = 0; i < DIM; i++) for (int j = 0; j < DIM; j++) output[i][j] = 0.0;
 
-	outerprod(CL.DIR, CL.DIR, output, DIM);
-	for (int i = 0; i < DIM; i++) output[i][i] -= 1.0/((double)DIM);
-	for (int i = 0; i < DIM; i++) for (int j = 0; j < DIM; j++) output[i][j] *= CL.S;
+	//using personal outer product here because of issues with casting 2D arrays
+	for( int i=0; i<DIM; i++ ) for( int j=0; j<DIM; j++ ) output[i][j] = CL.DIR[i]*CL.DIR[j];
+	for (int i = 0; i < DIM; i++) output[i][i] -= 1.0/((double)DIM); //subtract I term
+	for (int i = 0; i < DIM; i++) for (int j = 0; j < DIM; j++) output[i][j] *= CL.S; // scale with order parameter
 }
