@@ -17,6 +17,9 @@ xyzSize=zeros( 3,dtype=int )
 print( "Arguments:" )
 for arg in sys.argv:
 	print( "\t" + arg )
+if(len(sys.argv) != 15): #check for correct number of arguments to be idiot proof
+	print("Error: This script expects 14 arguments.\nTerminating\n")
+	quit()
 directorData = sys.argv[1]		# Name of the field data
 topoData = sys.argv[2]			# Name of the topo data
 xyzSize[0] = int(sys.argv[3])	# System size
@@ -28,8 +31,9 @@ qx = int(sys.argv[8])		# Only show every qx arrow in x
 qy = int(sys.argv[9])		# Only show every qy arrow in y
 avdim = sys.argv[10]			# Dimension to average over
 c = float(sys.argv[11])		#Length of director lines approx 0.5
-myAspect=sys.argv[12]		#'auto' - reshapes into square graph or 'equal' keeps whatever aspect ratio the true values
-keepFrames=int(sys.argv[13])	#0=don't keep (delete) frames; 1=keep frames
+c1 = float(sys.argv[12])	#Length of nematic pointer lines, should be about 2.5* the director line length
+myAspect=sys.argv[13]		#'auto' - reshapes into square graph or 'equal' keeps whatever aspect ratio the true values
+keepFrames=int(sys.argv[14])	#0=don't keep (delete) frames; 1=keep frames
 
 ###########################################################
 ### Format and style
@@ -79,6 +83,7 @@ XY = zeros(shape=(2,xyzSize[d1],xyzSize[d2]),dtype=float)
 S = zeros(shape=(xyzSize[0],xyzSize[1],xyzSize[2]),dtype=float)
 AVS = zeros(shape=(xyzSize[d1],xyzSize[d2]),dtype=float)
 CHARGE = zeros(shape=(xyzSize[d1],xyzSize[d2]),dtype=float)
+ANGLE = zeros(shape=(xyzSize[d1],xyzSize[d2]),dtype=float)
 
 # Figure
 fig1 = plt.figure(1)
@@ -140,8 +145,9 @@ while datainfile:
 			S[int(Qx)][int(Qy)][int(Qz)] = float(s)
 
 			#topo field
-			t,Qx,Qy,Qz,C = topoLine.split("\t", 5)
+			t,Qx,Qy,Qz,C,angle = topoLine.split("\t", 6)
 			CHARGE[int(Qx)][int(Qy)] = float(C)
+			ANGLE[int(Qx)][int(Qy)] = float(angle)
 
 	if i==xyzSize[0]*xyzSize[1]*xyzSize[2]:
 		j=j+1
@@ -221,7 +227,12 @@ while datainfile:
 			for x in range(xyzSize[d1]):
 				for y in range(xyzSize[d2]):
 					if( x%qx==0 and y%qy==0 ):
+						#plot the field data
 						plot( [ XY[0][x][y]-c*MEAN[d1][x][y],XY[0][x][y]+c*MEAN[d1][x][y] ],[ XY[1][x][y]-c*MEAN[d2][x][y],XY[1][x][y]+c*MEAN[d2][x][y] ],color=myMap(CHARGE[x][y]+0.5,1),linewidth=myLW )
+
+						#now plot the angle of any defects, if they exist:
+						if abs(CHARGE[x][y]) > 1.0e-6:
+							plt.arrow(XY[0][x][y], XY[1][x][y], c1*math.cos(ANGLE[x][y]), c1*math.sin(ANGLE[x][y]), color='k', head_width=c1*0.25, head_length=c1*0.25)
 			xlabel(r'$%s$'%labX, fontsize = FS)
 			ylabel(r'$%s$'%labY, fontsize = FS)
 			plt.axis(xmax=xyzSize[d1], xmin=0, ymax=xyzSize[d2], ymin=0)
