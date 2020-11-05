@@ -1976,14 +1976,13 @@ double topoAngleLocal( cell ***CL, int x, int y, int z, double charge){
 		//compute necessary partials of this NEIGHBOURING cell
 		//we need partials in x and y of Q_{xx} and Q_{xy}, so compute them using finite central diff
 		//first, get the necessary Q tensors
-		printf("%d, %d, %d\n", i, j, z);
-		double QTop[DIM][DIM]; 
+		double QTop[_2D][_2D]; 
 		computeQ(CL[i][j+1][z], QTop);
-		double QBot[DIM][DIM]; 
+		double QBot[_2D][_2D]; 
 		computeQ(CL[i][j-1][z], QBot);
-		double QLeft[DIM][DIM]; 
+		double QLeft[_2D][_2D]; 
 		computeQ(CL[i-1][j][z], QLeft);
-		double QRight[DIM][DIM]; 
+		double QRight[_2D][_2D]; 
 		computeQ(CL[i+1][j][z], QRight);
 
 		//now compute derivatives of format (partial axis) Q (Q element)
@@ -2004,7 +2003,8 @@ double topoAngleLocal( cell ***CL, int x, int y, int z, double charge){
 	return angle;
 }
 
-void computeQ(cell CL, double output[][3]){
+//FIXME: only works for 2D for now!!!
+void computeQ(cell CL, double output[_2D][_2D]){
 	// set up the Q tensor object we plan to return
 	for (int i = 0; i < DIM; i++) for (int j = 0; j < DIM; j++) output[i][j] = 0.0;
 

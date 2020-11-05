@@ -36,7 +36,7 @@ void velGradD2Q9( cell ***CL );
 double topoChargeLocal( cell ***CL, int i, int j, int k);
 double topoAngleLocal( cell ***CL, int i, int j, int k, double charge);
 double topoSmallestAngle( double u[], double v[]);
-void computeQ(cell CL, double output[][3]);
+void computeQ(cell CL, double output[_2D][_2D]);
 
 void larsonRotRate(double dudt[],double w[],double u[],double E[_3D][_3D],double tumbleParam);
 void brielsRotRate(double dudt[],double w[],double u[],double E[_3D][_3D]);

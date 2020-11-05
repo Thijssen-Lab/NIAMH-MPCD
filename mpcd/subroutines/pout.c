@@ -1358,6 +1358,7 @@ void topochargeout( FILE *fout,int t,cell ***CL ) {
 	/*
 	 Print topological charge data to file
 	 */
+	//FIXME: only designed to work for 2D!
 	int i,j,k;
 
 	double topoC[XYZ[0]][XYZ[1]]; //init topo charge array
