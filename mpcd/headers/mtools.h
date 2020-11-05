@@ -34,7 +34,7 @@ double absAngle( double v1[], double v2[], int dimension );
 double signedAngle( double v1[], double v2[], int dimension );
 
 // Tensors
-void outerprod( double x[], double y[], double result[_2D][_2D],int dimension );
+void outerprod( double x[], double y[], double result[][3],int dimension );
 int levicivita( int i, int j, int k );
 double det2x2( double m[2][2] );
 double det3x3( double m[3][3] );

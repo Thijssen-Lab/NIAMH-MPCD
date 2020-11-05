@@ -93,11 +93,10 @@ void crossprod( double x[3], double y[3], double result[3] ) {
 				result[i] += ((double) eps) * x[j] * y[k];
 	}
 }
-void outerprod( double x[], double y[], double result[_2D][_2D],int dimension ) {
+void outerprod2( double x[], double y[], double result[][_3D],int dimension ) {
 /*
    Finds the outer product of two vectors
 */
-	//FIXME: only works for 2D data!
 	int i,j;
 	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) result[i][j] = 0.;
 	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) result[i][j] = x[i]*y[j];
