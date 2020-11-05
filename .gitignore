@@ -9,8 +9,12 @@
 *.inp
 *.dat
 
+#ignore files used for testing in the ./Runs/ folder
+Runs/*
+
 #ignore OS file system bits
 *.DS_Store
 
 #ignore IDE bits
 .vscode/*
+Runs/2Dcharge_animation.mp4
