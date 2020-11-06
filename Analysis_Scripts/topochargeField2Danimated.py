@@ -31,7 +31,7 @@ qx = int(sys.argv[8])		# Only show every qx arrow in x
 qy = int(sys.argv[9])		# Only show every qy arrow in y
 avdim = sys.argv[10]			# Dimension to average over
 c = float(sys.argv[11])		#Length of director lines approx 0.5
-c1 = float(sys.argv[12])	#Length of nematic pointer lines, should be about 2.5* the director line length
+c1 = float(sys.argv[12])	#Length of nematic pointer lines, should be about 3x the director line length
 myAspect=sys.argv[13]		#'auto' - reshapes into square graph or 'equal' keeps whatever aspect ratio the true values
 keepFrames=int(sys.argv[14])	#0=don't keep (delete) frames; 1=keep frames
 
@@ -230,9 +230,15 @@ while datainfile:
 						#plot the field data
 						plot( [ XY[0][x][y]-c*MEAN[d1][x][y],XY[0][x][y]+c*MEAN[d1][x][y] ],[ XY[1][x][y]-c*MEAN[d2][x][y],XY[1][x][y]+c*MEAN[d2][x][y] ],color=myMap(CHARGE[x][y]+0.5,1),linewidth=myLW )
 
-						#now plot the angle of any defects, if they exist:
-						if abs(CHARGE[x][y]) > 1.0e-6:
-							plt.arrow(XY[0][x][y], XY[1][x][y], c1*math.cos(ANGLE[x][y]), c1*math.sin(ANGLE[x][y]), color='k', head_width=c1*0.25, head_length=c1*0.25)
+						#plot +1/2 defects as lines 
+						if (CHARGE[x][y] > 1.0e-6):
+							plt.arrow(XY[0][x][y], XY[1][x][y], 0.5*c1*math.cos(ANGLE[x][y]), 0.5*c1*math.sin(ANGLE[x][y]), color='k')
+							plt.arrow(XY[0][x][y], XY[1][x][y], -0.5*c1*math.cos(ANGLE[x][y]), -0.5*c1*math.sin(ANGLE[x][y]), color='k')
+						#plot -1/2 defects with three lines (per symmetry)
+						if (CHARGE[x][y] < -1.0e-6):
+							plt.arrow(XY[0][x][y], XY[1][x][y], 0.5*c1*math.cos(ANGLE[x][y]), 0.5*c1*math.sin(ANGLE[x][y]), color='k')
+							plt.arrow(XY[0][x][y], XY[1][x][y], 0.5*c1*math.cos(ANGLE[x][y] + math.pi*2/3), 0.5*c1*math.sin(ANGLE[x][y] + math.pi*2/3), color='k')
+							plt.arrow(XY[0][x][y], XY[1][x][y], 0.5*c1*math.cos(ANGLE[x][y] - math.pi*2/3), 0.5*c1*math.sin(ANGLE[x][y] - math.pi*2/3), color='k')
 			xlabel(r'$%s$'%labX, fontsize = FS)
 			ylabel(r'$%s$'%labY, fontsize = FS)
 			plt.axis(xmax=xyzSize[d1], xmin=0, ymax=xyzSize[d2], ymin=0)
