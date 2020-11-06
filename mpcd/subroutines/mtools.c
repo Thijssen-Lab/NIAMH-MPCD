@@ -93,7 +93,7 @@ void crossprod( double x[3], double y[3], double result[3] ) {
 				result[i] += ((double) eps) * x[j] * y[k];
 	}
 }
-void outerprod2( double x[], double y[], double result[][_3D],int dimension ) {
+void outerprod( double x[], double y[], double result[][_3D],int dimension ) {
 /*
    Finds the outer product of two vectors
 */
