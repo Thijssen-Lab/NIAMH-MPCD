@@ -513,7 +513,7 @@ void enstrophyspectheader( FILE *fout ) {
 }
 void defectheader( FILE *fout ) {
 /* Simple header for output columns */
-	fprintf( fout,"t\t QX\t\t QY\t\t QZ\t\t charge\n" );
+	fprintf( fout,"t\t QX\t\t QY\t\t QZ\t\t charge\t\t angle\n" );
 }
 void multiphaseheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -1358,19 +1358,28 @@ void topochargeout( FILE *fout,int t,cell ***CL ) {
 	/*
 	 Print topological charge data to file
 	 */
+	//FIXME: only designed to work for 2D!
 	int i,j,k;
 
 	double topoC[XYZ[0]][XYZ[1]]; //init topo charge array
 	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) topoC[i][j] = .0;
+	double topoAngle[XYZ[0]][XYZ[1]]; //init topo angle array
+	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) topoAngle[i][j] = .0;
+
 	//loop through non-CB boundary cells and calculate topo charge
 	for( i=1; i<XYZ[0]-1; i++ ) for( j=1; j<XYZ[1]-1; j++ ) topoC[i][j] = topoChargeLocal(CL, i, j, 0); 
-
+	//loop through non-CB boundary cells and calculate topo angle
+	for( i=2; i<XYZ[0]-2; i++ ) for( j=2; j<XYZ[1]-2; j++ ){
+		///FIXME: Too lazy to handle derivatives properly at the boundaries, so we just ignoring another layer there instead. Oopsies. Same goes for the loop above. 
+		if (fabs(topoC[i][j]) > TOL) topoAngle[i][j] = topoAngleLocal(CL, i, j, 0, topoC[i][j]); 
+	} 
+	
 	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) for( k=0; k<XYZ[2]; k++ ) {
 		//Output
 		fprintf( fout,"%7i\t",t );
 		fprintf( fout,"%5d\t%5d\t%5d\t",i,j,k );
-		if( CL[i][j][k].POP == 0 ) fprintf( fout, "%06.3f\n",0.0);
-		else fprintf( fout, "%06.3f\n",topoC[i][j]);
+		if( CL[i][j][k].POP == 0 ) fprintf( fout, "%06.3f\t%12.5e\n", 0.0, 0.0);
+		else fprintf( fout, "%06.3f\t%12.5e\n",topoC[i][j], topoAngle[i][j]);
 	}
 	#ifdef FFLSH
 		fflush(fout);

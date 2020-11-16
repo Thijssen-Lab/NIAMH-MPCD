@@ -98,8 +98,8 @@ void outerprod( double x[], double y[], double result[][_3D],int dimension ) {
    Finds the outer product of two vectors
 */
 	int i,j;
-	for( i=0; i<_3D; i++ ) for( j=0; j<_3D; j++ ) result[i][j] = 0.;
-	for( i=0; i<_3D; i++ ) for( j=0; j<_3D; j++ ) result[i][j] = x[i]*y[j];
+	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) result[i][j] = 0.;
+	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) result[i][j] = x[i]*y[j];
 }
 double length( double x[],int dimension ) {
 /*

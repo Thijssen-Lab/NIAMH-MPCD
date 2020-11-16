@@ -1959,3 +1959,56 @@ double topoSmallestAngle( double u[], double v[]){
 
 	return sign*atan2(fabs(det), dot);
 }
+
+double topoAngleLocal( cell ***CL, int x, int y, int z, double charge){
+	//A function to compute the angle of a defect, meant to be paired with the above
+	// Equation essentially taken from: https://pubs.rsc.org/en/content/articlelanding/2016/sm/c6sm01146b/
+	
+	//init summing vars
+	double sumTop = 0.0; 
+	double sumBot = 0.0;
+	// prepare sign based on charge
+	int sign = 1;
+	if (charge < 0) sign = -1;
+
+	//loop through neighbouring cells to compute average 
+	for (int i = x-1; i < x+2; i++) for (int j = y-1; j < y+2; j++) if(!( (i==x) && (j==y))){
+		//compute necessary partials of this NEIGHBOURING cell
+		//we need partials in x and y of Q_{xx} and Q_{xy}, so compute them using finite central diff
+		//first, get the necessary Q tensors
+		double QTop[_2D][_2D]; 
+		computeQ(CL[i][j+1][z], QTop);
+		double QBot[_2D][_2D]; 
+		computeQ(CL[i][j-1][z], QBot);
+		double QLeft[_2D][_2D]; 
+		computeQ(CL[i-1][j][z], QLeft);
+		double QRight[_2D][_2D]; 
+		computeQ(CL[i+1][j][z], QRight);
+
+		//now compute derivatives of format (partial axis) Q (Q element)
+		double xQxx = centredDeriv(QLeft[0][0], QRight[0][0], 1.0);
+		double xQxy = centredDeriv(QLeft[1][0], QRight[1][0], 1.0);
+		double yQxx = centredDeriv(QBot[0][0], QTop[0][0], 1.0);
+		double yQxy = centredDeriv(QBot[1][0], QTop[1][0], 1.0);
+		/// TODO: Computing these is a nightmare, maybe make a seperate function that computes \nabla\cdot Q and returns the result? Would need to replace the above after
+
+		sumTop += sign*xQxy - yQxx; // compute top here
+		sumBot += xQxx + sign*yQxy; // compute bot here
+
+		///TODO: test computeQ() against tensOrderParam() above a _high_ tolerance
+	}
+
+	double angle = (charge / (1.0 - charge)) * atan2(sumTop, sumBot); //compute angle per the equation
+	return angle;
+}
+
+//FIXME: only works for 2D for now!!!
+void computeQ(cell CL, double output[_2D][_2D]){
+	// set up the Q tensor object we plan to return
+	for (int i = 0; i < DIM; i++) for (int j = 0; j < DIM; j++) output[i][j] = 0.0;
+
+	//using personal outer product here because of issues with casting 2D arrays
+	for( int i=0; i<DIM; i++ ) for( int j=0; j<DIM; j++ ) output[i][j] = CL.DIR[i]*CL.DIR[j];
+	for (int i = 0; i < DIM; i++) output[i][i] -= 1.0/((double)DIM); //subtract I term
+	for (int i = 0; i < DIM; i++) for (int j = 0; j < DIM; j++) output[i][j] *= CL.S; // scale with order parameter
+}
