@@ -1972,7 +1972,8 @@ double topoAngleLocal( cell ***CL, int x, int y, int z, double charge){
 	if (charge < 0) sign = -1;
 
 	//loop through neighbouring cells to compute average 
-	for (int i = x-1; i < x+2; i++) for (int j = y-1; j < y+2; j++) if(!( (i==x) && (j==y))){
+	int i, j = 0;
+	for( i = x-1; i < x+2; i++) for( j = y-1; j < y+2; j++) if(!( (i==x) && (j==y))){
 		//compute necessary partials of this NEIGHBOURING cell
 		//we need partials in x and y of Q_{xx} and Q_{xy}, so compute them using finite central diff
 		//first, get the necessary Q tensors
@@ -2005,10 +2006,11 @@ double topoAngleLocal( cell ***CL, int x, int y, int z, double charge){
 //FIXME: only works for 2D for now!!!
 void computeQ(cell CL, double output[_2D][_2D]){
 	// set up the Q tensor object we plan to return
-	for (int i = 0; i < DIM; i++) for (int j = 0; j < DIM; j++) output[i][j] = 0.0;
+	int i, j = 0;
+	for( i = 0; i < DIM; i++) for( j = 0; j < DIM; j++) output[i][j] = 0.0;
 
 	//using personal outer product here because of issues with casting 2D arrays
-	for( int i=0; i<DIM; i++ ) for( int j=0; j<DIM; j++ ) output[i][j] = CL.DIR[i]*CL.DIR[j];
-	for (int i = 0; i < DIM; i++) output[i][i] -= 1.0/((double)DIM); //subtract I term
-	for (int i = 0; i < DIM; i++) for (int j = 0; j < DIM; j++) output[i][j] *= CL.S; // scale with order parameter
+	for( i=0; i<DIM; i++ ) for( j=0; j<DIM; j++ ) output[i][j] = CL.DIR[i]*CL.DIR[j];
+	for( i = 0; i < DIM; i++) output[i][i] -= 1.0/((double)DIM); //subtract I term
+	for( i = 0; i < DIM; i++) for( j = 0; j < DIM; j++) output[i][j] *= CL.S; // scale with order parameter
 }
