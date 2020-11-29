@@ -977,7 +977,7 @@ void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
 /*
     This subroutine applies the BC transformation to orientation.
 */
-	double UN[_3D],UT[_3D],dU[_3D],U0[_3D],Uout[_3D];
+	double UN[_3D],UT[_3D],dU[_3D],U0[_3D];
 	double torque[_3D],r[_3D];			//Torque on MPCD particle --- Not REALLY torque ( angular impulse but time step falls out)
 	int i;
 
@@ -987,29 +987,28 @@ void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
 		UN[i]=0.0;
 		UT[i]=0.0;
 		r[i]=0.0;
-		Uout[i]=0.0;
 	}
 
-	//Make U point out of BC (Uout)
+	//Make U point out of BC
 	if(dotprod(pp->U,n,DIM)>=0) {
-		for(i=0; i<DIM; i++){Uout[i]=pp->U[i];}
+		for(i=0; i<DIM; i++){pp->U[i]*=1.;}
 	}
 	else{
-		for(i=0; i<DIM; i++){Uout[i]=-1.*pp->U[i];}
+		for(i=0; i<DIM; i++){pp->U[i]*=-1.;}
 	}
 
 	//Calculate the new orientation
-	proj( Uout,n,UN,DIM );		//Calculate normal component of the orientation
-	tang( Uout,UN,UT,DIM );	 //Calculate tangential component of orientation
+	proj( pp->U,n,UN,DIM );		//Calculate normal component of the orientation
+	tang( pp->U,UN,UT,DIM );	//Calculate tangential component of orientation
 	//Save the original orientation if the BC can move
 	if( WALL->DSPLC ) for( i=0; i<DIM; i++ ) {
-		U0[i] = Uout[i];
+		U0[i] = pp->U[i];
 	}
 
 	//Transform the orientation
 	if( feq(WALL->MUN,0.0) && feq(WALL->MUT,0.0) ) {
 		//Addition in cartesian coordinates
-		for( i=0; i<DIM; i++ ) Uout[i] = WALL->DUxyz[i];
+		for( i=0; i<DIM; i++ ) pp->U[i] = WALL->DUxyz[i];
 	}
 	else {
 		//Multiplication wrt surface normal
@@ -1018,18 +1017,18 @@ void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
 			UT[i] *= WALL->MUT;
 		}
 		//Combine normal and tangential components
-		for( i=0; i<DIM; i++ ) Uout[i] = UN[i] + UT[i];
+		for( i=0; i<DIM; i++ ) pp->U[i] = UN[i] + UT[i];
 		//For measuring K_bend in a pure bend geometry, we want to surpress the z-hat orientation
-		Uout[0] *= WALL->MUxyz[0];
-		if( DIM>=_2D ) Uout[1] *= WALL->MUxyz[1];
-		if( DIM>=_3D ) Uout[2] *= WALL->MUxyz[2];
+		pp->U[0] *= WALL->MUxyz[0];
+		if( DIM>=_2D ) pp->U[1] *= WALL->MUxyz[1];
+		if( DIM>=_3D ) pp->U[2] *= WALL->MUxyz[2];
 	}
 	//Normalize
-	norm(Uout,DIM);
+	norm(pp->U,DIM);
 	#ifdef DBG
 		if( DBUG == DBGBCORI ) {
 			printf( "\tNew u=" );
-			pvec(Uout,DIM);
+			pvec(pp->U,DIM);
 		}
 	#endif
 
@@ -1041,10 +1040,10 @@ void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
 			torque[i]=0.0;
 		}
 		//Change in orientation
-		for( i=0; i<DIM; i++ ) dU[i] = Uout[i] - U0[i];
+		for( i=0; i<DIM; i++ ) dU[i] = pp->U[i] - U0[i];
 		//Torque (really angular impulse) on the MPCD PARTICLE
 		//Calculate the torque on the MPCD particle (opposite to surface of the wall) --- to be a real torque should divide by dt but will just multiple by dt later so don't bother
-		crossprod( Uout,dU,torque );
+		crossprod( pp->U,dU,torque );
 		for( i=0; i<_3D; i++ ) torque[i] *= ( (SP+pp->SPID)->RFC );
 		//Vector between collision point and CM
 		for( i=0; i<DIM; i++ ) r[i] = -WALL->Q[i] + pp->Q[i]; //edit 14/10 changed to centre of colloid to wall.
@@ -1055,9 +1054,10 @@ void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
 			}
 		#endif
 		//Apply this torque to the BC
-		torqueLCBC( WALL, n, U0, torque, (SP+pp->SPID)->LEN, r );
+		torqueLCBC( WALL, n, U0, torque, (SP+pp->SPID)->LEN, r, pp); //is pp right here?
 	}
 }
+
 
 void torqueLCBC( bc *WALL,double n[], double U0[], double torqueMPC[],double rodlength,  double posColl[] ) {
 	/*
