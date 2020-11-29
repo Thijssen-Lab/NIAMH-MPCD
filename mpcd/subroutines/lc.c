@@ -1054,7 +1054,7 @@ void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
 			}
 		#endif
 		//Apply this torque to the BC
-		torqueLCBC( WALL, n, U0, torque, (SP+pp->SPID)->LEN, r, pp); //is pp right here?
+		torqueLCBC( WALL, n, U0, torque, (SP+pp->SPID)->LEN, r);
 	}
 }
 
