@@ -977,7 +977,7 @@ void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
 /*
     This subroutine applies the BC transformation to orientation.
 */
-	double UN[_3D],UT[_3D],dU[_3D],U0[_3D];
+	double UN[_3D],UT[_3D],U0[_3D];
 	double angleAnch;
 	double torque[_3D],r[_3D];			//Torque on MPCD particle --- Not REALLY torque ( angular impulse but time step falls out)
 	int i;
@@ -1137,11 +1137,7 @@ void torqueLCBC( bc *WALL,double n[], double U0[], double torqueMPC[],double rod
 		MPC_force[i] = 2.*magT*f_hat[i]/rodlength;
 	}
 	
-	// Find normal and tangential components of the force given to the 
-	
-	
-	
-	loid by the virtual rod (mirror image of MPC particle about surface normal)
+	// Find normal and tangential components of the force given to the colloid by the virtual rod (mirror of MPC particle about surface normal)
 	// Force magnitudes
 	forceN=dotprod(MPC_force, n, _3D);
 	forceT=dotprod(MPC_force, t_hat, _3D);
