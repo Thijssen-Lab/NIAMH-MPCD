@@ -107,7 +107,8 @@ void crosstime( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,double t_st
 		*tc_neg = *tc_pos;
 	}
 	// Ellipsoid
-	else if( feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0) ) {
+	//else if( feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0) ) {
+	else if( feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0)) {
 		for( i=0; i<DIM; i++ ) {
 			a += WALL.A[i]*WALL.A[i]*p.V[i]*p.V[i];
 			b += WALL.A[i]*WALL.A[i]*p.V[i]*(p.Q[i]-WALL.Q[i]);
@@ -145,7 +146,8 @@ void crosstimeReverse( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,doub
 		*tc_neg = *tc_pos;
 	}
 	// Ellipsoid
-	else if( feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0) ) {
+	//else if( feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0) ) {
+	else if( feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) ) {
 		for( i=0; i<DIM; i++ ) {
 			a += WALL.A[i]*WALL.A[i]*(-p.V[i])*(-p.V[i]);
 			b += WALL.A[i]*WALL.A[i]*(-p.V[i])*(p.Q[i]-WALL.Q[i]);
@@ -179,6 +181,7 @@ double calcW_PLANE( bc WALL,particleMPC P ) {
 	return W;
 }
 double secant_time( particleMPC p,bc WALL,double t_step ) {
+	// This doesn't seem to work - or not in 2D
 /*
      Numerically determine the crossing times (tc_pos and tc_neg);
 */
@@ -226,7 +229,8 @@ void shiftBC( double *shift,bc *WALL,particleMPC *pp ) {
 	// Zero
 	for( k=0; k<DIM; k++ ) shift[k] = 0.0;
 	//Don't shift planar surfaces
-	if( fneq(WALL->P[0],1.0) && fneq(WALL->P[1],1.0) && fneq(WALL->P[2],1.0) ) {
+	//if( fneq(WALL->P[0],1.0) && fneq(WALL->P[1],1.0) && fneq(WALL->P[2],1.0) ) {
+	if( fneq(WALL->P[0],1.0) && fneq(WALL->P[1],1.0) ) {
 		for( k=0; k<DIM; k++ ) {
 			// Determine if should shift
 			if( pp->Q[k] - WALL->Q[k] >= 0.5*(double)XYZ[k] ) shift[k] = (double)XYZ[k];
@@ -690,7 +694,7 @@ void vel_trans( bc *WALL,double VN[],double VT[],double norm[] ) {
 		VT[i] += WALL->DVT;
 	}
 }
-double chooseT( double tstep,double tp,double tn,int p,int flag ) {
+double chooseT( double tstep,double tp,double tn,int p,int *flag ) {
 /*
     This routine choose which of the
     calculated cross times is the proper
@@ -699,14 +703,13 @@ double chooseT( double tstep,double tp,double tn,int p,int flag ) {
 	double tc=tstep;		//chosen time
 	double zero = -TOL;
 	double step = tstep+TOL;
-	flag=0;
 
 	if( tp>step && tn>step ) {
-		flag = 1;
+		*flag = 1;
 		tc=0.;
 	}
 	else if( tp<zero && tn<zero ){
-		flag = 1;
+		*flag = 1;
 		tc=0.;
 	}
 	else if( tp<zero ) tc = tn;
@@ -716,11 +719,11 @@ double chooseT( double tstep,double tp,double tn,int p,int flag ) {
 
 	//Check the chosen time
 	if( tc<zero ) {
-		flag = 1;
+		*flag = 1;
 		tc=0.;
 	}
 	if( tc>step ) {
-		flag = 1;
+		*flag = 1;
 		tc=0.;
 	}
 	return tc;
@@ -1077,7 +1080,7 @@ void chooseBC( bc WALL[],int currentP,particleMPC *pp,double *t_minColl,double *
 				// 		printf( "t1=%e, t2=%e\n",t1,t2 );
 				// 	}
 				// #endif
-				tc = chooseT( t_left,t1,t2,currentP,flag );
+				tc = chooseT( t_left,t1,t2,currentP,&flag );
 				if( flag ) {
 					printf( "Error: Cross time unacceptable: %lf.\n",tc );
 					exit( 1 );
@@ -1235,6 +1238,8 @@ void MPC_BCcollision( particleMPC *pp,int currentP,bc WALL[],spec *pSP,double KB
 	#endif
 }
 double *normal( double *n,bc WALL,double *point,int dimension ) {
+	//2D!?
+
 /*
    Find the normal to the surface at this point (particleMPC is
    presently ON surface). We take the gradient of
