@@ -168,22 +168,37 @@ void sumFLOW( cell ***CL ) {
 	}
 }
 
-void ghostPart( cell ***CL,bc WALL[],double KBT,int LC ) {
+void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 /*
    This routine adds the effect of phantom particleMPCs to the CM
    This would be oodles better if each BC object had a list of cells
    to worry about and so I wouldn't have to go over every cell all
    the time
 */
-	int a,b,c,d,i,j;
+	int a,b,c,d,i,j,k,l;
 	int flagW,numCorners = (int) pow(2,DIM);
 	double R[DIM];
-	double invN;									//Inverse number difference
-	particleMPC tp[numCorners];		//Temporary MPC particles for all corners of a square cell
-	double W[numCorners];					//W for each of the corners
-// 	double n[_3D] = {0.,0.,0.};	//Normal to the surface
+	double invN;									// Inverse number difference
+	particleMPC tp[numCorners];		// Temporary MPC particles for all corners of a square cell
+	double W[numCorners];					// W for each of the corners
+	double **S, eigval[_3D];
+	double n[_3D] = {0.,0.,0.};		// Normal to the surface
+	particleMPC *ptMPC;						// Temporary pointer to MPC particle
+	int flagLC, flagS;						// Flag definitions under cell loop
+	double tempU[_3D];						// Temporary orientation for particles at a flat wall
 
+	// Allocate memory for S
+	S = malloc ( DIM * sizeof( *S ) );
+	for( i=0; i<DIM; i++ ) S[i] = malloc ( DIM * sizeof( *S[i] ) );
+	for( i=0; i<DIM; i++ ) for( d=0; d<DIM; d++ ) S[i][d] = 0.0;
+
+	// Loop over cells
 	for( a=0; a<=XYZ[0]; a++ ) for( b=0; b<=XYZ[1]; b++ ) for( c=0; c<=XYZ[2];c ++ ) {
+		for( i=0; i<DIM; i++ ) tempU[i]=0.0;
+		flagLC = 1; // so the wall is only used once (not twice as 2 corners can intersect)
+		flagW = 0; // is the cell cut by a wall 0=No 1=Yes
+		flagS = 0; // has S already been calculated? No=0 Yes=1
+
 		//Position of corners of the cell
 		//Origin
 		tp[0].Q[0] = (double) a;
@@ -218,26 +233,88 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC ) {
 			tp[7].Q[2] = (double) c+1.0;
 		}
 
+		// Loop over boundaries
 		for( i=0; i<NBC; i++ ) if( WALL[i].PHANTOM ) {
-			// If there are particles in the cell but less than average then calculate
-			if( CL[a][b][c].POP<nDNST && CL[a][b][c].POP>0 ) {
-				//Determine if any corners are within the BC
-				flagW = 0;
-				for( j=0; j<numCorners; j++ ) {
-					W[j] = calcW(WALL[i],tp[j]);
-					if( W[j]<0.0 ) flagW = 1;
-				}
-				if( flagW ) {
-					// Adjust the centre of mass velocity
-					// Do a single effective phantom particle
-					//Calculate the inverse of the mass difference
-					invN = 1.0/(nDNST-(double)CL[a][b][c].POP);
-					for( d=0; d<DIM; d++ ) {
-						//Generate random ghost velocity
-						R[d] = genrand_gaussMB( KBT,invN );
-						CL[a][b][c].VCM[d] += R[d];
-						CL[a][b][c].VCM[d] /= nDNST;
+
+			// Determine if any corners are within the BC
+			for ( j=0; j<numCorners; j++ ){
+				W[j] = calcW(WALL[i],tp[j]);
+				if ( W[j]<0.0) flagW = 1;
+			}
+
+			// MPC PARTICLE ORIENTATION
+			if (flagW == 1 && LC!=ISOF){
+				if (flagLC == 1){
+					flagLC = 0; // so loop only once for the cell
+
+					// loop over MPC particles:
+					if (CL[a][b][c].pp != NULL){
+						ptMPC = CL[a][b][c].pp;
+						while(ptMPC != NULL){
+							normal(n, WALL[i], ptMPC->Q, DIM);
+							norm(n, DIM);
+							oriBC(ptMPC, SP, &WALL[i], n); // reorient particles
+							for( l=0; l<DIM; l++ ) tempU[l]=ptMPC->U[l]; // only need to manually set director (see below)
+							ptMPC = ptMPC->next;
+						}
+					} // end loop over particles
+
+					// MANUALLY SETTING SCALAR ORDER PARAMETER AND DIRECTOR
+					// the scalar order parameter and director calculation messes up if all particles are aligned
+					// this is manually setting S and cell director for planar walls
+					// note when MUN and MUT both equal 1.0, S != 1, all is ok
+					if (feq(WALL[i].P[0],1.0) && feq(WALL[i].P[1],1.0) && feq(WALL[i].P[2],1.0)){
+						if ((feq(WALL[i].MUN,1.0) && feq(WALL[i].MUT,0.0)) || (feq(WALL[i].MUN,0.0) && feq(WALL[i].MUT,1.0))){
+							CL[a][b][c].S = 1.0;
+							for( k=0; k<DIM; k++ ) CL[a][b][c].DIR[k] = tempU[k];
+							norm(CL[a][b][c].DIR, DIM);
+							flagS = 1; // S has been calculated so don't compute again below
+						}
 					}
+				}
+			}
+		} // end loop on walls
+
+		// SCALAR ORDER PARAMETER AND DIRECTOR (same calculations as localPROP)
+		if (CL[a][b][c].POP > 1 && LC!=ISOF && flagS == 0 && flagW == 1) {
+			// Tensor order parameter
+			tensOrderParam( &CL[a][b][c],S,LC );
+
+			// Scalar order parameter
+			solveEigensystem( S,DIM,eigval );
+			if(DIM==_3D) CL[a][b][c].S = -1.*(eigval[1]+eigval[2]);
+			else CL[a][b][c].S=eigval[0];
+
+			if( CL[a][b][c].S<1./(1.-DIM) ){
+				printf("Warning: Local scalar order parameter < 1/(1-DIM)\n");
+				printf("Cell [%d,%d,%d]\n",a,b,c);
+				printf("Eigenvalues=");
+				pvec(eigval,DIM);
+				printf("Eigenvectors=");
+				for( d=0; d<DIM; d++ ) pvec(S[d],DIM);
+			}
+
+			// Cell director (eigenvector corresponding to largest eigenvalue (1st element))
+			for( i=0; i<DIM; i++ ) CL[a][b][c].DIR[i] = S[0][i];
+			if( CL[a][b][c].S>1.0 ) CL[a][b][c].S=1.0;
+		}
+
+		// VELOCITY (for no slip bc)
+		if (flagW == 1){
+			if( CL[a][b][c].POP<nDNST && CL[a][b][c].POP>0 ) {
+				invN = 1.0/(nDNST-(double)CL[a][b][c].POP);
+				for( d=0; d<DIM; d++ ) {
+					R[d] = genrand_gaussMB( KBT,invN );
+					CL[a][b][c].VCM[d] += R[d];
+					CL[a][b][c].VCM[d] /= nDNST;
+				}
+			}
+		}
+	} // end loop over cells
+	for( i=0; i<DIM; i++ ) free( S[i] );
+	free( S );
+} // end routine
+
 					// // Same as above but doing EACH phantom particle separately
 					// for( d=0; d<DIM; d++ ) CL[a][b][c].VCM[d] *= (double)CL[a][b][c].POP;
 					// for( j=0; j<(int)(nDNST-(double)CL[a][b][c].POP); j++ ) {
@@ -249,22 +326,6 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC ) {
 					// }
 					// for( d=0; d<DIM; d++ ) CL[a][b][c].VCM[d] /= nDNST;
 
-
-	// 				if( LC!=ISOF ) {
-	// 					//The scalar order parameter and director are assumed to be the wall's value
-	// 					orient( tp.U,0 );
-	// 					//Find normal
-	// 					normal( n,WALL[i],tp.Q,DIM );
-	// 					//Normalize the normal vector
-	// 					norm( n,DIM );
-	// 					//Apply the BC to orientation
-	// 					oriBC( &tp,WALL[i],n );
-	// 				}
-				}
-			}
-		}
-	}
-}
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
@@ -3009,6 +3070,13 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 	if( outFlags.PRESOUT>=OUT && runtime%outFlags.PRESOUT==0 ) outPressure=1;
 	//Zero counters
 	zerocnt( KBTNOW,AVNOW,AVS );
+
+	//Zero impulse on BCs --> moved on 27/01/21
+	for( i=0; i<NBC; i++ ) {
+		zerovec(WALL[i].dV,DIM);
+		zerovec(WALL[i].dL,_3D);
+	}
+
 	/* ****************************************** */
 	/* ************* INTEGRATE MD *************** */
 	/* ****************************************** */
@@ -3098,7 +3166,7 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 	/* ****************************************** */
 	/* *********** ADD GHOST PARTICLES ********** */
 	/* ****************************************** */
-	ghostPart( CL,WALL,in.KBT,in.LC );
+	ghostPart( CL,WALL,in.KBT,in.LC,SP );
 	/* ****************************************** */
 	/* *********LIQUID CRYSTAL COLLISION ******** */
 	/* ****************************************** */
@@ -3231,11 +3299,11 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 	#ifdef DBG
 		if( DBUG >= DBGTITLE ) printf( "Check MPCs Against BCs.\n" );
 	#endif
-	//Zero impulse on BCs
-	for( i=0; i<NBC; i++ ) {
-		zerovec(WALL[i].dV,DIM);
-		zerovec(WALL[i].dL,_3D);
-	}
+	//Zero impulse on BCs --> moved on 27/01/21
+	//for( i=0; i<NBC; i++ ) {
+	//	zerovec(WALL[i].dV,DIM);
+	//	zerovec(WALL[i].dL,_3D);
+	//}
 	//Check each particle
 	bcCNT=0;
 	reCNT=0;
