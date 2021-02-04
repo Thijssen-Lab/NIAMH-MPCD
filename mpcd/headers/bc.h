@@ -36,7 +36,7 @@ void vel_trans( bc *WALL,double VN[],double VT[],double norm[] );
 
 void crosstime( particleMPC p,bc WALL,double *t_pos, double *t_neg,double t_step );
 void crosstimeReverse( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,double t_step );
-double chooseT( double tstep,double tp,double tn,int p,int FLAG );
+double chooseT( double tstep,double tp,double tn,int p,int *flag );
 double secant_time( particleMPC p,bc WALL,double t_step );
 
 // void chooseP( bc WALL,particleMPC *pp,double *time,double *W2,int *chosenP,double t_step,double GRAV[] );
