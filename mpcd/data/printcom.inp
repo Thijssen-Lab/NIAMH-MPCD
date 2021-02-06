@@ -34,6 +34,8 @@
 0	enstrophySpectrum
 0	BinderCumulant
 0	BinderCumulantBinSize
-10	swimmersPos
+0	swimmersPos
+0	swimmersOri
+0 	swimmerRunTumble
 1	Synopsis
 0	Checkpoint

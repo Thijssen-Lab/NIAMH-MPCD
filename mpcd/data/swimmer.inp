@@ -1,13 +1,14 @@
 2	swimmerType
-100	swimmerPop
+0	swimmerPop
 0	posDist
 0	oriDist
 20	headMass
 20	tailMass
 1	headPhi
 1	tailPhi
-2.0	swimmingPropulsionForce
-1.00	dipolarityStrength
+30.0	swimmingPropulsionForce
+1.0	dipolarityStrength
+0.0	swimmingDipoleTorque
 0.1	tumblingShrinkSizeCoef
 0.1	tumblingShrinkSpringCoef
 30.0	dumbbellFENE_k
@@ -18,3 +19,4 @@
 0.0	avTumbleTime
 2	shrinkTime
 1.0	magneticMoment
+0.0	fixedDistFromZWall

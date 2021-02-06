@@ -9,23 +9,28 @@
 #
 # parameter:	randomSeed		= 0
 #
-# parameter:	unitCells	 	= (20,20,20)
+# parameter:	unitCells	 	= (30,30,1)
 # parameter:	lattice		 	= LATT_BULK
 # parameter:	rCut			= CUTOFF_WCA
-# parameter:	sigma_lj		= 0.5
+# parameter:	sigma_lj		= 1.0
 # parameter:	rNebrShell	 	= 0.3
-# parameter:	dt		 	= 0.005
+# parameter:	dt		 	= 0.001
 #
-# parameter:	geometry	 	= GEOM_PLATES
+# parameter:	geometry	 	= GEOM_BULK
 # parameter:	wallThickness		= 1 (in unit cells)
 #
 # parameter:	bjerrum		 	= 0
 # parameter:	lambda_D		= 0
 # parameter:	rCutCoul	 	= 0
-# parameter:	kFene			= 120
-# parameter:	r0Fene			= 0.75
+# parameter:	condenseCriteria		= 0
 #
-# parameter:	overlapMin		= 0.05
+# parameter:	kFene			= 120.0
+# parameter:	r0Fene			= 1.5
+# parameter:	kSqu				= 0.0
+# parameter:	kBend				= 180.0
+# parameter:	kNemMPC			= 10.0
+#
+# parameter:	overlapMin		= 0.1
 # parameter:	overlapMinMonomer	= 0.9
 #
 # parameter:	drRelax			= 0
@@ -37,7 +42,7 @@
 # ----------------------------------------------------------------------------------------------------
 #
 # parameter:	atomType	 	= (TYPE_WALL, 	TYPE_FLUID, 	TYPE_MONOMER)
-# parameter:	atomMass	 	= (3, 			1,				3)
+# parameter:	atomMass	 	= (10, 			1,				10)
 # parameter:	rhoType			= (1.0,			0,			0)
 # parameter:	atomAnchor	 	= (1, 			0,				0)
 # parameter:	atomSpring	 	= (300, 		0,				300)
@@ -59,14 +64,14 @@
 # polymer sets:
 # ----------------------------------------------------------------------------------------------------
 #
-# parameter:	polyLayout		= (LAYOUT_PLATES)
+# parameter:	polyLayout		= (LAYOUT_ROD)
 # parameter:	polyAtomType		= (TYPE_MONOMER)
 # parameter:	polyDensityKind		= (SURFACE)
-# parameter:	polyDensity		= (0.20)
-# parameter:	polySpread		= (0.6)
+# parameter:	polyDensity		= (0.0)
+# parameter:	polySpread		= (0.0)
 # parameter:	monoCharge		= (0)
-# parameter:	polyM			= (0)
-# parameter:	polyN			= (20)
+# parameter:	polyM			= (1)
+# parameter:	polyN			= (10)
 #
 #
 # ---------------------------------------------------------------------------------------------------
@@ -89,7 +94,7 @@
 # ----------------------------------------------------------------------------------------------------
 #
 # parameter:	kT		 	= (0,   1.0, 			1.0)
-# parameter:	groupThermRescale	= (0, 	GROUP_WALL,		GROUP_WALL)
+# parameter:	groupThermRescale	= (0, 	GROUP_FLUID,		GROUP_FLUID)
 # parameter:	stepThermRescale	= (0, 	100, 			100)
 # parameter:	groupThermDPD		= (0,	GROUP_FLUID,	GROUP_FLUID)
 # parameter: 	eta					= (0,   1.5, 			1.5)
@@ -101,9 +106,9 @@
 #
 # parameter:	stepAvg		 	= (0, 	1000, 			1000)
 # parameter:	stepHistCollect 	= (0,	1000, 			1000)
-# parameter:	stepHistPrint 		= (0,	100, 			100)
-# parameter:	stepSceneSlow	 	= (0, 	1000, 			1000000)
-# parameter:	stepSceneFast	 	= (0, 	1000, 			100000)
+# parameter:	stepHistPrint 		= (0,	1000, 			1000)
+# parameter:	stepSceneSlow	 	= (0, 	1000, 			1000)
+# parameter:	stepSceneFast	 	= (0, 	1000, 			1000)
 # parameter:	stepCheckpoint		= (0,   0,				0)
 #
 #
