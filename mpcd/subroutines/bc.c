@@ -108,7 +108,8 @@ void crosstime( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,double t_st
 	}
 	// Ellipsoid
 	//else if( feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0) ) {
-	else if( feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0)) {
+	else if ((DIM == 2 && feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0)) || (DIM > 2 && feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0))){
+	//else if( feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0)) {
 		for( i=0; i<DIM; i++ ) {
 			a += WALL.A[i]*WALL.A[i]*p.V[i]*p.V[i];
 			b += WALL.A[i]*WALL.A[i]*p.V[i]*(p.Q[i]-WALL.Q[i]);
@@ -122,6 +123,7 @@ void crosstime( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,double t_st
 		*tc_pos = - b + sqrt(b*b-4.0*a*c);
 		*tc_pos /= (2.0*a);
 	}
+	// Issue: below seems to be broken
 	else {
 		//Must use secant method to determine cross times
 		*tc_pos = secant_time( p,WALL,t_step );
@@ -147,7 +149,7 @@ void crosstimeReverse( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,doub
 	}
 	// Ellipsoid
 	//else if( feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0) ) {
-	else if( feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) ) {
+	else if ((DIM == 2 && feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0)) || (DIM > 2 && feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0))){
 		for( i=0; i<DIM; i++ ) {
 			a += WALL.A[i]*WALL.A[i]*(-p.V[i])*(-p.V[i]);
 			b += WALL.A[i]*WALL.A[i]*(-p.V[i])*(p.Q[i]-WALL.Q[i]);
@@ -161,6 +163,7 @@ void crosstimeReverse( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,doub
 		*tc_pos = - b + sqrt(b*b-4.*a*c);
 		*tc_pos /= (2.*a);
 	}
+	// Issue: below seems to be broken
 	else {
 		//Must use secant method to determine cross times
 		*tc_pos = secant_time( p,WALL,t_step );
@@ -181,7 +184,7 @@ double calcW_PLANE( bc WALL,particleMPC P ) {
 	return W;
 }
 double secant_time( particleMPC p,bc WALL,double t_step ) {
-	// This doesn't seem to work - or not in 2D
+	// Issue: this might be broken
 /*
      Numerically determine the crossing times (tc_pos and tc_neg);
 */
@@ -1126,8 +1129,6 @@ void MPC_BCcollision( particleMPC *pp,int currentP,bc WALL[],spec *pSP,double KB
 			// #endif
 			cnt++;
 			//Shift the BC due to any periodic BCs
-			// printf( "BC=%d, CNT=%d...\n",chosenBC,cnt );
-			// printf( "Shift and rotate BC...\n" );
 			shiftBC( shift,&WALL[chosenBC],(pp+currentP) );
 			rotateBC( &WALL[chosenBC],(pp+currentP),LC );
 			if( t_coll>-TOL ) {
@@ -1254,14 +1255,14 @@ double *normal( double *n,bc WALL,double *point,int dimension ) {
 		// Planar
 		if( feq(WALL.P[0],1.0) && feq(WALL.P[1],1.0) && feq(WALL.P[2],1.0) ) for( i=0; i<dimension; i++ ) n[i] = WALL.A[i];
 		// Ellipsoid
-		else if( feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0) ) for( i=0; i<dimension; i++ ) {
+		else if ((DIM == 2 && feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0)) || (DIM > 2 && feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0))) for( i=0; i<dimension; i++ ){
 			n[i] = 2.0*WALL.A[i]*WALL.A[i]*(point[i]-WALL.Q[i]);
 		}
 		// squircle 4 and 6
-		else if( feq(WALL.P[0],4.0) && feq(WALL.P[1],4.0) && feq(WALL.P[2],4.0) ) for( i=0; i<dimension; i++ ) {
+		else if ((DIM == 2 && feq(WALL.P[0],4.0) && feq(WALL.P[1],4.0)) || (DIM > 2 && feq(WALL.P[0],4.0) && feq(WALL.P[1],4.0) && feq(WALL.P[2],4.0))) for( i=0; i<dimension; i++ ){
 			n[i] = 4.0*WALL.A[i]*WALL.A[i]*WALL.A[i]*WALL.A[i]*(point[i]-WALL.Q[i])*(point[i]-WALL.Q[i])*(point[i]-WALL.Q[i]);
 		}
-		else if( feq(WALL.P[0],6.0) && feq(WALL.P[1],6.0) && feq(WALL.P[2],6.0) ) for( i=0; i<dimension; i++ ) {
+		else if ((DIM == 2 && feq(WALL.P[0],6.0) && feq(WALL.P[1],6.0)) || (DIM > 2 && feq(WALL.P[0],6.0) && feq(WALL.P[1],6.0) && feq(WALL.P[2],6.0))) for( i=0; i<dimension; i++ ){
 			n[i] = 4.0*WALL.A[i]*WALL.A[i]*WALL.A[i]*WALL.A[i]*WALL.A[i]*WALL.A[i];
 			n[i] *= (point[i]-WALL.Q[i])*(point[i]-WALL.Q[i])*(point[i]-WALL.Q[i])*(point[i]-WALL.Q[i])*(point[i]-WALL.Q[i]);
 		}
