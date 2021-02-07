@@ -174,7 +174,12 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
    This would be oodles better if each BC object had a list of cells
    to worry about and so I wouldn't have to go over every cell all
    the time
+	 This routine also strengthens anchoring by re-applying orientational boundary
+	 conditions (now to the whole cell).  This is so the collision operator can
+	 reassign orientations about the director (preferred by the anchoring), with
+	 less deviation (as S = 1 for planar, or close to 1 otherwise).
 */
+
 	int a,b,c,d,i,j,k,l;
 	int flagW,numCorners = (int) pow(2,DIM);
 	double R[DIM];
@@ -182,22 +187,28 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 	particleMPC tp[numCorners];		// Temporary MPC particles for all corners of a square cell
 	double W[numCorners];					// W for each of the corners
 	double **S, eigval[_3D];
-	double n[_3D] = {0.,0.,0.};		// Normal to the surface
-	particleMPC *ptMPC;						// Temporary pointer to MPC particle
-	int flagLC, flagS;						// Flag definitions under cell loop
-	double tempU[_3D];						// Temporary orientation for particles at a flat wall
+	double n[_3D] = {0.,0.,0.};		// surface normal
+	particleMPC *ptMPC;						// temporary pointer to MPC particle
+	int flagLC, flagS, flagI;			// definitions are where they are zeroed
+	double tempU[_3D];						// orientation set for particles at a flat wall. Used to set cell director
+	int flagGhostAnchoring;
+	int numBC;										// Number of walls with anchoring in a given cell
+	flagGhostAnchoring = 1; 			// a manual switch to turn on=1 or off=0 the stronger anchoring
 
-	// Allocate memory for S
-	S = malloc ( DIM * sizeof( *S ) );
-	for( i=0; i<DIM; i++ ) S[i] = malloc ( DIM * sizeof( *S[i] ) );
-	for( i=0; i<DIM; i++ ) for( d=0; d<DIM; d++ ) S[i][d] = 0.0;
+	if (flagGhostAnchoring == 1){
+		// Allocate memory for S
+		S = malloc ( DIM * sizeof( *S ) );
+		for( i=0; i<DIM; i++ ) S[i] = malloc ( DIM * sizeof( *S[i] ) );
+		for( i=0; i<DIM; i++ ) for( d=0; d<DIM; d++ ) S[i][d] = 0.0;
+	}
 
 	// Loop over cells
 	for( a=0; a<=XYZ[0]; a++ ) for( b=0; b<=XYZ[1]; b++ ) for( c=0; c<=XYZ[2];c ++ ) {
 		for( i=0; i<DIM; i++ ) tempU[i]=0.0;
 		flagLC = 1; // so the wall is only used once (not twice as 2 corners can intersect)
-		flagW = 0; // is the cell cut by a wall 0=No 1=Yes
-		flagS = 0; // has S already been calculated? No=0 Yes=1
+		flagW = 0; // is the cell cut by a wall 1=Yes 0=No
+		flagS = 0; // has S already been calculated for the cell? Yes=1 No=0
+		numBC = 0; // number of walls that intersect the cell
 
 		//Position of corners of the cell
 		//Origin
@@ -233,58 +244,70 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 			tp[7].Q[2] = (double) c+1.0;
 		}
 
+		// Finding how many walls with anchoring intersect the cell
+		// as we don't want two or more conflicting ones
+		if (flagGhostAnchoring == 1){
+			// loop over walls with anchoring
+			for( i=0; i<NBC; i++ ) if(WALL[i].PHANTOM && (feq(WALL[i].MUN,0.0) || feq(WALL[i].MUT,0.0))){
+				flagI = 0; // flag: does the wall intersect the cell Yes=1 No=0
+				for ( j=0; j<numCorners; j++ ){ // loop over corners
+					W[j] = calcW(WALL[i],tp[j]);
+					if ( W[j]<0.0){
+						flagI = 1;
+					}
+				}
+				if (flagI == 1) numBC += 1; // if wall i intersects the cell, add 1 to count
+			}
+		}
+
+		// IMPROVEMENT: Need to add in (maybe in the part above), that its ok to do
+		// stronger anchoring to the cells that have 2 or more walls iff
+		// they both satisfy the same anchoring alignment
+		// (e.g. planar on left/right wall and homeotropic on top/bottom)
+
 		// Loop over boundaries
 		for( i=0; i<NBC; i++ ) if( WALL[i].PHANTOM ) {
-
-			// Determine if any corners are within the BC
+			// Determine if any corners are within this BC
 			for ( j=0; j<numCorners; j++ ){
 				W[j] = calcW(WALL[i],tp[j]);
 				if ( W[j]<0.0) flagW = 1;
 			}
 
-			// MPC PARTICLE ORIENTATION
-			if (flagW == 1 && LC!=ISOF){
-				if (flagLC == 1){
-					flagLC = 0; // so loop only once for the cell
-
-					// loop over MPC particles:
-					if (CL[a][b][c].pp != NULL){
-						ptMPC = CL[a][b][c].pp;
-						while(ptMPC != NULL){
-							normal(n, WALL[i], ptMPC->Q, DIM);
-							norm(n, DIM);
-							oriBC(ptMPC, SP, &WALL[i], n); // reorient particles
-							for( l=0; l<DIM; l++ ) tempU[l]=ptMPC->U[l]; // only need to manually set director (see below)
-							ptMPC = ptMPC->next;
-						}
-					} // end loop over particles
-
-					// MANUALLY SETTING SCALAR ORDER PARAMETER AND DIRECTOR
-					// the scalar order parameter and director calculation messes up if all particles are aligned
-					// this is manually setting S and cell director for planar walls
-					// note when MUN and MUT both equal 1.0, S != 1, all is ok
-					if (feq(WALL[i].P[0],1.0) && feq(WALL[i].P[1],1.0) && feq(WALL[i].P[2],1.0)){
-						if ((feq(WALL[i].MUN,1.0) && feq(WALL[i].MUT,0.0)) || (feq(WALL[i].MUN,0.0) && feq(WALL[i].MUT,1.0))){
-							CL[a][b][c].S = 1.0;
-							for( k=0; k<DIM; k++ ) CL[a][b][c].DIR[k] = tempU[k];
-							norm(CL[a][b][c].DIR, DIM);
-							flagS = 1; // S has been calculated so don't compute again below
-						}
+			// Reorient MPC particles
+			if (LC!=ISOF && flagGhostAnchoring == 1 && flagW == 1 && flagLC == 1 && numBC == 1 && (feq(WALL[i].MUN,0.0) || feq(WALL[i].MUT,0.0))){
+				flagLC = 0; // loop only once for the cell
+				if (CL[a][b][c].pp != NULL){
+					ptMPC = CL[a][b][c].pp; // pointer to first MPC particle in cell
+					k = 0; // only need one particles orientation to set cell director next to a planar wall
+					while(ptMPC != NULL){ // loop over MPC particles in cell
+						normal(n, WALL[i], ptMPC->Q, DIM);
+						norm(n, DIM);
+						oriBC(ptMPC, SP, &WALL[i], n); // reorient MPC particle
+						if (k == 0) for( l=0; l<DIM; l++ ) tempU[l]=ptMPC->U[l];
+						k += 1; // don't need to repeat the line above more than once
+						ptMPC = ptMPC->next; // point to next MPC particle in cell
 					}
+				}
+
+				// Manually set S and n for the cell if the walls have anchoring and are planar
+				// Need this as a perfectly aligned cell breaks in the eigenvalue calculation
+				if (feq(WALL[i].P[0],1.0) && feq(WALL[i].P[1],1.0) && feq(WALL[i].P[2],1.0)){
+					CL[a][b][c].S = 1.0; // set S
+					for( k=0; k<DIM; k++ ) CL[a][b][c].DIR[k] = tempU[k]; // set director
+					norm(CL[a][b][c].DIR, DIM);
+					flagS = 1; // S has now been calculated so don't calculate again
 				}
 			}
 		} // end loop on walls
 
-		// SCALAR ORDER PARAMETER AND DIRECTOR (same calculations as localPROP)
-		if (CL[a][b][c].POP > 1 && LC!=ISOF && flagS == 0 && flagW == 1) {
+		// Calculating new S and director for cell (same calculations as localPROP)
+		if (LC!=ISOF && CL[a][b][c].POP > 1 && flagGhostAnchoring == 1 && flagW == 1 && flagS == 0  && numBC == 1 && (feq(WALL[i].MUN,0.0) || feq(WALL[i].MUT,0.0))){
 			// Tensor order parameter
 			tensOrderParam( &CL[a][b][c],S,LC );
-
 			// Scalar order parameter
 			solveEigensystem( S,DIM,eigval );
 			if(DIM==_3D) CL[a][b][c].S = -1.*(eigval[1]+eigval[2]);
 			else CL[a][b][c].S=eigval[0];
-
 			if( CL[a][b][c].S<1./(1.-DIM) ){
 				printf("Warning: Local scalar order parameter < 1/(1-DIM)\n");
 				printf("Cell [%d,%d,%d]\n",a,b,c);
@@ -293,13 +316,12 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 				printf("Eigenvectors=");
 				for( d=0; d<DIM; d++ ) pvec(S[d],DIM);
 			}
-
 			// Cell director (eigenvector corresponding to largest eigenvalue (1st element))
 			for( i=0; i<DIM; i++ ) CL[a][b][c].DIR[i] = S[0][i];
 			if( CL[a][b][c].S>1.0 ) CL[a][b][c].S=1.0;
 		}
 
-		// VELOCITY (for no slip bc)
+		// centre of mass velocity (for no slip bc)
 		if (flagW == 1){
 			if( CL[a][b][c].POP<nDNST && CL[a][b][c].POP>0 ) {
 				invN = 1.0/(nDNST-(double)CL[a][b][c].POP);
@@ -311,9 +333,11 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 			}
 		}
 	} // end loop over cells
-	for( i=0; i<DIM; i++ ) free( S[i] );
-	free( S );
-} // end routine
+	if (flagGhostAnchoring == 1){
+		for( i=0; i<DIM; i++ ) free( S[i] );
+		free( S );
+	}
+}
 
 					// // Same as above but doing EACH phantom particle separately
 					// for( d=0; d<DIM; d++ ) CL[a][b][c].VCM[d] *= (double)CL[a][b][c].POP;
@@ -3071,7 +3095,11 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 	//Zero counters
 	zerocnt( KBTNOW,AVNOW,AVS );
 
-	//Zero impulse on BCs --> moved on 27/01/21
+	// Zero impulse on BCs
+	// NOTE: Louise thinks this should be fine being here (and did check),
+	// This was moved when editing ghostPart to increase anchoring strength
+	// (as oriBC is now called in ghostPart too).
+	// If something looks bad related to mobile walls, maybe start looking here.
 	for( i=0; i<NBC; i++ ) {
 		zerovec(WALL[i].dV,DIM);
 		zerovec(WALL[i].dL,_3D);
