@@ -129,12 +129,16 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 				else CL[a][b][c].S=eigval[0];
 
 				if( CL[a][b][c].S<1./(1.-DIM) ){
-					printf("Warning: Local scalar order parameter < 1/(1-DIM)\n");
-					printf("Cell [%d,%d,%d]\n",a,b,c);
-					printf("Eigenvalues=");
-					pvec(eigval,DIM);
-					printf("Eigenvectors=");
-					for( d=0; d<DIM; d++ ) pvec(S[d],DIM);
+					#ifdef DBG
+					if (DBUG >= DBGRUN){
+						printf("Warning: Local scalar order parameter < 1/(1-DIM)\n");
+						printf("Cell [%d,%d,%d]\n",a,b,c);
+						printf("Eigenvalues=");
+						pvec(eigval,DIM);
+						printf("Eigenvectors=");
+						for( d=0; d<DIM; d++ ) pvec(S[d],DIM);
+					}
+					#endif
 				}
 
 				// The director is the eigenvector corresponding to the largest eigenvalue
@@ -309,12 +313,16 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 			if(DIM==_3D) CL[a][b][c].S = -1.*(eigval[1]+eigval[2]);
 			else CL[a][b][c].S=eigval[0];
 			if( CL[a][b][c].S<1./(1.-DIM) ){
-				printf("Warning: Local scalar order parameter < 1/(1-DIM)\n");
-				printf("Cell [%d,%d,%d]\n",a,b,c);
-				printf("Eigenvalues=");
-				pvec(eigval,DIM);
-				printf("Eigenvectors=");
-				for( d=0; d<DIM; d++ ) pvec(S[d],DIM);
+				#ifdef DBG
+				if (DBUG >= DBGRUN){
+					printf("Warning: Local scalar order parameter < 1/(1-DIM)\n");
+					printf("Cell [%d,%d,%d]\n",a,b,c);
+					printf("Eigenvalues=");
+					pvec(eigval,DIM);
+					printf("Eigenvectors=");
+					for( d=0; d<DIM; d++ ) pvec(S[d],DIM);
+				}
+				#endif
 			}
 			// Cell director (eigenvector corresponding to largest eigenvalue (1st element))
 			for( i=0; i<DIM; i++ ) CL[a][b][c].DIR[i] = S[0][i];
