@@ -73,7 +73,7 @@ void localCM( cell *CL,spec *SP,specSwimmer specS );
 void localCM_SRD( cell CL,spec *SP,double r_cm[] );
 void localMomInertiaTensor( cell *CL,spec *SP,specSwimmer specS );
 double localMomInertia_SRD( cell CL,spec *SP,double r0[],double n[] );
-void ghostPart( cell ***CL,bc WALL[],double KBT,int LC );
+void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP);
 
 void scramble( particleMPC *p );
 void checkEscape_all( particleMPC *pp );
