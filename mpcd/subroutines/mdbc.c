@@ -105,7 +105,7 @@ void chooseBC_MD( bc WALL[],particleMD *atom,double *t_min,double *chosenW,int *
 
 			//Calculate crosstime
 			crosstime_MD( atom,WALL[i],&t1,&t2,time );
-			tc = chooseT( t_step,t1,t2,0,flag );
+			tc = chooseT( t_step,t1,t2,0,&flag );
 			if( flag ) {
 				printf( "Error: Cross time unacceptable: %lf.\n",tc );
 				exit( 1 );
@@ -271,7 +271,7 @@ void crosstime_MD( particleMD *atom,bc WALL,double *tc_pos, double *tc_neg,doubl
 		*tc_neg = *tc_pos;
 	}
 	// Ellipsoid
-	else if( feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0) ) {
+	else if((DIM == 2 && feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0)) || (DIM > 2 && feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0))) {
 		//x-component
 		a += WALL.A[0]*WALL.A[0]*atom->vx*atom->vx;
 		b += WALL.A[0]*WALL.A[0]*atom->vx*(atom->rx-WALL.Q[0]);
@@ -358,9 +358,10 @@ double *normal_MD( double *n,bc WALL,particleMD *atom,int dimension ) {
 */
 	int i;
 
-	if( WALL.PLANAR || ( feq(WALL.P[0],1.0) && feq(WALL.P[1],1.0) && feq(WALL.P[2],1.0) && feq(WALL.P[3],1.0) )) {
+	if( WALL.PLANAR || ( feq(WALL.P[0],1.0) && feq(WALL.P[1],1.0) && feq(WALL.P[2],1.0) && feq(WALL.P[3],1.0))) {
 		for( i=0; i<dimension; i++ ) n[i] = WALL.A[i];
 	}
+	// Issue: for 2D, can't keep feq(WALL.P[2], 2.0) as P[2]=1.0.
 	else if( feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0) ) {
 		n[0] = 2.*WALL.A[0]*(atom->rx-WALL.Q[0]);
 		n[1] = 2.*WALL.A[1]*(atom->ry-WALL.Q[1]);
@@ -656,7 +657,7 @@ void chooseBC_swimmer( bc WALL[],smono *atom,double *t_min,double *chosenW,int *
 
 			//Calculate crosstime
 			crosstime_swimmer( atom,WALL[i],&t1,&t2,time );
-			tc = chooseT( t_step,t1,t2,0,flag );
+			tc = chooseT( t_step,t1,t2,0,&flag );
 			if( flag ) {
 				printf( "Error: Cross time unacceptable: %lf.\n",tc );
 				exit( 1 );
@@ -800,7 +801,7 @@ void crosstime_swimmer( smono *atom,bc WALL,double *tc_pos, double *tc_neg,doubl
 		*tc_neg = *tc_pos;
 	}
 	// Ellipsoid
-	else if( feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0) ) {
+	else if((DIM == 2 && feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0)) || (DIM > 2 && feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0))) {
 		for( d=0; d<DIM; d++ ) {
 			a += WALL.A[d]*WALL.A[d]*atom->V[d]*atom->V[d];
 			b += WALL.A[d]*WALL.A[d]*atom->V[d]*(atom->Q[d]-WALL.Q[d]);
@@ -871,7 +872,7 @@ double *normal_swimmer( double *n,bc WALL,smono *atom,int dimension ) {
 	if( WALL.PLANAR || ( feq(WALL.P[0],1.0) && feq(WALL.P[1],1.0) && feq(WALL.P[2],1.0) && feq(WALL.P[3],1.0) )) {
 		for( i=0; i<dimension; i++ ) n[i] = WALL.A[i];
 	}
-	else if( feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0) ) {
+	else if(( DIM == 2 && feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0)) || (DIM > 2 && feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0))) {
 		for( i=0; i<dimension; i++ ) n[i] = 2.*WALL.A[i]*(atom->Q[i]-WALL.Q[i]);
 	}
 	else for( i=0; i<dimension; i++ ) n[i] = (WALL.P[i]) *pow( WALL.A[i]*(atom->Q[i]-WALL.Q[i]) , WALL.P[i]-1.0 );
