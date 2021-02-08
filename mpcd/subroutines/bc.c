@@ -1086,7 +1086,7 @@ void chooseBC( bc WALL[],int currentP,particleMPC *pp,double *t_minColl,double *
 				tc = chooseT( t_left,t1,t2,currentP,&flag );
 				if( flag ) {
 					printf( "Error: Cross time unacceptable: %lf.\n",tc );
-					exit( 1 );
+					//exit( 1 );
 				}
 				if( tc < *t_minColl ) {
 					*t_minColl = tc;
