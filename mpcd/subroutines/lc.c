@@ -693,7 +693,7 @@ void magTorque_CL( cell *CL,spec *SP,double dt,double MAG[] ) {
 			for( i=0; i<_3D; i++ ) tmpc->T[i]+=chia*mT[i];	//Torque must always be 3D (needs to be multiplied by particle's susceptibility)
 			//Calculate change in orientation due to magnetic torque
 			//Angular velocity
-			for( i=0; i<_3D; i++ ) w[i]=mT[i]/rfc;
+			for( i=0; i<_3D; i++ ) w[i]=chia*mT[i]/rfc;
 			//Angular velocity times time gives the angle change
 			for( i=0; i<_3D; i++ ) w[i]*=dt;
 			theta=length(w,_3D);
@@ -989,10 +989,10 @@ void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
 		UT[i]=0.0;
 		r[i]=0.0;
 	}
-	
+
 	// Make sure U is a unit vector
 	norm(pp->U,DIM);
-	
+
 	//Make U point out of BC
 	if(dotprod(pp->U,n,DIM)>=0) {
 		for(i=0; i<DIM; i++){pp->U[i]*=1.;}
@@ -1027,7 +1027,7 @@ void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
 		if( DIM>=_2D ) pp->U[1] *= WALL->MUxyz[1];
 		if( DIM>=_3D ) pp->U[2] *= WALL->MUxyz[2];
 	}
-	
+
 	// Make sure U0 and U are unit vectors
 	norm(U0, _3D);
 	norm(pp->U, DIM);
@@ -1046,7 +1046,7 @@ void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
 		for( i=0; i<_3D; i++ ) {
 			torque[i]=0.0;
 		}
-		
+
 		// Calculate angle between initial and final orientation (angleAnch)
 		u0dotu = dotprod(U0, pp->U, _3D);
 		if (u0dotu >=1.0){
@@ -1055,21 +1055,21 @@ void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
 		if (u0dotu < 1.0){
 			angleAnch = acos(u0dotu); // making sure u0dotu is less than one or the angle blows up
 		}
-		
+
 		// Calculating torque on MPCD particle
 		crossprod(U0, pp->U, torque);
 		norm(torque, _3D); // getting just the direction of torque here
-		
+
 		for (i=0; i<_3D; i++){
 			// Multiply unit vector by magnitude.  Now this is torque = (rotational friction coefficient) * (angular velocity). Note: anglar velocity is just the angle.
 			torque[i] *= angleAnch;
 			torque[i] *= ((SP+pp->SPID)->RFC);
 		}
-		
+
 		// Vector between collision point and CM
 		for( i=0; i<DIM; i++ ) r[i] = -WALL->Q[i] + pp->Q[i];
 
-		
+
 		#ifdef DBG
 			if( DBUG == DBGBCORI ) {
 				printf( "\tTorque on MPC=" );
@@ -1106,24 +1106,24 @@ void torqueLCBC( bc *WALL,double n[], double U0[], double torqueMPC[],double rod
 		dL[i]=0.0;
 		U0[i]=-1.*U0[i]; //flipped it (for preference) as the torques are set up to consider the force pointing towards the boundary.
 	}
-	
+
 	norm( U0, _3D); // sometimes this deviates from being a unit vector
 
 	// Define unit vectors
-	// 1. Tangent vector (on the colloid surface): If the MPCD particle rotates clockwise (anticlockwise), this vector points clockwise (anticlockwise) around the colloid. 
-	
+	// 1. Tangent vector (on the colloid surface): If the MPCD particle rotates clockwise (anticlockwise), this vector points clockwise (anticlockwise) around the colloid.
+
 	crossprod( torqueMPC,n,t_hat );
 	norm( t_hat, DIM ); //tangent vector at contact point on colloid
-	
+
 	// 3. Direction of force that the colloid provides to the MPCD (to make it rotate)
-	
+
 	crossprod( torqueMPC, U0, f_hat);
 	norm( f_hat,_3D);
-	
+
 	// 2. MPCD particle anchoring torque: split into magnitude and unit vector.
 	magT = length( torqueMPC,_3D ); // magnitude
 	norm( torqueMPC, _3D); // now a unit vector
-	
+
 
 	#ifdef DBG
 		if( DBUG == DBGBCORI ) {
@@ -1133,18 +1133,18 @@ void torqueLCBC( bc *WALL,double n[], double U0[], double torqueMPC[],double rod
 	#endif
 
 	// Find magnitude of MPCD rod force: f= (tau/r)*(tau_hat cross r_hat) where r_hat is U0 r is rodlength/2 and tau_hat is the unit vector torqueMPC.
-	for(i=0; i<_3D; i++){ 
+	for(i=0; i<_3D; i++){
 		MPC_force[i] = 2.*magT*f_hat[i]/rodlength;
 	}
-	
+
 	// Find normal and tangential components of the force given to the colloid by the virtual rod (mirror of MPC particle about surface normal)
 	// Force magnitudes
 	forceN=dotprod(MPC_force, n, _3D);
 	forceT=dotprod(MPC_force, t_hat, _3D);
-	
+
 	// Force vectors
-	for( i=0; i<_3D; i++ ){ 
-		force_n[i] = forceN*n[i]; 
+	for( i=0; i<_3D; i++ ){
+		force_n[i] = forceN*n[i];
 		force_t[i] = -1.*forceT*t_hat[i]; // see also forceT. Without -1, we have found the tangential component of the force on MPC particle, but this tangential component is in the opposite direction to the colloid tangential force.
 	}
 
@@ -1994,27 +1994,27 @@ double topoSmallestAngle( double u[], double v[]){
 double topoAngleLocal( cell ***CL, int x, int y, int z, double charge){
 	//A function to compute the angle of a defect, meant to be paired with the above
 	// Equation essentially taken from: https://pubs.rsc.org/en/content/articlelanding/2016/sm/c6sm01146b/
-	
+
 	//init summing vars
-	double sumTop = 0.0; 
+	double sumTop = 0.0;
 	double sumBot = 0.0;
 	// prepare sign based on charge
 	int sign = 1;
 	if (charge < 0) sign = -1;
 
-	//loop through neighbouring cells to compute average 
+	//loop through neighbouring cells to compute average
 	int i, j = 0;
 	for( i = x-1; i < x+2; i++) for( j = y-1; j < y+2; j++) if(!( (i==x) && (j==y))){
 		//compute necessary partials of this NEIGHBOURING cell
 		//we need partials in x and y of Q_{xx} and Q_{xy}, so compute them using finite central diff
 		//first, get the necessary Q tensors
-		double QTop[_2D][_2D]; 
+		double QTop[_2D][_2D];
 		computeQ(CL[i][j+1][z], QTop);
-		double QBot[_2D][_2D]; 
+		double QBot[_2D][_2D];
 		computeQ(CL[i][j-1][z], QBot);
-		double QLeft[_2D][_2D]; 
+		double QLeft[_2D][_2D];
 		computeQ(CL[i-1][j][z], QLeft);
-		double QRight[_2D][_2D]; 
+		double QRight[_2D][_2D];
 		computeQ(CL[i+1][j][z], QRight);
 
 		//now compute derivatives of format (partial axis) Q (Q element)

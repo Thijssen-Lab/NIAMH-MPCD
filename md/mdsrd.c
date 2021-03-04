@@ -2007,8 +2007,9 @@ real bendHarmonic (particleMD *p1, particleMD *p2, particleMD *p3,
 {
 	real r12r23, ir12, ir23;
 	real theta, c, isinc, dcx1, dcy1, dcz1, dcx3, dcy3, dcz3;
-	real fx1, fy1, fz1, fx3, fy3, fz3;
+	real fx1=0, fy1=0, fz1=0, fx3=0, fy3=0, fz3=0;
 	real potE=0;
+	int bendStyle=0; //0==angularHarmonic 1==cosineHarmonic 2==cosineExpansion
 
 	// calculate the distances squared and make sure these aren't too close to zero to explode
 	r12r23 = dx12*dx23 + dy12*dy23 + dz12*dz23;
@@ -2023,27 +2024,60 @@ real bendHarmonic (particleMD *p1, particleMD *p2, particleMD *p3,
 		if( c>0.99999 && c<1.00001 ) theta=0.0;
 		else if( c<-0.999999 && c>-1.00001 ) theta=0.0;
 		else theta=acos(c);
-		if(fabs(theta)<0.00001) isinc=1.0;
-		else if(fabs(fabs(theta)-M_PI)<0.00001) isinc=0.0;
-		else isinc=theta/sin(theta);
 
-		// compute the forces
-		// compute the derivative of the cosine for the first and third particle
+		// compute the derivative of the cosine for the first and third particle *k
 		// first
-		dcx1=ir12*ir23*( dx23 - r12r23*ir12*ir12*dx12 );
-		dcy1=ir12*ir23*( dy23 - r12r23*ir12*ir12*dy12 );
-		dcz1=ir12*ir23*( dz23 - r12r23*ir12*ir12*dz12 );
-		// last
-		dcx3=ir12*ir23*( r12r23*ir23*ir23*dx23 - dx12 );
-		dcy3=ir12*ir23*( r12r23*ir23*ir23*dy23 - dy12 );
-		dcz3=ir12*ir23*( r12r23*ir23*ir23*dz23 - dz12 );
+		dcx1=k*ir12*( dx23*ir23 - c*dx12*ir12 );
+		dcy1=k*ir12*( dy23*ir23 - c*dy12*ir12 );
+		dcz1=k*ir12*( dz23*ir23 - c*dz12*ir12 );
 
-		fx1 = k*isinc*dcx1;
-		fy1 = k*isinc*dcy1;
-		fz1 = k*isinc*dcz1;
-		fx3 = k*isinc*dcx3;
-		fy3 = k*isinc*dcy3;
-		fz3 = k*isinc*dcz3;
+		// last
+		dcx3=k*ir23*( c*dx23*ir23 - dx23*ir12 );
+		dcy3=k*ir23*( c*dy23*ir23 - dy23*ir12 );
+		dcz3=k*ir23*( c*dz23*ir23 - dz23*ir12 );
+
+		if (bendStyle==0) { //angular harmonic
+			// computes 1/sinc(theta)
+			if(fabs(theta)<0.00001) isinc=1.0;
+			else if(fabs(fabs(theta)-M_PI)<0.00001) isinc=0.0;
+			else isinc=theta/sin(theta);
+
+			//computes the forces
+			fx1 = isinc*dcx1;
+			fy1 = isinc*dcy1;
+			fz1 = isinc*dcz1;
+			fx3 = isinc*dcx3;
+			fy3 = isinc*dcy3;
+			fz3 = isinc*dcz3;
+
+			// compute the energy
+			potE  = 0.5*k*theta*theta;
+		}
+		else if (bendStyle==1) { //cosine harmonic
+			//computes the forces
+			fx1 = -2.0*(c-1.0)*dcx1;
+			fy1 = -2.0*(c-1.0)*dcy1;
+			fz1 = -2.0*(c-1.0)*dcz1;
+			fx3 = -2.0*(c-1.0)*dcx3;
+			fy3 = -2.0*(c-1.0)*dcy3;
+			fz3 = -2.0*(c-1.0)*dcz3;
+
+			// compute the energy
+			potE  = k*(c-1.0)*(c-1.0);
+		}
+		else if (bendStyle==2) { // cosine expansion
+			//computes the forces
+			fx1 = dcx1;
+			fy1 = dcy1;
+			fz1 = dcz1;
+			fx3 = dcx3;
+			fy3 = dcy3;
+			fz3 = dcz3;
+
+			// compute the energy
+			potE  = k*(1.0-c);
+		}
+		// Apply the force p1, p2 and p3
 		p1->ax += fx1;
 		p1->ay += fy1;
 		p1->az += fz1;
@@ -2053,8 +2087,7 @@ real bendHarmonic (particleMD *p1, particleMD *p2, particleMD *p3,
 		p2->ax -= (fx1+fx3);
 		p2->ay -= (fy1+fy3);
 		p2->az -= (fz1+fz3);
-		// compute the energy
-		potE  = 0.5*k*theta*theta;
+
 	}
 
 	return potE;
@@ -2089,31 +2122,33 @@ real bendNematic (particleMD *p1, particleMD *p2, real dx12, real dy12, real dz1
 					struct spec *SP, struct cell *CL)
 //================================================================================
 {
-	real r12r23, ir12, ir23;
+	real r12r23, ir12, ir23, r12;
 	real theta, c, isinc, dcx1, dcy1, dcz1;
 	real ks;
-	real fx1, fy1, fz1;				//Force
+	real fx1=0, fy1=0, fz1=0;				//Force
+	real torque=0, f1=0, s=1;
 	double m[] = {0, 0, 0}; 	//Effective magnetic field applied to local mesogens
 	real potE=0;
+	int bendStyle=0; //0==angularHarmonic 1==cosineHarmonic 2==cosineExpansion
 
 	// calculate the distances squared and make sure these aren't too close to zero to explode
 	ks=k*S;
 	r12r23 = dx12*dx23 + dy12*dy23 + dz12*dz23;
-	ir12 = sqrt(dx12*dx12 + dy12*dy12 + dz12*dz12);
+	r12 = sqrt(dx12*dx12 + dy12*dy12 + dz12*dz12);
 	ir23 = 1.0;		// The director should be unit vector
 
 	// Because the interaction should be nematic in nature, need to flip director if anti-parallel
 	if( r12r23<0 ) {
-		dx23*=-1;
-		dy23*=-1;
-		dz23*=-1;
-		r12r23*=-1;
+		dx23*=-1.0;
+		dy23*=-1.0;
+		dz23*=-1.0;
+		r12r23*=-1.0;
 	}
 	// Calculate the forces
-	if( ir12>TOL ) {
+	if( r12>TOL ) {
 		// Invert
-		ir12 = 1.0/ir12;
-		// Effective magnetic field
+		ir12 = 1.0/r12;
+		// Effective magnetic field direction
 		m[0] = dx12*ir12;
 		m[1] = dy12*ir12;
 		m[2] = dz12*ir12;
@@ -2122,20 +2157,56 @@ real bendNematic (particleMD *p1, particleMD *p2, real dx12, real dy12, real dz1
 		if( c>0.99999 && c<1.00001 ) theta=0.0;
 		else if( c<-0.999999 && c>-1.00001 ) theta=0.0;
 		else theta=acos(c);
-		if(fabs(theta)<0.00001) isinc=1.0;
-		else if(fabs(fabs(theta)-M_PI)<0.00001) isinc=0.0;
-		else isinc=theta/sin(theta);
 
-		// compute the forces
-		// compute the derivative of the cosine for the first and third particle
+		// compute the derivative of the cosine for the first *k
 		// first
-		dcx1=ir12*ir23*( dx23 - r12r23*ir12*ir12*dx12 );
-		dcy1=ir12*ir23*( dy23 - r12r23*ir12*ir12*dy12 );
-		dcz1=ir12*ir23*( dz23 - r12r23*ir12*ir12*dz12 );
+		dcx1=k*ir12*( dx23*ir23 - c*dx12*ir12 );
+		dcy1=k*ir12*( dy23*ir23 - c*dy12*ir12 );
+		dcz1=k*ir12*( dz23*ir23 - c*dz12*ir12 );
 
-		fx1 = ks*isinc*dcx1;
-		fy1 = ks*isinc*dcy1;
-		fz1 = ks*isinc*dcz1;
+		if (bendStyle==0) { //angular harmonic
+			// computes 1/sinc(theta)
+			if(fabs(theta)<0.00001) isinc=1.0;
+			else if(fabs(fabs(theta)-M_PI)<0.00001) isinc=0.0;
+			else isinc=theta/sin(theta);
+
+			//computes the forces
+			fx1 = isinc*dcx1;
+			fy1 = isinc*dcy1;
+			fz1 = isinc*dcz1;
+
+			// compute the energy
+			potE  = 0.5*ks*theta*theta;
+		}
+		else if (bendStyle==1) { //cosine harmonic
+			//computes the forces
+			fx1 = -2.0*(c - 1.0)*dcx1;
+			fy1 = -2.0*(c - 1.0)*dcy1;
+			fz1 = -2.0*(c - 1.0)*dcz1;
+
+			// compute the energy
+			potE  = ks*(c-1.0)*(c-1.0);
+		}
+		else if (bendStyle==2) { // cosine expansion
+			//computes the forces
+			fx1 = dcx1;
+			fy1 = dcy1;
+			fz1 = dcz1;
+
+			// compute the energy
+			potE  = ks*(1.0-c);
+		}
+
+		//compute the torque magnitude on the segment between the two monomers t = Fr sin(alpha)
+		f1 = sqrt(fx1*fx1 + fy1*fy1 + fz1*fz1); //force magnitude
+		s = sqrt(1-pow( (dx12*fx1 + dy12*fy1 + dz12*fz1) / (f1 * r12), 2)); //sin(alpha)
+		torque = f1*r12*0.5*s;
+
+		m[0] = torque*m[0];
+		m[1] = torque*m[1];
+		m[2] = torque*m[2];
+
+		// Apply the force p1 and p2
 		p1->ax += fx1;
 		p1->ay += fy1;
 		p1->az += fz1;
@@ -2144,16 +2215,10 @@ real bendNematic (particleMD *p1, particleMD *p2, real dx12, real dy12, real dz1
 		p2->az -= fz1;
 		// Apply the force to the nematic fluid as a local field
 		magTorque_CL( CL,SP,(double)dt,m );
-		// compute the energy
-		potE  = 0.5*ks*theta*theta;
 	}
 
 	return potE;
 }
-
-
-
-
 
 
 

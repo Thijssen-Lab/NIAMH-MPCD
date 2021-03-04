@@ -522,6 +522,11 @@ void TranslateMacros (char **stringptr)
 	snprintf (value, STRMAX, "%u", LAYOUT_ROD);
 	ReplaceMacro (stringptr, macro, value);
 
+	// Karolina added the following
+	snprintf (macro, STRMAX, "LAYOUT_U");
+	snprintf (value, STRMAX, "%u", LAYOUT_U);
+	ReplaceMacro (stringptr, macro, value);
+
 	snprintf (macro, STRMAX, "GROUP_NONE");
 	snprintf (value, STRMAX, "%#010X", GROUP_NONE);
 	ReplaceMacro (stringptr, macro, value);
