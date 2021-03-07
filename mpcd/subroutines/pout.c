@@ -626,13 +626,13 @@ void coordout( FILE *fout[MAXSPECI],int pr,double T,particleMPC p[],spec SP[] ) 
 		}
 	}
 }
-void coarseout( FILE *fout,int t,cell ***CL ) {
+void coarseout( FILE *fout,double t,cell ***CL ) {
 	/*
 	 Print coarse data to file
 	 */
 	int i,j,k,n;
 	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) for( k=0; k<XYZ[2]; k++ ) {
-		fprintf( fout,"%7i\t",t );
+		fprintf( fout,"%.2f\t",t );
 		fprintf( fout,"%5d\t%5d\t%5d\t",i,j,k );
 		if( CL[i][j][k].POP == 0 ) {
 			fprintf( fout, "%12.5e\t%12.5e\t%12.5e\t%5i",0.,0.,0.,0 );
@@ -1385,14 +1385,14 @@ void topochargeout( FILE *fout,double t,cell ***CL ) {
 		fflush(fout);
 	#endif
 }
-void orderout( FILE *fout,int t,cell ***CL,int LC ) {
+void orderout( FILE *fout,double t,cell ***CL,int LC ) {
 	/*
 	 Print scalar order parameter and director field data to file
 	 */
 	int i,j,k;
 	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) for( k=0; k<XYZ[2]; k++ ) {
 		//Output
-		fprintf( fout,"%7i\t",t );
+		fprintf( fout,"%.2f\t",t );
 		fprintf( fout,"%5d\t%5d\t%5d\t",i,j,k );
 		if( CL[i][j][k].POP == 0 ) fprintf( fout, "%12.5e\t%12.5e\t%12.5e\t%12.5e\n",0.0,0.0,0.0,0.0 );
 		else fprintf( fout, "%12.5e\t%12.5e\t%12.5e\t%12.5e\n",CL[i][j][k].DIR[0],CL[i][j][k].DIR[1],CL[i][j][k].DIR[2],CL[i][j][k].S );
@@ -1401,14 +1401,14 @@ void orderout( FILE *fout,int t,cell ***CL,int LC ) {
 		fflush(fout);
 	#endif
 }
-void multiphaseout( FILE *fout,int t,cell ***CL ) {
+void multiphaseout( FILE *fout,double t,cell ***CL ) {
 	/*
 	 Print phi/colour/species-type field data to file
 	 */
 	int i,j,k,n;
 	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) for( k=0; k<XYZ[2]; k++ ) {
 		//Output
-		fprintf( fout,"%7i\t",t );
+		fprintf( fout,"%.2f\t",t );
 		fprintf( fout,"%5d\t%5d\t%5d",i,j,k );
 		for( n=0; n<NSPECI; n++ ) fprintf( fout, "\t\t%d",CL[i][j][k].SP[n] );
 		fprintf( fout, "\n" );
@@ -1417,7 +1417,7 @@ void multiphaseout( FILE *fout,int t,cell ***CL ) {
 		fflush(fout);
 	#endif
 }
-void pressureout( FILE *fout,int t,cell ***CL ) {
+void pressureout( FILE *fout,double t,cell ***CL ) {
 	/*
 	 Calculate and print pressure field data to file
 	 */
@@ -1425,7 +1425,7 @@ void pressureout( FILE *fout,int t,cell ***CL ) {
 
 	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) for( k=0; k<XYZ[2]; k++ ) {
 		//Output
-		fprintf( fout,"%7i\t",t );
+		fprintf( fout,"%.2f\t",t );
 		fprintf( fout,"%5d\t%5d\t%5d\t",i,j,k );
 		// for( l=0; l<DIM; l++ ) for( m=0; m<DIM; m++ ) printf( "%lf\n",CL[i][j][k].Ps[l][m] );
 		if( CL[i][j][k].POP == 0 ) fprintf( fout, "%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\n",0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0 );
@@ -1440,7 +1440,7 @@ void pressureout( FILE *fout,int t,cell ***CL ) {
 		fflush(fout);
 	#endif
 }
-void orderQout( FILE *fout,int t,cell ***CL,int LC ) {
+void orderQout( FILE *fout,double t,cell ***CL,int LC ) {
 	/*
 	 Print scalar order parameter data to file
 	 */
@@ -1469,7 +1469,7 @@ void orderQout( FILE *fout,int t,cell ***CL,int LC ) {
 		fflush(fout);
 	#endif
 }
-void orderQKout( FILE *fout,int t,particleMPC pMPC[],cell ***CL,int LC ) {
+void orderQKout( FILE *fout,double t,particleMPC pMPC[],cell ***CL,int LC ) {
 	/*
 	 Print scalar order parameter data to file
 	 */

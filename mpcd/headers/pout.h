@@ -49,12 +49,12 @@ void runtumbleheader( FILE *fout );
 
 // Print data
 void coordout( FILE *fout[10],int pr,double T,particleMPC p[],spec SP[] );
-void coarseout( FILE *fout,int t,cell ***CL );
-void orderout( FILE *fout,int t,cell ***CL,int LC );
-void multiphaseout( FILE *fout,int t,cell ***CL );
-void pressureout( FILE *fout,int t,cell ***CL );
-void orderQout( FILE *fout,int t,cell ***CL,int LC );
-void orderQKout( FILE *fout,int t,particleMPC pMPC[],cell ***CL,int LC );
+void coarseout( FILE *fout,double t,cell ***CL );
+void orderout( FILE *fout,double t,cell ***CL,int LC );
+void multiphaseout( FILE *fout,double t,cell ***CL );
+void pressureout( FILE *fout,double t,cell ***CL );
+void orderQout( FILE *fout,double t,cell ***CL,int LC );
+void orderQKout( FILE *fout,double t,particleMPC pMPC[],cell ***CL,int LC );
 void histVelout( FILE *fout,int vel[_3D][BINS],double minRange,double maxRange,double t );
 void histSpeedout( FILE *fout,int speed[BINS],double minRange,double maxRange,double t );
 void histVortout( FILE *fout,int vort[_3D][BINS],double minRange,double maxRange,double t );
