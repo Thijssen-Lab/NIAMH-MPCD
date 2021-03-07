@@ -1354,7 +1354,7 @@ void solidout( FILE *fout,bc WALL,double t ) {
 		fflush(fout);
 	#endif
 }
-void topochargeout( FILE *fout,int t,cell ***CL ) {
+void topochargeout( FILE *fout,double t,cell ***CL ) {
 	/*
 	 Print topological charge data to file
 	 */
@@ -1376,7 +1376,7 @@ void topochargeout( FILE *fout,int t,cell ***CL ) {
 	
 	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) for( k=0; k<XYZ[2]; k++ ) {
 		//Output
-		fprintf( fout,"%7i\t",t );
+		fprintf( fout,"%.2f\t",t );
 		fprintf( fout,"%5d\t%5d\t%5d\t",i,j,k );
 		if( CL[i][j][k].POP == 0 ) fprintf( fout, "%06.3f\t%12.5e\n", 0.0, 0.0);
 		else fprintf( fout, "%06.3f\t%12.5e\n",topoC[i][j], topoAngle[i][j]);
