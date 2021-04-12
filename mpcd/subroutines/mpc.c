@@ -298,27 +298,20 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 							ptMPC = CL[a][b][c].pp;
 							while (ptMPC != NULL){
 
-								// if particles are outside box, shift them into their correct position by PBC
-								//double pos[DIM];
-								//for (k=0; k<DIM; k++) pos[k] = ptMPC->Q[k];
+								// if particles are outside system (due to Galilean shift), shift them periodically.
+								double pos[DIM]; // temporary container for particles position.
 
-								//if (ptMPC->Q[0] > (double) XYZ[0]) ptMPC->Q[0] -= (double) XYZ[0];
-								//if (ptMPC->Q[0] < 0.0) ptMPC->Q[0] += (double) XYZ[0];
-								//if( DIM >= _2D ) {
-								//	if (ptMPC->Q[1] > (double) XYZ[1]) ptMPC->Q[1] -= (double) XYZ[1];
-								//	if (ptMPC->Q[1] < 0.0) ptMPC->Q[1] += (double) XYZ[1];
-								//}
-								//if( DIM >= _3D ) {
-								//	if (ptMPC->Q[2] > (double) XYZ[2]) ptMPC->Q[2] -= (double) XYZ[2];
-								//	if (ptMPC->Q[2] < 0.0) ptMPC->Q[2] += (double) XYZ[2];
-								//}
-
+								for ( k=0; k<DIM; k++ ){
+									pos[k] = ptMPC->Q[k];
+									if ( ptMPC->Q[k] > (double) XYZ[k] ) ptMPC->Q[k] -= (double) XYZ[k];
+									else if ( ptMPC->Q[k] < 0.0 ) ptMPC->Q[k] += (double) XYZ[k];
+								}
 								normal(n, WALL[i], ptMPC->Q, DIM);
 								norm(n, DIM);
 								oriBC(ptMPC, SP, &WALL[i], n);
 
-								// bring particles back to old position (some reason breaks without this?)
-								//for (k=0; k<DIM; k++) ptMPC->Q[k] = pos[k];
+								// particles need to return old value
+								for (k=0; k<DIM; k++) ptMPC->Q[k] = pos[k];
 
 								ptMPC = ptMPC->next;
 							}
