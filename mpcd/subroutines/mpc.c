@@ -247,10 +247,11 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 
 			numBC = 0;
 			flagW = 0;
-			wallindex = -1; // value not important, just not between 0 and NBC-1
+			wallindex = -1; // value not important, just best not between 0 and NBC-1
+
 			// How many anchored walls intersect the cell?  (don't want >=2 conflicting)
 			if ( setGhostAnch == 1 ){
-
+				// Loop over boundary conditions, selecting ones with anchoring
 				for( i=0; i<NBC; i++ ) if( WALL[i].PHANTOM && ( feq(WALL[i].MUN,0.0) || feq(WALL[i].MUT,0.0) ) ){
 
 					// Shift moving wall (periodic BC)
