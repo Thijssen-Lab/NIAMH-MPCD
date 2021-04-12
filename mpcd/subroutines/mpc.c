@@ -195,9 +195,9 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 	particleMPC *ptMPC;						// temporary pointer to MPC particle
 	int setGhostAnch, flagW;
 	int numBC;										// Number of walls with anchoring in a given cell
-	int wallindex;
+	int wallindex;								// Index of wall with anchoring acting on a cell
 	double shift[DIM];
-	setGhostAnch = 1; 						// a manual switch to turn on=1 or off=0 the stronger anchoring
+	setGhostAnch = 0; 						// a manual switch to turn on=1 or off=0 the stronger anchoring
 
 
 	if (setGhostAnch == 1){
@@ -296,13 +296,12 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 
 				// Apply ghost anchoring
 				if ( LC!=ISOF && setGhostAnch == 1 && flagW && numBC == 1 && wallindex == i){
-					if ( feq( WALL[i].MUT, 0.0 ) || feq( WALL[i].MUN, 0.0 ) ){
+					if ( feq( WALL[i].MUT, 0.0 ) || feq( WALL[i].MUN, 0.0 ) ){ // if anchored
 
 						// Particle loop
 						if (CL[a][b][c].pp!=NULL){
 							ptMPC = CL[a][b][c].pp;
 							while (ptMPC != NULL){
-
 								// if particles are outside system (due to Galilean shift), shift them periodically.
 								double pos[DIM]; // temporary container for particles position.
 
@@ -315,7 +314,7 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 								norm(n, DIM);
 								oriBC(ptMPC, SP, &WALL[i], n);
 
-								// particles need to return old value
+								// particles return to unshifted value
 								for (k=0; k<DIM; k++) ptMPC->Q[k] = pos[k];
 
 								ptMPC = ptMPC->next;
@@ -393,10 +392,6 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 		free( S );
 	}
 }
-
-
-					//if (LC!=ISOF && flagGhostAnchoring == 1 && flagW == 1 && WALL[i].PHANTOM && flagLC == 1 && numBC == 1 && (feq(WALL[i].MUN,0.0) || feq(WALL[i].MUT,0.0))){
-
 
 					// // Same as above but doing EACH phantom particle separately
 					// for( d=0; d<DIM; d++ ) CL[a][b][c].VCM[d] *= (double)CL[a][b][c].POP;
