@@ -195,6 +195,7 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 	particleMPC *ptMPC;						// temporary pointer to MPC particle
 	int setGhostAnch, flagW;
 	int numBC;										// Number of walls with anchoring in a given cell
+	int wallindex;
 	double shift[DIM];
 	setGhostAnch = 1; 						// a manual switch to turn on=1 or off=0 the stronger anchoring
 
@@ -246,6 +247,7 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 
 			numBC = 0;
 			flagW = 0;
+			wallindex = -1; // value not important, just not between 0 and NBC-1
 			// How many anchored walls intersect the cell?  (don't want >=2 conflicting)
 			if ( setGhostAnch == 1 ){
 
@@ -261,7 +263,10 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 					flagW = 0;
 					for ( j=0; j<numCorners; j++ ){
 						W[j] = calcW( WALL[i], tp[j] );
-						if ( W[j] < 0.0 ) flagW = 1; // cell is cut by BC
+						if ( W[j] < 0.0 ) { // cell is cut by BC
+							flagW = 1;
+							wallindex = i; // to identify which wall cut the cell
+						}
 					}
 					if ( flagW == 1 ) numBC += 1;
 
@@ -290,7 +295,7 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 				}
 
 				// Apply ghost anchoring
-				if ( LC!=ISOF && setGhostAnch == 1 && flagW && numBC == 1){
+				if ( LC!=ISOF && setGhostAnch == 1 && flagW && numBC == 1 && wallindex == i){
 					if ( feq( WALL[i].MUT, 0.0 ) || feq( WALL[i].MUN, 0.0 ) ){
 
 						// Particle loop
