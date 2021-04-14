@@ -994,7 +994,7 @@ void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
 	norm(pp->U,DIM);
 
 	//Make U point out of BC
-	if(dotprod(pp->U,n,DIM)>=0) {
+	if(dotprod(pp->U,n,DIM)>=0.0) {
 		for(i=0; i<DIM; i++){pp->U[i]*=1.;}
 	}
 	else{

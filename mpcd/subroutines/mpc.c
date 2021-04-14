@@ -184,8 +184,8 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 	 less deviation (as S = 1 for planar, or close to 1 otherwise).
 */
 
-	int a,b,c,d,i,j,k,l;
-	int flagW,numCorners = (int) pow(2,DIM);
+	int a,b,c,d,i,j,k;
+	int numCorners = (int) pow(2,DIM);
 	double R[DIM];
 	double invN;									// Inverse number difference
 	particleMPC tp[numCorners];		// Temporary MPC particles for all corners of a square cell
@@ -193,13 +193,14 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 	double **S, eigval[_3D];
 	double n[_3D] = {0.,0.,0.};		// surface normal
 	particleMPC *ptMPC;						// temporary pointer to MPC particle
-	int flagLC, flagS, flagI;			// definitions are where they are zeroed
-	double tempU[_3D];						// orientation set for particles at a flat wall. Used to set cell director
-	int flagGhostAnchoring;
+	int setGhostAnch, flagW;
 	int numBC;										// Number of walls with anchoring in a given cell
-	flagGhostAnchoring = 1; 			// a manual switch to turn on=1 or off=0 the stronger anchoring
+	int wallindex;								// Index of wall with anchoring acting on a cell
+	double shift[DIM];
+	setGhostAnch = 1; 						// a manual switch to turn on=1 or off=0 the stronger anchoring
 
-	if (flagGhostAnchoring == 1){
+
+	if (setGhostAnch == 1){
 		// Allocate memory for S
 		S = malloc ( DIM * sizeof( *S ) );
 		for( i=0; i<DIM; i++ ) S[i] = malloc ( DIM * sizeof( *S[i] ) );
@@ -208,11 +209,10 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 
 	// Loop over cells
 	for( a=0; a<=XYZ[0]; a++ ) for( b=0; b<=XYZ[1]; b++ ) for( c=0; c<=XYZ[2];c ++ ) {
-		for( i=0; i<DIM; i++ ) tempU[i]=0.0;
-		flagLC = 1; // so the wall is only used once (not twice as 2 corners can intersect)
-		flagW = 0; // is the cell cut by a wall 1=Yes 0=No
-		flagS = 0; // has S already been calculated for the cell? Yes=1 No=0
-		numBC = 0; // number of walls that intersect the cell
+
+		// Each cell has a temporary particle assigned to each corner
+		// If the boundary cuts a cell (i.e. a corner particle is found inside a boundary)
+		// Then this routine operates (to fill cell up with ghost particles, or apply strong anchoring)
 
 		//Position of corners of the cell
 		//Origin
@@ -247,101 +247,156 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 			tp[7].Q[1] = (double) b+1.0;
 			tp[7].Q[2] = (double) c+1.0;
 		}
+		if ( CL[a][b][c].POP > 0 ){
 
-		// Finding how many walls with anchoring intersect the cell
-		// as we don't want two or more conflicting ones
-		if (flagGhostAnchoring == 1){
-			// loop over walls with anchoring
-			for( i=0; i<NBC; i++ ) if(WALL[i].PHANTOM && (feq(WALL[i].MUN,0.0) || feq(WALL[i].MUT,0.0))){
-				flagI = 0; // flag: does the wall intersect the cell Yes=1 No=0
-				for ( j=0; j<numCorners; j++ ){ // loop over corners
-					W[j] = calcW(WALL[i],tp[j]);
-					if ( W[j]<0.0){
-						flagI = 1;
+			numBC = 0;
+			flagW = 0;
+			wallindex = -1; // value not important, just best not between 0 and NBC-1
+
+			// An initial part of the routine to find out how many walls intersect the cell.
+			// This is only used for boundaries with anchoring conditions
+			// (and strong anchoring turned on) as two conflicting anchoring conditions
+			// would take the last one applied (which isn't necessarily what we want).
+			// We only want the rest of the ghost particle anchoring routine to continue
+			// if 1 anchored wall intersects the cell.
+
+			if ( setGhostAnch == 1 ){
+				// Loop over boundary conditions, selecting ones with anchoring
+				for( i=0; i<NBC; i++ ) if( WALL[i].PHANTOM && ( feq(WALL[i].MUN,0.0) || feq(WALL[i].MUT,0.0) ) ){
+
+					// Shift moving wall (periodic BC).
+					if ( WALL[i].DSPLC ){
+						shiftBC( shift, &WALL[i], &tp[0] );
+						rotateBC( &WALL[i], &tp[0], LC );
+					}
+
+					// Loop over corners. Does the cell get cut by a BC?
+					flagW = 0;
+					for ( j=0; j<numCorners; j++ ){
+						W[j] = calcW( WALL[i], tp[j] );
+						if ( W[j] < 0.0 ) { // cell is cut by BC
+							flagW = 1;
+							wallindex = i; // to identify which wall cut the cell
+						}
+					}
+					if ( flagW == 1 ) numBC += 1;
+
+					// Shift back moving wall
+					if ( WALL[i].DSPLC ){
+						rotatebackBC( &WALL[i], &tp[0], LC );
+						shiftbackBC( shift, &WALL[i] );
 					}
 				}
-				if (flagI == 1) numBC += 1; // if wall i intersects the cell, add 1 to count
-			}
-		}
-
-		// IMPROVEMENT: Need to add in (maybe in the part above), that its ok to do
-		// stronger anchoring to the cells that have 2 or more walls iff
-		// they both satisfy the same anchoring alignment
-		// (e.g. planar on left/right wall and homeotropic on top/bottom)
-
-		// Loop over boundaries
-		for( i=0; i<NBC; i++ ) if( WALL[i].PHANTOM ) {
-			// Determine if any corners are within this BC
-			for ( j=0; j<numCorners; j++ ){
-				W[j] = calcW(WALL[i],tp[j]);
-				if ( W[j]<0.0) flagW = 1;
 			}
 
-			// Reorient MPC particles
-			if (LC!=ISOF && flagGhostAnchoring == 1 && flagW == 1 && flagLC == 1 && numBC == 1 && (feq(WALL[i].MUN,0.0) || feq(WALL[i].MUT,0.0))){
-				flagLC = 0; // loop only once for the cell
-				if (CL[a][b][c].pp != NULL){
-					ptMPC = CL[a][b][c].pp; // pointer to first MPC particle in cell
-					k = 0; // only need one particles orientation to set cell director next to a planar wall
-					while(ptMPC != NULL){ // loop over MPC particles in cell
-						normal(n, WALL[i], ptMPC->Q, DIM);
-						norm(n, DIM);
-						oriBC(ptMPC, SP, &WALL[i], n); // reorient MPC particle
-						if (k == 0) for( l=0; l<DIM; l++ ) tempU[l]=ptMPC->U[l];
-						k += 1; // don't need to repeat the line above more than once
-						ptMPC = ptMPC->next; // point to next MPC particle in cell
+			flagW = 0;
+			// Boundary loop
+			for( i=0; i<NBC; i++ ) if( WALL[i].PHANTOM ){
+
+				// If the colloid is moving through a periodic BC, we want the routine
+				// to be applied to its image on the other side of the boundary too.
+				// Shift moving wall (periodic BC)
+				if ( WALL[i].DSPLC ){
+					shiftBC( shift, &WALL[i], &tp[0] );
+					rotateBC( &WALL[i], &tp[0], LC );
+				}
+
+				// Corner loop. Does the cell get cut by a BC?
+				for ( j=0; j<numCorners; j++ ){
+					W[j] = calcW( WALL[i], tp[j] );
+					if ( W[j] < 0.0 ) flagW = 1; // cell is cut by BC
+				}
+
+				// Apply ghost anchoring (see description at top of routine).
+				// If turned on, this strengthens the anchoring so the collision operator
+				// sees the cell director and scalar order parameter as those preferred
+				// by the anchoring conditions.
+				if ( LC!=ISOF && setGhostAnch == 1 && flagW && numBC == 1 && wallindex == i){
+					if ( feq( WALL[i].MUT, 0.0 ) || feq( WALL[i].MUN, 0.0 ) ){ // if anchored
+
+						// Particle loop
+						if (CL[a][b][c].pp!=NULL){
+							ptMPC = CL[a][b][c].pp;
+							while (ptMPC != NULL){
+								normal(n, WALL[i], ptMPC->Q, DIM);
+								norm(n, DIM);
+								// apply boundary condition (anchoring) to cell
+								// note: this also feeds anchoring torque back to boundary (to add to dV and dL), if mobile
+								oriBC(ptMPC, SP, &WALL[i], n);
+								ptMPC = ptMPC->next;
+							}
+						}
+
+						// Re-calculating director and S:
+
+						// Planar wall (manually set S and dir, or eigenvalue calculation fails)
+						if ( feq(WALL[i].P[0],1.0) && feq(WALL[i].P[1],1.0) && feq(WALL[i].P[2],1.0) ){
+							CL[a][b][c].S = 1.0;
+							// Set the director as the orientation of the first particle (as all should be the same)
+							for( k=0; k<DIM; k++ ) CL[a][b][c].DIR[k] = CL[a][b][c].pp->U[k];
+							norm( CL[a][b][c].DIR, DIM );
+						}
+
+						// One particle cell (also manually set)
+						else if ( CL[a][b][c].POP == 1 ){
+							CL[a][b][c].S = 1.0;
+							// Set the director as the orientation of the particle
+							for( k=0; k<DIM; k++ ) CL[a][b][c].DIR[k] = CL[a][b][c].pp->U[k];
+							norm( CL[a][b][c].DIR, DIM );
+						}
+
+						// Curved wall
+						else if (CL[a][b][c].POP > 1){
+							// Calculate Q tensor
+							tensOrderParam( &CL[a][b][c], S, LC );
+							// Find S
+							solveEigensystem( S, DIM, eigval );
+							if(DIM==_3D) CL[a][b][c].S = -1.*(eigval[1]+eigval[2]);
+							else CL[a][b][c].S = eigval[0];
+							if( CL[a][b][c].S < 1./(1.-DIM) ){
+								#ifdef DBG
+								if (DBUG >= DBGRUN){
+									printf("Warning: Local scalar order parameter < 1/(1-DIM)\n");
+									printf("Cell [%d,%d,%d]\n",a,b,c);
+									printf("Eigenvalues=");
+									pvec(eigval,DIM);
+									printf("Eigenvectors=");
+									for( d=0; d<DIM; d++ ) pvec(S[d],DIM);
+								}
+								#endif
+							}
+							// Cell director (eigenvector corresponding to largest eigenvalue (1st element))
+							for( k=0; k<DIM; k++ ) CL[a][b][c].DIR[k] = S[0][k];
+							if( CL[a][b][c].S > 1.0 ){
+								CL[a][b][c].S = 1.0;
+							}
+						}
+					}
+				} // End ghost anchoring
+
+				// Shift back moving wall
+				if ( WALL[i].DSPLC ){
+					rotatebackBC( &WALL[i], &tp[0], LC );
+					shiftbackBC( shift, &WALL[i] );
+				}
+			} // End boundary loop
+
+			// Apply ghost particles for centre of mass velocity
+			if ( flagW ){
+				if( CL[a][b][c].POP < nDNST && CL[a][b][c].POP > 0 ) {
+					invN = 1.0/(nDNST-(double)CL[a][b][c].POP);
+					for( d=0; d<DIM; d++ ) {
+						R[d] = genrand_gaussMB( KBT, invN );
+						CL[a][b][c].VCM[d] += R[d];
+						CL[a][b][c].VCM[d] /= nDNST;
 					}
 				}
-
-				// Manually set S and n for the cell if the walls have anchoring and are planar
-				// Need this as a perfectly aligned cell breaks in the eigenvalue calculation
-				if (feq(WALL[i].P[0],1.0) && feq(WALL[i].P[1],1.0) && feq(WALL[i].P[2],1.0)){
-					CL[a][b][c].S = 1.0; // set S
-					for( k=0; k<DIM; k++ ) CL[a][b][c].DIR[k] = tempU[k]; // set director
-					norm(CL[a][b][c].DIR, DIM);
-					flagS = 1; // S has now been calculated so don't calculate again
-				}
-			}
-		} // end loop on walls
-
-		// Calculating new S and director for cell (same calculations as localPROP)
-		if (LC!=ISOF && CL[a][b][c].POP > 1 && flagGhostAnchoring == 1 && flagW == 1 && flagS == 0  && numBC == 1 && (feq(WALL[i].MUN,0.0) || feq(WALL[i].MUT,0.0))){
-			// Tensor order parameter
-			tensOrderParam( &CL[a][b][c],S,LC );
-			// Scalar order parameter
-			solveEigensystem( S,DIM,eigval );
-			if(DIM==_3D) CL[a][b][c].S = -1.*(eigval[1]+eigval[2]);
-			else CL[a][b][c].S=eigval[0];
-			if( CL[a][b][c].S<1./(1.-DIM) ){
-				#ifdef DBG
-				if (DBUG >= DBGRUN){
-					printf("Warning: Local scalar order parameter < 1/(1-DIM)\n");
-					printf("Cell [%d,%d,%d]\n",a,b,c);
-					printf("Eigenvalues=");
-					pvec(eigval,DIM);
-					printf("Eigenvectors=");
-					for( d=0; d<DIM; d++ ) pvec(S[d],DIM);
-				}
-				#endif
-			}
-			// Cell director (eigenvector corresponding to largest eigenvalue (1st element))
-			for( i=0; i<DIM; i++ ) CL[a][b][c].DIR[i] = S[0][i];
-			if( CL[a][b][c].S>1.0 ) CL[a][b][c].S=1.0;
-		}
-
-		// centre of mass velocity (for no slip bc)
-		if (flagW == 1){
-			if( CL[a][b][c].POP<nDNST && CL[a][b][c].POP>0 ) {
-				invN = 1.0/(nDNST-(double)CL[a][b][c].POP);
-				for( d=0; d<DIM; d++ ) {
-					R[d] = genrand_gaussMB( KBT,invN );
-					CL[a][b][c].VCM[d] += R[d];
-					CL[a][b][c].VCM[d] /= nDNST;
-				}
 			}
 		}
-	} // end loop over cells
-	if (flagGhostAnchoring == 1){
+	} // End cell loop
+
+	// Free memory for S
+	if ( setGhostAnch ){
 		for( i=0; i<DIM; i++ ) free( S[i] );
 		free( S );
 	}
@@ -456,7 +511,16 @@ void gridShift_all( double SHIFT[],int shiftBack,particleMPC *SRDparticles,bc WA
 	else for( j=0; j<DIM; j++ ) signedSHIFT[j] = SHIFT[j];
 
 	//Shift each particle
-	for( i=0; i<GPOP; i++ ) for( j=0; j<DIM; j++ ) SRDparticles[i].Q[j] += signedSHIFT[j];
+	for( i=0; i<GPOP; i++ ) for( j=0; j<DIM; j++ ){
+		 SRDparticles[i].Q[j] += signedSHIFT[j]; // perform the shift
+		
+		 // The Gallilean shift can (sometimes) force particles outside the boundaries of the system.
+		 // 	These lines will periodically shift those particles to the other side of the domain, while
+		 //	keeping those that escaped naturally (ie not due to the shift) in place. It will also return 
+		 //	them to the correct place when needing to shift back for streaming.
+		 if (shiftBack == 0 && SRDparticles[i].Q[j] > XYZ[j] && SRDparticles[i].Q[j] <= XYZ[j] + signedSHIFT[j] )	SRDparticles[i].Q[j] -= XYZ[j];
+		 else if (shiftBack == 1 && SRDparticles[i].Q[j] < 0.0 && SRDparticles[i].Q[j] >= signedSHIFT[j] ) SRDparticles[i].Q[j] += XYZ[j];
+	 }
 	if( MDmode == MDinMPC) for( i=0; i<(simMD->atom.n); i++ ) {
 		(simMD->atom.items+i)->rx += signedSHIFT[0];
 		if( DIM>=_2D ) (simMD->atom.items+i)->ry += signedSHIFT[1];
@@ -3203,6 +3267,7 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 	/* *********** ADD GHOST PARTICLES ********** */
 	/* ****************************************** */
 	ghostPart( CL,WALL,in.KBT,in.LC,SP );
+
 	/* ****************************************** */
 	/* *********LIQUID CRYSTAL COLLISION ******** */
 	/* ****************************************** */
