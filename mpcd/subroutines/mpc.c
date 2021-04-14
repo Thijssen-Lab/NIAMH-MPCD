@@ -210,6 +210,10 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 	// Loop over cells
 	for( a=0; a<=XYZ[0]; a++ ) for( b=0; b<=XYZ[1]; b++ ) for( c=0; c<=XYZ[2];c ++ ) {
 
+		// Each cell has a temporary particle assigned to each corner
+		// If the boundary cuts a cell (i.e. a corner particle is found inside a boundary)
+		// Then this routine operates (to fill cell up with ghost particles, or apply strong anchoring)
+
 		//Position of corners of the cell
 		//Origin
 		tp[0].Q[0] = (double) a;
@@ -249,12 +253,18 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 			flagW = 0;
 			wallindex = -1; // value not important, just best not between 0 and NBC-1
 
-			// How many anchored walls intersect the cell?  (don't want >=2 conflicting)
+			// An initial part of the routine to find out how many walls intersect the cell.
+			// This is only used for boundaries with anchoring conditions
+			// (and strong anchoring turned on) as two conflicting anchoring conditions
+			// would take the last one applied (which isn't necessarily what we want).
+			// We only want the rest of the ghost particle anchoring routine to continue
+			// if 1 anchored wall intersects the cell.
+
 			if ( setGhostAnch == 1 ){
 				// Loop over boundary conditions, selecting ones with anchoring
 				for( i=0; i<NBC; i++ ) if( WALL[i].PHANTOM && ( feq(WALL[i].MUN,0.0) || feq(WALL[i].MUT,0.0) ) ){
 
-					// Shift moving wall (periodic BC)
+					// Shift moving wall (periodic BC).
 					if ( WALL[i].DSPLC ){
 						shiftBC( shift, &WALL[i], &tp[0] );
 						rotateBC( &WALL[i], &tp[0], LC );
@@ -283,6 +293,8 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 			// Boundary loop
 			for( i=0; i<NBC; i++ ) if( WALL[i].PHANTOM ){
 
+				// If the colloid is moving through a periodic BC, we want the routine
+				// to be applied to its image on the other side of the boundary too.
 				// Shift moving wall (periodic BC)
 				if ( WALL[i].DSPLC ){
 					shiftBC( shift, &WALL[i], &tp[0] );
@@ -295,7 +307,10 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 					if ( W[j] < 0.0 ) flagW = 1; // cell is cut by BC
 				}
 
-				// Apply ghost anchoring
+				// Apply ghost anchoring (see description at top of routine).
+				// If turned on, this strengthens the anchoring so the collision operator
+				// sees the cell director and scalar order parameter as those preferred
+				// by the anchoring conditions.
 				if ( LC!=ISOF && setGhostAnch == 1 && flagW && numBC == 1 && wallindex == i){
 					if ( feq( WALL[i].MUT, 0.0 ) || feq( WALL[i].MUN, 0.0 ) ){ // if anchored
 
@@ -303,21 +318,11 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 						if (CL[a][b][c].pp!=NULL){
 							ptMPC = CL[a][b][c].pp;
 							while (ptMPC != NULL){
-								// if particles are outside system (due to Galilean shift), shift them periodically.
-								double pos[DIM]; // temporary container for particles position.
-
-								for ( k=0; k<DIM; k++ ){
-									pos[k] = ptMPC->Q[k];
-									if ( ptMPC->Q[k] > (double) XYZ[k] ) ptMPC->Q[k] -= (double) XYZ[k];
-									else if ( ptMPC->Q[k] < 0.0 ) ptMPC->Q[k] += (double) XYZ[k];
-								}
 								normal(n, WALL[i], ptMPC->Q, DIM);
 								norm(n, DIM);
+								// apply boundary condition (anchoring) to cell
+								// note: this also feeds anchoring torque back to boundary (to add to dV and dL), if mobile
 								oriBC(ptMPC, SP, &WALL[i], n);
-
-								// particles return to unshifted value
-								for (k=0; k<DIM; k++) ptMPC->Q[k] = pos[k];
-
 								ptMPC = ptMPC->next;
 							}
 						}
@@ -327,6 +332,7 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 						// Planar wall (manually set S and dir, or eigenvalue calculation fails)
 						if ( feq(WALL[i].P[0],1.0) && feq(WALL[i].P[1],1.0) && feq(WALL[i].P[2],1.0) ){
 							CL[a][b][c].S = 1.0;
+							// Set the director as the orientation of the first particle (as all should be the same)
 							for( k=0; k<DIM; k++ ) CL[a][b][c].DIR[k] = CL[a][b][c].pp->U[k];
 							norm( CL[a][b][c].DIR, DIM );
 						}
@@ -334,6 +340,7 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 						// One particle cell (also manually set)
 						else if ( CL[a][b][c].POP == 1 ){
 							CL[a][b][c].S = 1.0;
+							// Set the director as the orientation of the particle
 							for( k=0; k<DIM; k++ ) CL[a][b][c].DIR[k] = CL[a][b][c].pp->U[k];
 							norm( CL[a][b][c].DIR, DIM );
 						}
@@ -388,6 +395,7 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 		}
 	} // End cell loop
 
+	// Free memory for S
 	if ( setGhostAnch ){
 		for( i=0; i<DIM; i++ ) free( S[i] );
 		free( S );
@@ -503,7 +511,11 @@ void gridShift_all( double SHIFT[],int shiftBack,particleMPC *SRDparticles,bc WA
 	else for( j=0; j<DIM; j++ ) signedSHIFT[j] = SHIFT[j];
 
 	//Shift each particle
-	for( i=0; i<GPOP; i++ ) for( j=0; j<DIM; j++ ) SRDparticles[i].Q[j] += signedSHIFT[j];
+	for( i=0; i<GPOP; i++ ) for( j=0; j<DIM; j++ ){
+		 SRDparticles[i].Q[j] += signedSHIFT[j];
+		 if (shiftBack == 0 && SRDparticles[i].Q[j] > XYZ[j] && SRDparticles[i].Q[j] <= XYZ[j] + signedSHIFT[j] )	SRDparticles[i].Q[j] -= XYZ[j];
+		 else if (shiftBack == 1 && SRDparticles[i].Q[j] < 0.0 && SRDparticles[i].Q[j] >= signedSHIFT[j] ) SRDparticles[i].Q[j] += XYZ[j];
+	 }
 	if( MDmode == MDinMPC) for( i=0; i<(simMD->atom.n); i++ ) {
 		(simMD->atom.items+i)->rx += signedSHIFT[0];
 		if( DIM>=_2D ) (simMD->atom.items+i)->ry += signedSHIFT[1];
