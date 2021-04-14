@@ -197,7 +197,7 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 	int numBC;										// Number of walls with anchoring in a given cell
 	int wallindex;								// Index of wall with anchoring acting on a cell
 	double shift[DIM];
-	setGhostAnch = 0; 						// a manual switch to turn on=1 or off=0 the stronger anchoring
+	setGhostAnch = 1; 						// a manual switch to turn on=1 or off=0 the stronger anchoring
 
 
 	if (setGhostAnch == 1){
