@@ -8,6 +8,7 @@ conditional = -DTHERMOSTAT_DPD
 
 # name of program
 program    = mpcd/mpcd.out
+progName   = $(program)
 
 # shell commands to automatically build list of files from *.c and *.h in directory
 sources    = $(shell ls mpcd/subroutines/*.c) $(program:.out=.c) $(shell ls md/*.c)
@@ -25,8 +26,8 @@ opt        :=  -O3
 # If any of the $(objects) are more recent than $(program), then linking takes place
 $(program): $(objects)
 	@echo "LINKING:  $(program)"
-	@$(cc) $(cflags) $(opt) $(objects) $(defines) $(conditional) $(lib) -o $(program)
-	mv $(program) ./
+	@$(cc) $(cflags) $(opt) $(objects) $(defines) $(conditional) $(lib) -o $(progName)
+	mv $(progName) ./
 #----------------------------------------------------------------------------------------------------
 # If any .c file is more recent than its .o file, then they are compiled
 %.o:    %.c
@@ -37,11 +38,17 @@ $(program): $(objects)
 # interpreted as the name of a file.
 .PHONY:    debug
 debug:
-	make -e opt="-g"
+	make -e opt="-g" progName="mpcd/mpcdDebug.out"
 #----------------------------------------------------------------------------------------------------
+# phony for extra debugging/ valgrind
+.PHONY:    debug+
+debug+:
+	make -e opt="-ggdb3" progName="mpcd/mpcdDebugPlus.out"
+#----------------------------------------------------------------------------------------------------
+# phony for profiling
 .PHONY:    prof
 prof:
-	make -e opt="-pg"
+	make -e opt="-pg" progName="mpcd/mpcdProf.out"
 #----------------------------------------------------------------------------------------------------
 .PHONY: clean
 clean:
