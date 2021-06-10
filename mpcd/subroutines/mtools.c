@@ -88,15 +88,15 @@ void crossprod( double x[3], double y[3], double result[3] ) {
 	int i;
 	for( i=0; i<_3D; i++ ) result[i]=0.; // init
 	// manually compute cross product terms
-	result[0] = x[2]*y[3] - x[3]*y[2];
-	result[1] = x[3]*y[1] - x[1]*y[3];
-	result[2] = x[1]*y[2] - x[2]*y[1];
+	result[0] = x[1]*y[2] - x[2]*y[1];
+	result[1] = x[2]*y[0] - x[0]*y[2];
+	result[2] = x[2]*y[1] - x[1]*y[0];
 }
 void oldcrossprod( double x[3], double y[3], double result[3] ) {
 /*
    Old version of the cross product operation.
 	This version was found to be slow (gprof said this and it's calls to 
-	levicivata took >35% runtime!!!!)
+	levicivita took >35% runtime!!!!)
 */
 	int i,j,k;
 	signed int eps;
