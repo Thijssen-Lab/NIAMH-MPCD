@@ -32,23 +32,32 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 */
 	int a,b,c,d,id;
 	int i;
-	double V[_3D];
+	double V[_3D],Q[_3D];
 	double **S,eigval[_3D];
 	double mass;
 	particleMPC *pMPC;	//Temporary pointer to MPC particles
 	particleMD *pMD;	//Temporary pointer to MD particles
 	smono *pSW;			//Temporary pointer to swimmer monomers
 
+	// int flag on whether to compute CM or not
+	int computeCM = (RTECH==RAT) || (LC!=ISOF) || (RTECH==DIPOLE_VCM) || (RTECH==DIPOLE_DIR_SUM) || (RTECH==DIPOLE_DIR_AV) || (RTECH==MULTIPHASE);
+
 	// Zero
 	for( d=0; d<_3D; d++ ) V[d] = 0.0;
 	for( d=0; d<_3D; d++ ) eigval[d] = 0.0;
-	// Calculate POP, MASS and VCM (don't calculate CM. Only if needed - see below)
+
+	// Loop over all cells
 	for( a=0; a<XYZ_P1[0]; a++ ) for( b=0; b<XYZ_P1[1]; b++ ) for( c=0; c<XYZ_P1[2]; c++ ) {
+		// Idea here is to compute POP, MASS, and VCM
+		//	CM is only computed if needed
+
 		//Zero everything for recounting
 		CL[a][b][c].POP = 0;
 		CL[a][b][c].MASS = 0.0;
 		for( d=0; d<DIM; d++ ) CL[a][b][c].VCM[d] = 0.0;
 		for( d=0; d<NSPECI; d++ ) CL[a][b][c].SP[d] = 0;
+		if (computeCM) for( d=0; d<DIM; d++ ) CL[a][b][c].CM[d] = 0.0;
+
 		//Find local values
 		if( CL[a][b][c].pp!=NULL || ( CL[a][b][c].MDpp!=NULL && MDmode==MDinMPC ) || CL[a][b][c].sp!=NULL ) {
 			// SRD particles
@@ -61,6 +70,12 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 					CL[a][b][c].MASS += mass;
 					CL[a][b][c].SP[id] ++;
 					for( d=0; d<DIM; d++ ) CL[a][b][c].VCM[d] +=  pMPC->V[d] * mass;
+
+					if (computeCM){ // add positions if necessary
+						for( d=0; d<DIM; d++ ) Q[d] = pMPC->Q[d];
+						for( d=0; d<DIM; d++ ) CL[a][b][c].CM[d] += Q[d] * mass;
+					}
+
 					//Increment link in list
 					pMPC = pMPC->next;
 				}
@@ -76,6 +91,14 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 					if( DIM >= _2D ) V[1] = pMD->vy;
 					if( DIM >= _3D ) V[2] = pMD->vz;
 					for( d=0; d<DIM; d++ ) CL[a][b][c].VCM[d] += V[d] * mass;
+
+					if (computeCM){
+						Q[0] = pMD->rx;
+						if( DIM > 1 ) Q[1] = pMD->ry;
+						if( DIM > 2 ) Q[2] = pMD->rz;
+						for( d=0; d<DIM; d++ ) CL[a][b][c].CM[d] += Q[d] * mass;
+					}
+
 					//Increment link in list
 					pMD = pMD->nextSRD;
 				}
@@ -89,19 +112,21 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 					else mass = (double) specS.headM;
 					CL[a][b][c].MASS += mass;
 					for( d=0; d<DIM; d++ ) CL[a][b][c].VCM[d] +=  pSW->V[d] * mass;
+
+					if (computeCM){
+						for( d=0; d<DIM; d++ ) Q[d] = pSW->Q[d];
+						for( d=0; d<DIM; d++ ) CL[a][b][c].CM[d] += Q[d] * mass;
+					}
+
 					//Increment link in list
 					pSW = pSW->next;
 				}
 			}
 		}
 		// Make sums into averages
-		if( CL[a][b][c].MASS>0.0 ) for( d=0; d<DIM; d++ ) CL[a][b][c].VCM[d] /= CL[a][b][c].MASS;
-	}
-	//Calculate centre of mass
-	if( RTECH==RAT || LC!=ISOF || RTECH==DIPOLE_VCM || RTECH==DIPOLE_DIR_SUM || RTECH==DIPOLE_DIR_AV || RTECH==MULTIPHASE ) {
-		// Calculate centre of mass
-		for( a=0; a<XYZ_P1[0]; a++ ) for( b=0; b<XYZ_P1[1]; b++ ) for( c=0; c<XYZ_P1[2]; c++ ) {
-			localCM( &CL[a][b][c],SP,specS );
+		if( CL[a][b][c].MASS>0.0 ) for( d=0; d<DIM; d++ ){ 
+			CL[a][b][c].VCM[d] /= CL[a][b][c].MASS;
+			if (computeCM) CL[a][b][c].CM[d] /= CL[a][b][c].MASS;
 		}
 	}
 	//Calculate moment of inertia
@@ -2843,6 +2868,7 @@ void scramble( particleMPC *p ) {
 }
 void localCM( cell *CL,spec *SP,specSwimmer specS ) {
 /*
+	This is now a legacy method after being refactored into localPROP.
    This routine just calculates the centre of mass position for a given cell
 */
 	int id,d;
@@ -2850,6 +2876,8 @@ void localCM( cell *CL,spec *SP,specSwimmer specS ) {
 	particleMPC *pMPC;	//Temporary pointer to MPC particles
 	particleMD *pMD;	//Temporary pointer to MD particles
 	smono *pSW;			//Temporary pointer to swimmer monomers
+
+	//mass has already been computed
 
 	//Zero everything for recounting
 	for( d=0; d<DIM; d++ ) CL->CM[d] = 0.;
