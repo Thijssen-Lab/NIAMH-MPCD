@@ -26,6 +26,7 @@ void dotprodMatVec( double M[][3],double v[],double result[],int dimension );
 void dotprodVecMat( double v[], double M[][3],double result[],int dimension );
 void dotprodMatMat( double A[][3],double B[][3],double result[][3],int dimension );
 void crossprod( double x[3], double y[3], double result[3] );
+void oldcrossprod( double x[3], double y[3], double result[3] );
 void proj( double v[],double n[],double VP[],int dimension );
 void tang( double v[],double VN[],double VT[],int dimension );
 double cosang( double v1[],double v2[],int dimension );
