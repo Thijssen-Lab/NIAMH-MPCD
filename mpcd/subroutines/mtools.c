@@ -14,6 +14,23 @@
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
+double smrtPow(double x, double y){
+/*
+	A "smart" Pow method that will only call C-math pow if necessary 
+		(non-natural y).
+*/
+
+	const int yLim = 10; // an arbitrary limit for smart y usage
+
+	//check if y is int and below the smart y limit
+	if ((y - (int)y == 0) && (y <= yLim)){
+		int i;
+		double result = 1;
+		for (i = 0; i < y; i++) result *= x; // dumb power
+		
+		return result;
+	} else return smrtPow(x, y); // otherwise just do C-math pow
+}
 int feq(double x,double y) {
 /*
     Check if two floats are equal within set TOL
@@ -1581,21 +1598,4 @@ void checkNAN_V( cell ***CL,int XYZ_P1[3],int pauseFlag,int dimension ) {
 		}
 	}
 	if( cnt>0 && pauseFlag ) wait4u();
-}
-double smrtsmrtPow(double x, double y){
-/*
-	A "smart" Pow method that will only call C-math pow if necessary 
-		(non-natural y).
-*/
-
-	const int yLim = 10; // an arbitrary limit for smart y usage
-
-	//check if y is int and below the smart y limit
-	if ((y - (int)y == 0) && (y <= yLim)){
-		int i;
-		double result = 1;
-		for (i = 0; i < y; i++) result *= x; // dumb power
-		
-		return result;
-	} else return smrtPow(x, y); // otherwise just do C-math pow
 }
