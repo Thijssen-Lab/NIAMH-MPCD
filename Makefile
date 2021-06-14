@@ -50,6 +50,11 @@ debug+:
 prof:
 	make -e opt="-pg" progName="mpcd/mpcdProf.out"
 #----------------------------------------------------------------------------------------------------
+# phony for fastmath
+.PHONY:    fastmath
+fastmath:
+	make -e opt="-ffast-math" progName="mpcd/mpcdFMath.out"
+#----------------------------------------------------------------------------------------------------
 .PHONY: clean
 clean:
 	@echo "Removing executable and object files"
