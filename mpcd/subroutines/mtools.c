@@ -378,8 +378,8 @@ double latticeEstVol( bc *body,int XYZ[],int dimension ) {
 		WARNING!!! CURRENTLY JUST APPROXIMATES EVERYTHING AS THE CLOSEST ELLIPSOID!!!
 */
 	double vol = 0.0;
-	if( dimension==_3D ) vol = 4.0*pi*( body->AINV[0]*body->AINV[1]*body->AINV[2]*pow(body->R,3) )/3.0;
-	else if( dimension==_2D ) vol = pi*body->AINV[0]*body->AINV[1]*pow(body->R,2);
+	if( dimension==_3D ) vol = 4.0*pi*( body->AINV[0]*body->AINV[1]*body->AINV[2]*smrtPow(body->R,3) )/3.0;
+	else if( dimension==_2D ) vol = pi*body->AINV[0]*body->AINV[1]*smrtPow(body->R,2);
 	else {
 		printf( "Warning: Volume zero because dimensionality not 3 or 2D." );
 	}
@@ -396,9 +396,9 @@ void dim_vol( bc *body,int XYZ[],int dimension ) {
 		//Sphere & ellipsoids
 		if( feq(body->P[0],2.0) && feq(body->P[1],2.0) && feq(body->P[2],2.0) ) {
 			//Sphere
-			if( feq(body->A[0],1.0) && feq(body->A[1],1.0) && feq(body->A[2],1.0) ) body->VOL = 4.0*pi*pow( body->R,3.0 )/3.0;
+			if( feq(body->A[0],1.0) && feq(body->A[1],1.0) && feq(body->A[2],1.0) ) body->VOL = 4.0*pi*smrtPow( body->R,3.0 )/3.0;
 			//Ellipsoids
-			else body->VOL = 4.0*pi*( body->AINV[0]*body->AINV[1]*body->AINV[2]*pow(body->R,3) )/3.0;
+			else body->VOL = 4.0*pi*( body->AINV[0]*body->AINV[1]*body->AINV[2]*smrtPow(body->R,3) )/3.0;
 		}
 		//All others
 		else body->VOL = latticeEstVol( body,XYZ,dimension );
@@ -407,9 +407,9 @@ void dim_vol( bc *body,int XYZ[],int dimension ) {
 		//Circle & ellipses
 		if( feq(body->P[0],2.0) && feq(body->P[1],2.0) ) {
 			//Circle
-			if( feq(body->A[0],1.0) && feq(body->A[1],1.0) ) body->VOL = pi * pow( body->R,body->P[3] );
+			if( feq(body->A[0],1.0) && feq(body->A[1],1.0) ) body->VOL = pi * smrtPow( body->R,body->P[3] );
 			//Ellipses
-			else body->VOL = pi*body->AINV[0]*body->AINV[1]*pow(body->R,2);
+			else body->VOL = pi*body->AINV[0]*body->AINV[1]*smrtPow(body->R,2);
 		}
 		//All others
 		else body->VOL = latticeEstVol( body,XYZ,dimension );
@@ -596,7 +596,7 @@ double determinant( double **a,int n ) {
 					j2++;
 				}
 			}
-			det += pow(-1.0,1.0+j1+1.0) * a[0][j1] * determinant( m,n-1 );
+			det += smrtPow(-1.0,1.0+j1+1.0) * a[0][j1] * determinant( m,n-1 );
 			for( i=0; i<n-1; i++ ) free( m[i] );
 			free( m );
 		}
@@ -817,22 +817,22 @@ double non4foldSymmCalcW( bc WALL,double POS[], int dimension ) {
 	// First term
 	terms = WALL.A[0]*cosP*sinT;
 	if( WALL.ABS ) terms=fabs(terms);
-	terms = pow( terms,WALL.P[0] );
+	terms = smrtPow( terms,WALL.P[0] );
 	W += terms;
 	// Second term
 	terms = WALL.A[1]*sinP*sinT;
 	if( WALL.ABS ) terms=fabs(terms);
-	terms = pow( terms,WALL.P[1] );
+	terms = smrtPow( terms,WALL.P[1] );
 	W += terms;
 	// Third term
 	terms = WALL.A[2]*cosT;
 	if( WALL.ABS ) terms=fabs(terms);
-	terms = pow( terms,WALL.P[2] );
+	terms = smrtPow( terms,WALL.P[2] );
 	W += terms;
 	// Fourth terms
 	terms = WALL.R/r;
 	if( WALL.ABS ) terms=fabs(terms);
-	terms = pow( terms,WALL.P[3] );
+	terms = smrtPow( terms,WALL.P[3] );
 	W -= terms;
 	if( WALL.INV ) W *= -1.0;
 
@@ -850,12 +850,12 @@ double surf_func( bc WALL,double POS[], int dimension ) {
 		for( i=0; i<dimension; i++ ) {
 			terms = WALL.A[i] * ( POS[i]-WALL.Q[i] );
 			if( WALL.ABS ) terms=fabs(terms);
-			terms = pow( terms,WALL.P[i] );
+			terms = smrtPow( terms,WALL.P[i] );
 			W += terms;
 		}
 		terms = WALL.R;
 		if( WALL.ABS ) terms=fabs(terms);
-		terms = pow( terms,WALL.P[3] );
+		terms = smrtPow( terms,WALL.P[3] );
 		W -= terms;
 		if( WALL.INV ) W *= -1.;
 	}
@@ -1581,4 +1581,21 @@ void checkNAN_V( cell ***CL,int XYZ_P1[3],int pauseFlag,int dimension ) {
 		}
 	}
 	if( cnt>0 && pauseFlag ) wait4u();
+}
+double smrtsmrtPow(double x, double y){
+/*
+	A "smart" Pow method that will only call C-math pow if necessary 
+		(non-natural y).
+*/
+
+	const int yLim = 10; // an arbitrary limit for smart y usage
+
+	//check if y is int and below the smart y limit
+	if ((y - (int)y == 0) && (y <= yLim)){
+		int i;
+		double result = 1;
+		for (i = 0; i < y; i++) result *= x; // dumb power
+		
+		return result;
+	} else return smrtPow(x, y); // otherwise just do C-math pow
 }

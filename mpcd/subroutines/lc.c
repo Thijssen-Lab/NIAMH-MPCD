@@ -153,8 +153,8 @@ void genrand_maierSaupeEXP_3D( double rotAx[],double rotAngle,double U[],double 
 	R = genrand_real()*(1.+BUS/3.);
 	//Transform R into a random uz
 	c=sqrt( 9.*BUS*BUS*BUS*BUS*R*R+4.*BUS*BUS*BUS );
-	num=pow( 3.*BUS*BUS*R+c, 1./3. );
-	denom=pow( 2.,1./3. );
+	num=smrtPow( 3.*BUS*BUS*R+c, 1./3. );
+	denom=smrtPow( 2.,1./3. );
 	uz=num/(denom*BUS) - denom/num;
 
 	newU[0]=genrand_pmOne()*uz;

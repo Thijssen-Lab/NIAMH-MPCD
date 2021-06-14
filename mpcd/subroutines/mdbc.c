@@ -216,10 +216,10 @@ double calcW_MD( bc WALL,particleMD *atom ){
 		for( i=0; i<_3D; i++ ) {
 			terms = WALL.A[i] * ( Q[i]-WALL.Q[i] );
 			if( WALL.ABS ) terms=fabs(terms);
-			terms = pow( terms,WALL.P[i] );
+			terms = smrtPow( terms,WALL.P[i] );
 			W += terms;
 		}
-		terms = pow( WALL.R,WALL.P[3] );
+		terms = smrtPow( WALL.R,WALL.P[3] );
 		if( WALL.ABS ) terms=fabs(terms);
 		W -= terms;
 	}
@@ -286,7 +286,7 @@ void crosstime_MD( particleMD *atom,bc WALL,double *tc_pos, double *tc_neg,doubl
 		c += WALL.A[2]*WALL.A[2]*(atom->rz*atom->rz-2.*atom->rz*WALL.Q[2]+WALL.Q[2]*WALL.Q[2]);
 
 		b *= 2.0;
-		c -= pow(WALL.R,WALL.P[3]);
+		c -= smrtPow(WALL.R,WALL.P[3]);
 		//Use the quadratic formula
 		*tc_neg = - b - sqrt(b*b-4.*a*c);
 		*tc_neg /= (2.*a);
@@ -368,9 +368,9 @@ double *normal_MD( double *n,bc WALL,particleMD *atom,int dimension ) {
 		n[2] = 2.*WALL.A[2]*(atom->rz-WALL.Q[2]);
 	}
 	else {
-		n[0] = (WALL.P[0]) *pow( WALL.A[0]*(atom->rx-WALL.Q[0]) , WALL.P[0]-1.0 );
-		n[1] = (WALL.P[1]) *pow( WALL.A[1]*(atom->ry-WALL.Q[1]) , WALL.P[1]-1.0 );
-		n[2] = (WALL.P[2]) *pow( WALL.A[2]*(atom->rz-WALL.Q[2]) , WALL.P[2]-1.0 );
+		n[0] = (WALL.P[0]) *smrtPow( WALL.A[0]*(atom->rx-WALL.Q[0]) , WALL.P[0]-1.0 );
+		n[1] = (WALL.P[1]) *smrtPow( WALL.A[1]*(atom->ry-WALL.Q[1]) , WALL.P[1]-1.0 );
+		n[2] = (WALL.P[2]) *smrtPow( WALL.A[2]*(atom->rz-WALL.Q[2]) , WALL.P[2]-1.0 );
 	}
 
 	return n;
@@ -754,10 +754,10 @@ double calcW_swimmer( bc WALL,smono *atom ) {
 		for( d=0; d<DIM; d++ ) {
 			terms = WALL.A[d] * ( atom->Q[d]-WALL.Q[d] );
 			if( WALL.ABS ) terms=fabs(terms);
-			terms = pow( terms,WALL.P[d] );
+			terms = smrtPow( terms,WALL.P[d] );
 			W += terms;
 		}
-		terms = pow( WALL.R,WALL.P[3] );
+		terms = smrtPow( WALL.R,WALL.P[3] );
 		if( WALL.ABS ) terms=fabs(terms);
 		W -= terms;
 	}
@@ -808,7 +808,7 @@ void crosstime_swimmer( smono *atom,bc WALL,double *tc_pos, double *tc_neg,doubl
 			c += WALL.A[d]*WALL.A[d]*(atom->Q[d]*atom->Q[d]-2.0*atom->Q[d]*WALL.Q[d]+WALL.Q[d]*WALL.Q[d]);
 		}
 		b *= 2.0;
-		c -= pow(WALL.R,WALL.P[3]);
+		c -= smrtPow(WALL.R,WALL.P[3]);
 		//Use the quadratic formula
 		*tc_neg = - b - sqrt(b*b-4.*a*c);
 		*tc_neg /= (2.*a);
@@ -875,7 +875,7 @@ double *normal_swimmer( double *n,bc WALL,smono *atom,int dimension ) {
 	else if(( DIM == 2 && feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0)) || (DIM > 2 && feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0))) {
 		for( i=0; i<dimension; i++ ) n[i] = 2.*WALL.A[i]*(atom->Q[i]-WALL.Q[i]);
 	}
-	else for( i=0; i<dimension; i++ ) n[i] = (WALL.P[i]) *pow( WALL.A[i]*(atom->Q[i]-WALL.Q[i]) , WALL.P[i]-1.0 );
+	else for( i=0; i<dimension; i++ ) n[i] = (WALL.P[i]) *smrtPow( WALL.A[i]*(atom->Q[i]-WALL.Q[i]) , WALL.P[i]-1.0 );
 	return n;
 }
 void velBC_swimmer( smono *atom,bc *WALL,specSwimmer SS,double n[_3D] ) {

@@ -113,4 +113,7 @@ void FTspectrum( double *corr,double *spect,int maxXYZ,int dimension );
 int checkNAN_vec( double vec[],int dimension );
 void checkNAN_Q( cell ***CL,int XYZ_P1[3],int pauseFlag,int dimension );
 void checkNAN_V( cell ***CL,int XYZ_P1[3],int pauseFlag,int dimension );
+
+//Optimisation related functions
+double smrtPow(double x, double y);
 #endif

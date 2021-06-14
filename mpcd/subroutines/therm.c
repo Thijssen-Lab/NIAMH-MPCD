@@ -104,7 +104,7 @@ void heyes_cell( cell CL,double KBT,double KBTNOW,double RELAX ) {
 		prob *= -0.5*(sc_fctr*sc_fctr-1.)*CL.MASS;
 		prob /= KBT;
 		prob = exp( prob );
-		prob *= pow( sc_fctr, DIM*(CL.POP - 1) );
+		prob *= smrtPow( sc_fctr, DIM*(CL.POP - 1) );
 		if( prob>1. ) prob = 1.;
 	}
 

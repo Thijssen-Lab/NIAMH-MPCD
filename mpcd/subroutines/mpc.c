@@ -210,7 +210,7 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 */
 
 	int a,b,c,d,i,j,k;
-	int numCorners = (int) pow(2,DIM);
+	int numCorners = (int) smrtPow(2,DIM);
 	double R[DIM];
 	double invN;									// Inverse number difference
 	particleMPC tp[numCorners];		// Temporary MPC particles for all corners of a square cell
