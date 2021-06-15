@@ -29,7 +29,7 @@ double smrtPow(double x, double y){
 		for (i = 0; i < y; i++) result *= x; // dumb power
 		
 		return result;
-	} else return smrtPow(x, y); // otherwise just do C-math pow
+	} else return pow(x, y); // otherwise just do C-math pow
 }
 int feq(double x,double y) {
 /*
