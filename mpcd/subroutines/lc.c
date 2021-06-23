@@ -34,7 +34,7 @@ void genrand_maierSaupe( double DIR[],double rotAx[],double rotAngle,double U[],
 	}
 	else if(DIM==_2D) {
 		genrand_maierSaupeMetropolis_2D( DIR,rotAx,rotAngle,U,KBT,S,effM );
-// 		if( BUS>BUSMAX ) genrand_maierSaupeGAUSS_2D( rotAx,rotAngle,U,KBT,S,effM );
+		// if( BUS>BUSMAX ) genrand_maierSaupeGAUSS_2D( rotAx,rotAngle,U,KBT,S,effM );
 // 		//else if( BUS<BUSMIN ) genrand_maierSaupeEXP_2D( DIR,rotAx,rotAngle,U,KBT,S,effM );
 // 		else genrand_maierSaupeMetropolis_2D( DIR,rotAx,rotAngle,U,KBT,S,effM );
 	}
@@ -507,14 +507,17 @@ void larsonRotRate(double dudt[],double w[],double u[],double E[_3D][_3D],double
 	//Calculate rate of rotation of orientation
 	//Let j be the vector index
 	for( j=0; j<_3D; j++ ) {
-		//Third order uuu double dotted into rate of deformation tensor = vector
-		for( i=0; i<_3D; i++ ) for( k=0; k<_3D; k++ ) uuuD[j] += u[j]*( u[i]*D[i][k]*u[k] );
-		//Vector u dotted into rate of symmetric deformation tensor = vector
-		for( i=0; i<_3D; i++ ) uD[j] += u[i]*D[i][j];
-		//Vector u dotted into rate of antisymmetric deformation tensor = vector
-		for( i=0; i<_3D; i++ ) uw[j] += u[i]*W[i][j];
+		for (i = 0; i < _3D; i++){
+			//Third order uuu double dotted into rate of deformation tensor = vector
+			for( k=0; k<_3D; k++ ) uuuD[j] += u[j]*( u[i]*D[i][k]*u[k] );
+			//Vector u dotted into rate of symmetric deformation tensor = vector
+			uD[j] += u[i]*D[i][j];
+			//Vector u dotted into rate of antisymmetric deformation tensor = vector
+			uw[j] += u[i]*W[i][j];
+		}
+		dudt[j]=uw[j]+tumbleParam*(uD[j]-uuuD[j]);
 	}
-	for( i=0; i<_3D; i++ ) dudt[i]=uw[i]+tumbleParam*(uD[i]-uuuD[i]);
+
 	//Convert to angular velocity
 	crossprod( u,dudt,w );
 	#ifdef DBG
@@ -549,17 +552,29 @@ void brielsRotRate(double dudt[],double w[],double u[],double E[_3D][_3D]) {
 		  }
 	#endif
 }
-void saintillanRotRate(double dudt[],double w[],double u[],double E[_3D][_3D]) {
+void saintillanRotRate(double dudt[],double w[],double u[],double E[_3D][_3D],double tumbleParam) {
 /*
     The rotation rate of the rod (dudt) and angular velocity (w) according to Saintillan review pg 2, eq 9
 */
 	int i,j;
-	double t1[_3D],Ipp[_3D][_3D];
+	double t1[_3D],t2[_3D],Ipp[_3D][_3D];
 
 	//Calculate rate of rotation of orientation
 	for( i=0; i<_3D; i++ ) for( j=0; j<_3D; j++ ) Ipp[i][j] = -u[i]*u[j];
 	for( i=0; i<_3D; i++ ) Ipp[i][i]+=1.;
-	dotprodMatVec( E,u,t1,_3D );
+
+	// split E into symmetric and antisymmetric parts
+	double D[_3D][_3D],W[_3D][_3D];
+	for( i=0; i<_3D; i++ ) {
+		for( j=0; j<_3D; j++ ) {
+			D[j][i] = 0.5*( E[i][j] + E[j][i] );
+			W[j][i] = 0.5*( E[i][j] - E[j][i] );
+		}
+	}
+	dotprodMatVec( D,u,t1,_3D );
+	dotprodMatVec( W,u,t2,_3D );
+	for (i=0; i<_3D; i++) t1[i] = tumbleParam*t1[i] + t2[i];
+
 	dotprodMatVec( Ipp,t1,dudt,_3D );
 	//Convert to angular velocity
 	crossprod( u,dudt,w );
