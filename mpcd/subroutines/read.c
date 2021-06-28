@@ -8,6 +8,7 @@
 # include "../headers/globals.h"
 # include "../headers/pout.h"
 # include "../headers/mtools.h"
+# include "../headers/cJson.h"
 
 /* ****************************************** */
 /* ****************************************** */
@@ -721,9 +722,6 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 					*inMode = 0;
 					arg++;
 					sprintf(ip,"%s",argv[arg]);
-					// Make sure that the directory ends with a "/"
-					strln = strlen(ip);
-					if( ip[strln-1]!='/' ) strcat( ip,"/" );
 					break;
 				case 'L': // legacy 
 					if (argv[arg][2] == 'i'){ // arg 'Li' for legacy input
@@ -758,4 +756,44 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 			}
 		}
 	}
+}
+
+void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD, 
+   cell ****CL, int *MDMode, outputFlagsList *out, bc **WALL, 
+   specSwimmer *specS, swimmer **sw){
+/*
+	Main method for reading in Json, parsing it, and populating ALL inputs
+*/
+	char* fileStr = NULL;
+	if(getFileStr(fpath, &fileStr) != 0){ // read, return on error
+		exit(EXIT_FAILURE);
+	} 
+	printf("==== Read JSON =====\n%s", fileStr);
+	printf("\n\n");
+
+	//now can actually parse the json
+	cJSON *jObj = cJSON_Parse(fileStr); // create the json object 
+	if (jObj == NULL) // error checking
+	{
+		const char *error_ptr = cJSON_GetErrorPtr();
+		if (error_ptr != NULL)
+		{
+			fprintf(stderr, "Json read error. \nError before: %s\n", error_ptr);
+		}
+		exit(EXIT_FAILURE);
+	}
+
+	// set up input validation routines
+	linkedList *jsonTagList = NULL;
+	initLL(&jsonTagList);
+	linkedList *arrayList = NULL;
+	initLL(&arrayList);
+
+	// now do parsing
+	/// TODO: :))))))))))))
+
+	// clear memory
+	free(fileStr);
+
+	exit(EXIT_SUCCESS); ///TODO: temp while testing, remove eventually
 }
