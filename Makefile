@@ -10,8 +10,8 @@ conditional = -DTHERMOSTAT_DPD
 program    = mpcd/mpcd.out
 
 # shell commands to automatically build list of files from *.c and *.h in directory
-sources    = $(shell ls mpcd/subroutines/*.c) $(program:.out=.c) $(shell ls md/*.c)
-headers    = $(shell ls mpcd/headers/*.h) $(shell ls md/*.h)
+sources    = $(shell ls mpcd/subroutines/*.c) $(program:.out=.c) $(shell ls md/*.c) $(shell ls dependencies/cJson/*.c)
+headers    = $(shell ls mpcd/headers/*.h) $(shell ls md/*.h) $(shell ls dependencies/cJson/*.h)
 objects    = $(sources:.c=.o)
 
 # other variables
