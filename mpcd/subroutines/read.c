@@ -704,7 +704,7 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 	fclose( finput );
 }
 
-void readarg( int argc, char* argv[], char ip[],char op[] ) {
+void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 	int arg;
 	int strln;
 	// Default
@@ -718,12 +718,23 @@ void readarg( int argc, char* argv[], char ip[],char op[] ) {
 		if(argv[arg][0]=='-') {
 			switch (argv[arg][1]) {
 				case 'i':
+					*inMode = 0;
 					arg++;
 					sprintf(ip,"%s",argv[arg]);
 					// Make sure that the directory ends with a "/"
 					strln = strlen(ip);
 					if( ip[strln-1]!='/' ) strcat( ip,"/" );
 					break;
+				case 'L': // legacy 
+					if (argv[arg][2] == 'i'){ // arg 'Li' for legacy input
+						*inMode = 1;
+						arg++;
+						sprintf(ip,"%s",argv[arg]);
+						// Make sure that the directory ends with a "/"
+						strln = strlen(ip);
+						if( ip[strln-1]!='/' ) strcat( ip,"/" );
+						break;
+					}
 				case 'o':
 					arg++;
 					sprintf(op,"%s",argv[arg]);

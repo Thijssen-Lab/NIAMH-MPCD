@@ -89,6 +89,7 @@ int main(int argc, char* argv[]) {
 	//Input/Output
 	int CHCKPNTrcvr = 0;			//Flag for simulation from recovery of checkpoint
 	char ip[500],op[500];			//Path to input and output
+	int inMode = 0;					//Input mode: 0 - JSON, 1 - Legacy .inp
 	outputFlagsList outFlags;		//Flags for what is outputted
 	outputFilesList outFiles;		//List of output files
 	specSwimmer specS;				//Swimmer's species
@@ -114,7 +115,7 @@ int main(int argc, char* argv[]) {
 	#ifdef DBG
 		if( DBUG > DBGRUN ) printf("Read arguments and input files\n");
 	#endif
-	readarg( argc,argv,ip,op );
+	readarg( argc,argv,ip,op,&inMode );
 	/* ****************************************** */
 	/* ****************************************** */
 	/* ****************************************** */
@@ -122,10 +123,15 @@ int main(int argc, char* argv[]) {
 	/* ****************************************** */
 	/* ****************************************** */
 	/* ****************************************** */
-	readin( ip, &inputVar, &SPECIES, &SRDparticles, &CL, &MDmode );
-	readbc( ip, &WALL );
-	readpc( ip, &outFlags );
-	readswimmers( ip, &specS, &swimmers );
+	// read in depending on inMode
+	if (inMode == 0){ // JSON input
+		/// TODO: :)
+	} else if (inMode == 1){ // Legacy .inp input
+		readin( ip, &inputVar, &SPECIES, &SRDparticles, &CL, &MDmode );
+		readbc( ip, &WALL );
+		readpc( ip, &outFlags );
+		readswimmers( ip, &specS, &swimmers );
+	}	
 
 	//Check if recovering checkpointed simulation
 	if( inputVar.seed==-1 ) {
