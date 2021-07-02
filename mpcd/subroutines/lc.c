@@ -439,7 +439,7 @@ void jefferysTorque( cell *CL,spec *SP,double dt ) {
 	int i,id;
 	double CHIHI;			// Susceptibility to shear
 	double tumble;			//Tumbling parameter of nematogens
-	double dudt[DIM],u[_3D],w[_3D];
+	double dudt[_3D],u[_3D],w[_3D];
 	particleMPC *tmpc;		//Temporary particleMPC
 	double theta;
 
@@ -461,7 +461,7 @@ void jefferysTorque( cell *CL,spec *SP,double dt ) {
 		//Calculate the rotation rate
 		larsonRotRate(dudt,w,u,CL->E,tumble);
 		//brielsRotRate(dudt,w,u,CL->E);
-		//saintillanRotRate(dudt,w,u,CL->E);
+		//saintillanRotRate(dudt,w,u,CL->E,tumble);
 		//Scale with CHIHI ---"Shear Susceptibility" is heuristically less than 1 and theoretically CHIHI=1.
 		for( i=0; i<_3D; i++ ) w[i] *= CHIHI;
 		//Calculate new orientation from the angular velocity
@@ -485,6 +485,65 @@ void jefferysTorque( cell *CL,spec *SP,double dt ) {
 	}
 }
 void larsonRotRate(double dudt[],double w[],double u[],double E[_3D][_3D],double tumbleParam) {
+/*
+    The rotation rate of the rod (dudt) and angular velocity (w) according to Larson pg 448, eq 10-3
+    Would be Larson pg 280, eq 6-26 if the tumbling parameter was tumbleParam=(P*P-1.)/(P*P+1.)
+    where P=aspect ratio
+    Velocity gradient tensor E --- first index [i] is on velocity, second [j] on derivative --- E[i][j]= dv[i]/dx[j]
+    Loops done explicitly by hand to save computational time
+*/
+	int i,j;
+	double T1,T2,t2const,D[_3D][_3D],W[_3D][_3D];
+
+	for( i=0; i<_3D; i++ ) for( j=0; j<_3D; j++ ) {
+			D[j][i] = (E[i][j]+E[j][i]);
+			W[j][i] = (E[i][j]-E[j][i]);
+	}
+	//Calculate rate of rotation of orientation
+	//Let j be the vector index
+    if(DIM==_3D) {
+        //This term is the same for every j. So calculate outside of loop
+        t2const = u[0]*(u[0]*D[0][0]+u[1]*D[1][0]+u[2]*D[2][0]) + u[1]*(u[0]*D[0][1]+u[1]*D[1][1]+u[2]*D[2][1]) + u[2]*(u[0]*D[0][2]+u[1]*D[1][2]+u[2]*D[2][2]);
+        for( j=0; j<_3D; j++ ) {
+            //Vorticity term --- u dotted into rate of antisymmetric deformation tensor
+            T1 = u[0]*W[0][j]+u[1]*W[1][j]+u[2]*W[2][j];
+            //"Second" strain rate term --- Third order uuu double dotted into rate of deformation tensor
+            T2 = -u[j]*t2const;
+            //"First" strain rate term --- u dotted into rate of symmetric deformation tensor
+            T2 += u[0]*D[0][j]+u[1]*D[1][j]+u[2]*D[2][j];
+            //The factor of half comes from not including them in every vorticity/shear rate
+            dudt[j]=0.5*(T1+tumbleParam*T2);
+        }
+	}
+	else if(DIM==_2D) {
+        //This term is the same for every j. So calculate outside of loop
+        t2const=u[0]*(u[0]*D[0][0]+u[1]*D[1][0]) +  u[1]*(u[0]*D[0][1]+u[1]*D[1][1]);
+        //Same as 3D but explicitly removes z-components
+        for( j=0; j<_2D; j++ ) {
+            //Vorticity term --- u dotted into rate of antisymmetric deformation tensor
+            T1 = u[0]*W[0][j]+u[1]*W[1][j];
+            //"Second" strain rate term --- Third order uuu double dotted into rate of deformation tensor
+            T2 = -u[j]*t2const;
+            //"First" strain rate term --- u dotted into rate of symmetric deformation tensor 44
+            T2 += u[0]*D[0][j]+u[1]*D[1][j];
+            //The factor of half comes from not including them in every vorticity/shear rate
+            dudt[j]=0.5*(T1+tumbleParam*T2);
+        }
+		//Set the last component to zero. Might not be necessary but dudt later goes into crossprod() with 3D vectors
+		dudt[2]=0.0;
+	}
+	else printf("Warning: larsonRotRate() only programmed for DIM={3,2}, not DIM=%d\n",DIM);
+
+	//Convert to angular velocity
+	crossprod( u,dudt,w );
+	#ifdef DBG
+		if( DBUG == DBGJEFF ) {
+			printf("dudt\t");
+			pvec( dudt,_3D );
+		  }
+	#endif
+}
+void larsonRotRateOLD_AND_SLOW(double dudt[],double w[],double u[],double E[_3D][_3D],double tumbleParam) {
 /*
     The rotation rate of the rod (dudt) and angular velocity (w) according to Larson pg 448, eq 10-3
     Would be Larson pg 280, eq 6-26 if the tumbling parameter was tumbleParam=(P*P-1.)/(P*P+1.)
