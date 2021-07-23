@@ -1470,6 +1470,9 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 	//If DIPOLE_DIR_AV then use the average value everywhere
 	if( RTECH==DIPOLE_DIR_AV ) ACT *= nDNST/((double)CL->POP);
 
+	// Scale activity by the timestep size to remove timestep dependence
+	ACT *= dt;
+
 	/* ****************************************** */
 	/* ******* Generate random velocities ******* */
 	/* ****************************************** */
