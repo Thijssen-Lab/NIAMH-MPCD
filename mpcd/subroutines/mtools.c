@@ -107,7 +107,7 @@ void crossprod( double x[3], double y[3], double result[3] ) {
 	// manually compute cross product terms
 	result[0] = x[1]*y[2] - x[2]*y[1];
 	result[1] = x[2]*y[0] - x[0]*y[2];
-	result[2] = x[2]*y[1] - x[1]*y[0];
+	result[2] = x[0]*y[1] - x[1]*y[0];
 }
 void oldcrossprod( double x[3], double y[3], double result[3] ) {
 /*
