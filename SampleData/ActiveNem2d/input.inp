@@ -22,7 +22,7 @@
 0 WarmupTime
 1000 SimTime
 0.1 TimeStep
-5 RandomSeed
+0 RandomSeed
 0 MD_SRD
 20 stepsMD
 1 Species
