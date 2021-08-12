@@ -5,8 +5,7 @@
 *.out
 *.pyc
 
-#ignore MCPD input/ output files
-*.inp
+#ignore MCPD output files (keeping input files for sample data)
 *.dat
 
 #ignore files used for testing in the ./Runs/ folder
