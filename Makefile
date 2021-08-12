@@ -38,22 +38,17 @@ $(program): $(objects)
 # interpreted as the name of a file.
 .PHONY:    debug
 debug:
-	make -e opt="-g" progName="mpcd/mpcdDebug.out"
+	make -e opt="$(opt) -g" progName="mpcd/mpcdDebug.out"
 #----------------------------------------------------------------------------------------------------
 # phony for extra debugging/ valgrind
 .PHONY:    debug+
 debug+:
-	make -e opt="-ggdb3" progName="mpcd/mpcdDebugPlus.out"
+	make -e opt="$(opt) -ggdb3" progName="mpcd/mpcdDebugPlus.out"
 #----------------------------------------------------------------------------------------------------
 # phony for profiling
 .PHONY:    prof
 prof:
-	make -e opt="-pg" progName="mpcd/mpcdProf.out"
-#----------------------------------------------------------------------------------------------------
-# phony for fastmath
-.PHONY:    fastmath
-fastmath:
-	make -e opt="-ffast-math" progName="mpcd/mpcdFMath.out"
+	make -e opt="$(opt) -pg" progName="mpcd/mpcdProf.out"
 #----------------------------------------------------------------------------------------------------
 .PHONY: clean
 clean:
