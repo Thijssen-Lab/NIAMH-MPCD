@@ -764,6 +764,8 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 /*
 	Main method for reading in Json, parsing it, and populating ALL inputs
 */
+	int i; // counting variable
+
 	char* fileStr = NULL;
 	if(getFileStr(fpath, &fileStr) != 0){ // read, return on error
 		exit(EXIT_FAILURE);
@@ -789,8 +791,54 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	linkedList *arrayList = NULL;
 	initLL(&arrayList);
 
-	// now do parsing
+	////////////////////////////////////////////////////////////////////////////
+	// Perform parsing here. 
+	// This is done in the order declared in docs/InputGuide.md
+	////////////////////////////////////////////////////////////////////////////
+	
+	// dimensionality and domain bounds array
+	cJSON *arrDomain = NULL;
+	getCJsonArray(jObj, &arrDomain, "domain", jsonTagList, arrayList, 0);
+	if(arrDomain != NULL){ // if the can be found in the json
+		DIM = cJSON_GetArraySize(arrDomain);
+		if(DIM != 2 && DIM != 3){ // check dimensionality is valid
+			printf("Error: Dimensionality must be 2 or 3.\n");
+			exit(EXIT_FAILURE);
+		}
+
+		for (i = 0; i < _3D; i++) {
+			if (i == 2 && DIM == 2) XYZ[i] = 1; // if 2D, set z to 1
+			else XYZ[i] = cJSON_GetArrayItem(arrDomain, i)->valueint; // get the value
+		}		
+	} else { // if array cannot be found then fallback to default
+		DIM = 2;
+		XYZ[0] = 30;
+		XYZ[1] = 30;
+		XYZ[2] = 1;
+	}
+
+	// scroll up to void readin() to see better descriptions & definitions
+	in->KBT = getJObjDou(jObj, "kbt", 1, jsonTagList); // kbt
+	in->dt = getJObjDou(jObj, "dt", 0.1, jsonTagList); // dt
+	in->simSteps = getJObjInt(jObj, "simSteps", 2000, jsonTagList); // simSteps
+	in->warmupSteps = getJObjInt(jObj, "warmUp", 0, jsonTagList); // warmupSteps
+	in->RFRAME = getJObjInt(jObj, "rFrame", 1, jsonTagList); // RFRAME
+	in->zeroNetMom = getJObjInt(jObj, "zeroNetMom", 0, jsonTagList); // zeroNetMom
+	in->GALINV = getJObjInt(jObj, "galInv", 2, jsonTagList); // GALINV
+	in->TSTECH = getJObjInt(jObj, "tsTech", 0, jsonTagList); // TSTECH
+	in->RTECH = getJObjInt(jObj, "rTech", 2, jsonTagList); // RTECH
+	in->LC = getJObjInt(jObj, "lc", 0, jsonTagList); // LC
+	in->TAU = getJObjDou(jObj, "tau", 0.5, jsonTagList); // TAU
+	in->RA = getJObjDou(jObj, "rotAng", 1.570796, jsonTagList); // rotAng
+	in->FRICCO = getJObjDou(jObj, "fricCoef", 1.0, jsonTagList); // fricCo
+	in->MFPOT = getJObjDou(jObj, "mfpot", 10.0, jsonTagList); // mfpPot
+	
+	
+	
 	/// TODO: :))))))))))))
+
+	// input verification step
+   	verifyJson(jObj, jsonTagList, arrayList);
 
 	// clear memory
 	free(fileStr);
