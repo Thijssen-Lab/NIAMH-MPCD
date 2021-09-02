@@ -764,7 +764,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 /*
 	Main method for reading in Json, parsing it, and populating ALL inputs
 */
-	int i; // counting variable
+	int i, j; // counting variables
 
 	char* fileStr = NULL;
 	if(getFileStr(fpath, &fileStr) != 0){ // read, return on error
@@ -796,6 +796,9 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	// This is done in the order declared in docs/InputGuide.md
 	////////////////////////////////////////////////////////////////////////////
 	
+	// 1. Old input.inp ////////////////////////////////////////////////////////
+	// scroll up to void readin() to see better descriptions & definitions for these
+
 	// dimensionality and domain bounds array
 	cJSON *arrDomain = NULL;
 	getCJsonArray(jObj, &arrDomain, "domain", jsonTagList, arrayList, 0);
@@ -817,7 +820,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 		XYZ[2] = 1;
 	}
 
-	// scroll up to void readin() to see better descriptions & definitions
+	// first set of primitives
 	in->KBT = getJObjDou(jObj, "kbt", 1, jsonTagList); // kbt
 	in->dt = getJObjDou(jObj, "dt", 0.1, jsonTagList); // dt
 	in->simSteps = getJObjInt(jObj, "simSteps", 2000, jsonTagList); // simSteps
@@ -833,7 +836,118 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	in->FRICCO = getJObjDou(jObj, "fricCoef", 1.0, jsonTagList); // fricCo
 	in->MFPOT = getJObjDou(jObj, "mfpot", 10.0, jsonTagList); // mfpPot
 	
-	
+	// grav array
+	cJSON *arrGrav = NULL;
+	getCJsonArray(jObj, &arrGrav, "grav", jsonTagList, arrayList, 0);
+	if (arrGrav != NULL) { // if grav has been found then....
+		if (cJSON_GetArraySize(arrGrav) != _3D) { // check dimensionality is valid
+			printf("Error: Grav must be a 3D array.\n");
+			exit(EXIT_FAILURE);
+		}
+
+		for (i = 0; i < _3D; i++) { // get the value
+			in->GRAV[i] = cJSON_GetArrayItem(arrGrav, i)->valuedouble; 
+		}	
+	} else { // if no grav specified then fallback
+		in->GRAV[0] = 0;
+		in->GRAV[1] = 0;
+		in->GRAV[2] = 0;
+	}
+
+	// mag array
+	cJSON *arrMag = NULL;
+	getCJsonArray(jObj, &arrMag, "mag", jsonTagList, arrayList, 0);
+	if (arrGrav != NULL) { // if grav has been found then....
+		if (cJSON_GetArraySize(arrMag) != _3D) { // check dimensionality is valid
+			printf("Error: Mag must be a 3D array.\n");
+			exit(EXIT_FAILURE);
+		}
+
+		for (i = 0; i < _3D; i++) { // get the value
+			in->MAG[i] = cJSON_GetArrayItem(arrMag, i)->valuedouble; 
+		}	
+	} else { // if no grav specified then fallback
+		in->MAG[0] = 0;
+		in->MAG[1] = 0;
+		in->MAG[2] = 0;
+	}
+
+	// second set of primitives
+	in->seed = getJObjInt(jObj, "seed", 0, jsonTagList); // seed
+	MDmode = getJObjInt(jObj, "mdMode", 0, jsonTagList); // mdMode
+	in->stepsMD = getJObjInt(jObj, "stepsMD", 20, jsonTagList); // stepsMD
+
+	// 2. Species //////////////////////////////////////////////////////////////
+	// scroll up to void readin() to see better descriptions & definitions for these
+
+	cJSON *arrSpecies = NULL;
+	getCJsonArray(jObj, &arrSpecies, "species", jsonTagList, arrayList, 1);
+	if(arrSpecies != NULL){ // if this can be found in the json
+		NSPECI = cJSON_GetArraySize(arrSpecies); // get the number of species
+		
+		//Allocate the needed amount of memory for the species SP
+		(*SP) = (spec*) malloc( NSPECI * sizeof( spec ) );
+		for (i = 0; i < NSPECI; i++) { // loop through the species
+			cJSON *objElem = cJSON_GetArrayItem(arrSpecies, i); // get the species object
+
+			// now get first set of primitives
+			(*SP+i)->MASS = getJObjDou(objElem, "mass", 1.0, jsonTagList); // mass
+			(*SP+i)->POP = getJObjInt(objElem, "pop", 18000, jsonTagList); // pop
+			(*SP+i)->QDIST = getJObjInt(objElem, "qDist", 0, jsonTagList); // qDist
+			(*SP+i)->VDIST = getJObjInt(objElem, "vDist", 0, jsonTagList); // vDist
+			(*SP+i)->ODIST = getJObjInt(objElem, "oDist", 2, jsonTagList); // oDist
+
+			//Read the binary fluid interaction matrix for this species with all other species
+			cJSON *arrBFM = NULL;
+			getCJsonArray(jObj, &arrBFM, "interMatr", jsonTagList, arrayList, 0);
+			if (arrBFM != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrBFM) != NSPECI) { // check dimensionality is valid
+					printf("Error: Interaction matrices must have columns of length equal to the number of species.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < NSPECI; j++) { // get the value
+					(*SP+i)->M[j] = cJSON_GetArrayItem(arrBFM, j)->valuedouble; 
+				}	
+			} else { // if no grav specified then fallback
+				for (j = 0; j < NSPECI; j++) { // get the value
+					(*SP+i)->M[j] = 0; 
+				}	
+			}
+
+			// get second set of primitives
+			(*SP+i)->RFC = getJObjDou(objElem, "rfc", 0.01, jsonTagList); // rfCoef
+			(*SP+i)->LEN = getJObjDou(objElem, "len", 0.007, jsonTagList); // len
+			(*SP+i)->TUMBLE = getJObjDou(objElem, "tumble", 2.0, jsonTagList); // tumble
+			(*SP+i)->CHIHI = getJObjDou(objElem, "shearSusc", 0.5, jsonTagList); // chiHi
+			(*SP+i)->CHIA = getJObjDou(objElem, "magnSusc", 0.001, jsonTagList); // chiA
+			(*SP+i)->ACT = getJObjDou(objElem, "act", 0.05, jsonTagList); // act
+			(*SP+i)->DAMP = getJObjDou(objElem, "damp", 0.0, jsonTagList); // damp
+		}
+	} else { // if nothing found in the JSON then fallback to the default
+		// setting up a single species with default parameters
+		//		note this is just copied from the above code w lines changed
+		NSPECI = 1;
+
+		(*SP) = (spec*) malloc( NSPECI * sizeof( spec ) );
+		for (i = 0; i < NSPECI; i++) { // loop through the species
+			// now get first set of primitives
+			(*SP+i)->MASS = 1; // mass
+			(*SP+i)->POP = 18000; // pop
+			(*SP+i)->QDIST = 0; // qDist
+			(*SP+i)->VDIST = 0; // vDist
+			(*SP+i)->ODIST = 2; // oDist
+			for (j = 0; j < NSPECI; j++) { // interaction matrix
+				(*SP+i)->M[j] = 0; 
+			}	
+			(*SP+i)->RFC = 0.01; // rfCoef
+			(*SP+i)->LEN = 0.007; // len
+			(*SP+i)->TUMBLE = 2; // tumble
+			(*SP+i)->CHIHI = 0.5; // chiHi
+			(*SP+i)->CHIA = 0.001; // chiA
+			(*SP+i)->ACT = 0.05; // act
+			(*SP+i)->DAMP = 0; // damp
+	}
 	
 	/// TODO: :))))))))))))
 
