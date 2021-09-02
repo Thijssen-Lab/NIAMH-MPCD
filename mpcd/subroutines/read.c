@@ -937,7 +937,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 				for (j = 0; j < NSPECI; j++) { // get the value
 					(*SP+i)->M[j] = cJSON_GetArrayItem(arrBFM, j)->valuedouble; 
 				}	
-			} else { // if no grav specified then fallback
+			} else { 
 				for (j = 0; j < NSPECI; j++) { // get the value
 					(*SP+i)->M[j] = 0; 
 				}	
@@ -1042,74 +1042,227 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 				exit(EXIT_FAILURE);
 			}
 
-			///TODO: need to parse these
-			currWall->COLL_TYPE = x;
-			currWall->PHANTOM = x;
-			currWall->E = l;
+			// parse through first set of primitives
+			currWall->COLL_TYPE = getJObjInt(objElem, "collType", 0, jsonTagList); // collType
+			currWall->PHANTOM = getJObjInt(objElem, "phantom", 0, jsonTagList); // phantom
+			currWall->E = getJObjDou(objElem, "E", -1.0, jsonTagList); // E
 
-			currWall->Q[0] = l;
-			currWall->Q[1] = l;
-			currWall->Q[2] = l;
+			// Q array
+			cJSON *arrQ = NULL;
+			getCJsonArray(jObj, &arrQ, "Q", jsonTagList, arrayList, 0);
+			if (arrQ != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrQ) != _3D) { // check dimensionality is valid
+					printf("Error: Q must be 3D.\n");
+					exit(EXIT_FAILURE);
+				}
 
-			currWall->V[0] = l;
-			currWall->V[1] = l;
-			currWall->V[2] = l;
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->Q[j] = cJSON_GetArrayItem(arrQ, j)->valuedouble; 
+				}	
+			} else { 
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->Q[j] = 0; 
+				}	
+			}
 
-			currWall->O[0] = l;
-			currWall->O[1] = l;
-			currWall->O[2] = l;
+			// V array
+			cJSON *arrV = NULL;
+			getCJsonArray(jObj, &arrV, "V", jsonTagList, arrayList, 0);
+			if (arrV != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrV) != _3D) { // check dimensionality is valid
+					printf("Error: V must be 3D.\n");
+					exit(EXIT_FAILURE);
+				}
 
-			currWall->L[0] = l;
-			currWall->L[1] = l;
-			currWall->L[2] = l;
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->V[j] = cJSON_GetArrayItem(arrV, j)->valuedouble; 
+				}	
+			} else { 
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->V[j] = 0; 
+				}	
+			}
 
-			currWall->G[0] = l;
-			currWall->G[1] = l;
-			currWall->G[2] = l;
+			// O array
+			cJSON *arrO = NULL;
+			getCJsonArray(jObj, &arrO, "O", jsonTagList, arrayList, 0);
+			if (arrO != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrO) != _3D) { // check dimensionality is valid
+					printf("Error: O must be 3D.\n");
+					exit(EXIT_FAILURE);
+				}
 
-			currWall->AINV[0] = l;
-			if( fneq(currWall->AINV[0],0.0) ) currWall->A[0] = 1.0/currWall->AINV[0];
-			else currWall->A[0] = 0.0;
-			currWall->AINV[1] = l;
-			if( fneq(currWall->AINV[1],0.0) ) currWall->A[1] = 1.0/currWall->AINV[1];
-			else currWall->A[1] = 0.0;
-			currWall->AINV[2] = l;
-			if( fneq(currWall->AINV[2],0.0) ) currWall->A[2] = 1.0/currWall->AINV[2];
-			else currWall->A[2] = 0.0;
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->O[j] = cJSON_GetArrayItem(arrO, j)->valuedouble; 
+				}	
+			} else { 
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->O[j] = 0; 
+				}	
+			}
 
-			currWall->ROTSYMM[0] = l;
-			currWall->ROTSYMM[1] = l;
-			currWall->ABS = x;
+			// L array
+			cJSON *arrL = NULL;
+			getCJsonArray(jObj, &arrL, "L", jsonTagList, arrayList, 0);
+			if (arrL != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrL) != _3D) { // check dimensionality is valid
+					printf("Error: L must be 3D.\n");
+					exit(EXIT_FAILURE);
+				}
 
-			currWall->P[0] = l;
-			currWall->P[1] = l;
-			currWall->P[2] = l;
-			currWall->P[3] = l;
-			currWall->R = l;
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->L[j] = cJSON_GetArrayItem(arrL, j)->valuedouble; 
+				}	
+			} else {
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->L[j] = 0; 
+				}	
+			}
 
-			currWall->DN = l;
-			currWall->DT = l;
-			currWall->DVN = l;
-			currWall->DVT = l;
-			currWall->DVxyz[0] = l;
-			currWall->DVxyz[1] = l;
-			currWall->DVxyz[2] = l;
-			currWall->MVN = l;
-			currWall->MVT = l;
+			// G array
+			cJSON *arrG = NULL;
+			getCJsonArray(jObj, &arrG, "G", jsonTagList, arrayList, 0);
+			if (arrG != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrG) != _3D) { // check dimensionality is valid
+					printf("Error: G must be 3D.\n");
+					exit(EXIT_FAILURE);
+				}
 
-			currWall->MUN = l;
-			currWall->MUT = l;
-			currWall->MUxyz[0] = l;
-			currWall->MUxyz[1] = l;
-			currWall->MUxyz[2] = l;
-			currWall->DUxyz[0] = l;
-			currWall->DUxyz[1] = l;
-			currWall->DUxyz[2] = l;
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->G[j] = cJSON_GetArrayItem(arrG, j)->valuedouble; 
+				}	
+			} else {
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->G[j] = 0; 
+				}	
+			}
 
-			currWall->KBT = l;
-			currWall->DSPLC = x;
-			currWall->INV = x;
-			currWall->MASS = l;
+			// aInv array - NECESSARY
+			cJSON *arrAInv = NULL;
+			getCJsonArray(jObj, &arrAInv, "aInv", jsonTagList, arrayList, 0);
+			if (arrAInv != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrAInv) != _3D) { // check dimensionality is valid
+					printf("Error: aInv must be 3D.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->AINV[j] = cJSON_GetArrayItem(arrAInv, j)->valuedouble; 
+					if( fneq(currWall->AINV[j],0.0) ) currWall->A[j] = 1.0/currWall->AINV[j];
+					else currWall->A[j] = 0.0;
+				}	
+			} else {
+				printf("Error: Could not find aInv.\n");
+				exit(EXIT_FAILURE);
+			}
+
+			// rotsymm array
+			cJSON *arrRotSym = NULL;
+			getCJsonArray(jObj, &arrRotSym, "rotSym", jsonTagList, arrayList, 0);
+			if (arrRotSym != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrRotSym) != 2) { // check dimensionality is valid
+					printf("Error: rotSym must have two components.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < 2; j++) { // get the value
+					currWall->ROTSYMM[j] = cJSON_GetArrayItem(arrRotSym, j)->valuedouble; 
+				}	
+			} else {
+				for (j = 0; j < 2; j++) { // get the value
+					currWall->ROTSYMM[j] = 4;
+				}
+			}
+
+			currWall->ABS = getJObjInt(objElem, "abs", 0, jsonTagList); // abs
+
+			// P array - NECESSARY
+			cJSON *arrP = NULL;
+			getCJsonArray(jObj, &arrP, "P", jsonTagList, arrayList, 0);
+			if (arrP != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrP) != 4) { // check dimensionality is valid
+					printf("Error: P must have 4 elements.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < 4; j++) { // get the value
+					currWall->P[j] = cJSON_GetArrayItem(arrP, j)->valuedouble;
+				}	
+			} else {
+				printf("Error: Could not find P.\n");
+				exit(EXIT_FAILURE);
+			}
+
+			// some more primitives
+			currWall->R = getJObjDou(objElem, "R", 2, jsonTagList); // r
+			currWall->DN = getJObjDou(objElem, "DN", 1, jsonTagList); // dn
+			currWall->DT = getJObjDou(objElem, "DT", 0, jsonTagList); // dt
+			currWall->DVN = getJObjDou(objElem, "DVN", 0, jsonTagList); // dvn
+			currWall->DVT = getJObjDou(objElem, "DVT", 0, jsonTagList); // dvt
+
+			// DVxyz array
+			cJSON *arrDVxyz = NULL;
+			getCJsonArray(jObj, &arrDVxyz, "DVxyz", jsonTagList, arrayList, 0);
+			if (arrDVxyz != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrDVxyz) != _3D) { // check dimensionality is valid
+					printf("Error: DVxyz must have two components.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->DVxyz[j] = cJSON_GetArrayItem(arrDVxyz, j)->valuedouble; 
+				}	
+			} else {
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->DVxyz[j] = 0;
+				}
+			}
+
+			currWall->MVN = getJObjDou(objElem, "MVN", 1, jsonTagList); // mvn
+			currWall->MVT = getJObjDou(objElem, "MVT", 1, jsonTagList); // mvt
+			currWall->MUN = getJObjDou(objElem, "MUN", 1, jsonTagList); // mun
+			currWall->MUT = getJObjDou(objElem, "MUT", 1, jsonTagList); // mut
+
+			// MUxyz array
+			cJSON *arrMUxyz = NULL;
+			getCJsonArray(jObj, &arrMUxyz, "MUxyz", jsonTagList, arrayList, 0);
+			if (arrMUxyz != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrMUxyz) != _3D) { // check dimensionality is valid
+					printf("Error: MUxyz must have two components.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->MUxyz[j] = cJSON_GetArrayItem(arrMUxyz, j)->valuedouble; 
+				}	
+			} else {
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->MUxyz[j] = 0;
+				}
+			}
+
+			// DUxyz array
+			cJSON *arrDUxyz = NULL;
+			getCJsonArray(jObj, &arrDUxyz, "DUxyz", jsonTagList, arrayList, 0);
+			if (arrDUxyz != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrDUxyz) != _3D) { // check dimensionality is valid
+					printf("Error: DUxyz must have two components.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->DUxyz[j] = cJSON_GetArrayItem(arrDUxyz, j)->valuedouble; 
+				}	
+			} else {
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->DUxyz[j] = 0;
+				}
+			}
+
+			currWall->KBT = getJObjDou(objElem, "kbt", 1, jsonTagList); // kbt
+			currWall->DSPLC = getJObjInt(objElem, "dsplc", 0, jsonTagList); // dspc
+			currWall->INV = getJObjInt(objElem, "inv", 0, jsonTagList); // inv
+			currWall->MASS = getJObjDou(objElem, "mass", 1, jsonTagList); // mass
 		}
 	} else { // otherwise default
 		// allocate memory for BCs as necessary

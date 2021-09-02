@@ -36,7 +36,7 @@ Tag             | Type          | Default Value | Description
 `mfpot`         | double        | 10            | Liquid crystal mean field potential
 `grav`          | array(double) | [0,0,0]       | Constant acceleration due to external force. MUST be 3D
 `mag`           | array(double) | [0,0,0]       | Constant external magnetic field. MUST be 3D
-`seed`          | int           | 0             | Seed for random number generator. 0 for pseudorandom seed.
+`seed`          | int           | 0             | Seed for random number generator. 0 for pseudorandom seed. Set to -1 to load a checkpoint.
 `mdMode`        | int           | 0             | Enable the MD sim coupling. 1 = on, 0 = off
 `stepsMD`       | int           | 20            | MD time steps per MPCD time step
 `species`       | array(species)| default spec  | An array of species objects. See the species table for species tags.
@@ -143,7 +143,7 @@ Tag             | Type          | Default Value | Description
 `G`             | array(double) | [0,0,0]       | External acceleration (ie, due to gravity) of the boundary, MUST be 3D
 `aInv`          | array(double) | NECESSARY     | Sets the geometry of the surface. Principal semi-axes of the ellipsoid (see SRDClass for explanation). MUST be 3D. If you declare a BC then this MUST be given, or the simulation will not run
 `rotSym`        | array(double) | [4,4]         | Sets rotational symmetry of shapes. Must be of form (a,b)
-`abs`           | int           | 0             | 
+`abs`           | int           | 0             | Flags if each term should be absolute only. 1 = yes, 0 = no
 `P`             | array(double) | NECESSARY     | Sets the geometry of the surface. Must be of form (a,b,c,d). See SRDClass for explanation. If you declare a BC then this MUST be given, or the simulation will not run
 `R`             | double        | NECESSARY     | Sets the geometry of the surface. See SRDClass for explanation. If you declare a BC then this MUST be given, or the simulation will not run
 `DN`            | double        | NECESSARY     | Displacement of the particle in the normal direction. If you declare a BC then this MUST be given, or the simulation will not run
