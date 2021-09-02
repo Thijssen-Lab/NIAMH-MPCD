@@ -758,6 +758,34 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 	}
 }
 
+/*
+	Checks if a given BC, as a cJSON object, is valid and contains all the 
+	 	necessary parameters it needs. 
+	Returns 1 if valid, 0 if not.
+*/
+int checkBC(cJSON *bc){
+	/*
+		Need to check if the following json tags exist, do so using cJSON 
+			primitives:
+		- "aInv"
+		- "P"
+		- "R"
+		- "DN"
+		- "MVN"
+		- "MVT"
+	*/
+	char tagList[6][5] = {"aInv", "P", "R", "DN", "MVN", "MVT"};
+
+	cJSON *temp = NULL;
+	int i;
+	for (i = 0; i < 6; i++){
+		temp = cJSON_GetObjectItemCaseSensitive(bc, tagList[i]);
+		if (temp == NULL) return 0;
+	}
+
+	return 1; // if you're here without returning then all succesful
+}
+
 void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD, 
    cell ****CL, int *MDMode, outputFlagsList *out, bc **WALL, 
    specSwimmer *specS, swimmer **sw){
@@ -956,43 +984,144 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	out->TRAJOUT = getJObjInt(jObj, "trajOut", 0, jsonTagList); // trajOut
 	out->printSP = getJObjInt(jObj, "trajSpecOut", 0, jsonTagList); // printSP
 	out->COAROUT = getJObjInt(jObj, "coarseOut", 0, jsonTagList); // coarOut
-	out->FLOWOUT = getjObjInt(jObj, "flowOut", 0, jsonTagList); // flowOut
-	out->AVVELOUT = getjObjInt(jObj, "avVelOut", 0, jsonTagList); // avVelOut
-	out->ORDEROUT = getjObjInt(jObj, "dirSOut", 0, jsonTagList); // orderOut
-	out->QTENSOUT = getjObjInt(jObj, "qTensOut", 0, jsonTagList); // qTensOut
-	out->QKOUT = getjObjInt(jObj, "qkOut", 0, jsonTagList); // qKOut
-	out->ENFIELDOUT = getjObjInt(jObj, "oriEnOut", 0, jsonTagList); // enFieldOut
-	out->SPOUT = getjObjInt(jObj, "colourOut", 0, jsonTagList); // spOut
-	out->PRESOUT = getjObjInt(jObj, "pressureOut", 0, jsonTagList); // presOut
-	out->ENNEIGHBOURS = getjObjInt(jObj, "neighbourEnOut", 0, jsonTagList); // enNeighbours
-	out->AVSOUT = getjObjInt(jObj, "avSOut", 0, jsonTagList); // avSOut
-	out->DENSOUT = getjObjInt(jObj, "densSDOut", 0, jsonTagList); // densOut
-	out->ENSTROPHYOUT = getjObjInt(jObj, "enstrophyOut", 0, jsonTagList); // enStrophOut
-	out->HISTVELOUT = getjObjInt(jObj, "histVelOut", 0, jsonTagList); // histVelOut
-	out->HISTSPEEDOUT = getjObjInt(jObj, "histSpeedOut", 0, jsonTagList); // histSpeedOut
-	out->HISTVORTOUT = getjObjInt(jObj, "histVortOut", 0, jsonTagList); // histVortOut
-	out->HISTENSTROUT = getjObjInt(jObj, "histEnsOut", 0, jsonTagList); // histEnstrophyOut
-	out->HISTDIROUT = getjObjInt(jObj, "histDirOut", 0, jsonTagList); // histDirOut
-	out->HISTSOUT = getjObjInt(jObj, "histSOut", 0, jsonTagList); // histSOut
-	out->HISTNOUT = getjObjInt(jObj, "histNOut", 0, jsonTagList); // histNOut
-	out->SOLOUT = getjObjInt(jObj, "solidTrajOut", 0, jsonTagList); // solOut
-	out->DEFECTOUT = getjObjInt(jObj, "topoFieldOut", 0, jsonTagList); // defectOut
-	out->ENOUT = getjObjInt(jObj, "energyOut", 0, jsonTagList); // enOut
-	out->CVVOUT = getjObjInt(jObj, "velCorrOut", 0, jsonTagList); // cvvOut
-	out->CNNOUT = getjobjInt(jObj, "dirCorrOut", 0, jsonTagList); // cnnOut
-	out->CWWOUT = getjobjInt(jObj, "vortCorrOut", 0, jsonTagList); // cwwOut
-	out->CDDOUT = getjobjInt(jObj, "densCorrOut", 0, jsonTagList); // cddOut
-	out->CSSOUT = getjobjInt(jObj, "orderCorrOut", 0, jsonTagList); // cssOut
-	out->CPPOUT = getjobjInt(jObj, "phaseCorrOut", 0, jsonTagList); // cppOut
-	out->ENERGYSPECTOUT = getjobjInt(jObj, "energySpecOut", 0, jsonTagList); // energySpectOut
-	out->ENSTROPHYSPECTOUT = getjobjInt(jObj, "enstrophySpecOut", 0, jsonTagList); // enstrophySpectOut
-	out->BINDER = getjobjInt(jObj, "binderOut", 0, jsonTagList); // binderOut
-	out->BINDERBIN = getjobjInt(jObj, "binderBin", 0, jsonTagList); // binderBinOut
-	out->SWOUT = getjobjInt(jObj, "swimQOut", 0, jsonTagList); // swOut
-	out->SWORIOUT = getjobjInt(jObj, "swimOOut", 0, jsonTagList); // swOriOut
-	out->RTOUT = getjobjInt(jObj, "swimROut", 0, jsonTagList); // swVelOut
-	out->SYNOUT = getjobjInt(jObj, "synopsisOut", 1, jsonTagList); // swSynOut
-	out->CHCKPNT = getjobjInt(jObj, "checkpointOut", 0, jsonTagList); // chkpntOut
+	out->FLOWOUT = getJObjInt(jObj, "flowOut", 0, jsonTagList); // flowOut
+	out->AVVELOUT = getJObjInt(jObj, "avVelOut", 0, jsonTagList); // avVelOut
+	out->ORDEROUT = getJObjInt(jObj, "dirSOut", 0, jsonTagList); // orderOut
+	out->QTENSOUT = getJObjInt(jObj, "qTensOut", 0, jsonTagList); // qTensOut
+	out->QKOUT = getJObjInt(jObj, "qkOut", 0, jsonTagList); // qKOut
+	out->ENFIELDOUT = getJObjInt(jObj, "oriEnOut", 0, jsonTagList); // enFieldOut
+	out->SPOUT = getJObjInt(jObj, "colourOut", 0, jsonTagList); // spOut
+	out->PRESOUT = getJObjInt(jObj, "pressureOut", 0, jsonTagList); // presOut
+	out->ENNEIGHBOURS = getJObjInt(jObj, "neighbourEnOut", 0, jsonTagList); // enNeighbours
+	out->AVSOUT = getJObjInt(jObj, "avSOut", 0, jsonTagList); // avSOut
+	out->DENSOUT = getJObjInt(jObj, "densSDOut", 0, jsonTagList); // densOut
+	out->ENSTROPHYOUT = getJObjInt(jObj, "enstrophyOut", 0, jsonTagList); // enStrophOut
+	out->HISTVELOUT = getJObjInt(jObj, "histVelOut", 0, jsonTagList); // histVelOut
+	out->HISTSPEEDOUT = getJObjInt(jObj, "histSpeedOut", 0, jsonTagList); // histSpeedOut
+	out->HISTVORTOUT = getJObjInt(jObj, "histVortOut", 0, jsonTagList); // histVortOut
+	out->HISTENSTROUT = getJObjInt(jObj, "histEnsOut", 0, jsonTagList); // histEnstrophyOut
+	out->HISTDIROUT = getJObjInt(jObj, "histDirOut", 0, jsonTagList); // histDirOut
+	out->HISTSOUT = getJObjInt(jObj, "histSOut", 0, jsonTagList); // histSOut
+	out->HISTNOUT = getJObjInt(jObj, "histNOut", 0, jsonTagList); // histNOut
+	out->SOLOUT = getJObjInt(jObj, "solidTrajOut", 0, jsonTagList); // solOut
+	out->DEFECTOUT = getJObjInt(jObj, "topoFieldOut", 0, jsonTagList); // defectOut
+	out->ENOUT = getJObjInt(jObj, "energyOut", 0, jsonTagList); // enOut
+	out->CVVOUT = getJObjInt(jObj, "velCorrOut", 0, jsonTagList); // cvvOut
+	out->CNNOUT = getJObjInt(jObj, "dirCorrOut", 0, jsonTagList); // cnnOut
+	out->CWWOUT = getJObjInt(jObj, "vortCorrOut", 0, jsonTagList); // cwwOut
+	out->CDDOUT = getJObjInt(jObj, "densCorrOut", 0, jsonTagList); // cddOut
+	out->CSSOUT = getJObjInt(jObj, "orderCorrOut", 0, jsonTagList); // cssOut
+	out->CPPOUT = getJObjInt(jObj, "phaseCorrOut", 0, jsonTagList); // cppOut
+	out->ENERGYSPECTOUT = getJObjInt(jObj, "energySpecOut", 0, jsonTagList); // energySpectOut
+	out->ENSTROPHYSPECTOUT = getJObjInt(jObj, "enstrophySpecOut", 0, jsonTagList); // enstrophySpectOut
+	out->BINDER = getJObjInt(jObj, "binderOut", 0, jsonTagList); // binderOut
+	out->BINDERBIN = getJObjInt(jObj, "binderBin", 0, jsonTagList); // binderBinOut
+	out->SWOUT = getJObjInt(jObj, "swimQOut", 0, jsonTagList); // swOut
+	out->SWORIOUT = getJObjInt(jObj, "swimOOut", 0, jsonTagList); // swOriOut
+	out->RTOUT = getJObjInt(jObj, "swimROut", 0, jsonTagList); // swVelOut
+	out->SYNOUT = getJObjInt(jObj, "synopsisOut", 1, jsonTagList); // swSynOut
+	out->CHCKPNT = getJObjInt(jObj, "checkpointOut", 0, jsonTagList); // chkpntOut
+
+	// 3. Boundaries ///////////////////////////////////////////////////////////
+	// scroll up to void bcin() to see better descriptions & definitions for these
+
+	cJSON *arrBC = NULL;
+	getCJsonArray(jObj, &arrBC, "BC", jsonTagList, arrayList, 1);
+	if(arrBC != NULL){ // if this can be found in the json
+		NBC = cJSON_GetArraySize(arrBC); // get the number of BCs
+		
+		//Allocate the needed amount of memory for the BCs
+		(*WALL) = (bc*) malloc( NBC * sizeof( bc ) );
+		for (i = 0; i < NBC; i++) { // loop through the BCs
+			cJSON *objElem = cJSON_GetArrayItem(arrBC, i); // get the BC object
+			bc *currWall = *(WALL + i); // get the pointer to the BC we want to write to
+
+			// Do a check if the necessary parameters are present 
+			if (!checkBC(objElem)){
+				printf("Error: BC %d is missing essential parameters\n", i);
+				exit(EXIT_FAILURE);
+			}
+
+			///TODO: need to parse these
+			currWall->COLL_TYPE = x;
+			currWall->PHANTOM = x;
+			currWall->E = l;
+
+			currWall->Q[0] = l;
+			currWall->Q[1] = l;
+			currWall->Q[2] = l;
+
+			currWall->V[0] = l;
+			currWall->V[1] = l;
+			currWall->V[2] = l;
+
+			currWall->O[0] = l;
+			currWall->O[1] = l;
+			currWall->O[2] = l;
+
+			currWall->L[0] = l;
+			currWall->L[1] = l;
+			currWall->L[2] = l;
+
+			currWall->G[0] = l;
+			currWall->G[1] = l;
+			currWall->G[2] = l;
+
+			currWall->AINV[0] = l;
+			if( fneq(currWall->AINV[0],0.0) ) currWall->A[0] = 1.0/currWall->AINV[0];
+			else currWall->A[0] = 0.0;
+			currWall->AINV[1] = l;
+			if( fneq(currWall->AINV[1],0.0) ) currWall->A[1] = 1.0/currWall->AINV[1];
+			else currWall->A[1] = 0.0;
+			currWall->AINV[2] = l;
+			if( fneq(currWall->AINV[2],0.0) ) currWall->A[2] = 1.0/currWall->AINV[2];
+			else currWall->A[2] = 0.0;
+
+			currWall->ROTSYMM[0] = l;
+			currWall->ROTSYMM[1] = l;
+			currWall->ABS = x;
+
+			currWall->P[0] = l;
+			currWall->P[1] = l;
+			currWall->P[2] = l;
+			currWall->P[3] = l;
+			currWall->R = l;
+
+			currWall->DN = l;
+			currWall->DT = l;
+			currWall->DVN = l;
+			currWall->DVT = l;
+			currWall->DVxyz[0] = l;
+			currWall->DVxyz[1] = l;
+			currWall->DVxyz[2] = l;
+			currWall->MVN = l;
+			currWall->MVT = l;
+
+			currWall->MUN = l;
+			currWall->MUT = l;
+			currWall->MUxyz[0] = l;
+			currWall->MUxyz[1] = l;
+			currWall->MUxyz[2] = l;
+			currWall->DUxyz[0] = l;
+			currWall->DUxyz[1] = l;
+			currWall->DUxyz[2] = l;
+
+			currWall->KBT = l;
+			currWall->DSPLC = x;
+			currWall->INV = x;
+			currWall->MASS = l;
+		}
+	} else { // otherwise default
+		// allocate memory for BCs as necessary
+		///TODO: also take into account the dimension
+
+		//set up PBCs on the xy plane based on the domain dimensions
+		///TODO
+
+		if(DIM == _3D){ // if in 3d then also do the z axis
+			///TODO	
+		}
+	}
 
 	/// TODO: :))))))))))))
 
