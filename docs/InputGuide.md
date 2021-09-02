@@ -81,6 +81,30 @@ Tag             | Type          | Default Value | Description
 `checkpointOut` | int           |               | 
 ---             | ---           | ---           | ---
 `BC`            | array(BC)     |               | The array of boundary objects. See the BC table for BC tags.
+---             | ---           | ---           | ---
+`typeSwim`      | int           |               | 
+`nSwim`         | int           |               | 
+`qDistSwim`     | int           |               | 
+`oDistSwim`     | int           |               | 
+`headMSwim`     | int           |               | 
+`midMSwim`      | int           |               | 
+`hspIdSwim`     | int           |               | 
+`mspIdSwim`     | int           |               | 
+`fsSwim`        | int           |               | 
+`dsSwim`        | int           |               | 
+`dsSwim`        | double        |               | 
+`sizeShrinkSwim`| double        |               | 
+`springShrinkSwim`| double        |               | 
+`kSwim`         | double        |               | 
+`roSwim`        | double        |               | 
+`sigSwim`       | double        |               | 
+`epsSwim`       | double        |               | 
+`runTSwim`      | double        |               | 
+`tumTSwim`      | double        |               | 
+`shrTSwim`      | double        |               | 
+`magMomSwim`    | double        |               | 
+`fixDistSwim`   | double        |               | 
+
 
 ## Species Tag Table
 Tag             | Type          | Default Value | Description
