@@ -949,6 +949,51 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			(*SP+i)->DAMP = 0; // damp
 	}
 	
+	// 3. Printcom /////////////////////////////////////////////////////////////
+	// scroll up to void readpc() to see better descriptions & definitions for these
+
+	DBUG = getJObjInt(jObj, "debugOut", 3, jsonTagList); // dbug
+	out->TRAJOUT = getJObjInt(jObj, "trajOut", 0, jsonTagList); // trajOut
+	out->printSP = getJObjInt(jObj, "trajSpecOut", 0, jsonTagList); // printSP
+	out->COAROUT = getJObjInt(jObj, "coarseOut", 0, jsonTagList); // coarOut
+	out->FLOWOUT = getjObjInt(jObj, "flowOut", 0, jsonTagList); // flowOut
+	out->AVVELOUT = getjObjInt(jObj, "avVelOut", 0, jsonTagList); // avVelOut
+	out->ORDEROUT = getjObjInt(jObj, "dirSOut", 0, jsonTagList); // orderOut
+	out->QTENSOUT = getjObjInt(jObj, "qTensOut", 0, jsonTagList); // qTensOut
+	out->QKOUT = getjObjInt(jObj, "qkOut", 0, jsonTagList); // qKOut
+	out->ENFIELDOUT = getjObjInt(jObj, "oriEnOut", 0, jsonTagList); // enFieldOut
+	out->SPOUT = getjObjInt(jObj, "colourOut", 0, jsonTagList); // spOut
+	out->PRESOUT = getjObjInt(jObj, "pressureOut", 0, jsonTagList); // presOut
+	out->ENNEIGHBOURS = getjObjInt(jObj, "neighbourEnOut", 0, jsonTagList); // enNeighbours
+	out->AVSOUT = getjObjInt(jObj, "avSOut", 0, jsonTagList); // avSOut
+	out->DENSOUT = getjObjInt(jObj, "densSDOut", 0, jsonTagList); // densOut
+	out->ENSTROPHYOUT = getjObjInt(jObj, "enstrophyOut", 0, jsonTagList); // enStrophOut
+	out->HISTVELOUT = getjObjInt(jObj, "histVelOut", 0, jsonTagList); // histVelOut
+	out->HISTSPEEDOUT = getjObjInt(jObj, "histSpeedOut", 0, jsonTagList); // histSpeedOut
+	out->HISTVORTOUT = getjObjInt(jObj, "histVortOut", 0, jsonTagList); // histVortOut
+	out->HISTENSTROUT = getjObjInt(jObj, "histEnsOut", 0, jsonTagList); // histEnstrophyOut
+	out->HISTDIROUT = getjObjInt(jObj, "histDirOut", 0, jsonTagList); // histDirOut
+	out->HISTSOUT = getjObjInt(jObj, "histSOut", 0, jsonTagList); // histSOut
+	out->HISTNOUT = getjObjInt(jObj, "histNOut", 0, jsonTagList); // histNOut
+	out->SOLOUT = getjObjInt(jObj, "solidTrajOut", 0, jsonTagList); // solOut
+	out->DEFECTOUT = getjObjInt(jObj, "topoFieldOut", 0, jsonTagList); // defectOut
+	out->ENOUT = getjObjInt(jObj, "energyOut", 0, jsonTagList); // enOut
+	out->CVVOUT = getjObjInt(jObj, "velCorrOut", 0, jsonTagList); // cvvOut
+	out->CNNOUT = getjobjInt(jObj, "dirCorrOut", 0, jsonTagList); // cnnOut
+	out->CWWOUT = getjobjInt(jObj, "vortCorrOut", 0, jsonTagList); // cwwOut
+	out->CDDOUT = getjobjInt(jObj, "densCorrOut", 0, jsonTagList); // cddOut
+	out->CSSOUT = getjobjInt(jObj, "orderCorrOut", 0, jsonTagList); // cssOut
+	out->CPPOUT = getjobjInt(jObj, "phaseCorrOut", 0, jsonTagList); // cppOut
+	out->ENERGYSPECTOUT = getjobjInt(jObj, "energySpecOut", 0, jsonTagList); // energySpectOut
+	out->ENSTROPHYSPECTOUT = getjobjInt(jObj, "enstrophySpecOut", 0, jsonTagList); // enstrophySpectOut
+	out->BINDER = getjobjInt(jObj, "binderOut", 0, jsonTagList); // binderOut
+	out->BINDERBIN = getjobjInt(jObj, "binderBin", 0, jsonTagList); // binderBinOut
+	out->SWOUT = getjobjInt(jObj, "swimQOut", 0, jsonTagList); // swOut
+	out->SWORIOUT = getjobjInt(jObj, "swimOOut", 0, jsonTagList); // swOriOut
+	out->RTOUT = getjobjInt(jObj, "swimROut", 0, jsonTagList); // swVelOut
+	out->SYNOUT = getjobjInt(jObj, "synopsisOut", 1, jsonTagList); // swSynOut
+	out->CHCKPNT = getjobjInt(jObj, "checkpointOut", 0, jsonTagList); // chkpntOut
+
 	/// TODO: :))))))))))))
 
 	// input verification step
