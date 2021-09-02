@@ -19,25 +19,25 @@ All tags suffixed with "out", unless otherwise specified, take a value represent
 
 Tag             | Type          | Default Value | Description
 ---             | ---           | ---           | ---
-`domain`        | array(int)    | [100, 100]    | The system size, given as [X, Y] or [X, Y, Z]. Array dimensions correspond to DIM.
-`kbt`           | double        | 1             | The thermal energy of the system
+`domain`        | array(int)    | [30, 30]      | The system size, given as [X, Y] or [X, Y, Z]. Array dimensions correspond to DIM. If run in 1D or D>3, sim won't run.
+`kbt`           | double        | 1             | The thermal energy of the system. Should ALWAYS be 1. 
 `dt`            | double        | 0.1           | The size of the simulation timestep
 `simSteps`      | int           | 2000          | How many total timesteps to run the simulation for
 `warmUp`        | int           | 0             | How much warmup time to run before starting the simulation. Note that during warmup no output is written to file
-`rFrame`        | int           |               | 
-`zeroNetMom`    | int           |               | 
+`rFrame`        | int           | 1             | Takes of net non-zero average momentum post initialisation to minimise drift. 1 = on, 0 = off
+`zeroNetMom`    | int           | 0             | This substracts any excess momentum every time step (generally have this off)
 `galInv`        | int           | 1             | Whether to enable the random shift of particles to counter gallilean invariance
 `tsTech`        | int           | 0             | Which thermostat technique to use. Note some collsion operators have thermostats built in. See definitions.h for list
-`rTech`         | int           |               | Which collision operator to use. See definitions.h for list
-`lc`            | int           |               | Liquid crystal mode. 2 = global S, 1 = local S, 0 = off
+`rTech`         | int           | 2             | Which collision operator to use. See definitions.h for list
+`lc`            | int           | 0             | Liquid crystal mode. 2 = global S, 1 = local S, 0 = off
 `tau`           | double        | 0.5           | Thermal relaxation time scale
-`rotAng`        | double        | 1.570796      | 
+`rotAng`        | double        | 1.570796      | This is the angle used in the original SRD collision operator
 `fricCoef`      | double        | 1.0           | Friction coefficient for langevin thermostat
 `mfpot`         | double        | 10            | Liquid crystal mean field potential
 `grav`          | array(double) | [0,0,0]       | Constant acceleration due to external force. MUST be 3D
 `mag`           | array(double) | [0,0,0]       | Constant external magnetic field. MUST be 3D
 `seed`          | int           | 0             | Seed for random number generator. 0 for pseudorandom seed.
-`mdMode`        | int           | 0             | 
+`mdMode`        | int           | 0             | Enable the MD sim coupling. 1 = on, 0 = off
 `stepsMD`       | int           | 20            | MD time steps per MPCD time step
 `species`       | array(species)| default spec  | An array of species objects. See the species table for species tags.
 ---             | ---           | ---           | ---
@@ -84,41 +84,41 @@ Tag             | Type          | Default Value | Description
 ---             | ---           | ---           | ---
 `BC`            | array(BC)     | PBCs around default domain | The array of boundary objects. See the BC table for BC tags.
 ---             | ---           | ---           | ---
-`typeSwim`      | int           |               | Swimmer type
-`nSwim`         | int           |               | Swimmer population
-`qDistSwim`     | int           |               | Initial distribution of swimmer positions
-`oDistSwim`     | int           |               | Initial distribution of swimmer orientations
-`headMSwim`     | int           |               | Mass of head monomer
-`midMSwim`      | int           |               | Mass of middle monomer
-`hspIdSwim`     | int           |               | Multiphase fluid particle type of the head monomer in the swimmer
-`mspIdSwim`     | int           |               | Multiphase fluid particle type of the middle monomer in the swimmer
-`fsSwim`        | double        |               | Magnitude of swimmer propulsion force
-`dsSwim`        | double        |               | Dipole strength
-`tsSwim`        | double        |               | Magnitude of swimmer torque
-`sizeShrinkSwim`| double        |               | How much do LJ sigma ro shrink when tumbling
-`springShrinkSwim`| double        |               | How much the spring constant is shrunk when tumbling
-`kSwim`         | double        |               | Spring constant
-`roSwim`        | double        |               | Spring seperation
-`sigSwim`       | double        |               | Diameter approx sigma
-`epsSwim`       | double        |               | Interaction energy
-`runTSwim`      | double        |               | Average run time in units of MPCD timesteps dt
-`tumTSwim`      | double        |               | Average tumble time in units of MPCD timesteps dt
-`shrTSwim`      | double        |               | Set time to shrink/ extend in units of MPCD timesteps dt
-`magMomSwim`    | double        |               | Magnetic moment/ strength
-`fixDistSwim`   | double        |               | The fixed distance from the wall for DUMBELL_NEARWALL mode
+`typeSwim`      | int           | 2             | Swimmer type. Default is a dumbell swimmer with excluded volume interactions
+`nSwim`         | int           | 0             | Swimmer population
+`qDistSwim`     | int           | 0             | Initial distribution of swimmer positions
+`oDistSwim`     | int           | 0             | Initial distribution of swimmer orientations
+`headMSwim`     | int           | 20            | Mass of head monomer
+`midMSwim`      | int           | 20            | Mass of middle monomer
+`hspIdSwim`     | int           | 1             | Multiphase fluid particle type of the head monomer in the swimmer
+`mspIdSwim`     | int           | 1             | Multiphase fluid particle type of the middle monomer in the swimmer
+`fsSwim`        | double        | 20            | Magnitude of swimmer propulsion force
+`dsSwim`        | double        | 1             | Dipole strength
+`tsSwim`        | double        | 0             | Magnitude of swimmer torque
+`sizeShrinkSwim`| double        | 0.1           | How much do LJ sigma ro shrink when tumbling
+`springShrinkSwim`| double        | 0.1           | How much the spring constant is shrunk when tumbling
+`kSwim`         | double        | 30            | Spring constant
+`roSwim`        | double        | 4             | Spring seperation
+`sigSwim`       | double        | 4             | Diameter approx sigma
+`epsSwim`       | double        | 1             | Interaction energy
+`runTSwim`      | double        | 0             | Average run time in units of MPCD timesteps dt
+`tumTSwim`      | double        | 0             | Average tumble time in units of MPCD timesteps dt
+`shrTSwim`      | double        | 2             | Set time to shrink/ extend in units of MPCD timesteps dt
+`magMomSwim`    | double        | 1             | Magnetic moment/ strength
+`fixDistSwim`   | double        | 0             | The fixed distance from the wall for DUMBELL_NEARWALL mode
 
 
 ## Species Tag Table
 Tag             | Type          | Default Value | Description
 ---             | ---           | ---           | ---
 `mass`          | double        | 1             | Mass of this species of particles  
-`pop`           | int           | 200000        | Number of particles of this species
+`pop`           | int           | 18000         | Number of particles of this species
 `qDist`         | int           | 0             | Positional distribution function for the species. See definitions.h for a list.
 `vDist`         | int           | 0             | Velocity distribution function for the species. See definitions.h for a list.
 `oDist`         | int           | 2             | Orientation distribution function for the species. See definitions.h for a list.
 `interMatr`     | array(double) | [0,...]       | Interaction matrix for this species, against other species. Must be of the same length as the number of species. Default will autopopulate with 0s
 `rfc`           | double        | 0.01          | Nematogen rotational friction coefficient
-`len`           | double        | 1             | Effective rod length
+`len`           | double        | 0.007         | Effective rod length (specifically for solid boundary interactions)
 `tumble`        | double        | 2             | Tumbling parameter
 `shearSusc`     | double        | 0.5           | Shear susceptibility
 `magnSusc`      | double        | 0.001         | Magnetic susceptibility
@@ -126,34 +126,37 @@ Tag             | Type          | Default Value | Description
 `damp`          | double        | 0             | Damping friction to kill hydrodynamics. Between 0 and 1.
 
 ## BC Tag Table
+
+Unlike the previous tags, if you declare a new BC object then there are some tags that MUST be declared. 
+These are noted as NECESSARY in the default value column.
+
 Tag             | Type          | Default Value | Description
 ---             | ---           | ---           | ---
-`colType`       | int           |               | 
-`phantom`       | int           |               | Use phantom particles if 1, 0 otherwise
-`E`             | double        |               | Coefficient of restitution
-`Q`             | array(double) |               | Position of the boundary, MUST be 3D
-`V`             | array(double) |               | Velocity of the boundary, MUST be 3D
-`O`             | array(double) |               | Orientation of the boundary about (x,y,z), MUST be 3D
-`L`             | array(double) |               | Angular velocity of the boundary, MUST be 3D
-`G`             | array(double) |               | External acceleration (ie, due to gravity) of the boundary, MUST be 3D
-`G`             | array(double) |               | External acceleration (ie, due to gravity) of the boundary, MUST be 3D
-`aInv`          | array(double) |               | Sets the geometry of the surface. Principal semi-axes of the ellipsoid (see SRDClass for explanation). MUST be 3D. 
-`rotSym`        | array(double) |               | Sets rotational symmetry of shapes. Must be of form (a,b)
-`abs`           | int           |               | 
-`P`             | array(double) |               | Sets the geometry of the surface. Must be of form (a,b,c,d). See SRDClass for explanation
-`R`             | double        |               | Sets the geometry of the surface. See SRDClass for explanation
-`DN`            | double        |               | 
-`DT`            | double        |               | 
-`DVN`           | double        |               | 
-`DVT`           | double        |               | 
-`DVxyz`         | array(double) |               | Must be 3D
-`MVN`           | double        |               | 
-`MVT`           | double        |               | 
-`MUN`           | double        |               | 
-`MUT`           | double        |               | 
-`MUxyz`         | array(double) |               | Must be 3D
-`DUxyz`         | array(double) |               | Must be 3D
-`kbt`           | double        |               | 
-`dsplc`         | int           |               | 
-`inv`           | int           |               | Whether to invert the bc. 0 = no, 1 = yes
-`mass`          | double        |               | 
+`colType`       | int           | 1             | Which BC type do you want to use. See definitions.h for a list.
+`phantom`       | int           | 0             | Use phantom particles if 1, 0 otherwise
+`E`             | double        | -1            | Coefficient of restitution
+`Q`             | array(double) | [0,0,0]       | Position of the boundary, MUST be 3D
+`V`             | array(double) | [0,0,0]       | Velocity of the boundary, MUST be 3D
+`O`             | array(double) | [0,0,0]       | Orientation of the boundary about (x,y,z), MUST be 3D
+`L`             | array(double) | [0,0,0]       | Angular velocity of the boundary, MUST be 3D
+`G`             | array(double) | [0,0,0]       | External acceleration (ie, due to gravity) of the boundary, MUST be 3D
+`aInv`          | array(double) | NECESSARY     | Sets the geometry of the surface. Principal semi-axes of the ellipsoid (see SRDClass for explanation). MUST be 3D. If you declare a BC then this MUST be given, or the simulation will not run
+`rotSym`        | array(double) | [4,4]         | Sets rotational symmetry of shapes. Must be of form (a,b)
+`abs`           | int           | 0             | 
+`P`             | array(double) | NECESSARY     | Sets the geometry of the surface. Must be of form (a,b,c,d). See SRDClass for explanation. If you declare a BC then this MUST be given, or the simulation will not run
+`R`             | double        | NECESSARY     | Sets the geometry of the surface. See SRDClass for explanation. If you declare a BC then this MUST be given, or the simulation will not run
+`DN`            | double        | NECESSARY     | Displacement of the particle in the normal direction. If you declare a BC then this MUST be given, or the simulation will not run
+`DT`            | double        | 0             | Displacement of the particle in the tangential direction
+`DVN`           | double        | 0             | Add velocity in the normal direction on contact
+`DVT`           | double        | 0             | Add velocity in the tangential direction on contact
+`DVxyz`         | array(double) | [0,0,0]       | Add velocity in the cartesian directions on contact. Must be 3D
+`MVN`           | double        | NECESSARY     | Multiplies the velocity in the normal direction on contact. If you declare a BC then this MUST be given, or the simulation will not run
+`MVT`           | double        | NECESSARY     | Multiplies the velocity in the tangential direction on contact. If you declare a BC then this MUST be given, or the simulation will not run
+`MUN`           | double        | 1             | Multiplies the orientation in the normal direction on contact
+`MUT`           | double        | 1             | Multiplies the orientation in the tangential direction on contact
+`MUxyz`         | array(double) | [1,1,1]       | Multiplies the orientation in the cartesian direction on contact. Must be 3D
+`DUxyz`         | array(double) | [0,0,0]       | Add the orientation in the cartesian direction on contact. Must be 3D
+`kbt`           | double        | 1             | Temperature of the wall
+`dsplc`         | int           | 0             | Whether the wall can displace/ is mobile. 0 = no, 1 = yes
+`inv`           | int           | 0             | Whether to invert the bc (ie, multiply the A's by -1). 0 = no, 1 = yes
+`mass`          | double        | 1             | Mass of the wall in MPCD units. Should be the same density as the fluid if its displaceable
