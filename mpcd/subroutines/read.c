@@ -976,6 +976,23 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			(*SP+i)->ACT = 0.05; // act
 			(*SP+i)->DAMP = 0; // damp
 	}
+
+	//Total Number of particleMPCs
+	GPOP = 0;
+	for( i=0; i<NSPECI; i++ ) GPOP += (*SP+i)->POP;
+	(*pSRD) = (particleMPC*) malloc( GPOP * sizeof( particleMPC ) );
+
+	//Allocate memory for the cells
+	//Allocate rows (x first)
+	*CL = (cell***) malloc( XYZ_P1[0] * sizeof( cell** ) );
+	//For each x-element allocate the y columns
+	for( i=0; i<XYZ_P1[0]; i++ ) {
+		(*CL)[i] = (cell**) malloc( XYZ_P1[1] * sizeof( cell* ) );
+		//For each y-element allocate the z columns
+		for( j=0; j<XYZ_P1[1]; j++ ) {
+			(*CL)[i][j] = (cell*) malloc( XYZ_P1[2] * sizeof( cell ) );
+		}
+	}
 	
 	// 3. Printcom /////////////////////////////////////////////////////////////
 	// scroll up to void readpc() to see better descriptions & definitions for these
@@ -1263,6 +1280,18 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			currWall->DSPLC = getJObjInt(objElem, "dsplc", 0, jsonTagList); // dspc
 			currWall->INV = getJObjInt(objElem, "inv", 0, jsonTagList); // inv
 			currWall->MASS = getJObjDou(objElem, "mass", 1, jsonTagList); // mass
+
+			// Set the planar flag
+			if( feq(currWall->P[0],1.0) && feq(currWall->P[1],1.0) && feq(currWall->P[2],1.0) ) {
+				// Left or right wall
+				if( fneq(currWall->A[0],0.0) && feq(currWall->A[1],0.0) && feq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
+				// Top or bottom wall
+				else if( feq(currWall->A[0],0.0) && fneq(currWall->A[1],0.0) && feq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
+				// Far or near wall
+				else if( feq(currWall->A[0],0.0) && feq(currWall->A[1],0.0) && fneq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
+				else currWall->PLANAR = 0;
+			}
+			else currWall->PLANAR = 0;
 		}
 	} else { // otherwise default to periodic BCs about domain
 		// allocate memory for BCs as necessary
@@ -1375,10 +1404,52 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			currWall->DSPLC = 0; // dspc
 			currWall->INV = 0; // inv
 			currWall->MASS = 1; // mass
+
+			// Set the planar flag
+			if( feq(currWall->P[0],1.0) && feq(currWall->P[1],1.0) && feq(currWall->P[2],1.0) ) {
+				// Left or right wall
+				if( fneq(currWall->A[0],0.0) && feq(currWall->A[1],0.0) && feq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
+				// Top or bottom wall
+				else if( feq(currWall->A[0],0.0) && fneq(currWall->A[1],0.0) && feq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
+				// Far or near wall
+				else if( feq(currWall->A[0],0.0) && feq(currWall->A[1],0.0) && fneq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
+				else currWall->PLANAR = 0;
+			}
+			else currWall->PLANAR = 0;
 		}
 	}
+	//Determine if any BCs are periodic boundaries
+	for( i=0; i<_3D; i++ ) XYZPBC[i]=0;
+	for( i=0; i<NBC; i++ ) setPBC( (*WALL+i) ); 
 
-	/// TODO: :))))))))))))
+	// 4. Swimmers /////////////////////////////////////////////////////////////
+	// look at void readswimmers() in swimmers.c to see better descriptions & definitions for these
+
+	specS->TYPE = getJObjInt(jObj, "type", 2, jsonTagList); // type
+	NS = getJObjInt(jObj, "nSwim", 0, jsonTagList); // ns
+	specS->QDIST = getJObjInt(jObj, "qDistSwim", 0, jsonTagList); // qDisp
+	specS->ODIST = getJObjInt(jObj, "oDistSwim", 0, jsonTagList); // oDisp
+	specS->headM = getJObjInt(jObj, "headMSwim", 20, jsonTagList); // headMass
+	specS->middM = getJObjInt(jObj, "midMSwim", 20, jsonTagList); // middleMass
+	specS->HSPid = getJObjInt(jObj, "hspIdSwim", 1, jsonTagList); // hspId
+	specS->MSPid = getJObjInt(jObj, "mspIdSwim", 1, jsonTagList); // mspId
+	specS->FS = getJObjDou(jObj, "fsSwim", 20, jsonTagList); // fs
+	specS->DS = getJObjDou(jObj, "dsSwim", 1, jsonTagList); // ds
+	specS->TS = getJObjDou(jObj, "tsSwim", 0, jsonTagList); // ts
+	specS->sizeShrink = getJObjDou(jObj, "sizeShrinkSwim", 0.1, jsonTagList); // sizeShrink
+	specS->springShrink = getJObjDou(jObj, "springShrinkSwim", 0.1, jsonTagList); // springShrink
+	specS->k = getJObjDou(jObj, "kSwim", 30, jsonTagList); // k
+	specS->ro = getJObjDou(jObj, "roSwim", 4, jsonTagList); // ro
+	specS->sig = getJObjDou(jObj, "sigSwim", 4, jsonTagList); // sig
+	specS->eps = getJObjDou(jObj, "epsSwim", 1, jsonTagList); // eps
+	specS->runTime = getJObjDou(jObj, "runTSwim", 0, jsonTagList); // runTime
+	specS->tumbleTime = getJObjDou(jObj, "tumTSwim", 0, jsonTagList); // tumbleTime
+	specS->shrinkTime = getJObjDou(jObj, "shrTSwim", 2, jsonTagList); // shrinkTime
+	specS->MAGMOM = getJObjDou(jObj, "magMomSwim", 1, jsonTagList); // magMom
+	specS->fixDist = getJObjDou(jObj, "fixDistSwim", 0, jsonTagList); // fixDist
+
+	//Allocate the memory for the swimmers
+	(*sw) = (swimmer*) malloc( NS * sizeof( swimmer ) );
 
 	// input verification step
    	verifyJson(jObj, jsonTagList, arrayList);
