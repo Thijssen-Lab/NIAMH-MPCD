@@ -798,8 +798,13 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	if(getFileStr(fpath, &fileStr) != 0){ // read, return on error
 		exit(EXIT_FAILURE);
 	} 
-	printf("==== Read JSON =====\n%s", fileStr); //// TODO: remove
-	printf("\n\n");
+
+	#ifdef DBG // print json to user if in relevent debug mode
+		if( DBUG > DBGTITLE ){
+			printf("==== Read JSON =====\n%s", fileStr);
+			printf("\n\n");
+		} 
+	#endif
 
 	//now can actually parse the json
 	cJSON *jObj = cJSON_Parse(fileStr); // create the json object 
@@ -847,6 +852,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 		XYZ[1] = 30;
 		XYZ[2] = 1;
 	}
+	for(i=0; i<_3D; i++ ) XYZ_P1[i] = XYZ[i]+1; // add 1 to each dimension
 
 	// first set of primitives
 	in->KBT = getJObjDou(jObj, "kbt", 1, jsonTagList); // kbt
@@ -1460,8 +1466,9 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 	// clear memory
 	free(fileStr);
-
-	exit(EXIT_SUCCESS); ///TODO: temp while testing, remove eventually
+   	cJSON_Delete(jObj); // free the json object
+	freeLL(jsonTagList); // free the linked lists
+	freeLL(arrayList);
 
 	return;
 }
