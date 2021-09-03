@@ -21,7 +21,7 @@ All tags suffixed with "out", unless otherwise specified, take a value represent
 
 Tag             | Type          | Default Value | Description
 ---             | ---           | ---           | ---
-`domain`        | array(int)    | [30, 30]      | The system size, given as [X, Y] or [X, Y, Z]. Array dimensions correspond to DIM. If run in 1D or D>3, sim won't run.
+`domain`        | array(int)    | [30, 30]      | The system size, given as [X, Y] or [X, Y, Z]. Array dimensions correspond to DIM. If attempting to run in 1D or D>3, sim won't run.
 `kbt`           | double        | 1             | The thermal energy of the system. Should ALWAYS be 1. 
 `dt`            | double        | 0.1           | The size of the simulation timestep
 `simSteps`      | int           | 2000          | How many total timesteps to run the simulation for
@@ -83,7 +83,7 @@ Tag             | Type          | Default Value | Description
 `swimOOut`      | int           | 0             | Swimmer orientations
 `swimROut`      | int           | 0             | Swimmer run/ tumble
 `synopsisOut`   | int           | 1             | Synopsis output. Highly recommended to be on. 1 = on, 0 = off
-`checkpointOut` | int           | 0             | Simulation checkpointing
+`checkpointOut` | int           | 0             | Simulation checkpointing. Note that this just controls dump rate --- To actually turn this on, set seed to -1
 ---             | ---           | ---           | ---
 `BC`            | array(BC)     | PBCs around domain | The array of boundary objects. See the BC table for BC tags.
 ---             | ---           | ---           | ---

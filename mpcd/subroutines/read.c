@@ -712,7 +712,7 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 	#ifdef DBG
 		if( DBUG >= DBGINIT ) printf("Read arguments\n");
 	#endif
-	strcpy(ip,"mpcd/data/");
+	strcpy(ip,"mpcd/data/input.json");
 	strcpy(op,"mpcd/data/");
 	for(arg=1; arg<argc; arg++) {
 		// Check for a dash
@@ -798,7 +798,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	if(getFileStr(fpath, &fileStr) != 0){ // read, return on error
 		exit(EXIT_FAILURE);
 	} 
-	printf("==== Read JSON =====\n%s", fileStr);
+	printf("==== Read JSON =====\n%s", fileStr); //// TODO: remove
 	printf("\n\n");
 
 	//now can actually parse the json
@@ -830,7 +830,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	// dimensionality and domain bounds array
 	cJSON *arrDomain = NULL;
 	getCJsonArray(jObj, &arrDomain, "domain", jsonTagList, arrayList, 0);
-	if(arrDomain != NULL){ // if the can be found in the json
+	if(arrDomain != NULL) { // if the can be found in the json
 		DIM = cJSON_GetArraySize(arrDomain);
 		if(DIM != 2 && DIM != 3){ // check dimensionality is valid
 			printf("Error: Dimensionality must be 2 or 3.\n");
@@ -961,7 +961,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 		for (i = 0; i < NSPECI; i++) { // loop through the species
 			// now get first set of primitives
 			(*SP+i)->MASS = 1; // mass
-			(*SP+i)->POP = 18000; // pop
+			(*SP+i)->POP = XYZ[0]*XYZ[1]*XYZ[2]*20; // pop
 			(*SP+i)->QDIST = 0; // qDist
 			(*SP+i)->VDIST = 0; // vDist
 			(*SP+i)->ODIST = 2; // oDist
@@ -975,6 +975,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			(*SP+i)->CHIA = 0.001; // chiA
 			(*SP+i)->ACT = 0.05; // act
 			(*SP+i)->DAMP = 0; // damp
+		}
 	}
 
 	//Total Number of particleMPCs
@@ -1310,42 +1311,42 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			switch (i) {
 				case 0: // left wall
 					currWall->AINV[0] = 1; // aInv array - NECESSARY
-					currWall->A[0] = 1.0/currWall->AINV[j]; 
+					currWall->A[0] = 1.0/currWall->AINV[0]; 
 					currWall->R = 0; // r
 					currWall->DN = XYZ[0]; // dn
 					break;
 				
 				case 1: // right wall
 					currWall->AINV[0] = -1; // aInv array - NECESSARY
-					currWall->A[0] = 1.0/currWall->AINV[j]; 
+					currWall->A[0] = 1.0/currWall->AINV[0]; 
 					currWall->R = -XYZ[0]; // r
 					currWall->DN = XYZ[0]; // dn
 					break;
 
 				case 2: // bottom wall
 					currWall->AINV[1] = 1; // aInv array - NECESSARY
-					currWall->A[1] = 1.0/currWall->AINV[j]; 
+					currWall->A[1] = 1.0/currWall->AINV[1]; 
 					currWall->R = 0; // r
 					currWall->DN = XYZ[1]; // dn
 					break;
 
 				case 3: // top wall
 					currWall->AINV[1] = -1; // aInv array - NECESSARY
-					currWall->A[1] = 1.0/currWall->AINV[j]; 
+					currWall->A[1] = 1.0/currWall->AINV[1]; 
 					currWall->R = -XYZ[1]; // r
 					currWall->DN = XYZ[1]; // dn
 					break;
 
 				case 4: // near wall
 					currWall->AINV[2] = 1; // aInv array - NECESSARY
-					currWall->A[2] = 1.0/currWall->AINV[j]; 
+					currWall->A[2] = 1.0/currWall->AINV[2]; 
 					currWall->R = 0; // r
 					currWall->DN = XYZ[2]; // dn
 					break;
 
 				case 5: // far wall
 					currWall->AINV[2] = -1; // aInv array - NECESSARY
-					currWall->A[2] = 1.0/currWall->AINV[j]; 
+					currWall->A[2] = 1.0/currWall->AINV[2]; 
 					currWall->R = -XYZ[2]; // r
 					currWall->DN = XYZ[2]; // dn
 					break;
@@ -1354,7 +1355,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			currWall->AINV[0] = 1; // aInv array - NECESSARY
 			currWall->AINV[1] = 1; 
 			currWall->AINV[2] = 1; 
-			for (j=0; j<_3D; j++) { currWall->A[j] = 1.0/currWall->AINV[j]; }
+			for (j=0; j < _3D; j++) { currWall->A[j] = 1.0/currWall->AINV[j]; }
 			currWall->R = 2; // r
 			currWall->DN = 1; // dn
 
@@ -1451,6 +1452,9 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	//Allocate the memory for the swimmers
 	(*sw) = (swimmer*) malloc( NS * sizeof( swimmer ) );
 
+	////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////
+
 	// input verification step
    	verifyJson(jObj, jsonTagList, arrayList);
 
@@ -1458,4 +1462,6 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	free(fileStr);
 
 	exit(EXIT_SUCCESS); ///TODO: temp while testing, remove eventually
+
+	return;
 }
