@@ -51,7 +51,7 @@ Tag             | Type          | Default Value | Description
 `avVelOut`      | int           | 0             | Total average MPCD velocity
 `dirSOut`       | int           | 0             | Director and scalar order parameter fields
 `qTensOut`      | int           | 0             | Q tensor field
-`qkTensOut`      | int           | 0             | Reciprocal Q tensor field
+`qkTensOut`     | int           | 0             | Reciprocal Q tensor field
 `oriEnOut`      | int           | 0             | Orientational energy field
 `colourOut`     | int           | 0             | Colour/ phi/ species-type field
 `pressureOut`   | int           | 0             | Pressure field

@@ -1006,7 +1006,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	out->AVVELOUT = getJObjInt(jObj, "avVelOut", 0, jsonTagList); // avVelOut
 	out->ORDEROUT = getJObjInt(jObj, "dirSOut", 0, jsonTagList); // orderOut
 	out->QTENSOUT = getJObjInt(jObj, "qTensOut", 0, jsonTagList); // qTensOut
-	out->QKOUT = getJObjInt(jObj, "qkOut", 0, jsonTagList); // qKOut
+	out->QKOUT = getJObjInt(jObj, "qkTensOut", 0, jsonTagList); // qKOut
 	out->ENFIELDOUT = getJObjInt(jObj, "oriEnOut", 0, jsonTagList); // enFieldOut
 	out->SPOUT = getJObjInt(jObj, "colourOut", 0, jsonTagList); // spOut
 	out->PRESOUT = getJObjInt(jObj, "pressureOut", 0, jsonTagList); // presOut
@@ -1052,7 +1052,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 		(*WALL) = (bc*) malloc( NBC * sizeof( bc ) );
 		for (i = 0; i < NBC; i++) { // loop through the BCs
 			cJSON *objElem = cJSON_GetArrayItem(arrBC, i); // get the BC object
-			bc *currWall = *(WALL + i); // get the pointer to the BC we want to write to
+			bc *currWall = (*WALL + i); // get the pointer to the BC we want to write to
 
 			// Do a check if the necessary parameters are present 
 			if (!checkBC(objElem)){
@@ -1061,13 +1061,13 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			}
 
 			// parse through first set of primitives
-			currWall->COLL_TYPE = getJObjInt(objElem, "collType", 1, jsonTagList); // collType
+			currWall->COLL_TYPE = getJObjInt(objElem, "colType", 1, jsonTagList); // collType
 			currWall->PHANTOM = getJObjInt(objElem, "phantom", 0, jsonTagList); // phantom
 			currWall->E = getJObjDou(objElem, "E", -1.0, jsonTagList); // E
 
 			// Q array
 			cJSON *arrQ = NULL;
-			getCJsonArray(jObj, &arrQ, "Q", jsonTagList, arrayList, 0);
+			getCJsonArray(objElem, &arrQ, "Q", jsonTagList, arrayList, 0);
 			if (arrQ != NULL) { // if grav has been found then....
 				if (cJSON_GetArraySize(arrQ) != _3D) { // check dimensionality is valid
 					printf("Error: Q must be 3D.\n");
@@ -1085,7 +1085,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 			// V array
 			cJSON *arrV = NULL;
-			getCJsonArray(jObj, &arrV, "V", jsonTagList, arrayList, 0);
+			getCJsonArray(objElem, &arrV, "V", jsonTagList, arrayList, 0);
 			if (arrV != NULL) { // if grav has been found then....
 				if (cJSON_GetArraySize(arrV) != _3D) { // check dimensionality is valid
 					printf("Error: V must be 3D.\n");
@@ -1103,7 +1103,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 			// O array
 			cJSON *arrO = NULL;
-			getCJsonArray(jObj, &arrO, "O", jsonTagList, arrayList, 0);
+			getCJsonArray(objElem, &arrO, "O", jsonTagList, arrayList, 0);
 			if (arrO != NULL) { // if grav has been found then....
 				if (cJSON_GetArraySize(arrO) != _3D) { // check dimensionality is valid
 					printf("Error: O must be 3D.\n");
@@ -1121,7 +1121,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 			// L array
 			cJSON *arrL = NULL;
-			getCJsonArray(jObj, &arrL, "L", jsonTagList, arrayList, 0);
+			getCJsonArray(objElem, &arrL, "L", jsonTagList, arrayList, 0);
 			if (arrL != NULL) { // if grav has been found then....
 				if (cJSON_GetArraySize(arrL) != _3D) { // check dimensionality is valid
 					printf("Error: L must be 3D.\n");
@@ -1139,7 +1139,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 			// G array
 			cJSON *arrG = NULL;
-			getCJsonArray(jObj, &arrG, "G", jsonTagList, arrayList, 0);
+			getCJsonArray(objElem, &arrG, "G", jsonTagList, arrayList, 0);
 			if (arrG != NULL) { // if grav has been found then....
 				if (cJSON_GetArraySize(arrG) != _3D) { // check dimensionality is valid
 					printf("Error: G must be 3D.\n");
@@ -1157,7 +1157,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 			// aInv array - NECESSARY
 			cJSON *arrAInv = NULL;
-			getCJsonArray(jObj, &arrAInv, "aInv", jsonTagList, arrayList, 0);
+			getCJsonArray(objElem, &arrAInv, "aInv", jsonTagList, arrayList, 0);
 			if (arrAInv != NULL) { // if grav has been found then....
 				if (cJSON_GetArraySize(arrAInv) != _3D) { // check dimensionality is valid
 					printf("Error: aInv must be 3D.\n");
@@ -1170,13 +1170,13 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 					else currWall->A[j] = 0.0;
 				}	
 			} else {
-				printf("Error: Could not find aInv.\n");
+				printf("Error: Could not find aInv in BC %d.\n", i);
 				exit(EXIT_FAILURE);
 			}
 
 			// rotsymm array
 			cJSON *arrRotSym = NULL;
-			getCJsonArray(jObj, &arrRotSym, "rotSym", jsonTagList, arrayList, 0);
+			getCJsonArray(objElem, &arrRotSym, "rotSym", jsonTagList, arrayList, 0);
 			if (arrRotSym != NULL) { // if grav has been found then....
 				if (cJSON_GetArraySize(arrRotSym) != 2) { // check dimensionality is valid
 					printf("Error: rotSym must have two components.\n");
@@ -1196,7 +1196,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 			// P array - NECESSARY
 			cJSON *arrP = NULL;
-			getCJsonArray(jObj, &arrP, "P", jsonTagList, arrayList, 0);
+			getCJsonArray(objElem, &arrP, "P", jsonTagList, arrayList, 0);
 			if (arrP != NULL) { // if grav has been found then....
 				if (cJSON_GetArraySize(arrP) != 4) { // check dimensionality is valid
 					printf("Error: P must have 4 elements.\n");
@@ -1207,7 +1207,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 					currWall->P[j] = cJSON_GetArrayItem(arrP, j)->valuedouble;
 				}	
 			} else {
-				printf("Error: Could not find P.\n");
+				printf("Error: Could not find P in BC %d.\n", i);
 				exit(EXIT_FAILURE);
 			}
 
@@ -1220,7 +1220,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 			// DVxyz array
 			cJSON *arrDVxyz = NULL;
-			getCJsonArray(jObj, &arrDVxyz, "DVxyz", jsonTagList, arrayList, 0);
+			getCJsonArray(objElem, &arrDVxyz, "DVxyz", jsonTagList, arrayList, 0);
 			if (arrDVxyz != NULL) { // if grav has been found then....
 				if (cJSON_GetArraySize(arrDVxyz) != _3D) { // check dimensionality is valid
 					printf("Error: DVxyz must have two components.\n");
@@ -1243,7 +1243,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 			// MUxyz array
 			cJSON *arrMUxyz = NULL;
-			getCJsonArray(jObj, &arrMUxyz, "MUxyz", jsonTagList, arrayList, 0);
+			getCJsonArray(objElem, &arrMUxyz, "MUxyz", jsonTagList, arrayList, 0);
 			if (arrMUxyz != NULL) { // if grav has been found then....
 				if (cJSON_GetArraySize(arrMUxyz) != _3D) { // check dimensionality is valid
 					printf("Error: MUxyz must have two components.\n");
@@ -1261,7 +1261,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 			// DUxyz array
 			cJSON *arrDUxyz = NULL;
-			getCJsonArray(jObj, &arrDUxyz, "DUxyz", jsonTagList, arrayList, 0);
+			getCJsonArray(objElem, &arrDUxyz, "DUxyz", jsonTagList, arrayList, 0);
 			if (arrDUxyz != NULL) { // if grav has been found then....
 				if (cJSON_GetArraySize(arrDUxyz) != _3D) { // check dimensionality is valid
 					printf("Error: DUxyz must have two components.\n");
@@ -1426,7 +1426,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	// 4. Swimmers /////////////////////////////////////////////////////////////
 	// look at void readswimmers() in swimmers.c to see better descriptions & definitions for these
 
-	specS->TYPE = getJObjInt(jObj, "type", 2, jsonTagList); // type
+	specS->TYPE = getJObjInt(jObj, "typeSwim", 2, jsonTagList); // type
 	NS = getJObjInt(jObj, "nSwim", 0, jsonTagList); // ns
 	specS->QDIST = getJObjInt(jObj, "qDistSwim", 0, jsonTagList); // qDisp
 	specS->ODIST = getJObjInt(jObj, "oDistSwim", 0, jsonTagList); // oDisp
