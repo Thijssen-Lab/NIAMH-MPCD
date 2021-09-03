@@ -1043,7 +1043,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			}
 
 			// parse through first set of primitives
-			currWall->COLL_TYPE = getJObjInt(objElem, "collType", 0, jsonTagList); // collType
+			currWall->COLL_TYPE = getJObjInt(objElem, "collType", 1, jsonTagList); // collType
 			currWall->PHANTOM = getJObjInt(objElem, "phantom", 0, jsonTagList); // phantom
 			currWall->E = getJObjDou(objElem, "E", -1.0, jsonTagList); // E
 
@@ -1194,8 +1194,8 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			}
 
 			// some more primitives
-			currWall->R = getJObjDou(objElem, "R", 2, jsonTagList); // r
-			currWall->DN = getJObjDou(objElem, "DN", 1, jsonTagList); // dn
+			currWall->R = getJObjDou(objElem, "R", 2, jsonTagList); // r - NECESSARY
+			currWall->DN = getJObjDou(objElem, "DN", 1, jsonTagList); // dn - NECESSARY
 			currWall->DT = getJObjDou(objElem, "DT", 0, jsonTagList); // dt
 			currWall->DVN = getJObjDou(objElem, "DVN", 0, jsonTagList); // dvn
 			currWall->DVT = getJObjDou(objElem, "DVT", 0, jsonTagList); // dvt
@@ -1218,8 +1218,8 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 				}
 			}
 
-			currWall->MVN = getJObjDou(objElem, "MVN", 1, jsonTagList); // mvn
-			currWall->MVT = getJObjDou(objElem, "MVT", 1, jsonTagList); // mvt
+			currWall->MVN = getJObjDou(objElem, "MVN", 1, jsonTagList); // mvn - NECESSARY
+			currWall->MVT = getJObjDou(objElem, "MVT", 1, jsonTagList); // mvt - NECESSARY
 			currWall->MUN = getJObjDou(objElem, "MUN", 1, jsonTagList); // mun
 			currWall->MUT = getJObjDou(objElem, "MUT", 1, jsonTagList); // mut
 
@@ -1237,7 +1237,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 				}	
 			} else {
 				for (j = 0; j < _3D; j++) { // get the value
-					currWall->MUxyz[j] = 0;
+					currWall->MUxyz[j] = 1;
 				}
 			}
 
@@ -1264,15 +1264,117 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			currWall->INV = getJObjInt(objElem, "inv", 0, jsonTagList); // inv
 			currWall->MASS = getJObjDou(objElem, "mass", 1, jsonTagList); // mass
 		}
-	} else { // otherwise default
+	} else { // otherwise default to periodic BCs about domain
 		// allocate memory for BCs as necessary
-		///TODO: also take into account the dimension
+		NBC = DIM * 2; // 2 for each dimension
+		(*WALL) = (bc*) malloc( NBC * sizeof( bc ) );
 
 		//set up PBCs on the xy plane based on the domain dimensions
-		///TODO
+		for (i = 0; i < 2 * DIM; i++) { // use i as the fundamental counter for setting these up
+			bc *currWall = *(WALL + i); // get the pointer to the BC we want to write to
 
-		if(DIM == _3D){ // if in 3d then also do the z axis
-			///TODO	
+			// handle the things that change for each wall first
+			for (j = 0; j < _3D; j++) { // set A, Ainv to default vals
+				currWall->AINV[j] = 0; 
+				currWall->A[j] = 0.0;
+			}	
+			switch (i) {
+				case 0: // left wall
+					currWall->AINV[0] = 1; // aInv array - NECESSARY
+					currWall->A[0] = 1.0/currWall->AINV[j]; 
+					currWall->R = 0; // r
+					currWall->DN = XYZ[0]; // dn
+					break;
+				
+				case 1: // right wall
+					currWall->AINV[0] = -1; // aInv array - NECESSARY
+					currWall->A[0] = 1.0/currWall->AINV[j]; 
+					currWall->R = -XYZ[0]; // r
+					currWall->DN = XYZ[0]; // dn
+					break;
+
+				case 2: // bottom wall
+					currWall->AINV[1] = 1; // aInv array - NECESSARY
+					currWall->A[1] = 1.0/currWall->AINV[j]; 
+					currWall->R = 0; // r
+					currWall->DN = XYZ[1]; // dn
+					break;
+
+				case 3: // top wall
+					currWall->AINV[1] = -1; // aInv array - NECESSARY
+					currWall->A[1] = 1.0/currWall->AINV[j]; 
+					currWall->R = -XYZ[1]; // r
+					currWall->DN = XYZ[1]; // dn
+					break;
+
+				case 4: // near wall
+					currWall->AINV[2] = 1; // aInv array - NECESSARY
+					currWall->A[2] = 1.0/currWall->AINV[j]; 
+					currWall->R = 0; // r
+					currWall->DN = XYZ[2]; // dn
+					break;
+
+				case 5: // far wall
+					currWall->AINV[2] = -1; // aInv array - NECESSARY
+					currWall->A[2] = 1.0/currWall->AINV[j]; 
+					currWall->R = -XYZ[2]; // r
+					currWall->DN = XYZ[2]; // dn
+					break;
+			}
+			
+			currWall->AINV[0] = 1; // aInv array - NECESSARY
+			currWall->AINV[1] = 1; 
+			currWall->AINV[2] = 1; 
+			for (j=0; j<_3D; j++) { currWall->A[j] = 1.0/currWall->AINV[j]; }
+			currWall->R = 2; // r
+			currWall->DN = 1; // dn
+
+			// set all the default values
+			currWall->COLL_TYPE = 1; // collType
+			currWall->PHANTOM = 0; // phantom
+			currWall->E = -1.0; // E
+			for (j = 0; j < _3D; j++) { // Q array
+				currWall->Q[j] = 0; 
+			}	
+			for (j = 0; j < _3D; j++) { // V array
+				currWall->V[j] = 0; 
+			}	
+			for (j = 0; j < _3D; j++) { // O array
+				currWall->O[j] = 0; 
+			}	
+			for (j = 0; j < _3D; j++) { // L array
+				currWall->L[j] = 0; 
+			}	
+			for (j = 0; j < _3D; j++) { // G array
+				currWall->G[j] = 0; 
+			}	
+			for (j = 0; j < 2; j++) { // rotsymm array
+				currWall->ROTSYMM[j] = 4;
+			}
+			currWall->ABS = 0; // abs
+			for (j = 0; j < 4; j++) { // P array - NECESSARY
+				currWall->P[j] = 1;
+			}	
+			currWall->DT = 0; // dt
+			currWall->DVN = 0; // dvn
+			currWall->DVT = 0; // dvt
+			for (j = 0; j < _3D; j++) { // DVxyz array
+				currWall->DVxyz[j] = 0;
+			}
+			currWall->MVN = 1; // mvn
+			currWall->MVT = 1; // mvt
+			currWall->MUN = 1; // mun
+			currWall->MUT = 1; // mut
+			for (j = 0; j < _3D; j++) { // MUxyz array
+				currWall->MUxyz[j] = 1;
+			}
+			for (j = 0; j < _3D; j++) { // DUxyz array
+				currWall->DUxyz[j] = 0;
+			}
+			currWall->KBT = 1; // kbt
+			currWall->DSPLC = 0; // dspc
+			currWall->INV = 0; // inv
+			currWall->MASS = 1; // mass
 		}
 	}
 

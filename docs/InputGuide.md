@@ -7,9 +7,11 @@ This is just meant to be a quick and dirty guide to the new MPCD JSON input syst
 Everything listed below should be in a single JSON file. 
 Every parameter in the simulation can be fed in with a corresponding name/value pair. 
 The name, or "tag", uniquely represents each parameter, is case sensitive, but can be given in any order within the json file. 
+If a tag is not specified, then that parameter will assume the default value in the table below --- This means that, with the exception of some parameters used when declaring a BC, you may only need to specify several parameters in your input file.
 
 The table below lists all tags, their types, their default values, and their description.
-Tags will generally be named the same as they are named in the code (in the `inputList` struct) unless they are completely nonsensical.
+Tags will generally be named the same as they are named in the code (in the various input structs), unless there is a good reason to change it for legibility or clarity.
+
 Some tags will take an array of custom objects (for example, species and boundary conditions). 
 These are each defined in their own table following the main one.
 
@@ -39,7 +41,7 @@ Tag             | Type          | Default Value | Description
 `seed`          | int           | 0             | Seed for random number generator. 0 for pseudorandom seed. Set to -1 to load a checkpoint.
 `mdMode`        | int           | 0             | Enable the MD sim coupling. 1 = on, 0 = off
 `stepsMD`       | int           | 20            | MD time steps per MPCD time step
-`species`       | array(species)| default spec  | An array of species objects. See the species table for species tags.
+`species`       | array(species)| 1 default spec  | An array of species objects. See the species table for species tags.
 ---             | ---           | ---           | ---
 `debugOut`      | int           | 3             | Debug (verbosity) level. See definitions.h for list.
 `trajOut`       | int           | 0             | Detailed species trajectories
@@ -83,7 +85,7 @@ Tag             | Type          | Default Value | Description
 `synopsisOut`   | int           | 1             | Synopsis output. Highly recommended to be on. 1 = on, 0 = off
 `checkpointOut` | int           | 0             | Simulation checkpointing
 ---             | ---           | ---           | ---
-`BC`            | array(BC)     | PBCs around default domain | The array of boundary objects. See the BC table for BC tags.
+`BC`            | array(BC)     | PBCs around domain | The array of boundary objects. See the BC table for BC tags.
 ---             | ---           | ---           | ---
 `typeSwim`      | int           | 2             | Swimmer type. Default is a dumbell swimmer with excluded volume interactions
 `nSwim`         | int           | 0             | Swimmer population
@@ -161,3 +163,13 @@ Tag             | Type          | Default Value | Description
 `dsplc`         | int           | 0             | Whether the wall can displace/ is mobile. 0 = no, 1 = yes
 `inv`           | int           | 0             | Whether to invert the bc (ie, multiply the A's by -1). 0 = no, 1 = yes
 `mass`          | double        | 1             | Mass of the wall in MPCD units. Should be the same density as the fluid if its displaceable
+
+## Example
+Below is an example JSON input file that uses all tags but sets them to the defaults.
+As a reminder, if you wish to use the default value for a tag, you can leave it out of the JSON file, so this is primarily for illustrative purposes.
+
+```json
+{
+
+}
+```
