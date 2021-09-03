@@ -16,4 +16,4 @@ Runs/*
 *.DS_Store
 
 #ignore IDE bits
-.vscode/*
+.vscode/settings.json
