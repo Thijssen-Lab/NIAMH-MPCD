@@ -21,6 +21,14 @@
             "args": [],
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "make debug"
+        },
+        {
+            "name": "Run Specific Sim",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/mpcd.out",
+            "args": ["-i", "/mnt/c/Work/Results/MPCD_Runs/Batch4/MixedPop/phi0.5/input.json", "-o", "/mnt/c/Work/Results/MPCD_Runs/Batch4/MixedPop/phi0.5/"],
+            "cwd": "${workspaceFolder}"
         }
     ]
 }

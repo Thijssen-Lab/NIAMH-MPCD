@@ -861,7 +861,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	in->warmupSteps = getJObjInt(jObj, "warmUp", 0, jsonTagList); // warmupSteps
 	in->RFRAME = getJObjInt(jObj, "rFrame", 1, jsonTagList); // RFRAME
 	in->zeroNetMom = getJObjInt(jObj, "zeroNetMom", 0, jsonTagList); // zeroNetMom
-	in->GALINV = getJObjInt(jObj, "galInv", 2, jsonTagList); // GALINV
+	in->GALINV = getJObjInt(jObj, "galInv", 1, jsonTagList); // GALINV
 	in->TSTECH = getJObjInt(jObj, "tsTech", 0, jsonTagList); // TSTECH
 	in->RTECH = getJObjInt(jObj, "rTech", 2, jsonTagList); // RTECH
 	in->LC = getJObjInt(jObj, "lc", 0, jsonTagList); // LC
@@ -1307,7 +1307,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 		//set up PBCs on the xy plane based on the domain dimensions
 		for (i = 0; i < 2 * DIM; i++) { // use i as the fundamental counter for setting these up
-			bc *currWall = *(WALL + i); // get the pointer to the BC we want to write to
+			bc *currWall = (*WALL + i); // get the pointer to the BC we want to write to
 
 			// handle the things that change for each wall first
 			for (j = 0; j < _3D; j++) { // set A, Ainv to default vals
@@ -1357,13 +1357,6 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 					currWall->DN = XYZ[2]; // dn
 					break;
 			}
-			
-			currWall->AINV[0] = 1; // aInv array - NECESSARY
-			currWall->AINV[1] = 1; 
-			currWall->AINV[2] = 1; 
-			for (j=0; j < _3D; j++) { currWall->A[j] = 1.0/currWall->AINV[j]; }
-			currWall->R = 2; // r
-			currWall->DN = 1; // dn
 
 			// set all the default values
 			currWall->COLL_TYPE = 1; // collType
