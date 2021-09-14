@@ -32,6 +32,7 @@
 #include "mdsetup.h"
 #include "mdsrd.h"
 #include "mdfiles.h"
+#include "../mpcd/headers/globals.h"
 
 
 /// Parse the command-line options of the program using getopt. Options can be
@@ -59,8 +60,12 @@ void ParseOptions (int argc, char *argv[], simptr sim, simoptions *options)
 	// parse command-line options
 	while ((c = getopt (argc, argv, "i:o:c:h:I:O")) != -1) {
 		switch (c) {
+			case 'i': // read input from the global input file string
+				snprintf (sim->inputFile, STRMAX, "%s", mdInputFile);
+				opt_i = 1;
+				break;
 
-			case 'i':
+			case 'Li': // legacy input option
 				// name of input file
 				snprintf (sim->inputFile, STRMAX, "%s/md.inp", optarg);
 				// if (strcmp(sim->inputFile, optarg)) error (EPARSE);

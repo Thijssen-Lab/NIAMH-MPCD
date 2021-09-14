@@ -2,7 +2,7 @@
 
 This is just meant to be a quick and dirty guide to the new MPCD JSON input system. It is not meant to be a complete reference. For basics on the JSON file format take a look at the tutorial series starting on [this page](https://www.w3schools.com/js/js_json_intro.asp).
 
-**Note:** The MPCD JSON input system has no bindings for MD. Please use legacy input for MD sims for now.
+**Note:** The MPCD JSON input system is unverified with MD simulations as of yet.
 
 Everything listed below should be in a single JSON file. 
 Every parameter in the simulation can be fed in with a corresponding name/value pair. 
@@ -39,7 +39,7 @@ Tag             | Type          | Default Value | Description
 `grav`          | array(double) | [0,0,0]       | Constant acceleration due to external force. MUST be 3D
 `mag`           | array(double) | [0,0,0]       | Constant external magnetic field. MUST be 3D
 `seed`          | int           | 0             | Seed for random number generator. 0 for pseudorandom seed. Set to -1 to load a checkpoint.
-`mdMode`        | int           | 0             | Enable the MD sim coupling. 1 = on, 0 = off
+`mdIn`          | string        | ""            | Path to the MD input file. This also acts as the switch for enabling MD --- If set to `""`, then MD is disabled, otherwise MD is enabled with the corresponding input file.
 `stepsMD`       | int           | 20            | MD time steps per MPCD time step
 `species`       | array(species)| 1 default spec  | An array of species objects. See the species table for species tags.
 ---             | ---           | ---           | ---
@@ -188,7 +188,7 @@ As a reminder, if you wish to use the default value for a tag, you can leave it 
     "grav":             [0, 0, 0],
     "mag":              [0, 0, 0],
     "seed":             0,
-    "mdMode":           0,
+    "mdIn":             "",
     "stepsMD":          20,
     "species":
     [

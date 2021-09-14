@@ -25,4 +25,6 @@ int XYZ_P1[3];	//x,y and z dimensions of the control volume plus 1
 int XYZPBC[3];	//Flags whether x,y or z dimensions are wrapped with periodic BCs
 int maxXYZ;		//Maximum dimension
 
+char* mdInputFile;	//The name of the input file for the MD simulation
+
 #endif

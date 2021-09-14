@@ -17,7 +17,7 @@
     "grav":             [0, 0, 0],
     "mag":              [0, 0, 0],
     "seed":             0,
-    "mdMode":           0,
+    "mdIn":             "",
     "stepsMD":          20,
     "species":
     [

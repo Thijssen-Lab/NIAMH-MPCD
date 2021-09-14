@@ -908,7 +908,13 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 	// second set of primitives
 	in->seed = getJObjInt(jObj, "seed", 0, jsonTagList); // seed
-	MDmode = getJObjInt(jObj, "mdMode", 0, jsonTagList); // mdMode
+
+	// Handle MD
+	getJObjStr(jObj, "mdIn", "", &mdInputFile, jsonTagList);
+	if (strcmp(mdInputFile, "") == 0){ // if no input file was found
+		MDmode = 0;
+	} else MDmode = 1; // otherwise enable MD if input file found
+
 	in->stepsMD = getJObjInt(jObj, "stepsMD", 20, jsonTagList); // stepsMD
 
 	// 2. Species //////////////////////////////////////////////////////////////
