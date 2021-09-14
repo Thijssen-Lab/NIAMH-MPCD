@@ -828,6 +828,18 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	// Perform parsing here. 
 	// This is done in the order declared in docs/InputGuide.md
 	////////////////////////////////////////////////////////////////////////////
+
+	// 0. Overrides ////////////////////////////////////////////////////////////
+	// General override behaviour (ie, not BC and not species) should be set here
+
+	// flags for overrides
+	int domainWalls = 0; // Whether to add domain walls. 0 = off, 1 = PBC, 2 = solid
+
+	/// Get overrides
+	domainWalls = getJObjInt(jObj, "domainWalls", 0, jsonTagList); // domainWalls
+
+	// perform general overrides
+	///NOTE: none here yet :)
 	
 	// 1. Old input.inp ////////////////////////////////////////////////////////
 	// scroll up to void readin() to see better descriptions & definitions for these
@@ -932,7 +944,15 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 			// now get first set of primitives
 			(*SP+i)->MASS = getJObjDou(objElem, "mass", 1.0, jsonTagList); // mass
-			(*SP+i)->POP = getJObjInt(objElem, "pop", 18000, jsonTagList); // pop
+
+			// handle population related overrides
+			double cellDens = getJObjDou(objElem, "dens", -1, jsonTagList);
+			if (cellDens < 0){ // if cellDens is invalid
+				(*SP+i)->POP = getJObjInt(objElem, "pop", XYZ[0]*XYZ[1]*XYZ[2]*20, jsonTagList); // pop
+			} else { // otherwise, set population using per cell density
+				(*SP+i)->POP = XYZ[0]*XYZ[1]*XYZ[2]*cellDens;
+			}
+
 			(*SP+i)->QDIST = getJObjInt(objElem, "qDist", 0, jsonTagList); // qDist
 			(*SP+i)->VDIST = getJObjInt(objElem, "vDist", 0, jsonTagList); // vDist
 			(*SP+i)->ODIST = getJObjInt(objElem, "oDist", 2, jsonTagList); // oDist

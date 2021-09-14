@@ -7,7 +7,13 @@ This is just meant to be a quick and dirty guide to the new MPCD JSON input syst
 Everything listed below should be in a single JSON file. 
 Every parameter in the simulation can be fed in with a corresponding name/value pair. 
 The name, or "tag", uniquely represents each parameter, is case sensitive, but can be given in any order within the json file. 
+
+There are some exceptions to this rule, namely overrides.
+Overrides do not correspond to simulation input parameters, but instead will override some other behaviour in a helpful manner.
+These are given in their own table, and each override explained in more detail.
+
 If a tag is not specified, then that parameter will assume the default value in the table below --- This means that, with the exception of some parameters used when declaring a BC, you may only need to specify several parameters in your input file.
+Some defaults will instead set an override.
 
 The table below lists all tags, their types, their default values, and their description.
 Tags will generally be named the same as they are named in the code (in the various input structs), unless there is a good reason to change it for legibility or clarity.
@@ -110,6 +116,10 @@ Tag             | Type          | Default Value | Description
 `magMomSwim`    | double        | 1             | Magnetic moment/ strength
 `fixDistSwim`   | double        | 0             | The fixed distance from the wall for DUMBELL_NEARWALL mode
 
+### Overrides
+Override Tag    | Type          | Override param| Description
+---             | ---           | ---           | ---
+`domainWalls`   | int           | `BC`          | This override will add extra BCs to the simulation, on top of the declared ones, on the domain walls. If set to 1, it places PBCs, and if set to 0 it places solid walls. 
 
 ## Species Tag Table
 Tag             | Type          | Default Value | Description
@@ -127,6 +137,11 @@ Tag             | Type          | Default Value | Description
 `magnSusc`      | double        | 0.001         | Magnetic susceptibility
 `act`           | double        | 0.05          | Species activity
 `damp`          | double        | 0             | Damping friction to kill hydrodynamics. Between 0 and 1.
+
+### Species Overrides
+Override Tag    | Type          | Override param| Description
+---             | ---           | ---           | ---
+`dens`          | double        | `pop`         | This override will set a given species population to correspond to a cell density. This sets pop to the volume of the system times this given value.
 
 ## BC Tag Table
 
