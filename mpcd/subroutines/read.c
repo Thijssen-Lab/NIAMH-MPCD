@@ -1314,6 +1314,16 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			currWall->INV = getJObjInt(objElem, "inv", 0, jsonTagList); // inv
 			currWall->MASS = getJObjDou(objElem, "mass", 1, jsonTagList); // mass
 
+			// Handle BC overrides /////////////////////////////////////////////
+			// anchoring
+			if (getJObjInt(objElem, "homeotropic", 0, jsonTagList) == 1) { // homeotropic anchoring
+				currWall->MUN = 1;
+				currWall->MUT = 0;
+			} else if (getJObjInt(objElem, "planar", 0, jsonTagList) == 1) { // planar anchoring
+				currWall->MUN = 0;
+				currWall->MUT = 1;
+			}
+
 			// Set the planar flag
 			if( feq(currWall->P[0],1.0) && feq(currWall->P[1],1.0) && feq(currWall->P[2],1.0) ) {
 				// Left or right wall
@@ -1399,8 +1409,8 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			// check if we're using PBCs or solid BCs
 			if (domainWalls == 1) { // if PBCs, set appropriate flags
 				currWall->PHANTOM = 0; 
-				currWall->MVN = 1; // mvn
-				currWall->MVT = 1; // mvt
+				currWall->MVN = 1; 
+				currWall->MVT = 1; 
 			} else { // otherwise, set flags for solid walls
 				currWall->PHANTOM = 1;
 				currWall->DN = 0; // override the value of DN from earlier, needs to be 0 for solid

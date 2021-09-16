@@ -179,6 +179,12 @@ Tag             | Type          | Default Value | Description
 `inv`           | int           | 0             | Whether to invert the bc (ie, multiply the A's by -1). 0 = no, 1 = yes
 `mass`          | double        | 1             | Mass of the wall in MPCD units. Should be the same density as the fluid if its displaceable
 
+### BC Overrides
+Override Tag    | Type          | Override param| Description
+---             | ---           | ---           | ---
+`homeotropic`   | int           | `MUN`, `MUT`  | Setting this override with a value of 1 will give the wall homeotropic anchoring conditions. 
+`planar`        | int           | `MUN`, `MUT`  | Setting this override with a value of 1 will give the wall planar anchoring conditions. 
+
 ## Example
 Below is an example JSON input file that uses all tags but sets them to the defaults.
 As a reminder, if you wish to use the default value for a tag, you can leave it out of the JSON file, so this is primarily for illustrative purposes.
