@@ -1327,20 +1327,32 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			else currWall->PLANAR = 0;
 		}
 	} else { // otherwise default to periodic BCs about domain
-		// allocate memory for BCs as necessary
-		NBC = DIM * 2; // 2 for each dimension
-		(*WALL) = (bc*) malloc( NBC * sizeof( bc ) );
+		domainWalls = 1; // just trigger the domain walls override w PBCs
+		NBC = 0;
+	}
 
+	// handle domainWalls override
+	if (domainWalls == 1 || domainWalls == 2) {
+		int oldBCNo = NBC; // number of BCs NOT including override created ones
+
+		// realloc memory to store extra BCs
+		NBC += DIM * 2; // creating 2 extra BCs for each dimension
+		if (oldBCNo > 0) { // if wall already exists then realloc
+			(*WALL) = (bc*) realloc(*WALL, NBC * sizeof(bc)); // realloc mem	
+		} else { // otherwise need to malloc
+			(*WALL) = (bc*) malloc(NBC * sizeof(bc)); // malloc mem
+		}
+		
 		//set up PBCs on the xy plane based on the domain dimensions
 		for (i = 0; i < 2 * DIM; i++) { // use i as the fundamental counter for setting these up
-			bc *currWall = (*WALL + i); // get the pointer to the BC we want to write to
+			bc *currWall = (*WALL + i + oldBCNo); // get the pointer to the BC we want to write to
 
 			// handle the things that change for each wall first
 			for (j = 0; j < _3D; j++) { // set A, Ainv to default vals
 				currWall->AINV[j] = 0; 
 				currWall->A[j] = 0.0;
 			}	
-			switch (i) {
+			switch (i) { // set up walls based on index
 				case 0: // left wall
 					currWall->AINV[0] = 1; // aInv array - NECESSARY
 					currWall->A[0] = 1.0/currWall->AINV[0]; 
@@ -1384,9 +1396,20 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 					break;
 			}
 
+			// check if we're using PBCs or solid BCs
+			if (domainWalls == 1) { // if PBCs, set appropriate flags
+				currWall->PHANTOM = 0; 
+				currWall->MVN = 1; // mvn
+				currWall->MVT = 1; // mvt
+			} else { // otherwise, set flags for solid walls
+				currWall->PHANTOM = 1;
+				currWall->DN = 0; // override the value of DN from earlier, needs to be 0 for solid
+				currWall->MVN = -1.0;
+				currWall->MVT = -1.0;
+			}
+
 			// set all the default values
 			currWall->COLL_TYPE = 1; // collType
-			currWall->PHANTOM = 0; // phantom
 			currWall->E = -1.0; // E
 			for (j = 0; j < _3D; j++) { // Q array
 				currWall->Q[j] = 0; 
@@ -1416,8 +1439,6 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			for (j = 0; j < _3D; j++) { // DVxyz array
 				currWall->DVxyz[j] = 0;
 			}
-			currWall->MVN = 1; // mvn
-			currWall->MVT = 1; // mvt
 			currWall->MUN = 1; // mun
 			currWall->MUT = 1; // mut
 			for (j = 0; j < _3D; j++) { // MUxyz array
