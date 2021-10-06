@@ -713,7 +713,7 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 		if( DBUG >= DBGINIT ) printf("Read arguments\n");
 	#endif
 	strcpy(ip,"mpcd/data/input.json");
-	strcpy(op,"mpcd/data/");
+	strcpy(op,"./"); // default output directory should be where you are
 	for(arg=1; arg<argc; arg++) {
 		// Check for a dash
 		if(argv[arg][0]=='-') {
