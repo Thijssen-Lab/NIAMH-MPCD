@@ -206,7 +206,7 @@ int getFileStr(char* inFile, char** fileStr){
       Get a full string of the contents of file at path inFile.
       Need to pass this &str for the second argument due to dynamic memory realloc
    */
-   printf("Reading file %s \n", inFile);
+   // printf("Reading file %s \n", inFile);
    
    FILE *fptr;
    // read file in with basic error checking
