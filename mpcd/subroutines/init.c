@@ -669,9 +669,6 @@ void orient( double U[],int PL ) {
 		L2 = sqrt(L2);
 
 		for( d=0; d<DIM; d++ ) U[d] = XYZ[d]/L2;
-
-		printf("\nOrientation:");
-		pvec( U,_3D );
 	}
 	else{
 		printf( "Error: Particle orientation distribution unacceptable.\n" );
