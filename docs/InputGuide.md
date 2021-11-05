@@ -39,7 +39,7 @@ These are each defined in their own table following the main one.
 
 ### Main Input Tag Table
 
-All tags suffixed with "out", unless otherwise specified, take a value representing how frequently (in timesteps) you want that quantity to be dumped to file.
+All tags suffixed with "out", unless otherwise specified, take a value representing how frequently (in timesteps) you want that quantity to be dumped to file. 
 
 Tag             | Type          | Default Value | Description
 ---             | ---           | ---           | ---
@@ -68,19 +68,19 @@ Tag             | Type          | Default Value | Description
 `debugOut`      | int           | 3             | Debug (verbosity) level. See definitions.h for list.
 `trajOut`       | int           | 0             | Detailed species trajectories
 `trajSpecOut`   | int           | 0             | Which number of species whose detailed trajectories to output
-`coarseOut`     | int           | 0             | Coarse grain data
+`coarseOut`     | int           | 0             | Coarse grain data (densities, etc). Field.
 `flowOut`       | int           | 0             | Flow field
-`avVelOut`      | int           | 0             | Total average MPCD velocity
+`avVelOut`      | int           | 0             | Total average MPCD velocity. Scalar
 `dirSOut`       | int           | 0             | Director and scalar order parameter fields
 `qTensOut`      | int           | 0             | Q tensor field
 `qkTensOut`     | int           | 0             | Reciprocal Q tensor field
 `oriEnOut`      | int           | 0             | Orientational energy field
 `colourOut`     | int           | 0             | Colour/ phi/ species-type field
 `pressureOut`   | int           | 0             | Pressure field
-`neighbourEnOut`| int           | 0             | Orientational energy from neighbours
-`avSOut`        | int           | 0             | Total average scalar order parameter
-`densSDOut`     | int           | 0             | SD of the number per cell
-`enstrophyOut`  | int           | 0             | Total average enstrophy
+`neighbourEnOut`| int           | 0             | Orientational energy from neighbours. Scalar
+`avSOut`        | int           | 0             | Total average scalar order parameter. Scalar
+`densSDOut`     | int           | 0             | SD of the number per cell. Scalar
+`enstrophyOut`  | int           | 0             | Enstrophy field
 `histVelOut`    | int           | 0             | Velocity distribution
 `histSpeedOut`  | int           | 0             | Speed distribution
 `histVortOut`   | int           | 0             | Vorticity distribution
@@ -90,15 +90,15 @@ Tag             | Type          | Default Value | Description
 `histNOut`      | int           | 0             | Number per cell distribution
 `solidTrajOut`  | int           | 0             | Solid BC trajectories
 `topoFieldOut`  | int           | 0             | Topological charge field
-`energyOut`     | int           | 0             | System energy
-`velCorrOut`    | int           | 0             | Velocity autocorrelation
-`dirCorrOut`    | int           | 0             | Director autocorrelation
-`vortCorrOut`   | int           | 0             | Vorticity autocorrelation
-`densCorrOut`   | int           | 0             | Densty autocorrelation
-`orderCorrOut`  | int           | 0             | Scalar order parameter autocorrelation
-`phaseCorrOut`  | int           | 0             | Binary fluid correlation
-`energySpecOut` | int           | 0             | Energy spectra
-`enstrophySpecOut`| int           | 0             | Enstrophy spectra
+`energyOut`     | int           | 0             | System energy field
+`velCorrOut`    | int           | 0             | Velocity autocorrelation (radial function)
+`dirCorrOut`    | int           | 0             | Director autocorrelation (radial function)
+`vortCorrOut`   | int           | 0             | Vorticity autocorrelation (radial function)
+`densCorrOut`   | int           | 0             | Densty autocorrelation (radial function)
+`orderCorrOut`  | int           | 0             | Scalar order parameter autocorrelation (radial function)
+`phaseCorrOut`  | int           | 0             | Binary fluid correlation (radial function)
+`energySpecOut` | int           | 0             | Energy spectra  (radial function)
+`enstrophySpecOut`| int           | 0             | Enstrophy spectra (radial function)
 `binderOut`     | int           | 0             | Binder cumulant
 `binderBin`     | int           | 0             | Binder cumulant bin size
 `swimQOut`      | int           | 0             | Swimmer positions
