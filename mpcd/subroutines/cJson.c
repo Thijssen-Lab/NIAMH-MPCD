@@ -90,13 +90,16 @@ void verifyJson(cJSON *jObj, linkedList *jsonTagList, linkedList* arrayList){
       the lists to be properly constructed
 */
    cJSON *childObj = NULL;
+   int validJson = 1; // flag on whether the JSON is valid or not.
+
    cJSON_ArrayForEach(childObj, jObj){ // loop through children
       const char *jTag = childObj->string; // get json tag
       
       // check if this tag exists on the list of known objects
       if (!compareList(jsonTagList, jTag)){
          // throw a warning if it's not
-         printf("JSON Read Warning: Found unrecognised json tag: %s. Tag will be ignored.\n", jTag);
+         printf("JSON Read Error: Found unrecognised json tag: %s.\n", jTag);
+         validJson = 0;
       } else {
          // if tag exists, check if it is an array and verify the subarray if necessary
          if (compareList(arrayList, jTag)) {
@@ -109,6 +112,11 @@ void verifyJson(cJSON *jObj, linkedList *jsonTagList, linkedList* arrayList){
             }
          }
       }
+   }
+
+   if (!validJson){
+      printf("JSON Read Error: Errors found.\n");
+      exit(EXIT_FAILURE);
    }
 }
 
