@@ -126,6 +126,8 @@
 # define PLANEY 6
 //Align all particles randomly within YZ axis
 # define PLANEX 7
+//Align all particles in the direction of origin towards positive right hand corner of any cartesian plane
+# define ALIGNTR 8
 
 //Lower cutoff for MC method to generate new orientations from Maier-Saupe
 # define BUSMIN 0.5

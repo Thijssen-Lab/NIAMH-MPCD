@@ -16,7 +16,7 @@
 /* ****************************************** */
 double smrtPow(double x, double y){
 /*
-	A "smart" Pow method that will only call C-math pow if necessary 
+	A "smart" Pow method that will only call C-math pow if necessary
 		(non-natural y).
 */
 
@@ -27,7 +27,7 @@ double smrtPow(double x, double y){
 		int i;
 		double result = 1;
 		for (i = 0; i < y; i++) result *= x; // dumb power
-		
+
 		return result;
 	} else return pow(x, y); // otherwise just do C-math pow
 }
@@ -112,7 +112,7 @@ void crossprod( double x[3], double y[3], double result[3] ) {
 void oldcrossprod( double x[3], double y[3], double result[3] ) {
 /*
    Old version of the cross product operation.
-	This version was found to be slow (gprof said this and it's calls to 
+	This version was found to be slow (gprof said this and it's calls to
 	levicivita took >35% runtime!!!!)
 */
 	int i,j,k;
@@ -1015,49 +1015,52 @@ void eigenvectors3x3( double **m,double eigval[],double eigvec[][_3D] ) {
 	a=0.;
 	for( col=0;col<_3D;col++ ) for( row=0;row<_3D;row++ ) if(col!=row) a+=m[row][col];
 	a*=a;
-	if(a<=TOL) for( col=0;col<_3D;col++ ) for( row=0;row<_3D;row++ ) eigvec[col][row]=m[row][col];
-	else {
+	
+	// TODO (but not really needed). This was a short cut, but the (largest) eigenvalue and corresponding eigenvector were not matched.
+	//if(a<=TOL) for( col=0;col<_3D;col++ ) for( row=0;row<_3D;row++ ) eigvec[col][row]=m[row][col];
+	//else {
 		//Cayley-Hamilton gives eigenvector of k to be ANY column (as long as it's not zero). So pick the first non-zero column
-		k=0;		//eigval[0]
-		for( col=0;col<_3D;col++ ) {
-			for( row=0;row<_3D;row++ ) eigvec[k][row]=0.;
-			for( row=0;row<_3D;row++ ) for( i=0;i<_3D;i++ ) {
-				a=m[row][i];
-				if( i==row ) a-=eigval[1];
-				b=m[i][col];
-				if( i==col ) b-=eigval[2];
-				eigvec[k][row]+=a*b;
-			}
-			// //Make sure didn't get a zero value --- If did then look for new solution; else stop
-			if( !( feq(eigvec[k][0],0.0) && feq(eigvec[k][1],0.0) && feq(eigvec[k][2],0.0) ) ) break;
+	
+	k=0;		//eigval[0]
+	for( col=0;col<_3D;col++ ) {
+		for( row=0;row<_3D;row++ ) eigvec[k][row]=0.;
+		for( row=0;row<_3D;row++ ) for( i=0;i<_3D;i++ ) {
+			a=m[row][i];
+			if( i==row ) a-=eigval[1];
+			b=m[i][col];
+			if( i==col ) b-=eigval[2];
+			eigvec[k][row]+=a*b;
 		}
-		k=1;		//eigval[1]
-		for( col=0;col<_3D;col++ ) {
-			for( row=0;row<_3D;row++ ) eigvec[k][row]=0.;
-			for( row=0;row<_3D;row++ ) for( i=0;i<_3D;i++ ) {
-				a=m[row][i];
-				if( i==row ) a-=eigval[0];
-				b=m[i][col];
-				if( i==col ) b-=eigval[2];
-				eigvec[k][row]+=a*b;
-			}
-			//Make sure didn't get a zero value --- If did then look for new solution; else stop
-			if( !( feq(eigvec[k][0],0.0) && feq(eigvec[k][1],0.0) && feq(eigvec[k][2],0.0) ) ) break;
-		}
-		k=2;		//eigval[2]
-		for( col=0;col<_3D;col++ ) {
-			for( row=0;row<_3D;row++ ) eigvec[k][row]=0.;
-			for( row=0;row<_3D;row++ ) for( i=0;i<_3D;i++ ) {
-				a=m[row][i];
-				if( i==row ) a -= eigval[0];
-				b=m[i][col];
-				if( i==col ) b-=eigval[1];
-				eigvec[k][row]+=a*b;
-			}
-			//Make sure didn't get a zero value --- If did then look for new solution; else stop
-			if( !( feq(eigvec[k][0],0.0) && feq(eigvec[k][1],0.0) && feq(eigvec[k][2],0.0) ) ) break;
-		}
+		// //Make sure didn't get a zero value --- If did then look for new solution; else stop
+		if( !( feq(eigvec[k][0],0.0) && feq(eigvec[k][1],0.0) && feq(eigvec[k][2],0.0) ) ) break;
 	}
+	k=1;		//eigval[1]
+	for( col=0;col<_3D;col++ ) {
+		for( row=0;row<_3D;row++ ) eigvec[k][row]=0.;
+		for( row=0;row<_3D;row++ ) for( i=0;i<_3D;i++ ) {
+			a=m[row][i];
+			if( i==row ) a-=eigval[0];
+			b=m[i][col];
+			if( i==col ) b-=eigval[2];
+			eigvec[k][row]+=a*b;
+		}
+		//Make sure didn't get a zero value --- If did then look for new solution; else stop
+		if( !( feq(eigvec[k][0],0.0) && feq(eigvec[k][1],0.0) && feq(eigvec[k][2],0.0) ) ) break;
+	}
+	k=2;		//eigval[2]
+	for( col=0;col<_3D;col++ ) {
+		for( row=0;row<_3D;row++ ) eigvec[k][row]=0.;
+		for( row=0;row<_3D;row++ ) for( i=0;i<_3D;i++ ) {
+			a=m[row][i];
+			if( i==row ) a -= eigval[0];
+			b=m[i][col];
+			if( i==col ) b-=eigval[1];
+			eigvec[k][row]+=a*b;
+		}
+		//Make sure didn't get a zero value --- If did then look for new solution; else stop
+		if( !( feq(eigvec[k][0],0.0) && feq(eigvec[k][1],0.0) && feq(eigvec[k][2],0.0) ) ) break;
+	}
+	//}
 	//Normalize
 	for( k=0;k<_3D;k++ ) norm( eigvec[k],_3D );
 }
