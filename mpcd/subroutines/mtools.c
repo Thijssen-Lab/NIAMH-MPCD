@@ -1015,9 +1015,12 @@ void eigenvectors3x3( double **m,double eigval[],double eigvec[][_3D] ) {
 	a=0.;
 	for( col=0;col<_3D;col++ ) for( row=0;row<_3D;row++ ) if(col!=row) a+=m[row][col];
 	a*=a;
+	
+	// TODO (but not really needed). This was a short cut, but the (largest) eigenvalue and corresponding eigenvector were not matched.
 	//if(a<=TOL) for( col=0;col<_3D;col++ ) for( row=0;row<_3D;row++ ) eigvec[col][row]=m[row][col];
 	//else {
 		//Cayley-Hamilton gives eigenvector of k to be ANY column (as long as it's not zero). So pick the first non-zero column
+	
 	k=0;		//eigval[0]
 	for( col=0;col<_3D;col++ ) {
 		for( row=0;row<_3D;row++ ) eigvec[k][row]=0.;
