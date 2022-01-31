@@ -1313,6 +1313,22 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			currWall->DSPLC = getJObjInt(objElem, "dsplc", 0, jsonTagList); // dspc
 			currWall->INV = getJObjInt(objElem, "inv", 0, jsonTagList); // inv
 			currWall->MASS = getJObjDou(objElem, "mass", 1, jsonTagList); // mass
+			
+			// B array
+			cJSON *arrB = NULL;
+			getCJsonArray(objElem, &arrB, "wavy", jsonTagList, arrayList, 0);
+			if (arrB != NULL) { // if wavewall parameters have been found then....
+				if (cJSON_GetArraySize(arrB) != _3D) { // check dimensionality is valid
+					printf("Error: B must be 3D.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->B[j] = cJSON_GetArrayItem(arrB, j)->valuedouble; 
+				}	
+			} else for (j = 0; j < _3D; j++) { // get the value
+					currWall->B[j] = 0.0; 
+			}
 
 			// Handle BC overrides /////////////////////////////////////////////
 			// anchoring

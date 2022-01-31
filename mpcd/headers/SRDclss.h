@@ -67,6 +67,7 @@ typedef struct bc {
 	// Variables that set the geometry of the surface
 	double P[4];
 	double A[3],AINV[3];
+	double B[3];	//Generalized amplitudes and frequencies for wavy-walls
 	double R;
 	int PLANAR;		//Flags if BC is just a simple (X,Y or Z) plane.
 	int REORIENT;	//Flags whether or not a rotation needs to be done everytime (very expensive)
