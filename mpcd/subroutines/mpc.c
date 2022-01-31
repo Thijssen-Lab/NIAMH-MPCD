@@ -2590,7 +2590,7 @@ void MPCcollision( cell *CL,spec *SP,specSwimmer SS,double KBT,int RTECH,double 
 
 	//Liquid Crystal
 	if( LC!=ISOF ) {
-		if( RTECH==DIPOLE_DIR_SUM || RTECH==DIPOLE_DIR_AV ) dipoleAndersenROT_LC( CL,SP,SS,KBT,RELAX,TimeStep,RTECH,CLQ,outP );
+		if( RTECH==DIPOLE_DIR_SUM || RTECH==DIPOLE_DIR_AV || RTECH==DIPOLE_DIR_SIG ) dipoleAndersenROT_LC( CL,SP,SS,KBT,RELAX,TimeStep,RTECH,CLQ,outP );
 		else andersenROT_LC( CL,SP,SS,KBT,TimeStep,CLQ,outP );
 	}
 	//Newtonian Fluid

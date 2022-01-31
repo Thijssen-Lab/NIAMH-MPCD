@@ -152,7 +152,7 @@ Tag             | Type          | Default Value | Description
 `shearSusc`     | double        | 0.5           | Shear susceptibility
 `magnSusc`      | double        | 0.001         | Magnetic susceptibility
 `act`           | double        | 0.05          | Species activity
-`sigWidth`      | double        | 1.0           | Sigmoide width for activity faloff, specifically for CO#20
+`sigWidth`      | double        | 1.0           | Sigmoid width for activity faloff, specifically for CO#20
 `damp`          | double        | 0             | Damping friction to kill hydrodynamics. Between 0 and 1.
 
 #### Species Overrides
