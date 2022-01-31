@@ -982,6 +982,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			(*SP+i)->CHIHI = getJObjDou(objElem, "shearSusc", 0.5, jsonTagList); // chiHi
 			(*SP+i)->CHIA = getJObjDou(objElem, "magnSusc", 0.001, jsonTagList); // chiA
 			(*SP+i)->ACT = getJObjDou(objElem, "act", 0.05, jsonTagList); // act
+			(*SP+i)->SIGWIDTH = getJObjDou(objElem, "sigWidth", 1, jsonTagList); // sigWidth
 			(*SP+i)->DAMP = getJObjDou(objElem, "damp", 0.0, jsonTagList); // damp
 		}
 	} else { // if nothing found in the JSON then fallback to the default
