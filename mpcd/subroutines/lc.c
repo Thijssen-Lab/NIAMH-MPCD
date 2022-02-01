@@ -1540,7 +1540,7 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 	sigWidth=0.;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
-		ACT += (double)(SP+id)->ACT;
+		ACT += (double)(SP+id)->ACT / (double)(SP+id)->MASS;
 		sigWidth += (double)(SP+id)->SIGWIDTH;
 		tmpc = tmpc->next;
 	}
