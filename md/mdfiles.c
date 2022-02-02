@@ -58,7 +58,7 @@ void ParseOptions (int argc, char *argv[], simptr sim, simoptions *options)
 	sim->pid = getpid();
 
 	// parse command-line options
-	while ((c = getopt (argc, argv, "i:o:c:h:I:O")) != -1) {
+	while ((c = getopt (argc, argv, "i:o:c:h:I:O:L")) != -1) {
 		switch (c) {
 			case 'i': // read input from the global input file string
 				snprintf (sim->inputFile, STRMAX, "%s", mdInputFile);
