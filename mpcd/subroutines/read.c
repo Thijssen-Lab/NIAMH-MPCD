@@ -8,6 +8,7 @@
 # include "../headers/globals.h"
 # include "../headers/pout.h"
 # include "../headers/mtools.h"
+# include "../headers/cJson.h"
 
 /* ****************************************** */
 /* ****************************************** */
@@ -730,26 +731,34 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 	fclose( finput );
 }
 
-void readarg( int argc, char* argv[], char ip[],char op[] ) {
+void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 	int arg;
 	int strln;
 	// Default
 	#ifdef DBG
 		if( DBUG >= DBGINIT ) printf("Read arguments\n");
 	#endif
-	strcpy(ip,"mpcd/data/");
-	strcpy(op,"mpcd/data/");
+	strcpy(ip,"mpcd/data/input.json");
+	strcpy(op,"./"); // default output directory should be where you are
 	for(arg=1; arg<argc; arg++) {
 		// Check for a dash
 		if(argv[arg][0]=='-') {
 			switch (argv[arg][1]) {
 				case 'i':
+					*inMode = 0;
 					arg++;
 					sprintf(ip,"%s",argv[arg]);
-					// Make sure that the directory ends with a "/"
-					strln = strlen(ip);
-					if( ip[strln-1]!='/' ) strcat( ip,"/" );
 					break;
+				case 'L': // legacy 
+					if (argv[arg][2] == 'i'){ // arg 'Li' for legacy input
+						*inMode = 1;
+						arg++;
+						sprintf(ip,"%s",argv[arg]);
+						// Make sure that the directory ends with a "/"
+						strln = strlen(ip);
+						if( ip[strln-1]!='/' ) strcat( ip,"/" );
+						break;
+					}
 				case 'o':
 					arg++;
 					sprintf(op,"%s",argv[arg]);
@@ -773,4 +782,769 @@ void readarg( int argc, char* argv[], char ip[],char op[] ) {
 			}
 		}
 	}
+}
+
+/*
+	Checks if a given BC, as a cJSON object, is valid and contains all the 
+	 	necessary parameters it needs. 
+	Returns 1 if valid, 0 if not.
+*/
+int checkBC(cJSON *bc){
+	/*
+		Need to check if the following json tags exist, do so using cJSON 
+			primitives:
+		- "aInv"
+		- "P"
+		- "R"
+		- "DN"
+		- "MVN"
+		- "MVT"
+	*/
+	char tagList[6][5] = {"aInv", "P", "R", "DN", "MVN", "MVT"};
+
+	cJSON *temp = NULL;
+	int i;
+	for (i = 0; i < 6; i++){
+		temp = cJSON_GetObjectItemCaseSensitive(bc, tagList[i]);
+		if (temp == NULL) return 0;
+	}
+
+	return 1; // if you're here without returning then all succesful
+}
+
+void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD, 
+   cell ****CL, int *MDMode, outputFlagsList *out, bc **WALL, 
+   specSwimmer *specS, swimmer **sw){
+/*
+	Main method for reading in Json, parsing it, and populating ALL inputs
+*/
+	int i, j; // counting variables
+
+	char* fileStr = NULL;
+	if(getFileStr(fpath, &fileStr) != 0){ // read, return on error
+		exit(EXIT_FAILURE);
+	} 
+
+	#ifdef DBG // print json to user if in relevent debug mode
+		if( DBUG > DBGTITLE ){
+			printf("==== Read JSON =====\n%s", fileStr);
+			printf("\n\n");
+		} 
+	#endif
+
+	//now can actually parse the json
+	cJSON *jObj = cJSON_Parse(fileStr); // create the json object 
+	if (jObj == NULL) // error checking
+	{
+		const char *error_ptr = cJSON_GetErrorPtr();
+		if (error_ptr != NULL)
+		{
+			fprintf(stderr, "Json read error. \nError before: %s\n", error_ptr);
+		}
+		exit(EXIT_FAILURE);
+	}
+
+	// set up input validation routines
+	linkedList *jsonTagList = NULL;
+	initLL(&jsonTagList);
+	linkedList *arrayList = NULL;
+	initLL(&arrayList);
+
+	////////////////////////////////////////////////////////////////////////////
+	// Perform parsing here. 
+	// This is done in the order declared in docs/InputGuide.md
+	////////////////////////////////////////////////////////////////////////////
+
+	// 0. Overrides ////////////////////////////////////////////////////////////
+	// General override behaviour (ie, not BC and not species) should be set here
+
+	// flags for overrides
+	int domainWalls = 0; // Whether to add domain walls. 0 = off, 1 = PBC, 2 = solid
+
+	/// Get overrides
+	domainWalls = getJObjInt(jObj, "domainWalls", 0, jsonTagList); // domainWalls
+
+	// perform general overrides
+	///NOTE: none here yet :)
+	
+	// 1. Old input.inp ////////////////////////////////////////////////////////
+	// scroll up to void readin() to see better descriptions & definitions for these
+
+	// dimensionality and domain bounds array
+	cJSON *arrDomain = NULL;
+	getCJsonArray(jObj, &arrDomain, "domain", jsonTagList, arrayList, 0);
+	if(arrDomain != NULL) { // if the can be found in the json
+		DIM = cJSON_GetArraySize(arrDomain);
+		if(DIM != 2 && DIM != 3){ // check dimensionality is valid
+			printf("Error: Dimensionality must be 2 or 3.\n");
+			exit(EXIT_FAILURE);
+		}
+
+		for (i = 0; i < _3D; i++) {
+			if (i == 2 && DIM == 2) XYZ[i] = 1; // if 2D, set z to 1
+			else XYZ[i] = cJSON_GetArrayItem(arrDomain, i)->valueint; // get the value
+		}		
+	} else { // if array cannot be found then fallback to default
+		DIM = 2;
+		XYZ[0] = 30;
+		XYZ[1] = 30;
+		XYZ[2] = 1;
+	}
+	for(i=0; i<_3D; i++ ) XYZ_P1[i] = XYZ[i]+1; // add 1 to each dimension
+
+	// first set of primitives
+	in->KBT = getJObjDou(jObj, "kbt", 1, jsonTagList); // kbt
+	in->dt = getJObjDou(jObj, "dt", 0.1, jsonTagList); // dt
+	in->simSteps = getJObjInt(jObj, "simSteps", 2000, jsonTagList); // simSteps
+	in->warmupSteps = getJObjInt(jObj, "warmUp", 0, jsonTagList); // warmupSteps
+	in->RFRAME = getJObjInt(jObj, "rFrame", 1, jsonTagList); // RFRAME
+	in->zeroNetMom = getJObjInt(jObj, "zeroNetMom", 0, jsonTagList); // zeroNetMom
+	in->GALINV = getJObjInt(jObj, "galInv", 1, jsonTagList); // GALINV
+	in->TSTECH = getJObjInt(jObj, "tsTech", 0, jsonTagList); // TSTECH
+	in->RTECH = getJObjInt(jObj, "rTech", 2, jsonTagList); // RTECH
+	in->LC = getJObjInt(jObj, "lc", 0, jsonTagList); // LC
+	in->TAU = getJObjDou(jObj, "tau", 0.5, jsonTagList); // TAU
+	in->RA = getJObjDou(jObj, "rotAng", 1.570796, jsonTagList); // rotAng
+	in->FRICCO = getJObjDou(jObj, "fricCoef", 1.0, jsonTagList); // fricCo
+	in->MFPOT = getJObjDou(jObj, "mfpot", 10.0, jsonTagList); // mfpPot
+	
+	// grav array
+	cJSON *arrGrav = NULL;
+	getCJsonArray(jObj, &arrGrav, "grav", jsonTagList, arrayList, 0);
+	if (arrGrav != NULL) { // if grav has been found then....
+		if (cJSON_GetArraySize(arrGrav) != _3D) { // check dimensionality is valid
+			printf("Error: Grav must be a 3D array.\n");
+			exit(EXIT_FAILURE);
+		}
+
+		for (i = 0; i < _3D; i++) { // get the value
+			in->GRAV[i] = cJSON_GetArrayItem(arrGrav, i)->valuedouble; 
+		}	
+	} else { // if no grav specified then fallback
+		in->GRAV[0] = 0;
+		in->GRAV[1] = 0;
+		in->GRAV[2] = 0;
+	}
+
+	// mag array
+	cJSON *arrMag = NULL;
+	getCJsonArray(jObj, &arrMag, "mag", jsonTagList, arrayList, 0);
+	if (arrGrav != NULL) { // if grav has been found then....
+		if (cJSON_GetArraySize(arrMag) != _3D) { // check dimensionality is valid
+			printf("Error: Mag must be a 3D array.\n");
+			exit(EXIT_FAILURE);
+		}
+
+		for (i = 0; i < _3D; i++) { // get the value
+			in->MAG[i] = cJSON_GetArrayItem(arrMag, i)->valuedouble; 
+		}	
+	} else { // if no grav specified then fallback
+		in->MAG[0] = 0;
+		in->MAG[1] = 0;
+		in->MAG[2] = 0;
+	}
+
+	// second set of primitives
+	in->seed = getJObjInt(jObj, "seed", 0, jsonTagList); // seed
+
+	// Handle MD
+	getJObjStr(jObj, "mdIn", "", &mdInputFile, jsonTagList);
+	if (strcmp(mdInputFile, "") == 0){ // if no input file was found
+		MDmode = 0;
+	} else MDmode = 1; // otherwise enable MD if input file found
+
+	in->stepsMD = getJObjInt(jObj, "stepsMD", 20, jsonTagList); // stepsMD
+
+	// 2. Species //////////////////////////////////////////////////////////////
+	// scroll up to void readin() to see better descriptions & definitions for these
+
+	cJSON *arrSpecies = NULL;
+	getCJsonArray(jObj, &arrSpecies, "species", jsonTagList, arrayList, 1);
+	if(arrSpecies != NULL){ // if this can be found in the json
+		NSPECI = cJSON_GetArraySize(arrSpecies); // get the number of species
+		
+		//Allocate the needed amount of memory for the species SP
+		(*SP) = (spec*) malloc( NSPECI * sizeof( spec ) );
+		for (i = 0; i < NSPECI; i++) { // loop through the species
+			cJSON *objElem = cJSON_GetArrayItem(arrSpecies, i); // get the species object
+
+			// now get first set of primitives
+			(*SP+i)->MASS = getJObjDou(objElem, "mass", 1.0, jsonTagList); // mass
+
+			// handle population related overrides
+			double cellDens = getJObjDou(objElem, "dens", -1, jsonTagList);
+			if (cellDens < 0){ // if cellDens is invalid
+				(*SP+i)->POP = getJObjInt(objElem, "pop", XYZ[0]*XYZ[1]*XYZ[2]*20, jsonTagList); // pop
+			} else { // otherwise, set population using per cell density
+				(*SP+i)->POP = XYZ[0]*XYZ[1]*XYZ[2]*cellDens;
+			}
+
+			(*SP+i)->QDIST = getJObjInt(objElem, "qDist", 0, jsonTagList); // qDist
+			(*SP+i)->VDIST = getJObjInt(objElem, "vDist", 0, jsonTagList); // vDist
+			(*SP+i)->ODIST = getJObjInt(objElem, "oDist", 2, jsonTagList); // oDist
+
+			//Read the binary fluid interaction matrix for this species with all other species
+			cJSON *arrBFM = NULL;
+			getCJsonArray(jObj, &arrBFM, "interMatr", jsonTagList, arrayList, 0);
+			if (arrBFM != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrBFM) != NSPECI) { // check dimensionality is valid
+					printf("Error: Interaction matrices must have columns of length equal to the number of species.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < NSPECI; j++) { // get the value
+					(*SP+i)->M[j] = cJSON_GetArrayItem(arrBFM, j)->valuedouble; 
+				}	
+			} else { 
+				for (j = 0; j < NSPECI; j++) { // get the value
+					(*SP+i)->M[j] = 0; 
+				}	
+			}
+
+			// get second set of primitives
+			(*SP+i)->RFC = getJObjDou(objElem, "rfc", 0.01, jsonTagList); // rfCoef
+			(*SP+i)->LEN = getJObjDou(objElem, "len", 0.007, jsonTagList); // len
+			(*SP+i)->TUMBLE = getJObjDou(objElem, "tumble", 2.0, jsonTagList); // tumble
+			(*SP+i)->CHIHI = getJObjDou(objElem, "shearSusc", 0.5, jsonTagList); // chiHi
+			(*SP+i)->CHIA = getJObjDou(objElem, "magnSusc", 0.001, jsonTagList); // chiA
+			(*SP+i)->ACT = getJObjDou(objElem, "act", 0.05, jsonTagList); // act
+			(*SP+i)->DAMP = getJObjDou(objElem, "damp", 0.0, jsonTagList); // damp
+		}
+	} else { // if nothing found in the JSON then fallback to the default
+		// setting up a single species with default parameters
+		//		note this is just copied from the above code w lines changed
+		NSPECI = 1;
+
+		(*SP) = (spec*) malloc( NSPECI * sizeof( spec ) );
+		for (i = 0; i < NSPECI; i++) { // loop through the species
+			// now get first set of primitives
+			(*SP+i)->MASS = 1; // mass
+			(*SP+i)->POP = XYZ[0]*XYZ[1]*XYZ[2]*20; // pop
+			(*SP+i)->QDIST = 0; // qDist
+			(*SP+i)->VDIST = 0; // vDist
+			(*SP+i)->ODIST = 2; // oDist
+			for (j = 0; j < NSPECI; j++) { // interaction matrix
+				(*SP+i)->M[j] = 0; 
+			}	
+			(*SP+i)->RFC = 0.01; // rfCoef
+			(*SP+i)->LEN = 0.007; // len
+			(*SP+i)->TUMBLE = 2; // tumble
+			(*SP+i)->CHIHI = 0.5; // chiHi
+			(*SP+i)->CHIA = 0.001; // chiA
+			(*SP+i)->ACT = 0.05; // act
+			(*SP+i)->DAMP = 0; // damp
+		}
+	}
+
+	//Total Number of particleMPCs
+	GPOP = 0;
+	for( i=0; i<NSPECI; i++ ) GPOP += (*SP+i)->POP;
+	(*pSRD) = (particleMPC*) malloc( GPOP * sizeof( particleMPC ) );
+
+	//Allocate memory for the cells
+	//Allocate rows (x first)
+	*CL = (cell***) malloc( XYZ_P1[0] * sizeof( cell** ) );
+	//For each x-element allocate the y columns
+	for( i=0; i<XYZ_P1[0]; i++ ) {
+		(*CL)[i] = (cell**) malloc( XYZ_P1[1] * sizeof( cell* ) );
+		//For each y-element allocate the z columns
+		for( j=0; j<XYZ_P1[1]; j++ ) {
+			(*CL)[i][j] = (cell*) malloc( XYZ_P1[2] * sizeof( cell ) );
+		}
+	}
+	
+	// 3. Printcom /////////////////////////////////////////////////////////////
+	// scroll up to void readpc() to see better descriptions & definitions for these
+
+	DBUG = getJObjInt(jObj, "debugOut", 3, jsonTagList); // dbug
+	out->TRAJOUT = getJObjInt(jObj, "trajOut", 0, jsonTagList); // trajOut
+	out->printSP = getJObjInt(jObj, "trajSpecOut", 0, jsonTagList); // printSP
+	out->COAROUT = getJObjInt(jObj, "coarseOut", 0, jsonTagList); // coarOut
+	out->FLOWOUT = getJObjInt(jObj, "flowOut", 0, jsonTagList); // flowOut
+	out->AVVELOUT = getJObjInt(jObj, "avVelOut", 0, jsonTagList); // avVelOut
+	out->ORDEROUT = getJObjInt(jObj, "dirSOut", 0, jsonTagList); // orderOut
+	out->QTENSOUT = getJObjInt(jObj, "qTensOut", 0, jsonTagList); // qTensOut
+	out->QKOUT = getJObjInt(jObj, "qkTensOut", 0, jsonTagList); // qKOut
+	out->ENFIELDOUT = getJObjInt(jObj, "oriEnOut", 0, jsonTagList); // enFieldOut
+	out->SPOUT = getJObjInt(jObj, "colourOut", 0, jsonTagList); // spOut
+	out->PRESOUT = getJObjInt(jObj, "pressureOut", 0, jsonTagList); // presOut
+	out->ENNEIGHBOURS = getJObjInt(jObj, "neighbourEnOut", 0, jsonTagList); // enNeighbours
+	out->AVSOUT = getJObjInt(jObj, "avSOut", 0, jsonTagList); // avSOut
+	out->DENSOUT = getJObjInt(jObj, "densSDOut", 0, jsonTagList); // densOut
+	out->ENSTROPHYOUT = getJObjInt(jObj, "enstrophyOut", 0, jsonTagList); // enStrophOut
+	out->HISTVELOUT = getJObjInt(jObj, "histVelOut", 0, jsonTagList); // histVelOut
+	out->HISTSPEEDOUT = getJObjInt(jObj, "histSpeedOut", 0, jsonTagList); // histSpeedOut
+	out->HISTVORTOUT = getJObjInt(jObj, "histVortOut", 0, jsonTagList); // histVortOut
+	out->HISTENSTROUT = getJObjInt(jObj, "histEnsOut", 0, jsonTagList); // histEnstrophyOut
+	out->HISTDIROUT = getJObjInt(jObj, "histDirOut", 0, jsonTagList); // histDirOut
+	out->HISTSOUT = getJObjInt(jObj, "histSOut", 0, jsonTagList); // histSOut
+	out->HISTNOUT = getJObjInt(jObj, "histNOut", 0, jsonTagList); // histNOut
+	out->SOLOUT = getJObjInt(jObj, "solidTrajOut", 0, jsonTagList); // solOut
+	out->DEFECTOUT = getJObjInt(jObj, "topoFieldOut", 0, jsonTagList); // defectOut
+	out->ENOUT = getJObjInt(jObj, "energyOut", 0, jsonTagList); // enOut
+	out->CVVOUT = getJObjInt(jObj, "velCorrOut", 0, jsonTagList); // cvvOut
+	out->CNNOUT = getJObjInt(jObj, "dirCorrOut", 0, jsonTagList); // cnnOut
+	out->CWWOUT = getJObjInt(jObj, "vortCorrOut", 0, jsonTagList); // cwwOut
+	out->CDDOUT = getJObjInt(jObj, "densCorrOut", 0, jsonTagList); // cddOut
+	out->CSSOUT = getJObjInt(jObj, "orderCorrOut", 0, jsonTagList); // cssOut
+	out->CPPOUT = getJObjInt(jObj, "phaseCorrOut", 0, jsonTagList); // cppOut
+	out->ENERGYSPECTOUT = getJObjInt(jObj, "energySpecOut", 0, jsonTagList); // energySpectOut
+	out->ENSTROPHYSPECTOUT = getJObjInt(jObj, "enstrophySpecOut", 0, jsonTagList); // enstrophySpectOut
+	out->BINDER = getJObjInt(jObj, "binderOut", 0, jsonTagList); // binderOut
+	out->BINDERBIN = getJObjInt(jObj, "binderBin", 0, jsonTagList); // binderBinOut
+	out->SWOUT = getJObjInt(jObj, "swimQOut", 0, jsonTagList); // swOut
+	out->SWORIOUT = getJObjInt(jObj, "swimOOut", 0, jsonTagList); // swOriOut
+	out->RTOUT = getJObjInt(jObj, "swimROut", 0, jsonTagList); // swVelOut
+	out->SYNOUT = getJObjInt(jObj, "synopsisOut", 1, jsonTagList); // swSynOut
+	out->CHCKPNT = getJObjInt(jObj, "checkpointOut", 0, jsonTagList); // chkpntOut
+
+	// 3. Boundaries ///////////////////////////////////////////////////////////
+	// scroll up to void bcin() to see better descriptions & definitions for these
+
+	cJSON *arrBC = NULL;
+	getCJsonArray(jObj, &arrBC, "BC", jsonTagList, arrayList, 1);
+	if(arrBC != NULL){ // if this can be found in the json
+		NBC = cJSON_GetArraySize(arrBC); // get the number of BCs
+		
+		//Allocate the needed amount of memory for the BCs
+		(*WALL) = (bc*) malloc( NBC * sizeof( bc ) );
+		for (i = 0; i < NBC; i++) { // loop through the BCs
+			cJSON *objElem = cJSON_GetArrayItem(arrBC, i); // get the BC object
+			bc *currWall = (*WALL + i); // get the pointer to the BC we want to write to
+
+			// Do a check if the necessary parameters are present 
+			if (!checkBC(objElem)){
+				printf("Error: BC %d is missing essential parameters\n", i);
+				exit(EXIT_FAILURE);
+			}
+
+			// parse through first set of primitives
+			currWall->COLL_TYPE = getJObjInt(objElem, "colType", 1, jsonTagList); // collType
+			currWall->PHANTOM = getJObjInt(objElem, "phantom", 0, jsonTagList); // phantom
+			currWall->E = getJObjDou(objElem, "E", -1.0, jsonTagList); // E
+
+			// Q array
+			cJSON *arrQ = NULL;
+			getCJsonArray(objElem, &arrQ, "Q", jsonTagList, arrayList, 0);
+			if (arrQ != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrQ) != _3D) { // check dimensionality is valid
+					printf("Error: Q must be 3D.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->Q[j] = cJSON_GetArrayItem(arrQ, j)->valuedouble; 
+				}	
+			} else { 
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->Q[j] = 0; 
+				}	
+			}
+
+			// V array
+			cJSON *arrV = NULL;
+			getCJsonArray(objElem, &arrV, "V", jsonTagList, arrayList, 0);
+			if (arrV != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrV) != _3D) { // check dimensionality is valid
+					printf("Error: V must be 3D.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->V[j] = cJSON_GetArrayItem(arrV, j)->valuedouble; 
+				}	
+			} else { 
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->V[j] = 0; 
+				}	
+			}
+
+			// O array
+			cJSON *arrO = NULL;
+			getCJsonArray(objElem, &arrO, "O", jsonTagList, arrayList, 0);
+			if (arrO != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrO) != _3D) { // check dimensionality is valid
+					printf("Error: O must be 3D.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->O[j] = cJSON_GetArrayItem(arrO, j)->valuedouble; 
+				}	
+			} else { 
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->O[j] = 0; 
+				}	
+			}
+
+			// L array
+			cJSON *arrL = NULL;
+			getCJsonArray(objElem, &arrL, "L", jsonTagList, arrayList, 0);
+			if (arrL != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrL) != _3D) { // check dimensionality is valid
+					printf("Error: L must be 3D.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->L[j] = cJSON_GetArrayItem(arrL, j)->valuedouble; 
+				}	
+			} else {
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->L[j] = 0; 
+				}	
+			}
+
+			// G array
+			cJSON *arrG = NULL;
+			getCJsonArray(objElem, &arrG, "G", jsonTagList, arrayList, 0);
+			if (arrG != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrG) != _3D) { // check dimensionality is valid
+					printf("Error: G must be 3D.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->G[j] = cJSON_GetArrayItem(arrG, j)->valuedouble; 
+				}	
+			} else {
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->G[j] = 0; 
+				}	
+			}
+
+			// aInv array - NECESSARY
+			cJSON *arrAInv = NULL;
+			getCJsonArray(objElem, &arrAInv, "aInv", jsonTagList, arrayList, 0);
+			if (arrAInv != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrAInv) != _3D) { // check dimensionality is valid
+					printf("Error: aInv must be 3D.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->AINV[j] = cJSON_GetArrayItem(arrAInv, j)->valuedouble; 
+					if( fneq(currWall->AINV[j],0.0) ) currWall->A[j] = 1.0/currWall->AINV[j];
+					else currWall->A[j] = 0.0;
+				}	
+			} else {
+				printf("Error: Could not find aInv in BC %d.\n", i);
+				exit(EXIT_FAILURE);
+			}
+
+			// rotsymm array
+			cJSON *arrRotSym = NULL;
+			getCJsonArray(objElem, &arrRotSym, "rotSym", jsonTagList, arrayList, 0);
+			if (arrRotSym != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrRotSym) != 2) { // check dimensionality is valid
+					printf("Error: rotSym must have two components.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < 2; j++) { // get the value
+					currWall->ROTSYMM[j] = cJSON_GetArrayItem(arrRotSym, j)->valuedouble; 
+				}	
+			} else {
+				for (j = 0; j < 2; j++) { // get the value
+					currWall->ROTSYMM[j] = 4;
+				}
+			}
+
+			currWall->ABS = getJObjInt(objElem, "abs", 0, jsonTagList); // abs
+
+			// P array - NECESSARY
+			cJSON *arrP = NULL;
+			getCJsonArray(objElem, &arrP, "P", jsonTagList, arrayList, 0);
+			if (arrP != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrP) != 4) { // check dimensionality is valid
+					printf("Error: P must have 4 elements.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < 4; j++) { // get the value
+					currWall->P[j] = cJSON_GetArrayItem(arrP, j)->valuedouble;
+				}	
+			} else {
+				printf("Error: Could not find P in BC %d.\n", i);
+				exit(EXIT_FAILURE);
+			}
+
+			// some more primitives
+			currWall->R = getJObjDou(objElem, "R", 2, jsonTagList); // r - NECESSARY
+			currWall->DN = getJObjDou(objElem, "DN", 1, jsonTagList); // dn - NECESSARY
+			currWall->DT = getJObjDou(objElem, "DT", 0, jsonTagList); // dt
+			currWall->DVN = getJObjDou(objElem, "DVN", 0, jsonTagList); // dvn
+			currWall->DVT = getJObjDou(objElem, "DVT", 0, jsonTagList); // dvt
+
+			// DVxyz array
+			cJSON *arrDVxyz = NULL;
+			getCJsonArray(objElem, &arrDVxyz, "DVxyz", jsonTagList, arrayList, 0);
+			if (arrDVxyz != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrDVxyz) != _3D) { // check dimensionality is valid
+					printf("Error: DVxyz must have two components.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->DVxyz[j] = cJSON_GetArrayItem(arrDVxyz, j)->valuedouble; 
+				}	
+			} else {
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->DVxyz[j] = 0;
+				}
+			}
+
+			currWall->MVN = getJObjDou(objElem, "MVN", 1, jsonTagList); // mvn - NECESSARY
+			currWall->MVT = getJObjDou(objElem, "MVT", 1, jsonTagList); // mvt - NECESSARY
+			currWall->MUN = getJObjDou(objElem, "MUN", 1, jsonTagList); // mun
+			currWall->MUT = getJObjDou(objElem, "MUT", 1, jsonTagList); // mut
+
+			// MUxyz array
+			cJSON *arrMUxyz = NULL;
+			getCJsonArray(objElem, &arrMUxyz, "MUxyz", jsonTagList, arrayList, 0);
+			if (arrMUxyz != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrMUxyz) != _3D) { // check dimensionality is valid
+					printf("Error: MUxyz must have two components.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->MUxyz[j] = cJSON_GetArrayItem(arrMUxyz, j)->valuedouble; 
+				}	
+			} else {
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->MUxyz[j] = 1;
+				}
+			}
+
+			// DUxyz array
+			cJSON *arrDUxyz = NULL;
+			getCJsonArray(objElem, &arrDUxyz, "DUxyz", jsonTagList, arrayList, 0);
+			if (arrDUxyz != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrDUxyz) != _3D) { // check dimensionality is valid
+					printf("Error: DUxyz must have two components.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->DUxyz[j] = cJSON_GetArrayItem(arrDUxyz, j)->valuedouble; 
+				}	
+			} else {
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->DUxyz[j] = 0;
+				}
+			}
+
+			currWall->KBT = getJObjDou(objElem, "kbt", 1, jsonTagList); // kbt
+			currWall->DSPLC = getJObjInt(objElem, "dsplc", 0, jsonTagList); // dspc
+			currWall->INV = getJObjInt(objElem, "inv", 0, jsonTagList); // inv
+			currWall->MASS = getJObjDou(objElem, "mass", 1, jsonTagList); // mass
+
+			// Handle BC overrides /////////////////////////////////////////////
+			// anchoring
+			if (getJObjInt(objElem, "homeotropic", 0, jsonTagList) == 1) { // homeotropic anchoring
+				currWall->MUN = 1;
+				currWall->MUT = 0;
+			} else if (getJObjInt(objElem, "planar", 0, jsonTagList) == 1) { // planar anchoring
+				currWall->MUN = 0;
+				currWall->MUT = 1;
+			}
+
+			// Set the planar flag
+			if( feq(currWall->P[0],1.0) && feq(currWall->P[1],1.0) && feq(currWall->P[2],1.0) ) {
+				// Left or right wall
+				if( fneq(currWall->A[0],0.0) && feq(currWall->A[1],0.0) && feq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
+				// Top or bottom wall
+				else if( feq(currWall->A[0],0.0) && fneq(currWall->A[1],0.0) && feq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
+				// Far or near wall
+				else if( feq(currWall->A[0],0.0) && feq(currWall->A[1],0.0) && fneq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
+				else currWall->PLANAR = 0;
+			}
+			else currWall->PLANAR = 0;
+		}
+	} else { // otherwise default to periodic BCs about domain
+		domainWalls = 1; // just trigger the domain walls override w PBCs
+		NBC = 0;
+	}
+
+	// handle domainWalls override
+	if (domainWalls == 1 || domainWalls == 2) {
+		int oldBCNo = NBC; // number of BCs NOT including override created ones
+
+		// realloc memory to store extra BCs
+		NBC += DIM * 2; // creating 2 extra BCs for each dimension
+		if (oldBCNo > 0) { // if wall already exists then realloc
+			(*WALL) = (bc*) realloc(*WALL, NBC * sizeof(bc)); // realloc mem	
+		} else { // otherwise need to malloc
+			(*WALL) = (bc*) malloc(NBC * sizeof(bc)); // malloc mem
+		}
+		
+		//set up PBCs on the xy plane based on the domain dimensions
+		for (i = 0; i < 2 * DIM; i++) { // use i as the fundamental counter for setting these up
+			bc *currWall = (*WALL + i + oldBCNo); // get the pointer to the BC we want to write to
+
+			// handle the things that change for each wall first
+			for (j = 0; j < _3D; j++) { // set A, Ainv to default vals
+				currWall->AINV[j] = 0; 
+				currWall->A[j] = 0.0;
+			}	
+			switch (i) { // set up walls based on index
+				case 0: // left wall
+					currWall->AINV[0] = 1; // aInv array - NECESSARY
+					currWall->A[0] = 1.0/currWall->AINV[0]; 
+					currWall->R = 0; // r
+					currWall->DN = XYZ[0]; // dn
+					break;
+				
+				case 1: // right wall
+					currWall->AINV[0] = -1; // aInv array - NECESSARY
+					currWall->A[0] = 1.0/currWall->AINV[0]; 
+					currWall->R = -XYZ[0]; // r
+					currWall->DN = XYZ[0]; // dn
+					break;
+
+				case 2: // bottom wall
+					currWall->AINV[1] = 1; // aInv array - NECESSARY
+					currWall->A[1] = 1.0/currWall->AINV[1]; 
+					currWall->R = 0; // r
+					currWall->DN = XYZ[1]; // dn
+					break;
+
+				case 3: // top wall
+					currWall->AINV[1] = -1; // aInv array - NECESSARY
+					currWall->A[1] = 1.0/currWall->AINV[1]; 
+					currWall->R = -XYZ[1]; // r
+					currWall->DN = XYZ[1]; // dn
+					break;
+
+				case 4: // near wall
+					currWall->AINV[2] = 1; // aInv array - NECESSARY
+					currWall->A[2] = 1.0/currWall->AINV[2]; 
+					currWall->R = 0; // r
+					currWall->DN = XYZ[2]; // dn
+					break;
+
+				case 5: // far wall
+					currWall->AINV[2] = -1; // aInv array - NECESSARY
+					currWall->A[2] = 1.0/currWall->AINV[2]; 
+					currWall->R = -XYZ[2]; // r
+					currWall->DN = XYZ[2]; // dn
+					break;
+			}
+
+			// check if we're using PBCs or solid BCs
+			if (domainWalls == 1) { // if PBCs, set appropriate flags
+				currWall->PHANTOM = 0; 
+				currWall->MVN = 1; 
+				currWall->MVT = 1; 
+			} else { // otherwise, set flags for solid walls
+				currWall->PHANTOM = 1;
+				currWall->DN = 0; // override the value of DN from earlier, needs to be 0 for solid
+				currWall->MVN = -1.0;
+				currWall->MVT = -1.0;
+			}
+
+			// set all the default values
+			currWall->COLL_TYPE = 1; // collType
+			currWall->E = -1.0; // E
+			for (j = 0; j < _3D; j++) { // Q array
+				currWall->Q[j] = 0; 
+			}	
+			for (j = 0; j < _3D; j++) { // V array
+				currWall->V[j] = 0; 
+			}	
+			for (j = 0; j < _3D; j++) { // O array
+				currWall->O[j] = 0; 
+			}	
+			for (j = 0; j < _3D; j++) { // L array
+				currWall->L[j] = 0; 
+			}	
+			for (j = 0; j < _3D; j++) { // G array
+				currWall->G[j] = 0; 
+			}	
+			for (j = 0; j < 2; j++) { // rotsymm array
+				currWall->ROTSYMM[j] = 4;
+			}
+			currWall->ABS = 0; // abs
+			for (j = 0; j < 4; j++) { // P array - NECESSARY
+				currWall->P[j] = 1;
+			}	
+			currWall->DT = 0; // dt
+			currWall->DVN = 0; // dvn
+			currWall->DVT = 0; // dvt
+			for (j = 0; j < _3D; j++) { // DVxyz array
+				currWall->DVxyz[j] = 0;
+			}
+			currWall->MUN = 1; // mun
+			currWall->MUT = 1; // mut
+			for (j = 0; j < _3D; j++) { // MUxyz array
+				currWall->MUxyz[j] = 1;
+			}
+			for (j = 0; j < _3D; j++) { // DUxyz array
+				currWall->DUxyz[j] = 0;
+			}
+			currWall->KBT = 1; // kbt
+			currWall->DSPLC = 0; // dspc
+			currWall->INV = 0; // inv
+			currWall->MASS = 1; // mass
+
+			// Set the planar flag
+			if( feq(currWall->P[0],1.0) && feq(currWall->P[1],1.0) && feq(currWall->P[2],1.0) ) {
+				// Left or right wall
+				if( fneq(currWall->A[0],0.0) && feq(currWall->A[1],0.0) && feq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
+				// Top or bottom wall
+				else if( feq(currWall->A[0],0.0) && fneq(currWall->A[1],0.0) && feq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
+				// Far or near wall
+				else if( feq(currWall->A[0],0.0) && feq(currWall->A[1],0.0) && fneq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
+				else currWall->PLANAR = 0;
+			}
+			else currWall->PLANAR = 0;
+		}
+	}
+	//Determine if any BCs are periodic boundaries
+	for( i=0; i<_3D; i++ ) XYZPBC[i]=0;
+	for( i=0; i<NBC; i++ ) setPBC( (*WALL+i) ); 
+
+	// 4. Swimmers /////////////////////////////////////////////////////////////
+	// look at void readswimmers() in swimmers.c to see better descriptions & definitions for these
+
+	specS->TYPE = getJObjInt(jObj, "typeSwim", 2, jsonTagList); // type
+	NS = getJObjInt(jObj, "nSwim", 0, jsonTagList); // ns
+	specS->QDIST = getJObjInt(jObj, "qDistSwim", 0, jsonTagList); // qDisp
+	specS->ODIST = getJObjInt(jObj, "oDistSwim", 0, jsonTagList); // oDisp
+	specS->headM = getJObjInt(jObj, "headMSwim", 20, jsonTagList); // headMass
+	specS->middM = getJObjInt(jObj, "midMSwim", 20, jsonTagList); // middleMass
+	specS->HSPid = getJObjInt(jObj, "hspIdSwim", 1, jsonTagList); // hspId
+	specS->MSPid = getJObjInt(jObj, "mspIdSwim", 1, jsonTagList); // mspId
+	specS->FS = getJObjDou(jObj, "fsSwim", 20, jsonTagList); // fs
+	specS->DS = getJObjDou(jObj, "dsSwim", 1, jsonTagList); // ds
+	specS->TS = getJObjDou(jObj, "tsSwim", 0, jsonTagList); // ts
+	specS->sizeShrink = getJObjDou(jObj, "sizeShrinkSwim", 0.1, jsonTagList); // sizeShrink
+	specS->springShrink = getJObjDou(jObj, "springShrinkSwim", 0.1, jsonTagList); // springShrink
+	specS->k = getJObjDou(jObj, "kSwim", 30, jsonTagList); // k
+	specS->ro = getJObjDou(jObj, "roSwim", 4, jsonTagList); // ro
+	specS->sig = getJObjDou(jObj, "sigSwim", 4, jsonTagList); // sig
+	specS->eps = getJObjDou(jObj, "epsSwim", 1, jsonTagList); // eps
+	specS->runTime = getJObjDou(jObj, "runTSwim", 0, jsonTagList); // runTime
+	specS->tumbleTime = getJObjDou(jObj, "tumTSwim", 0, jsonTagList); // tumbleTime
+	specS->shrinkTime = getJObjDou(jObj, "shrTSwim", 2, jsonTagList); // shrinkTime
+	specS->MAGMOM = getJObjDou(jObj, "magMomSwim", 1, jsonTagList); // magMom
+	specS->fixDist = getJObjDou(jObj, "fixDistSwim", 0, jsonTagList); // fixDist
+
+	//Allocate the memory for the swimmers
+	(*sw) = (swimmer*) malloc( NS * sizeof( swimmer ) );
+
+	////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////
+
+	// input verification step
+   	verifyJson(jObj, jsonTagList, arrayList);
+
+	// clear memory
+	free(fileStr);
+   	cJSON_Delete(jObj); // free the json object
+	freeLL(jsonTagList); // free the linked lists
+	freeLL(arrayList);
+
+	return;
 }

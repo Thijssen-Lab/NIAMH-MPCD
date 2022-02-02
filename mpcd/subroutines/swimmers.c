@@ -68,7 +68,7 @@ void readswimmers( char fpath[],specSwimmer *specS,swimmer **sw ) {
 	if(fscanf( finput,"%lf %s",&MF,STR ));			//Read swimming propulsion force
 	else printf("Warning: Failed to read swimming propulsion force.\n");
 	specS->FS = MF;
-  if(fscanf( finput,"%lf %s",&MF,STR ));			//Read swimming dipole strength (i.e. length of dipole in multiples of head/middle separation)
+  	if(fscanf( finput,"%lf %s",&MF,STR ));			//Read swimming dipole strength (i.e. length of dipole in multiples of head/middle separation)
 	else printf("Warning: Failed to read swimming dipole strength.\n");
 	specS->DS = MF;
 	if(fscanf( finput,"%lf %s",&MF,STR ));			//Read swimming rotlet dipole torque
@@ -76,8 +76,8 @@ void readswimmers( char fpath[],specSwimmer *specS,swimmer **sw ) {
 	specS->TS = MF;
 
 	if(fscanf( finput,"%lf %s",&MF,STR ));			//Read tumbling shrink size (i.e. what ro and sigma are scaled by for the tumbling)
-  else printf("Warning: Failed to read tumbling shrink size coefficient.\n");
-  specS->sizeShrink = MF;
+  	else printf("Warning: Failed to read tumbling shrink size coefficient.\n");
+  	specS->sizeShrink = MF;
 	if(fscanf( finput,"%lf %s",&MF,STR ));			//Read tumbling shrink spring (i.e. what k is scaled by for tumbling)
 	else printf("Warning: Failed to read tumbling shrink spring coefficient.\n");
 	specS->springShrink = MF;
@@ -95,7 +95,7 @@ void readswimmers( char fpath[],specSwimmer *specS,swimmer **sw ) {
 	else printf("Warning: Failed to read swimmer-LJ energy.\n");
 	specS->eps = MF;
 
-  if(fscanf( finput,"%lf %s",&MF,STR ));		//Read swimmers' average run time
+  	if(fscanf( finput,"%lf %s",&MF,STR ));		//Read swimmers' average run time
 	else printf("Warning: Failed to read swimmer average run time.\n");
 	specS->runTime = MF;
 	if(fscanf( finput,"%lf %s",&MF,STR ));		//Read swimmers' average tumble time
