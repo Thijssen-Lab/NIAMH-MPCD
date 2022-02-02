@@ -1,19 +1,18 @@
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
-/* *********** SIMULATES AN SRD GAS ********* */
+/* *********** SIMULATES AN MPCD GAS ********* */
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
 /*
-By Tyler Shendruk
-	For the Polymer Physics Research Group
-	At the University of Ottawa
-	Serial version begun late in October 2008
+By Tyler Shendruk's Research Group
+	For the Active and Intelligent Matter Research Group
+	At the University of Edinburgh
 
-	For Julia Yeomans Group
-	At the University of Oxford
-	Nematic and active version begun 2014
+	Started late October 2008 at the University of Ottawa
+	Continued at the University of Oxford
+	Currently maintained at the University of Edinburgh
 */
 
 /* ****************************************** */
@@ -141,7 +140,7 @@ int main(int argc, char* argv[]) {
 			if( DBUG >= DBGINIT ) printf( "Recovering checkpointed simulation\n" );
 		#endif
 		//Recovering checkpointed simulation
-		readchckpnt( ip, &inputVar, &SPECIES, &SRDparticles, &CL, &MDmode, &WALL, &outFlags, &runtime, &warmtime, &theory, &AVVEL, &AVS, avDIR, &S4, &stdN, &KBTNOW, AVV, AVNOW );
+		readchckpnt( ip, &inputVar, &SPECIES, &SRDparticles, &CL, &MDmode, &WALL, &outFlags, &runtime, &warmtime, &theory, &AVVEL, &AVS, avDIR, &S4, &stdN, &KBTNOW, AVV, AVNOW, &specS, &swimmers );
 	}
 	#ifdef DBG
 		if( DBUG > DBGRUN ) printf("Initialize simulation\n");
@@ -228,6 +227,17 @@ int main(int argc, char* argv[]) {
 			/* ***************** UPDATE ***************** */
 			/* ****************************************** */
 			timestep( CL, SRDparticles, SPECIES, WALL, simMD, &specS, swimmers, AVNOW, AVV, avDIR, inputVar, &KBTNOW, &AVS, warmtime, MDmode, outFlags, outFiles );
+			/* ****************************************** */
+			/* *************** CHECKPOINT *************** */
+			/* ****************************************** */
+			if( outFlags.CHCKPNT>=OUT && warmtime%outFlags.CHCKPNT==0 ) {
+				#ifdef DBG
+					if( DBUG >= DBGRUN ) printf( "\nCheckpointing.\n" );
+				#endif
+				openCheckpoint( &(outFiles.fchckpnt),op );
+				checkpoint( outFiles.fchckpnt, inputVar, SPECIES, SRDparticles, MDmode, WALL, outFlags, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory,specS, swimmers );
+				fclose( outFiles.fchckpnt );
+			}
 		}
 		inputVar.warmupSteps=0;
 		#ifdef DBG
@@ -261,11 +271,10 @@ int main(int argc, char* argv[]) {
 		/* ****************************************** */
 		if( outFlags.CHCKPNT>=OUT && runtime%outFlags.CHCKPNT==0 ) {
 			#ifdef DBG
-				if( DBUG >= DBGINIT ) printf( "Checkpoint.\n" );
+				if( DBUG >= DBGRUN ) printf( "\nCheckpointing.\n" );
 			#endif
 			openCheckpoint( &(outFiles.fchckpnt),op );
-			checkpoint( outFiles.fchckpnt, inputVar, SPECIES, SRDparticles, CL, MDmode, WALL, outFlags, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory );
-
+			checkpoint( outFiles.fchckpnt, inputVar, SPECIES, SRDparticles, MDmode, WALL, outFlags, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory,specS, swimmers );
 			fclose( outFiles.fchckpnt );
 		}
 	}
