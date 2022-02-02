@@ -65,7 +65,8 @@ void ParseOptions (int argc, char *argv[], simptr sim, simoptions *options)
 				opt_i = 1;
 				break;
 
-			case 'Li': // legacy input option
+			//FIXME: this is shit, doesnt take into account any further output. 
+			case 'L': // legacy input option
 				// name of input file
 				snprintf (sim->inputFile, STRMAX, "%s/md.inp", optarg);
 				// if (strcmp(sim->inputFile, optarg)) error (EPARSE);
