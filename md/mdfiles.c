@@ -52,6 +52,7 @@ void ParseOptions (int argc, char *argv[], simptr sim, simoptions *options)
 {
 	int c;
 	int	opt_o=0, opt_i=0, opt_c=0;
+	int arg;
 
 	// get program name and pid
 	strncpy (sim->programName, argv[0], STRMAX);
@@ -108,11 +109,29 @@ void ParseOptions (int argc, char *argv[], simptr sim, simoptions *options)
 				fprintf (stderr, "Unknown option `-%c'.\n", optopt);
 				else
 				fprintf (stderr, "Unknown option character `0x%x'.\n", optopt);
-				error (EPARSE);
+				// error (EPARSE);
 				break;
-			default:
-				error (EPARSE);
-				break;
+			// default:
+			// 	error (EPARSE);
+			// 	break;
+		}
+	}
+
+	// parse extra multichara cmd line options
+	for(arg=1; arg<argc; arg++) {
+		// Check for a dash
+		if(argv[arg][0]=='-') {
+			switch (argv[arg][1]) {
+				case 'L': // legacy 
+					if (argv[arg][2] == 'i'){ // arg 'Li' for legacy input
+						arg++;
+						
+						snprintf (sim->inputFile, STRMAX, "%s/md.inp", argv[arg]);
+						// if (strcmp(sim->inputFile, optarg)) error (EPARSE);
+						opt_i = 1;
+						break;
+					}
+			}
 		}
 	}
 
