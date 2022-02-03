@@ -46,7 +46,7 @@ double calcW( bc WALL,particleMPC P ) {
 		terms = pow( terms,WALL.P[3] );
 		W -= terms;
 		//Check if need wavy wall complications
-		if( !feq(WALL.B[0],0.0) ) W += calcWavyW(WALL,P);
+		if( !feq(WALL.B[0],0.0) ) W += calcWavyW(WALL,P,W);
 		//Check if invert wall
 		if( WALL.INV ) W *= -1.0;
 	}
@@ -55,25 +55,52 @@ double calcW( bc WALL,particleMPC P ) {
 	}
 	return W;
 }
-double calcWavyW( bc WALL,particleMPC P ) {
+double calcWavyW( bc WALL,particleMPC P, double W ) {
 /*
-   This function calculates additions to W for wavy 
+   This function calculates additions to W for wavy
    walls in the calcW function.
 */
-	double terms, W1=0.0,W2=0.0;
+	double W1=0.0,W2=0.0;
 	int i,flag;
 	//Planes
 	flag=0;
 	for( i=0; i<DIM; i++ ) if( !feq(WALL.P[i],1.0) ) flag+=1;
 	if(!flag){
-		W1 = (WALL.A[1]*P.Q[0]-WALL.A[0]*P.Q[1]) / sqrt( WALL.A[0]*WALL.A[0] + WALL.A[1]*WALL.A[1] );
-		W2 = WALL.A[0]*WALL.A[2]*P.Q[0] + WALL.A[1]*WALL.A[2]*P.Q[1] - (WALL.A[0]*WALL.A[0]+WALL.A[1]*WALL.A[1])*P.Q[2];
-		W2 /= sqrt( pow(WALL.A[0],4) + pow(WALL.A[1],4) + pow(WALL.A[0],2)*pow(WALL.A[2],2) + 2.0*pow(WALL.A[0],2)*pow(WALL.A[1],2) + pow(WALL.A[1],2)*pow(WALL.A[2],2) );
-		printf( "w1=%lf    ,     w2=%lf",W1,W2 ) ;
+		if ( !feq(WALL.B[1],0.0) ) {
+			W1 = (WALL.A[1]*P.Q[0]-WALL.A[0]*P.Q[1]) / sqrt( WALL.A[0]*WALL.A[0] + WALL.A[1]*WALL.A[1] );
+		}
+		if( DIM>2 && !feq(WALL.B[2],0.0) ){
+			W2 = WALL.A[0]*WALL.A[2]*P.Q[0] + WALL.A[1]*WALL.A[2]*P.Q[1] - (WALL.A[0]*WALL.A[0]+WALL.A[1]*WALL.A[1])*P.Q[2];
+			W2 /= sqrt( pow(WALL.A[0],4) + pow(WALL.A[1],4) + pow(WALL.A[0],2)*pow(WALL.A[2],2) + 2.0*pow(WALL.A[0],2)*pow(WALL.A[1],2) + pow(WALL.A[1],2)*pow(WALL.A[2],2) );
+		}
 	}
-	//Ellipsoidal
+	else {
+		//Ellipsoidal
+		flag = 0;
+		for( i=0; i<DIM; i++ ) if( !feq(WALL.P[i],2.0) || feq(WALL.A[i],0.0) ) flag+=1;
+		if(!flag){
+			if ( !feq(WALL.B[1],0.0) ) 	W1 = atan( (WALL.A[1] * ( P.Q[1]-WALL.Q[1] ) )/(WALL.A[0] * ( P.Q[0]-WALL.Q[0] ) ) );
+			if( DIM>2 && !feq(WALL.B[2],0.0) ){
+				W2 = atan( sqrt( pow(WALL.A[0] * ( P.Q[0]-WALL.Q[0] ),2) + pow(WALL.A[1] * ( P.Q[1]-WALL.Q[1] ),2) ) / ( WALL.A[2] * ( P.Q[2]-WALL.Q[2] ) ) );
+			}
+		}
+		else if(DIM>2 && flag==1){
+			//Cylinders
+			flag = -1;
+			for( i=0; i<DIM; i++) if ( feq(WALL.A[i],0.0) ) flag=i;
+			if (flag!=-1) {
+				printf("Cylinder\n");
+				int j, k, l;
+				if (flag==0) j = 0, k = 1, l = 2;
+				else if (flag==1) j = 1, k = 2, l = 0;
+				else j = 2, k = 0, l = 1;
+				if ( !feq(WALL.B[1],0.0) ) W1 = atan( (WALL.A[l] * ( P.Q[l]-WALL.Q[l] ) )/(WALL.A[k] * ( P.Q[k]-WALL.Q[k] ) ) );
+				if ( !feq(WALL.B[2],0.0) ) W2 = atan( sqrt( W + pow( WALL.R,WALL.P[3] ) / ( P.Q[j]) ) );
+			}
+		}
+	}
 
-	//Cylinders
+	return WALL.B[0] * cos( WALL.B[1]*W1 ) * cos( WALL.B[2]*W2 );
 }
 double calcW_BC( bc movingWall,bc stillWall,int flagCentre ) {
 /*
