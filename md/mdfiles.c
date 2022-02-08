@@ -52,20 +52,22 @@ void ParseOptions (int argc, char *argv[], simptr sim, simoptions *options)
 {
 	int c;
 	int	opt_o=0, opt_i=0, opt_c=0;
+	int arg;
 
 	// get program name and pid
 	strncpy (sim->programName, argv[0], STRMAX);
 	sim->pid = getpid();
 
 	// parse command-line options
-	while ((c = getopt (argc, argv, "i:o:c:h:I:O")) != -1) {
+	while ((c = getopt (argc, argv, "i:o:c:h:I:O:L")) != -1) {
 		switch (c) {
 			case 'i': // read input from the global input file string
 				snprintf (sim->inputFile, STRMAX, "%s", mdInputFile);
 				opt_i = 1;
 				break;
 
-			case 'Li': // legacy input option
+			//FIXME: this is shit, doesnt take into account any further output. 
+			case 'L': // legacy input option
 				// name of input file
 				snprintf (sim->inputFile, STRMAX, "%s/md.inp", optarg);
 				// if (strcmp(sim->inputFile, optarg)) error (EPARSE);
@@ -107,11 +109,29 @@ void ParseOptions (int argc, char *argv[], simptr sim, simoptions *options)
 				fprintf (stderr, "Unknown option `-%c'.\n", optopt);
 				else
 				fprintf (stderr, "Unknown option character `0x%x'.\n", optopt);
-				error (EPARSE);
+				// error (EPARSE);
 				break;
-			default:
-				error (EPARSE);
-				break;
+			// default:
+			// 	error (EPARSE);
+			// 	break;
+		}
+	}
+
+	// parse extra multichara cmd line options
+	for(arg=1; arg<argc; arg++) {
+		// Check for a dash
+		if(argv[arg][0]=='-') {
+			switch (argv[arg][1]) {
+				case 'L': // legacy 
+					if (argv[arg][2] == 'i'){ // arg 'Li' for legacy input
+						arg++;
+						
+						snprintf (sim->inputFile, STRMAX, "%s/md.inp", argv[arg]);
+						// if (strcmp(sim->inputFile, optarg)) error (EPARSE);
+						opt_i = 1;
+						break;
+					}
+			}
 		}
 	}
 
