@@ -46,7 +46,7 @@ double calcW( bc WALL,particleMPC P ) {
 		terms = pow( terms,WALL.P[3] );
 		W -= terms;
 		//Check if need wavy wall complications
-		if( !feq(WALL.B[0],0.0) ) W += calcWavyW(WALL,P,W);
+		if( !feq(WALL.B[0],0.0) ) W += calcWavyW(WALL,P.Q,W);
 		//Check if invert wall
 		if( WALL.INV ) W *= -1.0;
 	}
@@ -55,7 +55,7 @@ double calcW( bc WALL,particleMPC P ) {
 	}
 	return W;
 }
-double calcWavyW( bc WALL,particleMPC P, double W ) {
+double calcWavyW( bc WALL,double POS[], double W ) {
 /*
    This function calculates additions to W for wavy
    walls in the calcW function.
@@ -67,10 +67,10 @@ double calcWavyW( bc WALL,particleMPC P, double W ) {
 	for( i=0; i<DIM; i++ ) if( !feq(WALL.P[i],1.0) ) flag+=1;
 	if(!flag){
 		if ( !feq(WALL.B[1],0.0) ) {
-			W1 = (WALL.A[1]*P.Q[0]-WALL.A[0]*P.Q[1]) / sqrt( WALL.A[0]*WALL.A[0] + WALL.A[1]*WALL.A[1] );
+			W1 = (WALL.A[1]*POS[0]-WALL.A[0]*POS[1]) / sqrt( WALL.A[0]*WALL.A[0] + WALL.A[1]*WALL.A[1] );
 		}
 		if( DIM>2 && !feq(WALL.B[2],0.0) ){
-			W2 = WALL.A[0]*WALL.A[2]*P.Q[0] + WALL.A[1]*WALL.A[2]*P.Q[1] - (WALL.A[0]*WALL.A[0]+WALL.A[1]*WALL.A[1])*P.Q[2];
+			W2 = WALL.A[0]*WALL.A[2]*POS[0] + WALL.A[1]*WALL.A[2]*POS[1] - (WALL.A[0]*WALL.A[0]+WALL.A[1]*WALL.A[1])*POS[2];
 			W2 /= sqrt( pow(WALL.A[0],4) + pow(WALL.A[1],4) + pow(WALL.A[0],2)*pow(WALL.A[2],2) + 2.0*pow(WALL.A[0],2)*pow(WALL.A[1],2) + pow(WALL.A[1],2)*pow(WALL.A[2],2) );
 		}
 	}
@@ -79,9 +79,9 @@ double calcWavyW( bc WALL,particleMPC P, double W ) {
 		flag = 0;
 		for( i=0; i<DIM; i++ ) if( !feq(WALL.P[i],2.0) || feq(WALL.A[i],0.0) ) flag+=1;
 		if(!flag){
-			if ( !feq(WALL.B[1],0.0) ) 	W1 = atan( (WALL.A[1] * ( P.Q[1]-WALL.Q[1] ) )/(WALL.A[0] * ( P.Q[0]-WALL.Q[0] ) ) );
+			if ( !feq(WALL.B[1],0.0) ) 	W1 = atan( (WALL.A[1] * ( POS[1]-WALL.Q[1] ) )/(WALL.A[0] * ( POS[0]-WALL.Q[0] ) ) );
 			if( DIM>2 && !feq(WALL.B[2],0.0) ){
-				W2 = atan( sqrt( pow(WALL.A[0] * ( P.Q[0]-WALL.Q[0] ),2) + pow(WALL.A[1] * ( P.Q[1]-WALL.Q[1] ),2) ) / ( WALL.A[2] * ( P.Q[2]-WALL.Q[2] ) ) );
+				W2 = atan( sqrt( pow(WALL.A[0] * ( POS[0]-WALL.Q[0] ),2) + pow(WALL.A[1] * ( POS[1]-WALL.Q[1] ),2) ) / ( WALL.A[2] * ( POS[2]-WALL.Q[2] ) ) );
 			}
 		}
 		else if(DIM>2 && flag==1){
@@ -89,13 +89,12 @@ double calcWavyW( bc WALL,particleMPC P, double W ) {
 			flag = -1;
 			for( i=0; i<DIM; i++) if ( feq(WALL.A[i],0.0) ) flag=i;
 			if (flag!=-1) {
-				printf("Cylinder\n");
 				int j, k, l;
 				if (flag==0) j = 0, k = 1, l = 2;
 				else if (flag==1) j = 1, k = 2, l = 0;
 				else j = 2, k = 0, l = 1;
-				if ( !feq(WALL.B[1],0.0) ) W1 = atan( (WALL.A[l] * ( P.Q[l]-WALL.Q[l] ) )/(WALL.A[k] * ( P.Q[k]-WALL.Q[k] ) ) );
-				if ( !feq(WALL.B[2],0.0) ) W2 = atan( sqrt( W + pow( WALL.R,WALL.P[3] ) / ( P.Q[j]) ) );
+				if ( !feq(WALL.B[1],0.0) ) W1 = atan( (WALL.A[l] * ( POS[l]-WALL.Q[l] ) )/(WALL.A[k] * ( POS[k]-WALL.Q[k] ) ) );
+				if ( !feq(WALL.B[2],0.0) ) W2 = atan( sqrt( W + pow( WALL.R,WALL.P[3] ) / ( POS[j]) ) );
 			}
 		}
 	}
@@ -189,7 +188,7 @@ void crosstimeReverse( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,doub
 	int i;
 
 	// Planar Wall
-	if( WALL.PLANAR || ( feq(WALL.P[0],1.0) && feq(WALL.P[1],1.0) && feq(WALL.P[2],1.0) && feq(WALL.P[3],1.0) ) ) {
+	if ( ( WALL.PLANAR ) || ( feq(WALL.P[0],1.0) && feq(WALL.P[1],1.0) && feq(WALL.P[2],1.0) && feq(WALL.P[3],1.0) && feq(WALL.B[0],0.0) ) ){
 		*tc_pos = WALL.R;
 		for( i=0; i<DIM; i++) *tc_pos += WALL.A[i]*(WALL.Q[i]-p.Q[i]);
 		*tc_pos /= (WALL.A[0]*(-p.V[0]) + WALL.A[1]*(-p.V[1]) + WALL.A[2]*(-p.V[2]));
@@ -198,7 +197,7 @@ void crosstimeReverse( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,doub
 	}
 	// Ellipsoid
 	//else if( feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0) ) {
-	else if ((DIM == 2 && feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0)) || (DIM > 2 && feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0))){
+	else if ((DIM == 2 && feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.B[0],0.0) ) || (DIM > 2 && feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0) && feq(WALL.B[0],0.0) )){
 		for( i=0; i<DIM; i++ ) {
 			a += WALL.A[i]*WALL.A[i]*(-p.V[i])*(-p.V[i]);
 			b += WALL.A[i]*WALL.A[i]*(-p.V[i])*(p.Q[i]-WALL.Q[i]);
@@ -227,6 +226,7 @@ double calcW_PLANE( bc WALL,particleMPC P ) {
 	double W=0.;
 	int i;
 
+
 	for( i=0; i<DIM; i++ ) W += WALL.A[i] * ( P.Q[i]-WALL.Q[i] );
 	W -= WALL.R;
 	if( WALL.INV ) W *= -1.;
@@ -242,19 +242,21 @@ double secant_time( particleMPC p,bc WALL,double t_step ) {
 	double fi,fiM1;
 	int i,iter=0;
 
+
 	//Rewind the particle back to it's old position
 	for( i=0;i<DIM;i++ ) {
 		QiM1[i] = p.Q[i];
-		Qi[i] = trans(t_step,p.V[i],p.Q[i]);
+		Qi[i] = trans(t_step,-p.V[i],p.Q[i]);
 	}
 
-	ti = 0.;
-	tiM1 = t_step;
+	tiM1 = 0.;
+	ti = t_step;
 	root = ti;
 
 	//Secant Loop
 	do {
 		iter++;
+		//printf("%lf, %lf \n",ti,tiM1);
 		// Calculate the surface function for the particles' positions at these times
 		fi = surf_func( WALL,Qi,DIM );
 		fiM1 = surf_func( WALL,QiM1,DIM );
@@ -263,11 +265,21 @@ double secant_time( particleMPC p,bc WALL,double t_step ) {
 		tiM1 = ti;
 		ti = root;
 		// Calculate the particles' positions at these times
-		for( i=0;i<DIM;i++ ) {
-			QiM1[i] = trans(tiM1,p.V[i],p.Q[i]);
-			Qi[i] = trans(ti,p.V[i],p.Q[i]);
+		for( i=0;i<3;i++ ) {
+			QiM1[i] = trans(tiM1,-p.V[i],p.Q[i]);
+			Qi[i] = trans(ti,-p.V[i],p.Q[i]);
 		}
 	} while( fabs( ti-tiM1 ) > TOL/100. &&  fabs( fi-fiM1 ) > TOL/100. );
+	if (root<0.0) {
+		printf("Q: %lf, %lf, %lf, %d\n",p.Q[0],p.Q[1],p.Q[2], DIM);
+		for( i=0;i<DIM;i++ ) {
+			QiM1[i] = trans(t_step,-p.V[i],p.Q[i]);
+		}
+		printf("Q-1: %lf, %lf, %lf, %lf\n",QiM1[0],QiM1[1],QiM1[2],p.V[2]);
+		printf("W: %lf, %lf\n",surf_func(WALL,p.Q,DIM), surf_func(WALL,QiM1,DIM));
+		printf("root: %lf, %lf\n",root, surf_func(WALL,Qi,DIM));
+		printf("rootPos: %lf, %lf, %lf\n\n",Qi[0],Qi[1],Qi[2]);
+	}
 	return root;
 }
 void shiftBC( double *shift,bc *WALL,particleMPC *pp ) {
@@ -282,7 +294,8 @@ void shiftBC( double *shift,bc *WALL,particleMPC *pp ) {
 	for( k=0; k<DIM; k++ ) shift[k] = 0.0;
 	//Don't shift planar surfaces
 	//if( fneq(WALL->P[0],1.0) && fneq(WALL->P[1],1.0) && fneq(WALL->P[2],1.0) ) {
-	if( fneq(WALL->P[0],1.0) && fneq(WALL->P[1],1.0) ) {
+	//if( fneq(WALL->P[0],1.0) && fneq(WALL->P[1],1.0) ) {
+	if( !WALL->PLANAR) {
 		for( k=0; k<DIM; k++ ) {
 			// Determine if should shift
 			if( pp->Q[k] - WALL->Q[k] >= 0.5*(double)XYZ[k] ) shift[k] = (double)XYZ[k];
@@ -1092,6 +1105,7 @@ void chooseBC( bc WALL[],int currentP,particleMPC *pp,double *t_minColl,double *
    We must check if the particle is inside any of the BCs
    This subroutine finds the BC and the time of collision
 */
+
 	int i,flag;
 	double t1,t2,tc;
 	double tempW, shift[DIM];
@@ -1106,9 +1120,29 @@ void chooseBC( bc WALL[],int currentP,particleMPC *pp,double *t_minColl,double *
 		if( WALL[i].PLANAR ) {
 			tempW=calcW_PLANE( WALL[i],*(pp+currentP) );
 			if( tempW < 0.0 ) {
+				//printf("ChoosePlanar\n");
 				//Calculate crosstime
 				crosstimeReverse( *(pp+currentP),WALL[i],&t1,&t2,t_left );
 				tc=t_left-t1;
+				if( tc < *t_minColl ) {
+					*t_minColl = tc;
+					*chosenBC = i;
+					*chosenW = tempW;
+				}
+			}
+		}
+		//Planar wavy BCs
+		else if ( !feq(WALL[i].B[0],0.0) && feq(WALL[i].P[0],1.0) && feq(WALL[i].P[1],1.0) && feq(WALL[i].P[2],1.0) ) {
+			tempW=calcW( WALL[i],*(pp+currentP) );
+			if( tempW < 0.0 ) {
+				//Calculate crosstime
+				crosstimeReverse( *(pp+currentP),WALL[i],&t1,&t2,t_left );
+				t1=t_left-t1;
+				t2=t_left-t2;
+				tc = chooseT( t_left,t1,t2,currentP,&flag );
+				if( flag ) {
+					printf( "Error: Cross time unacceptable: %lf.\n",tc );
+				}
 				if( tc < *t_minColl ) {
 					*t_minColl = tc;
 					*chosenBC = i;

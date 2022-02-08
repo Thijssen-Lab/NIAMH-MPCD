@@ -6,6 +6,7 @@
 # include "../headers/SRDclss.h"
 # include "../headers/pout.h"
 # include "../headers/ctools.h"
+# include "../headers/bc.h"
 
 /* ****************************************** */
 /* ****************************************** */
@@ -844,6 +845,9 @@ double surf_func( bc WALL,double POS[], int dimension ) {
 		if( WALL.ABS ) terms=fabs(terms);
 		terms = pow( terms,WALL.P[3] );
 		W -= terms;
+		//Check if need wavy wall complications
+		if( !feq(WALL.B[0],0.0) ) W += calcWavyW(WALL,POS,W);
+		//Check if invert wall
 		if( WALL.INV ) W *= -1.;
 	}
 	else {
