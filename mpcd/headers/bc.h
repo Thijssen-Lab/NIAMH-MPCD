@@ -45,6 +45,7 @@ void chooseP( bc WALL,particleMPC *pp,double *chosenW,int *chosenP );
 void chooseBC( bc WALL[],int currentP,particleMPC *pp,double *t_min,double *chosenW,int *chosenBC,double time );
 
 double *normal( double *n,bc WALL,double *point,int dimension );
+double *normalWavy( double *n,bc WALL,double *point,int dimension );
 double *normalNon4foldSymm( double *n,bc WALL,double *point,int dimension );
 
 void rudimentaryPBC( particleMPC *pp,int axis );

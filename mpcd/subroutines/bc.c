@@ -109,26 +109,20 @@ double calcW_BC( bc movingWall,bc stillWall,int flagCentre ) {
 	 intFlag determines if we are considering the centre of the movingWall or the surface
 */
 	double terms, modR, W=0.0;
-	int i;
 
 	if( feq(stillWall.ROTSYMM[0],4.0) && feq(stillWall.ROTSYMM[1],4.0) ) {
-		for( i=0; i<DIM; i++ ) {
-			terms = stillWall.A[i] * ( movingWall.Q[i]-stillWall.Q[i] );
-			if( stillWall.ABS ) terms=fabs(terms);
-			terms = pow( terms,stillWall.P[i] );
-			W += terms;
-		}
-		if( flagCentre ) {
+		W = surf_func(stillWall, movingWall.Q, DIM);
+		if( !flagCentre ) {
 			terms = stillWall.R;
 			if( stillWall.ABS ) terms=fabs(terms);
 			terms = pow( terms,stillWall.P[3] );
-			W -= terms;
-		}
-		else{
+			if( stillWall.INV ) terms *= -1.0; //because W already inverted
+			W += terms; //adds back R term
+			//subtracts the correct R terms
 			modR = stillWall.R + movingWall.R;
+			if( stillWall.INV ) modR *= -1.0;
 			W -= modR;
 		}
-		if( stillWall.INV ) W *= -1.0;
 	}
 	else {
 		printf( "Error:\tNon 4-fold symmetry not yet programmed for BC-BC interactions\n" );
@@ -211,10 +205,14 @@ void crosstimeReverse( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,doub
 		*tc_pos = - b + sqrt(b*b-4.*a*c);
 		*tc_pos /= (2.*a);
 	}
-	// Issue: below seems to be broken
 	else {
 		//Must use secant method to determine cross times
 		*tc_pos = secant_time( p,WALL,t_step );
+		//If secant method fails rewind the full timestep
+		if(*tc_pos<0 || *tc_pos > t_step) {
+				*tc_pos = t_step;
+				printf("failed\n");
+		}
 		*tc_neg = *tc_pos;
 	}
 }
@@ -232,11 +230,9 @@ double calcW_PLANE( bc WALL,particleMPC P ) {
 	if( WALL.INV ) W *= -1.;
 	return W;
 }
+
+
 double secant_time( particleMPC p,bc WALL,double t_step ) {
-	// Issue: this might be broken
-/*
-     Numerically determine the crossing times (tc_pos and tc_neg);
-*/
 	double Qi[DIM],QiM1[DIM];
 	double ti,tiM1,root;
 	double fi,fiM1;
@@ -249,39 +245,41 @@ double secant_time( particleMPC p,bc WALL,double t_step ) {
 		Qi[i] = trans(t_step,-p.V[i],p.Q[i]);
 	}
 
-	tiM1 = 0.;
+	tiM1 = 0.0;
 	ti = t_step;
 	root = ti;
+
+	fi = surf_func( WALL,Qi,DIM );
+	fiM1 = surf_func( WALL,QiM1,DIM );
 
 	//Secant Loop
 	do {
 		iter++;
-		//printf("%lf, %lf \n",ti,tiM1);
 		// Calculate the surface function for the particles' positions at these times
 		fi = surf_func( WALL,Qi,DIM );
 		fiM1 = surf_func( WALL,QiM1,DIM );
 
 		root = ti - fi * ( ti - tiM1 )/ ( fi - fiM1 );
-		tiM1 = ti;
-		ti = root;
+
+		//updates values so always on opposite sides of 0
+		if (root<0) {
+			ti = tiM1;
+			tiM1 = root;
+		}
+		else {
+			tiM1 = ti;
+			ti = root;
+		}
+
 		// Calculate the particles' positions at these times
 		for( i=0;i<3;i++ ) {
 			QiM1[i] = trans(tiM1,-p.V[i],p.Q[i]);
 			Qi[i] = trans(ti,-p.V[i],p.Q[i]);
 		}
-	} while( fabs( ti-tiM1 ) > TOL/100. &&  fabs( fi-fiM1 ) > TOL/100. );
-	if (root<0.0) {
-		printf("Q: %lf, %lf, %lf, %d\n",p.Q[0],p.Q[1],p.Q[2], DIM);
-		for( i=0;i<DIM;i++ ) {
-			QiM1[i] = trans(t_step,-p.V[i],p.Q[i]);
-		}
-		printf("Q-1: %lf, %lf, %lf, %lf\n",QiM1[0],QiM1[1],QiM1[2],p.V[2]);
-		printf("W: %lf, %lf\n",surf_func(WALL,p.Q,DIM), surf_func(WALL,QiM1,DIM));
-		printf("root: %lf, %lf\n",root, surf_func(WALL,Qi,DIM));
-		printf("rootPos: %lf, %lf, %lf\n\n",Qi[0],Qi[1],Qi[2]);
-	}
+	} while( iter<10 && fabs( ti-tiM1 ) > TOL/100. &&  fabs( fi-fiM1 ) > TOL/100. );
 	return root;
 }
+
 void shiftBC( double *shift,bc *WALL,particleMPC *pp ) {
 /*
      Determines if the BC must be shifted due to the
@@ -294,8 +292,7 @@ void shiftBC( double *shift,bc *WALL,particleMPC *pp ) {
 	for( k=0; k<DIM; k++ ) shift[k] = 0.0;
 	//Don't shift planar surfaces
 	//if( fneq(WALL->P[0],1.0) && fneq(WALL->P[1],1.0) && fneq(WALL->P[2],1.0) ) {
-	//if( fneq(WALL->P[0],1.0) && fneq(WALL->P[1],1.0) ) {
-	if( !WALL->PLANAR) {
+	if( fneq(WALL->P[0],1.0) && fneq(WALL->P[1],1.0) ) {
 		for( k=0; k<DIM; k++ ) {
 			// Determine if should shift
 			if( pp->Q[k] - WALL->Q[k] >= 0.5*(double)XYZ[k] ) shift[k] = (double)XYZ[k];
@@ -1358,11 +1355,89 @@ double *normal( double *n,bc WALL,double *point,int dimension ) {
 				n[i] = WALL.P[i]*pow( WALL.A[i],WALL.P[i] )*pow( point[i]-WALL.Q[i],WALL.P[i]-1.0 );
 			}
 		}
+
+		if ( !feq(WALL.B[0],0.0) ) {
+			//printf("before: %lf, %lf, %lf\n",n[0],n[1],n[2]);
+			normalWavy(n,WALL,point,dimension);
+		}
+
 	}
 	else normalNon4foldSymm( n,WALL,point,dimension );
 
 	return n;
 }
+
+double *normalWavy( double *n,bc WALL,double *point,int dimension ) {
+	double W1=0.0,W2=0.0, div;
+	double dw1[3], dw2[3];
+	int i;
+	for( i=0; i<3; i++ ) {
+		dw1[i]=0.0;
+		dw2[i]=0.0;
+	}
+	// Planar
+	if( feq(WALL.P[0],1.0) && feq(WALL.P[1],1.0) && feq(WALL.P[2],1.0) ) {
+		if ( !feq(WALL.B[1],0.0) ) {
+			W1 = (WALL.A[1]*point[0]-WALL.A[0]*point[1]) / sqrt( WALL.A[0]*WALL.A[0] + WALL.A[1]*WALL.A[1] );
+			dw1[0] = WALL.A[1]/sqrt(WALL.A[0]*WALL.A[0]+WALL.A[1]*WALL.A[1]);
+			dw1[1] = -WALL.A[0]/sqrt(WALL.A[0]*WALL.A[0]+WALL.A[1]*WALL.A[1]);
+			dw1[2] = 0;
+		}
+		if( dimension>2 && !feq(WALL.B[2],0.0) ){
+			div = sqrt( pow(WALL.A[0],4) + pow(WALL.A[1],4) + pow(WALL.A[0],2)*pow(WALL.A[2],2) + 2.0*pow(WALL.A[0],2)*pow(WALL.A[1],2) + pow(WALL.A[1],2)*pow(WALL.A[2],2) );
+			W2 = ( WALL.A[0]*WALL.A[2]*point[0] + WALL.A[1]*WALL.A[2]*point[1] - (WALL.A[0]*WALL.A[0]+WALL.A[1]*WALL.A[1])*point[2] ) /div;
+			dw2[0] = (WALL.A[0]*WALL.A[2]) / div;
+			dw2[1] = (WALL.A[1]*WALL.A[2]) / div;
+			dw2[2] = -(WALL.A[0]*WALL.A[0] + WALL.A[1]*WALL.A[1]) / div;
+		}
+
+	}
+	else {
+		//Ellipsoidal
+		int flag = 0;
+		for( i=0; i<dimension; i++ ) if( !feq(WALL.P[i],2.0) || feq(WALL.A[i],0.0) ) flag+=1;
+		if(!flag){
+			div = pow(WALL.A[0]*(point[0]-WALL.Q[0]),2) + pow(WALL.A[1]*(point[1]-WALL.Q[1]),2);
+			if ( !feq(WALL.B[1],0.0) ) {
+				dw1[0] = WALL.A[0]*WALL.A[1]*(WALL.Q[1]-point[1])/div;
+				dw1[1] = WALL.A[0]*WALL.A[1]*(point[0]-WALL.Q[0])/div;
+				dw1[2] = 0;
+			}
+			if( dimension>2 && !feq(WALL.B[2],0.0) ){
+				dw2[0] = WALL.A[2]*WALL.A[0]*(point[0]-WALL.Q[0])*(point[2]-WALL.Q[2])/(sqrt(div)*(div+pow(WALL.A[2]*(point[2]-WALL.Q[2]),2)));
+				dw2[1] = WALL.A[2]*WALL.A[1]*(point[1]-WALL.Q[1])*(point[2]-WALL.Q[2])/(sqrt(div)*(div+pow(WALL.A[2]*(point[2]-WALL.Q[2]),2)));
+				dw2[2] = -WALL.A[2]*sqrt(div)/( div+pow(WALL.A[2]*(point[2]-WALL.Q[2]),2) );
+			}
+		}
+		else if(dimension>2 && flag==1){
+			//Cylinders
+			flag = -1;
+			for( i=0; i<DIM; i++) if ( feq(WALL.A[i],0.0) ) flag=i;
+			if (flag!=-1) {
+				int j, k, l;
+				if (flag==0) j = 0, k = 1, l = 2;
+				else if (flag==1) j = 1, k = 2, l = 0;
+				else j = 2, k = 0, l = 1;
+
+				div = pow(WALL.A[k]*(point[k]-WALL.Q[k]),2) + pow(WALL.A[l]*(point[l]-WALL.Q[l]),2);
+
+				if ( !feq(WALL.B[1],0.0) ) {
+					dw1[k] = WALL.A[k]*WALL.A[l]*(WALL.Q[l]-point[l])/div;
+					dw1[l] = WALL.A[k]*WALL.A[l]*(point[k]-WALL.Q[k])/div;
+					dw1[j] = 0;
+				}
+				if ( !feq(WALL.B[2],0.0) ) {
+					dw2[k] = WALL.A[k]*WALL.A[k]*(point[k]-WALL.Q[k])*point[j]/( sqrt(div)*(div+point[k]) );
+					dw2[l] = WALL.A[l]*WALL.A[l]*(point[l]-WALL.Q[l])*point[j]/( sqrt(div)*(div+point[l]) );;
+					dw2[j] = -sqrt(div)/(div+point[j]);
+				}
+			}
+		}
+	}
+	for( i=0; i<3; i++ ) n[i] -= WALL.B[0]*( WALL.B[1]*dw1[i]*sin(WALL.B[1]*W1)*cos(WALL.B[2]*W2) + WALL.B[2]*dw2[i]*cos(WALL.B[1]*W1)*sin(WALL.B[2]*W2) );
+	return n;
+}
+
 double *normalNon4foldSymm( double *n,bc WALL,double *point,int dimension ) {
 /*
    Find the normal to the surface at this point (particleMPC is
