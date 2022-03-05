@@ -165,7 +165,6 @@ void crosstime( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,double t_st
 		*tc_pos = - b + sqrt(b*b-4.0*a*c);
 		*tc_pos /= (2.0*a);
 	}
-	// Issue: below seems to be broken
 	else {
 		//Must use secant method to determine cross times
 		*tc_pos = secant_time( p,WALL,t_step );
@@ -211,7 +210,6 @@ void crosstimeReverse( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,doub
 		//If secant method fails rewind the full timestep
 		if(*tc_pos<0 || *tc_pos > t_step) {
 				*tc_pos = t_step;
-				printf("failed\n");
 		}
 		*tc_neg = *tc_pos;
 	}
@@ -249,9 +247,6 @@ double secant_time( particleMPC p,bc WALL,double t_step ) {
 	ti = t_step;
 	root = ti;
 
-	fi = surf_func( WALL,Qi,DIM );
-	fiM1 = surf_func( WALL,QiM1,DIM );
-
 	//Secant Loop
 	do {
 		iter++;
@@ -259,10 +254,10 @@ double secant_time( particleMPC p,bc WALL,double t_step ) {
 		fi = surf_func( WALL,Qi,DIM );
 		fiM1 = surf_func( WALL,QiM1,DIM );
 
-		root = ti - fi * ( ti - tiM1 )/ ( fi - fiM1 );
+		if ( !feq(fi, fiM1) ) root = ti - fi * ( ti - tiM1 )/ ( fi - fiM1 );
 
 		//updates values so always on opposite sides of 0
-		if (root<0) {
+		if (root<TOL/100.) {
 			ti = tiM1;
 			tiM1 = root;
 		}
@@ -272,7 +267,7 @@ double secant_time( particleMPC p,bc WALL,double t_step ) {
 		}
 
 		// Calculate the particles' positions at these times
-		for( i=0;i<3;i++ ) {
+		for( i=0;i<DIM;i++ ) {
 			QiM1[i] = trans(tiM1,-p.V[i],p.Q[i]);
 			Qi[i] = trans(ti,-p.V[i],p.Q[i]);
 		}
@@ -1356,8 +1351,9 @@ double *normal( double *n,bc WALL,double *point,int dimension ) {
 			}
 		}
 
+		// adds correction for wavy boundaries
 		if ( !feq(WALL.B[0],0.0) ) {
-			//printf("before: %lf, %lf, %lf\n",n[0],n[1],n[2]);
+			printf("it gets here\n");
 			normalWavy(n,WALL,point,dimension);
 		}
 
