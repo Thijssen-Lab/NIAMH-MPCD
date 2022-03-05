@@ -1353,7 +1353,6 @@ double *normal( double *n,bc WALL,double *point,int dimension ) {
 
 		// adds correction for wavy boundaries
 		if ( !feq(WALL.B[0],0.0) ) {
-			printf("it gets here\n");
 			normalWavy(n,WALL,point,dimension);
 		}
 
