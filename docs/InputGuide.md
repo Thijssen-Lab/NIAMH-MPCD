@@ -105,7 +105,7 @@ Tag             | Type          | Default Value | Description
 `swimOOut`      | int           | 0             | Swimmer orientations
 `swimROut`      | int           | 0             | Swimmer run/ tumble
 `synopsisOut`   | int           | 1             | Synopsis output. Highly recommended to be on. 1 = on, 0 = off
-`checkpointOut` | int           | 0             | Simulation checkpointing. Unlike all other `out` tags this **will** work during the warmup stage. Note that this just controls dump rate --- To actually load a saved checkpoint, set `seed` to -1
+`checkpointOut` | int           | 0             | Simulation checkpointing. Unlike all other `out` tags this **will** work during the warmup stage, and will overwrite the file every time it runs. Note that this just controls dump rate --- To actually load a saved checkpoint, set `seed` to -1
 ---             | ---           | ---           | ---
 `BC`            | array(BC)     | PBCs around domain | The array of boundary objects. See the BC table for BC tags.
 ---             | ---           | ---           | ---
