@@ -35,6 +35,7 @@ typedef struct spec {
 	double LEN;				//Effective rod length to couple torque on MPC into force on BC (smaller=>stronger; bigger=>weaker)
 	double ACT;				//The activity of the particle
 	double SIGWIDTH;		//The width of the sigmoid for active dipole sigmoid (CO#20)
+	double SIGPOS;			//The position of the sigmoid for active dipole sigmoid (CO#20)
 	double DAMP;			//A damping/friction coefficient to go from wet to dry (to kill hydrodynamics) [0,1]
 	double M[MAXSPECI];	//Interaction matrix for multiphase fluids --- each species has a different interaction with all others
 } spec;
