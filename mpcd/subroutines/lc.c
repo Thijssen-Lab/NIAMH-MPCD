@@ -1481,7 +1481,7 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
     Notice that all of this must be entirely in 3D even if system is 2D since angular momentum is perpendicular
 */
 	int i,j,id;
-	double M,MASS,ACT,pmOne,sigWidth;
+	double M,MASS,ACT,pmOne,sigWidth,sigPos;
 	double RV[CL->POP][_3D];	//Random velocities
 	double RS[_3D];			//Sum of random velocities
 	double DV[CL->POP][_3D];	//Damping velocities
@@ -1538,10 +1538,12 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 	tmpc = CL->pp;
 	ACT=0.;
 	sigWidth=0.;
+	sigPos=0.;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
 		ACT += (double)(SP+id)->ACT / (double)(SP+id)->MASS;
 		sigWidth += (double)(SP+id)->SIGWIDTH;
+		sigPos += (double)(SP+id)->SIGPOS;
 		tmpc = tmpc->next;
 	}
 	//If DIPOLE_DIR_SUM then use the sum just calculated
@@ -1550,11 +1552,14 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 
 	// Now, if using DIPOLE_DIR_SIG set up a sigmoidal falloff based on the cell population
 	if (RTECH==DIPOLE_DIR_SIG) {
-		sigWidth /= (double)CL->POP; // normalise based on cell population 
+		// compute average within cell by normalising with cell population
+		sigWidth /= (double)CL->POP; 
+		sigPos /= (double)CL->POP; 
 
 		// compute the sigmoidal falloff function
-		double falloffFactor = (1 - tanh( ((double)CL->POP  - nDNST) / (nDNST * sigWidth) ) );
-		double rescaleFactor = (1 - tanh( ( 1 - nDNST) / (nDNST * sigWidth) ) );
+		double falloffFactor = (1 - tanh( ((double)CL->POP  -  * (1 + sigPos) ) / (nDNST * sigWidth) ) );
+		// double rescaleFactor = (1 - tanh( ( 1 - nDNST) / (nDNST * sigWidth) ) );
+		double rescaleFactor = 2;
 
 		// rescale the activity
 		ACT *= falloffFactor / rescaleFactor;
