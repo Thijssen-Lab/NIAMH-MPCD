@@ -1557,7 +1557,7 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 		sigPos /= (double)CL->POP; 
 
 		// compute the sigmoidal falloff function
-		double falloffFactor = (1 - tanh( ((double)CL->POP  -  * (1 + sigPos) ) / (nDNST * sigWidth) ) );
+		double falloffFactor = (1 - tanh( ((double)CL->POP  - nDNST * (1 + sigPos) ) / (nDNST * sigWidth) ) );
 		// double rescaleFactor = (1 - tanh( ( 1 - nDNST) / (nDNST * sigWidth) ) );
 		double rescaleFactor = 2;
 
