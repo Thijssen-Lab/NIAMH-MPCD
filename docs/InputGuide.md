@@ -178,6 +178,7 @@ Tag             | Type          | Default Value | Description
 `dsplc`         | int           | 0             | Whether the wall can displace/ is mobile. 0 = no, 1 = yes
 `inv`           | int           | 0             | Whether to invert the bc (ie, multiply the A's by -1). 0 = no, 1 = yes
 `mass`          | double        | 1             | Mass of the wall in MPCD units. Should be the same density as the fluid if its displaceable
+`wavy`          | array(double) | [0,0,0]       | Generalized amplitudes and frequencies for wavy-walls. Must be 3D.
 
 ### BC Overrides
 Override Tag    | Type          | Override param| Description
