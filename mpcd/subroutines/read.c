@@ -801,7 +801,7 @@ int checkBC(cJSON *bc){
 		- "aInv"
 		- "P"
 		- "R"
-		- "DN"\watch
+		- "DN"
 		- "MVN"
 		- "MVT"
 	*/
