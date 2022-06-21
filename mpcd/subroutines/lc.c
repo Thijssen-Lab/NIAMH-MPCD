@@ -1541,9 +1541,13 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 	sigPos=0.;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
-		ACT += (double)(SP+id)->ACT / (double)(SP+id)->MASS;
-		sigWidth += (double)(SP+id)->SIGWIDTH;
-		sigPos += (double)(SP+id)->SIGPOS;
+
+		// do a check to see if the subpopulation is of sufficient quantity to compute activity
+		if ( ((double)(SP+id)->MINACTRATIO == 0) || (((double)(SP+id)->MINACTRATIO)*nDNST > (double)CL->SP[id]) ) {
+			ACT += (double)(SP+id)->ACT / (double)(SP+id)->MASS;
+			sigWidth += (double)(SP+id)->SIGWIDTH;
+			sigPos += (double)(SP+id)->SIGPOS;
+		}
 		tmpc = tmpc->next;
 	}
 	//If DIPOLE_DIR_SUM then use the sum just calculated
