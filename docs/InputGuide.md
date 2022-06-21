@@ -245,7 +245,10 @@ As a reminder, if you wish to use the default value for a tag, you can leave it 
             "shearSusc":    0.5,
             "magnSusc":     0.001,
             "act":          0.05,
-            "damp":         0
+            "damp":         0,
+            "sigWidth":     1.0,
+            "sigPos":       0.0,
+            "minActRatio":  0.0
         }
     ],
     "debugOut":         3,
