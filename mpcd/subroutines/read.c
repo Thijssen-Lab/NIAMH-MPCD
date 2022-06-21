@@ -769,11 +769,16 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 				case 'v':
 					printVersionSummary( );
 				case 'h':
-					printf("\nMPCv090\n");
-					printf("For the Polymer Physics Research Group\n");
-					printf("At the University of Ottawa\n");
-					printf("by Tyler Shendruk\n\nUsage:\n");
-					printf("\t-i\t[path to input files]\t\tdefault='mpcd/data/'\n\t-o\t[path to output data files]\tdefault='mpcd/data/'\n\t-v\tprint version summary\n\t-h\t[this help menu]\n\n");
+					printf("\nMulti-Particle Collision Dynamics\n");
+					printf("Shendruk Lab, University of Edinburgh\n");
+					printf("Originally by Tyler Shendruk\n");
+					printf("for the Polymer Physics Research Group, University of Ottawa\n");
+					printf("\nUsage:\n");
+					printf("\t-i\t[path to JSON input file]\t\t\tdefault=`mpcd/data/input.json`\n");
+					printf("\t-o\t[path to output file directory]\t\t\tdefault=`mpcd/data/`\n");
+					printf("\t-Li\t(legacy) [path to input file directory]\t\tdefault=`mpcd/data/`\n");
+					printf("\t-v\t(legacy) print version summary\n");
+					printf("\t-h\tprint this help menu\n");
 					exit(EXIT_SUCCESS);
 					break;
 				default:
