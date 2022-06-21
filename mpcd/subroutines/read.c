@@ -988,8 +988,8 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 				printf("Error: SIGWIDTH cannot be 0.\n");
 				exit(EXIT_FAILURE);
 			}
-
-			(*SP+i)->SIGPOS = getJObjDou(objElem, "sigPos", (*SP+i)->SIGWIDTH, jsonTagList); // sigWidth
+			(*SP+i)->SIGPOS = getJObjDou(objElem, "sigPos", (*SP+i)->SIGWIDTH, jsonTagList); // sigPos
+			(*SP+i)->MINACTRATIO = getJObjDou(objElem, "minActRatio", 0.0, jsonTagList); // minActRatio
 			(*SP+i)->DAMP = getJObjDou(objElem, "damp", 0.0, jsonTagList); // damp
 		}
 	} else { // if nothing found in the JSON then fallback to the default

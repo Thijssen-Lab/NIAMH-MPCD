@@ -154,6 +154,7 @@ Tag             | Type          | Default Value | Description
 `act`           | double        | 0.05          | Species activity
 `sigWidth`      | double        | 1.0           | Sigmoid width for activity faloff, specifically for CO#20. **Cannot be 0**.
 `sigPos`        | double        | `sigWidth`    | Sigmoid position for activity faloff, specifically for CO#20
+`minActRatio`   | double        | 0             | Minimum ratio of particles (of mean density) of this species to allow activity to be calculated in this cell. If 0, then this is ignored.
 `damp`          | double        | 0             | Damping friction to kill hydrodynamics. Between 0 and 1.
 
 #### Species Overrides
