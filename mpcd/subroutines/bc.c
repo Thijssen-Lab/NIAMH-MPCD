@@ -1393,10 +1393,11 @@ double *normalWavy( double *n,bc WALL,double *point,int dimension ) {
 		for( i=0; i<dimension; i++ ) if( !feq(WALL.P[i],2.0) || feq(WALL.A[i],0.0) ) flag+=1;
 		if(!flag){
 			div = pow(WALL.A[0]*(point[0]-WALL.Q[0]),2) + pow(WALL.A[1]*(point[1]-WALL.Q[1]),2);
+			W1 = atan2(WALL.A[1]*(-WALL.Q[1]+point[1]),WALL.A[0]*(-WALL.Q[0]+point[0]));
 			if ( !feq(WALL.B[1],0.0) ) {
 				dw1[0] = WALL.A[0]*WALL.A[1]*(WALL.Q[1]-point[1])/div;
 				dw1[1] = WALL.A[0]*WALL.A[1]*(point[0]-WALL.Q[0])/div;
-				dw1[2] = 0;
+				dw1[2] = 0; 
 			}
 			if( dimension>2 && !feq(WALL.B[2],0.0) ){
 				dw2[0] = WALL.A[2]*WALL.A[0]*(point[0]-WALL.Q[0])*(point[2]-WALL.Q[2])/(sqrt(div)*(div+pow(WALL.A[2]*(point[2]-WALL.Q[2]),2)));
