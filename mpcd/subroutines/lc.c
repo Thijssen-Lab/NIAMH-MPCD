@@ -1543,7 +1543,7 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 		id = tmpc->SPID;
 
 		// do a check to see if the subpopulation is of sufficient quantity to compute activity
-		if ( ((double)(SP+id)->MINACTRATIO == 0) || (((double)(SP+id)->MINACTRATIO)*nDNST > (double)CL->SP[id]) ) {
+		if ( ((double)(SP+id)->MINACTRATIO == 0) || (((double)(SP+id)->MINACTRATIO)*nDNST < (double)CL->SP[id]) ) {
 			ACT += (double)(SP+id)->ACT / (double)(SP+id)->MASS;
 			sigWidth += (double)(SP+id)->SIGWIDTH;
 			sigPos += (double)(SP+id)->SIGPOS;
