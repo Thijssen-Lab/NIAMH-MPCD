@@ -203,6 +203,8 @@
 # define RLANG 19
 // Cell-based dipole force in direction of local director (average of all activities with sigmoidal falloff)
 # define DIPOLE_DIR_SIG 20
+// Cell-based dipole force in direction of local director (sum of all activities with sigmoidal falloff)
+# define DIPOLE_DIR_SIG_SUM 21
 
 /* ****************************************** */
 /* ******************** BCS ***************** */
