@@ -35,6 +35,10 @@ Tags will generally be named the same as they are named in the code (in the vari
 Some tags will take an array of custom objects (for example, species and boundary conditions). 
 These are each defined in their own table following the main one.
 
+We have added support for comments in the JSON by using comment tags.
+If your tag is one of `"c"`, `"comment"`, `"//"`, or `"#"` then it will be ignored by the parser.
+Comment tags can be repeated (despite it being invalid JSON) and not cause issues with the simulation.
+
 ## Tag Tables
 
 ### Main Input Tag Table
