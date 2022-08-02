@@ -1,8 +1,18 @@
+/*
+   Helper code to set up JSON parsers in C.
+   Uses the cJson library by Dave Gramble released under MIT license.
+   Started by Timofey Kozhukhov, Summer 2021.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "../headers/cJson.h"
+
+// list of exclusions for "comment" tags
+char* commentTags[] = {"c", "comment", "//", "#"};
+const int commentTagCount = 4;
 
 /* 
    Helper methods and structs to check if an element in the .json exists to the code or not
@@ -47,6 +57,16 @@ int compareList(linkedList *head, const char* val){
   }
 
   return 0; // if you're here then it doesnt exist in the list
+}
+
+int isComment(const char* tag){
+   // Returns 1 if tag appears in the comment list, 0 if not
+   int i; // counter
+   for (i = 0; i < commentTagCount; i++) {
+      if (strcmp(tag, commentTags[i])) return 1;
+   }
+
+   return 0; // if you get here then the tag isn't in the comment list
 }
 
 void pushLL(linkedList * head, const char* val){
@@ -97,9 +117,11 @@ void verifyJson(cJSON *jObj, linkedList *jsonTagList, linkedList* arrayList){
       
       // check if this tag exists on the list of known objects
       if (!compareList(jsonTagList, jTag)){
-         // throw a warning if it's not
-         printf("JSON Read Error: Found unrecognised json tag: %s.\n", jTag);
-         validJson = 0;
+         if (!isComment(jTag)){ // check if the tag is a comment
+            // throw a warning if it's not
+            printf("JSON Read Warning: Found unrecognised json tag: %s. Tag will be ignored.\n", jTag);
+            validJson = 0;
+         }
       } else {
          // if tag exists, check if it is an array and verify the subarray if necessary
          if (compareList(arrayList, jTag)) {
@@ -214,7 +236,7 @@ int getFileStr(char* inFile, char** fileStr){
       Get a full string of the contents of file at path inFile.
       Need to pass this &str for the second argument due to dynamic memory realloc
    */
-   // printf("Reading file %s \n", inFile);
+   printf("Reading file %s \n", inFile);
    
    FILE *fptr;
    // read file in with basic error checking
