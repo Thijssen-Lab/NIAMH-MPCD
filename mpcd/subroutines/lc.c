@@ -1543,7 +1543,7 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 		id = tmpc->SPID;
 
 		// do a check to see if the subpopulation is of sufficient quantity to compute activity
-		if ( ((double)(SP+id)->MINACTRATIO == 0) || (((double)(SP+id)->MINACTRATIO)*nDNST < (double)CL->SP[id]) ) {
+		if ( ((double)(SP+id)->MINACTRATIO == 0.0) || (((double)(SP+id)->MINACTRATIO)*nDNST < (double)CL->SP[id]) ) {
 			ACT += (double)(SP+id)->ACT / (double)(SP+id)->MASS;
 			sigWidth += (double)(SP+id)->SIGWIDTH;
 			sigPos += (double)(SP+id)->SIGPOS;
@@ -1554,7 +1554,7 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 	//If DIPOLE_DIR_AV or DIPOLE_DIR_SIG then use the average value everywhere
 	if( RTECH==DIPOLE_DIR_AV || RTECH==DIPOLE_DIR_SIG) ACT *= nDNST/((double)CL->POP);
 
-	// Now, if using DIPOLE_DIR_SIG set up a sigmoidal falloff based on the cell population
+	// Now, if using sigmoidal dipole set up a sigmoidal falloff based on the cell population
 	if (RTECH==DIPOLE_DIR_SIG || RTECH==DIPOLE_DIR_SIG_SUM) {
 		// compute average within cell by normalising with cell population
 		sigWidth /= (double)CL->POP; 
