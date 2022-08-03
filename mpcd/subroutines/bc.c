@@ -79,9 +79,9 @@ double calcWavyW( bc WALL,double POS[], double W ) {
 		flag = 0;
 		for( i=0; i<DIM; i++ ) if( !feq(WALL.P[i],2.0) || feq(WALL.A[i],0.0) ) flag+=1;
 		if(!flag){
-			if ( !feq(WALL.B[1],0.0) ) 	W1 = atan( (WALL.A[1] * ( POS[1]-WALL.Q[1] ) )/(WALL.A[0] * ( POS[0]-WALL.Q[0] ) ) );
+			if ( !feq(WALL.B[1],0.0) ) 	W1 = atan2( (WALL.A[1] * ( POS[1]-WALL.Q[1] ) ),(WALL.A[0] * ( POS[0]-WALL.Q[0] ) ) );
 			if( DIM>2 && !feq(WALL.B[2],0.0) ){
-				W2 = atan( sqrt( pow(WALL.A[0] * ( POS[0]-WALL.Q[0] ),2) + pow(WALL.A[1] * ( POS[1]-WALL.Q[1] ),2) ) / ( WALL.A[2] * ( POS[2]-WALL.Q[2] ) ) );
+				W2 = atan2( sqrt( pow(WALL.A[0] * ( POS[0]-WALL.Q[0] ),2) + pow(WALL.A[1] * ( POS[1]-WALL.Q[1] ),2) ) , ( WALL.A[2] * ( POS[2]-WALL.Q[2] ) ) );
 			}
 		}
 		else if(DIM>2 && flag==1){
@@ -93,8 +93,8 @@ double calcWavyW( bc WALL,double POS[], double W ) {
 				if (flag==0) j = 0, k = 1, l = 2;
 				else if (flag==1) j = 1, k = 2, l = 0;
 				else j = 2, k = 0, l = 1;
-				if ( !feq(WALL.B[1],0.0) ) W1 = atan( (WALL.A[l] * ( POS[l]-WALL.Q[l] ) )/(WALL.A[k] * ( POS[k]-WALL.Q[k] ) ) );
-				if ( !feq(WALL.B[2],0.0) ) W2 = atan( sqrt( W + pow( WALL.R,WALL.P[3] ) / ( POS[j]) ) );
+				if ( !feq(WALL.B[1],0.0) ) W1 = atan2( (WALL.A[l] * ( POS[l]-WALL.Q[l] ) ),(WALL.A[k] * ( POS[k]-WALL.Q[k] ) ) );
+				if ( !feq(WALL.B[2],0.0) ) W2 = atan2( sqrt( W + pow( WALL.R,WALL.P[3] ) ), sqrt( POS[j]) );
 			}
 		}
 	}
