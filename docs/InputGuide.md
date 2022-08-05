@@ -1,5 +1,19 @@
 # Guide to MPCD JSON Input
 
+## Contents
+1. [Introduction](#introduction)
+2. [Tag Tables](#tag-tables)
+    - [Main Input Tag Table](#main-input-tag-table)
+        - [Overrides](#overrides)
+    - [Species Tag Table](#species-tag-table)
+        - [Species Overrides](#species-overrides)
+    - [BC Tag Table](#bc-tag-table)
+        - [BC Overrides](#bc-overrides)
+3. [Example](#example)
+4. [Guide to adding new input parameters](#guide-to-adding-new-input-parameters)
+
+## Introduction
+
 This is just meant to be a quick and dirty guide to the new MPCD JSON input system. It is not meant to be a complete reference. For basics on the JSON file format take a look at the tutorial series starting on [this page](https://www.w3schools.com/js/js_json_intro.asp).
 
 **Note:** The MPCD JSON input system is unverified with MD simulations as of yet.
@@ -21,9 +35,15 @@ Tags will generally be named the same as they are named in the code (in the vari
 Some tags will take an array of custom objects (for example, species and boundary conditions). 
 These are each defined in their own table following the main one.
 
-## Main Input Tag Table
+We have added support for comments in the JSON by using comment tags.
+If your tag is one of `"c"`, `"comment"`, `"//"`, or `"#"` then it will be ignored by the parser.
+Comment tags can be repeated (despite it being invalid JSON) and not cause issues with the simulation.
 
-All tags suffixed with "out", unless otherwise specified, take a value representing how frequently (in timesteps) you want that quantity to be dumped to file.
+## Tag Tables
+
+### Main Input Tag Table
+
+All tags suffixed with "out", unless otherwise specified, take a value representing how frequently (in timesteps) you want that quantity to be dumped to file. 
 
 Tag             | Type          | Default Value | Description
 ---             | ---           | ---           | ---
@@ -52,19 +72,19 @@ Tag             | Type          | Default Value | Description
 `debugOut`      | int           | 3             | Debug (verbosity) level. See definitions.h for list.
 `trajOut`       | int           | 0             | Detailed species trajectories
 `trajSpecOut`   | int           | 0             | Which number of species whose detailed trajectories to output
-`coarseOut`     | int           | 0             | Coarse grain data
+`coarseOut`     | int           | 0             | Coarse grain data (densities, etc). Field.
 `flowOut`       | int           | 0             | Flow field
-`avVelOut`      | int           | 0             | Total average MPCD velocity
+`avVelOut`      | int           | 0             | Total average MPCD velocity. Scalar
 `dirSOut`       | int           | 0             | Director and scalar order parameter fields
 `qTensOut`      | int           | 0             | Q tensor field
 `qkTensOut`     | int           | 0             | Reciprocal Q tensor field
 `oriEnOut`      | int           | 0             | Orientational energy field
 `colourOut`     | int           | 0             | Colour/ phi/ species-type field
 `pressureOut`   | int           | 0             | Pressure field
-`neighbourEnOut`| int           | 0             | Orientational energy from neighbours
-`avSOut`        | int           | 0             | Total average scalar order parameter
-`densSDOut`     | int           | 0             | SD of the number per cell
-`enstrophyOut`  | int           | 0             | Total average enstrophy
+`neighbourEnOut`| int           | 0             | Orientational energy from neighbours. Scalar
+`avSOut`        | int           | 0             | Total average scalar order parameter. Scalar
+`densSDOut`     | int           | 0             | SD of the number per cell. Scalar
+`enstrophyOut`  | int           | 0             | Enstrophy field
 `histVelOut`    | int           | 0             | Velocity distribution
 `histSpeedOut`  | int           | 0             | Speed distribution
 `histVortOut`   | int           | 0             | Vorticity distribution
@@ -74,22 +94,22 @@ Tag             | Type          | Default Value | Description
 `histNOut`      | int           | 0             | Number per cell distribution
 `solidTrajOut`  | int           | 0             | Solid BC trajectories
 `topoFieldOut`  | int           | 0             | Topological charge field
-`energyOut`     | int           | 0             | System energy
-`velCorrOut`    | int           | 0             | Velocity autocorrelation
-`dirCorrOut`    | int           | 0             | Director autocorrelation
-`vortCorrOut`   | int           | 0             | Vorticity autocorrelation
-`densCorrOut`   | int           | 0             | Densty autocorrelation
-`orderCorrOut`  | int           | 0             | Scalar order parameter autocorrelation
-`phaseCorrOut`  | int           | 0             | Binary fluid correlation
-`energySpecOut` | int           | 0             | Energy spectra
-`enstrophySpecOut`| int           | 0             | Enstrophy spectra
+`energyOut`     | int           | 0             | System energy field
+`velCorrOut`    | int           | 0             | Velocity autocorrelation (radial function)
+`dirCorrOut`    | int           | 0             | Director autocorrelation (radial function)
+`vortCorrOut`   | int           | 0             | Vorticity autocorrelation (radial function)
+`densCorrOut`   | int           | 0             | Densty autocorrelation (radial function)
+`orderCorrOut`  | int           | 0             | Scalar order parameter autocorrelation (radial function)
+`phaseCorrOut`  | int           | 0             | Binary fluid correlation (radial function)
+`energySpecOut` | int           | 0             | Energy spectra  (radial function)
+`enstrophySpecOut`| int           | 0             | Enstrophy spectra (radial function)
 `binderOut`     | int           | 0             | Binder cumulant
 `binderBin`     | int           | 0             | Binder cumulant bin size
 `swimQOut`      | int           | 0             | Swimmer positions
 `swimOOut`      | int           | 0             | Swimmer orientations
 `swimROut`      | int           | 0             | Swimmer run/ tumble
 `synopsisOut`   | int           | 1             | Synopsis output. Highly recommended to be on. 1 = on, 0 = off
-`checkpointOut` | int           | 0             | Simulation checkpointing. Note that this just controls dump rate --- To actually turn this on, set seed to -1
+`checkpointOut` | int           | 0             | Simulation checkpointing. Unlike all other `out` tags this **will** work during the warmup stage, and will overwrite the file every time it runs. Note that this just controls dump rate --- To actually load a saved checkpoint, set `seed` to -1
 ---             | ---           | ---           | ---
 `BC`            | array(BC)     | PBCs around domain | The array of boundary objects. See the BC table for BC tags.
 ---             | ---           | ---           | ---
@@ -116,12 +136,12 @@ Tag             | Type          | Default Value | Description
 `magMomSwim`    | double        | 1             | Magnetic moment/ strength
 `fixDistSwim`   | double        | 0             | The fixed distance from the wall for DUMBELL_NEARWALL mode
 
-### Overrides
+#### Overrides
 Override Tag    | Type          | Override param| Description
 ---             | ---           | ---           | ---
 `domainWalls`   | int           | `BC`          | This override will add extra BCs to the simulation, on top of the declared ones, on the domain walls. If set to 1, it places PBCs, and if set to 0 it places solid walls. 
 
-## Species Tag Table
+### Species Tag Table
 Tag             | Type          | Default Value | Description
 ---             | ---           | ---           | ---
 `mass`          | double        | 1             | Mass of this species of particles  
@@ -138,12 +158,12 @@ Tag             | Type          | Default Value | Description
 `act`           | double        | 0.05          | Species activity
 `damp`          | double        | 0             | Damping friction to kill hydrodynamics. Between 0 and 1.
 
-### Species Overrides
+#### Species Overrides
 Override Tag    | Type          | Override param| Description
 ---             | ---           | ---           | ---
 `dens`          | double        | `pop`         | This override will set a given species population to correspond to a cell density. This sets pop to the volume of the system times this given value.
 
-## BC Tag Table
+### BC Tag Table
 
 Unlike the previous tags, if you declare a new BC object then there are some tags that MUST be declared. 
 These are noted as NECESSARY in the default value column.
@@ -180,7 +200,7 @@ Tag             | Type          | Default Value | Description
 `mass`          | double        | 1             | Mass of the wall in MPCD units. Should be the same density as the fluid if its displaceable
 `wavy`          | array(double) | [0,0,0]       | Generalized amplitudes and frequencies for wavy-walls. Must be 3D.
 
-### BC Overrides
+#### BC Overrides
 Override Tag    | Type          | Override param| Description
 ---             | ---           | ---           | ---
 `homeotropic`   | int           | `MUN`, `MUT`  | Setting this override with a value of 1 will give the wall homeotropic anchoring conditions. 
@@ -418,3 +438,29 @@ As a reminder, if you wish to use the default value for a tag, you can leave it 
     "fixDistSwim":      0
 }
 ```
+
+## Guide to Adding New Input Parameters
+Adding new parameters needs to be done within /mpcd/subroutines.read.c . 
+
+First, ensure that the parameter you wish to "write to" exists in the code somewhere: 
+This can be in the inputList struct or a global, but it needs to be accessible and passed to/ from read.c . 
+
+Parameters are read from the JSON in the method `readJson()`.
+The new parameter needs to be read **after** `initLL()` is called, but **before** `verifyJson()` is called.
+As the order of parameters is irrelevent with the JSON, you can just append the new parameter to the end of the list.
+
+The API for reading "tags" from the JSON makes use of three methods, one for varying tag types:
+- `int getJObjInt(cJSON *cJSONRoot, const char* jsonTag, int d, linkedList *head)`:
+- `double getJObjDou(cJSON *cJSONRoot, const char* jsonTag, double d, linkedList *head)`
+- `void getJObjStr(cJSON *cJSONRoot, const char* jsonTag, const char* d, char **toReturn, linkedList *head)`
+
+Each method has nearly identical parameters:
+- `cJSONRoot`: the root of the JSON object, should be `jObj`
+- `jsonTag`: the tag to search for
+- `d`: the default value to return if the tag is not found
+- `head`: the linked list to append the new parameter to, should be `jsonTagList`
+Strings work a bit differently and you need to pass a reference to where you want to store the string in arg `toReturn`.
+
+Setting up arrays is more complicated, a decent example is that of system dimensionality & size (controlled by tag `domain`).
+Arrays of custom objects, such as species or BCs, are very complicated and not recommended to be done unless you're sure about what you're doing.
+Overrides are, by definition, hacks, so how you implement them is very fast and loose.

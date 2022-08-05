@@ -38,12 +38,12 @@ double calcW( bc WALL,particleMPC P ) {
 		for( i=0; i<DIM; i++ ) {
 			terms = WALL.A[i] * ( P.Q[i]-WALL.Q[i] );
 			if( WALL.ABS ) terms=fabs(terms);
-			terms = pow( terms,WALL.P[i] );
+			terms = smrtPow( terms,WALL.P[i] );
 			W += terms;
 		}
 		terms = WALL.R;
 		if( WALL.ABS ) terms=fabs(terms);
-		terms = pow( terms,WALL.P[3] );
+		terms = smrtPow( terms,WALL.P[3] );
 		W -= terms;
 		//Check if need wavy wall complications
 		if( !feq(WALL.B[0],0.0) ) W += calcWavyW(WALL,P.Q,W);
@@ -115,7 +115,7 @@ double calcW_BC( bc movingWall,bc stillWall,int flagCentre ) {
 		if( !flagCentre ) {
 			terms = stillWall.R;
 			if( stillWall.ABS ) terms=fabs(terms);
-			terms = pow( terms,stillWall.P[3] );
+			terms = smrtPow( terms,stillWall.P[3] );
 			if( stillWall.INV ) terms *= -1.0; //because W already inverted
 			W += terms; //adds back R term
 			//subtracts the correct R terms
@@ -158,7 +158,7 @@ void crosstime( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,double t_st
 			c += WALL.A[i]*WALL.A[i]*(p.Q[i]*p.Q[i]-2.0*p.Q[i]*WALL.Q[i]+WALL.Q[i]*WALL.Q[i]);
 		}
 		b *= 2.0;
-		c -= pow(WALL.R,WALL.P[3]);
+		c -= smrtPow(WALL.R,WALL.P[3]);
 		//Use the quadratic formula
 		*tc_neg = - b - sqrt(b*b-4.0*a*c);
 		*tc_neg /= (2.0*a);
@@ -197,7 +197,7 @@ void crosstimeReverse( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,doub
 			c += WALL.A[i]*WALL.A[i]*(p.Q[i]*p.Q[i]-2.*p.Q[i]*WALL.Q[i]+WALL.Q[i]*WALL.Q[i]);
 		}
 		b *= 2.0;
-		c -= pow(WALL.R,WALL.P[3]);
+		c -= smrtPow(WALL.R,WALL.P[3]);
 		//Use the quadratic formula
 		*tc_neg = - b - sqrt(b*b-4.*a*c);
 		*tc_neg /= (2.*a);
@@ -946,7 +946,7 @@ void BC_BCcollision( bc *movingWall,bc *stillWall,double t_step,int *flag ) {
 		// //Set angular velocity
 		// norm( R,DIM );
 		// // crossprod( VT,R,movingWall->L );
-		// // for( i=0; i<_3D; i++ ) movingWall->dL[i] += (VT[i] + VR[i]) * pow(movingWall->R,1./movingWall->P);
+		// // for( i=0; i<_3D; i++ ) movingWall->dL[i] += (VT[i] + VR[i]) * smrtPow(movingWall->R,1./movingWall->P);
 		// // printf( "BCBC ang vel: " );
 		// // pvec( movingWall->dL,_3D );
 		// #ifdef DBG
@@ -1344,10 +1344,10 @@ double *normal( double *n,bc WALL,double *point,int dimension ) {
 		// All others
 		else {
 			if( WALL.ABS ) for( i=0; i<dimension; i++ ) {
-				n[i] = WALL.A[i]*WALL.A[i]*WALL.P[i]*(point[i]-WALL.Q[i]) * pow( fabs(WALL.A[i]*(point[i]-WALL.Q[i])) , WALL.P[i]-2.0 );
+				n[i] = WALL.A[i]*WALL.A[i]*WALL.P[i]*(point[i]-WALL.Q[i]) * smrtPow( fabs(WALL.A[i]*(point[i]-WALL.Q[i])) , WALL.P[i]-2.0 );
 			}
 			else for( i=0; i<dimension; i++ ) {
-				n[i] = WALL.P[i]*pow( WALL.A[i],WALL.P[i] )*pow( point[i]-WALL.Q[i],WALL.P[i]-1.0 );
+				n[i] = WALL.P[i]*smrtPow( WALL.A[i],WALL.P[i] )*smrtPow( point[i]-WALL.Q[i],WALL.P[i]-1.0 );
 			}
 		}
 
@@ -1467,24 +1467,24 @@ double *normalNon4foldSymm( double *n,bc WALL,double *point,int dimension ) {
 
 	// Calculate the derivatives in spherical/polar coordinates
 	if( WALL.ABS ) {
-		dr = (WALL.P[3]*WALL.R*WALL.R/r/r/r) * pow( fabs(WALL.R/r) , WALL.P[3]-2.0 );
-		dphi = (-0.25*m*WALL.P[0]/WALL.A[0]/WALL.A[0])*pow(sinT,2)*sinP*cosP*pow( fabs(cosP*sinT/WALL.A[0]),WALL.P[0]-2.0 );
-		dphi += (-0.25*m*WALL.P[1]/WALL.A[1]/WALL.A[1])*pow(sinT,2)*sinP*cosP*pow( fabs(sinP*sinT/WALL.A[1]),WALL.P[1]-2.0 );
+		dr = (WALL.P[3]*WALL.R*WALL.R/r/r/r) * smrtPow( fabs(WALL.R/r) , WALL.P[3]-2.0 );
+		dphi = (-0.25*m*WALL.P[0]/WALL.A[0]/WALL.A[0])*smrtPow(sinT,2)*sinP*cosP*smrtPow( fabs(cosP*sinT/WALL.A[0]),WALL.P[0]-2.0 );
+		dphi += (-0.25*m*WALL.P[1]/WALL.A[1]/WALL.A[1])*smrtPow(sinT,2)*sinP*cosP*smrtPow( fabs(sinP*sinT/WALL.A[1]),WALL.P[1]-2.0 );
 		if( dimension>_2D ) {
-			dtheta = (0.25*l*WALL.P[0]/WALL.A[0]/WALL.A[0])*sinT*cosT*pow(cosP,2)*pow( fabs(cosP*sinT/WALL.A[0]),WALL.P[0]-2.0 );
-			dtheta += (0.25*l*WALL.P[1]/WALL.A[1]/WALL.A[1])*sinT*cosT*pow(sinP,2)*pow( fabs(sinP*sinT/WALL.A[1]),WALL.P[1]-2.0 );
-			dtheta -= (0.25*l*WALL.P[2]/WALL.A[2]/WALL.A[2])*sinT*cosT*pow( fabs(cosT/WALL.A[2]),WALL.P[2]-2.0 );
+			dtheta = (0.25*l*WALL.P[0]/WALL.A[0]/WALL.A[0])*sinT*cosT*smrtPow(cosP,2)*smrtPow( fabs(cosP*sinT/WALL.A[0]),WALL.P[0]-2.0 );
+			dtheta += (0.25*l*WALL.P[1]/WALL.A[1]/WALL.A[1])*sinT*cosT*smrtPow(sinP,2)*smrtPow( fabs(sinP*sinT/WALL.A[1]),WALL.P[1]-2.0 );
+			dtheta -= (0.25*l*WALL.P[2]/WALL.A[2]/WALL.A[2])*sinT*cosT*smrtPow( fabs(cosT/WALL.A[2]),WALL.P[2]-2.0 );
 		}
 		else dtheta=0.0;
 	}
 	else {
-		dr = (WALL.P[3]/r) * pow( WALL.R/r , WALL.P[3] );
-		dphi = (-0.25*m*WALL.P[0]/WALL.A[0]) * pow( sinT,WALL.P[0] ) * sinP * pow( cosP/WALL.A[0],WALL.P[0]-1.0 );
-		dphi += (0.25*m*WALL.P[1]/WALL.A[1]) * pow( sinT,WALL.P[1] ) * cosP * pow( sinP/WALL.A[1],WALL.P[1]-1.0 );
+		dr = (WALL.P[3]/r) * smrtPow( WALL.R/r , WALL.P[3] );
+		dphi = (-0.25*m*WALL.P[0]/WALL.A[0]) * smrtPow( sinT,WALL.P[0] ) * sinP * smrtPow( cosP/WALL.A[0],WALL.P[0]-1.0 );
+		dphi += (0.25*m*WALL.P[1]/WALL.A[1]) * smrtPow( sinT,WALL.P[1] ) * cosP * smrtPow( sinP/WALL.A[1],WALL.P[1]-1.0 );
 		if( dimension>_2D ) {
-			dtheta = (0.25*l*WALL.P[0]/WALL.A[0]) * pow( cosP,WALL.P[0] ) * cosT * pow( sinT/WALL.A[0],WALL.P[0]-1.0 );
-			dtheta += (0.25*l*WALL.P[1]/WALL.A[1]) * pow( sinP,WALL.P[1] ) * cosT * pow( sinT/WALL.A[1],WALL.P[1]-1.0 );
-			dtheta -= (0.25*l*WALL.P[2]/WALL.A[2]) * sinT * pow( cosT/WALL.A[2],WALL.P[2]-1.0 );
+			dtheta = (0.25*l*WALL.P[0]/WALL.A[0]) * smrtPow( cosP,WALL.P[0] ) * cosT * smrtPow( sinT/WALL.A[0],WALL.P[0]-1.0 );
+			dtheta += (0.25*l*WALL.P[1]/WALL.A[1]) * smrtPow( sinP,WALL.P[1] ) * cosT * smrtPow( sinT/WALL.A[1],WALL.P[1]-1.0 );
+			dtheta -= (0.25*l*WALL.P[2]/WALL.A[2]) * sinT * smrtPow( cosT/WALL.A[2],WALL.P[2]-1.0 );
 		}
 		else dtheta=0.0;
 	}

@@ -260,7 +260,7 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 
 	inv_DIM=1.0/(float)DIM;
 	inv_nDNST = 1.0/nDNST;
-	M = nDNST / (nDNST -1.0 + pow( e,-1.0*nDNST ) );
+	M = nDNST / (nDNST -1.0 + smrtPow( e,-1.0*nDNST ) );
 	//Calculate mean free path
 	*MFP = dt * sqrt( KBT/avMASS );
 	//Calculate the speed of sound
@@ -297,31 +297,31 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==NOHI_ARBAXIS || RTECH==MPCAT || RTECH==NOHI_MPCAT || RTECH==LANG) {
 		//All of the versions without angular-momentum conservation have the same form
 		CM=B/M;
-		VISCKIN=nDNST*KBT*dt*pow(a,-DIM)*( 1.0/CM-0.5 );
+		VISCKIN=nDNST*KBT*dt*smrtPow(a,-DIM)*( 1.0/CM-0.5 );
 	}
 	else if(RTECH==RAT || RTECH==RLANG) {
 		//All of the versions with angular-momentum conservation have the same form
 		CM=B*(1.0-exp(-nDNST)*(1.0+nDNST)) + (A+inv_DIM*B)*nDNST*exp(-nDNST)/(float)(DIM+2.0);
 		CM+=0.5*(A*DIM-0.5*B*(3.0*DIM+2.0))*(1.0-exp(-nDNST)*(1.0+nDNST+0.5*nDNST*nDNST))/nDNST;
-		VISCKIN=nDNST*KBT*dt*pow(a,-DIM)*( 1.0/CM-0.5 );
+		VISCKIN=nDNST*KBT*dt*smrtPow(a,-DIM)*( 1.0/CM-0.5 );
 	}
 	else {
 		//Approximate with only the scaling result
-		VISCKIN=nDNST*KBT*dt*pow(a,-DIM);
+		VISCKIN=nDNST*KBT*dt*smrtPow(a,-DIM);
 	}
 
 	//Collisional part of viscosity
 	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==NOHI_ARBAXIS || RTECH==MPCAT || RTECH==NOHI_MPCAT || RTECH==LANG) {
 		//All of the versions without angular-momentum conservation have the same form
-		VISCCOL=(A*nDNST/M)*avMASS/(12.0*dt*pow(a,DIM-2));
+		VISCCOL=(A*nDNST/M)*avMASS/(12.0*dt*smrtPow(a,DIM-2));
 	}
 	else if(RTECH==RAT || RTECH==RLANG) {
 		//All of the versions with angular-momentum conservation have the same form
-		VISCCOL=(A*avMASS)/(24.0*dt*pow(a,DIM-2))*( nDNST-7.0/5.0+exp(-nDNST)*(7.0/5.0+2.0*nDNST/5.0+(inv_DIM-0.3)*nDNST*nDNST) );
+		VISCCOL=(A*avMASS)/(24.0*dt*smrtPow(a,DIM-2))*( nDNST-7.0/5.0+exp(-nDNST)*(7.0/5.0+2.0*nDNST/5.0+(inv_DIM-0.3)*nDNST*nDNST) );
 	}
 	else {
 		//Approximate with only the scaling result
-		VISCCOL=avMASS/(dt*pow(a,DIM-2));
+		VISCCOL=avMASS/(dt*smrtPow(a,DIM-2));
 	}
 	//Total viscosity
 	*VISC=VISCKIN+VISCCOL;
@@ -363,10 +363,10 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 		}
 		THERMDCOL = (1./(12.*(DIM+2.)*dt)) * ((nDNST)-0.555555*nDNST*nDNST) * (1.-cos(RA));
 		if( THERMDCOL <= 0. ){
-			THERMDCOL = 1. + pow( e,-nDNST ) * ( log( nDNST )-1. ) ;
+			THERMDCOL = 1. + smrtPow( e,-nDNST ) * ( log( nDNST )-1. ) ;
 			THERMDCOL -= inv_nDNST;
-			THERMDCOL -= pow( inv_nDNST,2. );
-			THERMDCOL -= 2. * pow( inv_nDNST,3. );
+			THERMDCOL -= smrtPow( inv_nDNST,2. );
+			THERMDCOL -= 2. * smrtPow( inv_nDNST,3. );
 			THERMDCOL *= (inv_nDNST) / (3.*(DIM+2.)*dt);
 			THERMDCOL *= (1.-cos(RA));
 		}
@@ -659,6 +659,16 @@ void orient( double U[],int PL ) {
 		genrand_coneNP( U,pi,2 );
 		U[2]=U[0];
 		U[0]=0.0;
+	}
+	else if( PL==ALIGNTR ) {
+		// Orientation points from the origin to the top right corner (furthest point)
+		// of the system size, with unit size
+
+		double L2 = 0.0;
+		for( d=0; d<DIM; d++ ) L2 += XYZ[d]*XYZ[d];
+		L2 = sqrt(L2);
+
+		for( d=0; d<DIM; d++ ) U[d] = XYZ[d]/L2;
 	}
 	else{
 		printf( "Error: Particle orientation distribution unacceptable.\n" );

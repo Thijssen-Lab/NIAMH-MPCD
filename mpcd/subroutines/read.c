@@ -594,7 +594,7 @@ void readbc( char fpath[],bc **WALL ) {
 	for( i=0; i<NBC; i++ ) setPBC( (*WALL+i) );
 	fclose( fbc );
 }
-void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL,int *MDmode,bc **WALL,outputFlagsList *out,int *runtime,int *warmtime,kinTheory *theory,double *AVVEL, double *AVS,double avDIR[_3D],double *S4,double *stdN,double *KBTNOW,double AVV[_3D],double AVNOW[_3D] ) {
+void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL,int *MDmode,bc **WALL,outputFlagsList *out,int *runtime,int *warmtime,kinTheory *theory,double *AVVEL, double *AVS,double avDIR[_3D],double *S4,double *stdN,double *KBTNOW,double AVV[_3D],double AVNOW[_3D],specSwimmer *specS,swimmer **sw ) {
 /*
    By reading in the addresses of the variables as
    pointers this function sets the values to what
@@ -611,24 +611,24 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 		printf( "Error:\tFile '%s' could not be opened.\n",STR );
 		exit( 1 );
 	}
+	if(fscanf( finput,"%d",&(in->simSteps) ));		//Read time
+	else printf("Warning: Failed to sim read time.\n");
+	if(fscanf( finput,"%d %lf",&(in->warmupSteps),&(in->dt) ));		//Read time
+	else printf("Warning: Failed to read time.\n");
 
+	if(fscanf( finput,"%ld",&(in->seed) ));	//Read the random seed (0 if read from time)
+	else printf("Warning: Failed to read random seed.\n");
 	if(fscanf( finput,"%d %d %d %d %lf %lf",&DIM,&XYZ[0],&XYZ[1],&XYZ[2],&(in->KBT),KBTNOW ));
 	else printf("Warning: Failed to read dimensionality, size or temperature.\n");
 	for(i=0; i<_3D; i++ ) XYZ_P1[i] = XYZ[i]+1;
-	if(fscanf( finput,"%d %d %d %d %d",&(in->RFRAME),&(in->zeroNetMom),&(in->TSTECH),&(in->RTECH),&(in->LC) ));
+	if(fscanf( finput,"%d %d %d %d %d %d",&(in->RFRAME),&(in->zeroNetMom),&(in->GALINV),&(in->TSTECH),&(in->RTECH),&(in->LC) ));
 	else printf("Warning: Failed to Galilean transform, rest frame, thermostat mode, collision mode or liquid crystal mode.\n");
 	if(fscanf( finput,"%lf %lf %lf %lf",&(in->TAU),&(in->RA),&(in->FRICCO),&(in->MFPOT) ));		//Read the thermal relaxation time scale
 	else printf("Warning: Failed to read relaxation time, rotation angle, friction coefficient or mean-field potential.\n");
-
 	if(fscanf( finput,"%lf %lf %lf",&(in->GRAV[0]),&(in->GRAV[1]),&(in->GRAV[2]) ));	//Read the constant external acceleration
 	else printf("Warning: Failed to read acceleration.\n");
 	if(fscanf( finput,"%lf %lf %lf",&(in->MAG[0]),&(in->MAG[1]),&(in->MAG[2]) ));	//Read the constant external magnetic field
 	else printf("Warning: Failed to read magnetic field.\n");
-
-	if(fscanf( finput,"%d %d %lf",&(in->warmupSteps),&(in->simSteps),&(in->dt) ));		//Read time
-	else printf("Warning: Failed to read time.\n");
-	if(fscanf( finput,"%ld",&(in->seed) ));	//Read the random seed (0 if read from time)
-	else printf("Warning: Failed to read random seed.\n");
 
 	if(fscanf( finput,"%d %d",MDmode,&(in->stepsMD) ));	//Read the MD coupling mode
 	else printf("Warning: Failed to read MD coupling.\n");
@@ -637,17 +637,21 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 
 	if(fscanf( finput,"%d %d %lf %lf %d %d",runtime,warmtime,&(in->C),&(in->S),&(in->GRAV_FLAG),&(in->MAG_FLAG) ));//Read program variables
 	else printf("Warning: Failed to read various program variables.\n");
-	if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&(theory->MFP), &(theory->VISC), &(theory->THERMD), &(theory->SDIFF), &(theory->sumM), AVVEL, AVS, &avDIR[0], &avDIR[1], &avDIR[2], S4, stdN, &nDNST, &mDNST ));//Read program variables
+	if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&(theory->MFP), &(theory->VISC), &(theory->THERMD), &(theory->SDIFF), &(theory->SPEEDOFSOUND), &(theory->sumM), AVVEL, AVS, &avDIR[0], &avDIR[1], &avDIR[2], S4, stdN, &nDNST, &mDNST ));//Read program variables
 	else printf("Warning: Failed to read various program variables.\n");
 	if(fscanf( finput,"%lf %lf %lf %lf %lf %lf",&AVV[0], &AVV[1], &AVV[2], &AVNOW[0], &AVNOW[1], &AVNOW[2] ));//Read program variables
 	else printf("Warning: Failed to read average velocities.\n");
 
 	//Read output
-	if(fscanf( finput,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",&DBUG, &(out->TRAJOUT), &(out->printSP), &(out->COAROUT), &(out->FLOWOUT), &(out->AVVELOUT), &(out->ORDEROUT), &(out->QTENSOUT), &(out->QKOUT), &(out->AVSOUT), &(out->SOLOUT), &(out->ENOUT), &(out->ENFIELDOUT), &(out->ENNEIGHBOURS), &(out->ENSTROPHYOUT), &(out->DENSOUT), &(out->CVVOUT), &(out->CNNOUT), &(out->CWWOUT), &(out->CDDOUT), &(out->CSSOUT), &(out->CPPOUT), &(out->BINDER), &(out->BINDERBIN), &(out->SYNOUT), &(out->CHCKPNT) ));
+	if(fscanf( finput,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",&DBUG, &(out->TRAJOUT), &(out->printSP), &(out->COAROUT), &(out->FLOWOUT), &(out->AVVELOUT), &(out->ORDEROUT), &(out->QTENSOUT), &(out->QKOUT), &(out->AVSOUT), &(out->SOLOUT), &(out->ENOUT), &(out->ENFIELDOUT), &(out->ENNEIGHBOURS), &(out->ENSTROPHYOUT), &(out->DENSOUT), &(out->CVVOUT), &(out->CNNOUT), &(out->CWWOUT), &(out->CDDOUT), &(out->CSSOUT), &(out->CPPOUT), &(out->BINDER), &(out->BINDERBIN), &(out->SYNOUT), &(out->CHCKPNT), &(out->CHCKPNTrcvr) ));
+	else printf("Warning: Failed to read output.\n");
+	if(fscanf( finput,"%d %d",&(out->SPOUT), &(out->PRESOUT) ));
 	else printf("Warning: Failed to read output.\n");
 	if(fscanf( finput,"%d %d %d %d %d %d %d",&(out->HISTVELOUT), &(out->HISTSPEEDOUT), &(out->HISTVORTOUT), &(out->HISTENSTROUT), &(out->HISTDIROUT), &(out->HISTSOUT), &(out->HISTNOUT) ));
 	else printf("Warning: Failed to read histogram output.\n");
 	if(fscanf( finput,"%d %d %d",&(out->ENERGYSPECTOUT), &(out->ENSTROPHYSPECTOUT), &(out->DEFECTOUT) ));
+	else printf("Warning: Failed to read histogram output.\n");
+	if(fscanf( finput,"%d %d %d",&(out->SWOUT), &(out->SWORIOUT), &(out->RTOUT) ));
 	else printf("Warning: Failed to read histogram output.\n");
 
 	//Allocate the needed amount of memory for the species SP
@@ -685,15 +689,19 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 	if(fscanf( finput,"%d",&NBC ));		//Read the number of BCs
 	else printf("Warning: Failed to read number of BCs.\n");
 	for( i=0; i<NBC; i++ ) {
-		if(fscanf( finput,"%d %d %lf %lf %lf %lf %lf %lf %lf",&((*WALL+i)->COLL_TYPE), &((*WALL+i)->PHANTOM), &((*WALL+i)->E), &((*WALL+i)->Q[0]), &((*WALL+i)->Q[1]), &((*WALL+i)->Q[2]), &((*WALL+i)->V[0]), &((*WALL+i)->V[1]), &((*WALL+i)->V[2]) ));
+		if(fscanf( finput,"%d %d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&((*WALL+i)->COLL_TYPE), &((*WALL+i)->PHANTOM), &((*WALL+i)->E), &((*WALL+i)->Q[0]), &((*WALL+i)->Q[1]), &((*WALL+i)->Q[2]), &((*WALL+i)->V[0]), &((*WALL+i)->V[1]), &((*WALL+i)->V[2]), &((*WALL+i)->O[0]), &((*WALL+i)->O[1]), &((*WALL+i)->O[2]) ));
 		else printf("Warning: Failed to read BC %d.\n",i);
-		if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &((*WALL+i)->L[0]), &((*WALL+i)->L[1]), &((*WALL+i)->L[2]), &((*WALL+i)->G[0]), &((*WALL+i)->G[1]), &((*WALL+i)->G[2]), &((*WALL+i)->A[0]), &((*WALL+i)->A[1]), &((*WALL+i)->A[2]),&((*WALL+i)->P[0]),&((*WALL+i)->P[1]),&((*WALL+i)->P[2]),&((*WALL+i)->P[3]), &((*WALL+i)->R) ));
+		if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &((*WALL+i)->L[0]), &((*WALL+i)->L[1]), &((*WALL+i)->L[2]), &((*WALL+i)->G[0]), &((*WALL+i)->G[1]), &((*WALL+i)->G[2]), &((*WALL+i)->A[0]), &((*WALL+i)->A[1]), &((*WALL+i)->A[2]), &((*WALL+i)->AINV[0]), &((*WALL+i)->AINV[1]), &((*WALL+i)->AINV[2]), &((*WALL+i)->P[0]),&((*WALL+i)->P[1]),&((*WALL+i)->P[2]),&((*WALL+i)->P[3]), &((*WALL+i)->R) ));
 		else printf("Warning: Failed to read BC %d.\n",i);
 		if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &((*WALL+i)->DN), &((*WALL+i)->DT), &((*WALL+i)->DVN), &((*WALL+i)->DVT), &((*WALL+i)->DVxyz[0]), &((*WALL+i)->DVxyz[1]), &((*WALL+i)->DVxyz[2]), &((*WALL+i)->MVN), &((*WALL+i)->MVT), &((*WALL+i)->MUN), &((*WALL+i)->MUT), &((*WALL+i)->MUxyz[0]), &((*WALL+i)->MUxyz[1]), &((*WALL+i)->MUxyz[2]) ));
 		else printf("Warning: Failed to read BC %d.\n",i);
 		if(fscanf( finput,"%lf %lf %lf %lf %d %d %lf", &((*WALL+i)->DUxyz[0]), &((*WALL+i)->DUxyz[1]), &((*WALL+i)->DUxyz[2]), &((*WALL+i)->KBT), &((*WALL+i)->DSPLC), &((*WALL+i)->INV), &((*WALL+i)->MASS) ));
 		else printf("Warning: Failed to read BC %d.\n",i);
-		if(fscanf( finput,"%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &((*WALL+i)->PLANAR), &((*WALL+i)->W), &((*WALL+i)->VOL), &((*WALL+i)->Q_old[0]), &((*WALL+i)->Q_old[1]), &((*WALL+i)->Q_old[2]), &((*WALL+i)->I[0][0]), &((*WALL+i)->I[0][1]), &((*WALL+i)->I[0][2]), &((*WALL+i)->I[1][0]), &((*WALL+i)->I[1][1]), &((*WALL+i)->I[1][2]), &((*WALL+i)->I[2][0]), &((*WALL+i)->I[2][1]), &((*WALL+i)->I[2][2]) ));
+		if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &((*WALL+i)->W), &((*WALL+i)->VOL), &((*WALL+i)->Q_old[0]), &((*WALL+i)->Q_old[1]), &((*WALL+i)->Q_old[2]), &((*WALL+i)->O_old[0]), &((*WALL+i)->O_old[1]), &((*WALL+i)->O_old[2]), &((*WALL+i)->I[0][0]), &((*WALL+i)->I[0][1]), &((*WALL+i)->I[0][2]), &((*WALL+i)->I[1][0]), &((*WALL+i)->I[1][1]), &((*WALL+i)->I[1][2]), &((*WALL+i)->I[2][0]), &((*WALL+i)->I[2][1]), &((*WALL+i)->I[2][2]) ));
+		else printf("Warning: Failed to read BC %d.\n",i);
+		if(fscanf( finput,"%d %d %d %lf %lf", &((*WALL+i)->PLANAR), &((*WALL+i)->REORIENT), &((*WALL+i)->ABS), &((*WALL+i)->ROTSYMM[0]), &((*WALL+i)->ROTSYMM[1]) ));
+		else printf("Warning: Failed to read BC %d.\n",i);
+		if(fscanf( finput,"%lf %lf %lf %lf %lf %lf", &((*WALL+i)->dV[0]), &((*WALL+i)->dV[1]), &((*WALL+i)->dV[2]), &((*WALL+i)->dL[0]), &((*WALL+i)->dL[1]), &((*WALL+i)->dL[2]) ));
 		else printf("Warning: Failed to read BC %d.\n",i);
 	}
 
@@ -701,6 +709,24 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 	for( i=0; i<GPOP; i++ ) {
 		if(fscanf( finput,"%d %d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n",&((*pSRD+i)->S_flag), &((*pSRD+i)->SPID), &((*pSRD+i)->q), &((*pSRD+i)->Q[0]), &((*pSRD+i)->Q[1]), &((*pSRD+i)->Q[2]), &((*pSRD+i)->V[0]), &((*pSRD+i)->V[1]), &((*pSRD+i)->V[2]), &((*pSRD+i)->U[0]), &((*pSRD+i)->U[1]), &((*pSRD+i)->U[2]), &((*pSRD+i)->T[0]), &((*pSRD+i)->T[1]), &((*pSRD+i)->T[2]) ));
 		else printf("Warning: Failed to read MPCD particle %d.\n",i);
+	}
+
+	//Swimmers 
+	if(fscanf( finput,"%d %d %d %d %d %d %lf %lf %d %d",&NS, &(specS->TYPE), &(specS->QDIST), &(specS->ODIST), &(specS->headM), &(specS->middM), &(specS->iheadM), &(specS->imiddM), &(specS->HSPid), &(specS->MSPid) ));
+	else printf("Warning: Failed to read swimmer-type variables.\n");
+	if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %d %lf", &(specS->FS), &(specS->TS), &(specS->DS), &(specS->sizeShrink), &(specS->springShrink), &(specS->fixDist), &(specS->k), &(specS->ro), &(specS->iro), &(specS->sig), &(specS->isig), &(specS->eps), &(specS->runTime), &(specS->tumbleTime), &(specS->shrinkTime), &(specS->MAGMOM) ));
+	else printf("Warning: Failed to read swimmer-type variables.\n");
+
+	//Allocate the memory for the swimmers
+	(*sw) = (swimmer*) malloc( NS * sizeof( swimmer ) );
+
+	for( i=0; i<NS; i++ ) {
+		if(fscanf( finput,"%d %lf %lf %lf %d %d %lf %lf %lf %lf %lf\n", &((*sw+i)->RT), &((*sw+i)->n0[0]), &((*sw+i)->n0[1]), &((*sw+i)->n0[2]), &((*sw+i)->timeCNT), &((*sw+i)->timeRND), &((*sw+i)->ro), &((*sw+i)->iro), &((*sw+i)->sig), &((*sw+i)->isig), &((*sw+i)->k) ));
+		else printf("Warning: Failed to read swimmer %d.\n",i);
+		if(fscanf( finput,"%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", &((*sw+i)->H.HorM), &((*sw+i)->H.Q[0]), &((*sw+i)->H.Q[1]), &((*sw+i)->H.Q[2]), &((*sw+i)->H.V[0]), &((*sw+i)->H.V[1]), &((*sw+i)->H.V[2]), &((*sw+i)->H.A[0]), &((*sw+i)->H.A[1]), &((*sw+i)->H.A[2]) ));
+		else printf("Warning: Failed to read swimmer %d.\n",i);
+		if(fscanf( finput,"%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", &((*sw+i)->M.HorM), &((*sw+i)->M.Q[0]), &((*sw+i)->M.Q[1]), &((*sw+i)->M.Q[2]), &((*sw+i)->M.V[0]), &((*sw+i)->M.V[1]), &((*sw+i)->M.V[2]), &((*sw+i)->M.A[0]), &((*sw+i)->M.A[1]), &((*sw+i)->M.A[2]) ));
+		else printf("Warning: Failed to read swimmer %d.\n",i);
 	}
 
 	fclose( finput );
@@ -744,11 +770,16 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 				case 'v':
 					printVersionSummary( );
 				case 'h':
-					printf("\nMPCv090\n");
-					printf("For the Polymer Physics Research Group\n");
-					printf("At the University of Ottawa\n");
-					printf("by Tyler Shendruk\n\nUsage:\n");
-					printf("\t-i\t[path to input files]\t\tdefault='mpcd/data/'\n\t-o\t[path to output data files]\tdefault='mpcd/data/'\n\t-v\tprint version summary\n\t-h\t[this help menu]\n\n");
+					printf("\nMulti-Particle Collision Dynamics\n");
+					printf("Shendruk Lab, University of Edinburgh\n");
+					printf("Originally by Tyler Shendruk\n");
+					printf("for the Polymer Physics Research Group, University of Ottawa\n");
+					printf("\nUsage:\n");
+					printf("\t-i\t[path to JSON input file]\t\t\tdefault=`mpcd/data/input.json`\n");
+					printf("\t-o\t[path to output file directory]\t\t\tdefault=`mpcd/data/`\n");
+					printf("\t-Li\t(legacy) [path to input file directory]\t\tdefault=`mpcd/data/`\n");
+					printf("\t-v\t(legacy) print version summary\n");
+					printf("\t-h\tprint this help menu\n");
 					exit(EXIT_SUCCESS);
 					break;
 				default:
