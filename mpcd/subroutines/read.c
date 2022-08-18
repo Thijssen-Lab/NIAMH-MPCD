@@ -1015,6 +1015,8 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			(*SP+i)->CHIA = 0.001; // chiA
 			(*SP+i)->ACT = 0.05; // act
 			(*SP+i)->SIGWIDTH = 1; // sigwidth
+			(*SP+i)->SIGPOS = 1; // sigpos
+			(*SP+i)->MINACTRATIO = 0.0; // minActRatio
 			(*SP+i)->DAMP = 0; // damp
 		}
 	}
