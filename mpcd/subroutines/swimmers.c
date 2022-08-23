@@ -168,7 +168,7 @@ void setswimmers( specSwimmer *SS,swimmer *swimmers,bc WALL[],int stepsMD,double
 	  		}
 				// orient() should produce the correct direction to do all ODIST options
 	  		if( SS->ODIST == RANDORIENT ) {
-	  			orient( U,SS->ODIST );
+	  			orient( U,(swimmers+i)->H.Q,SS->ODIST );
 	  			for( d=0; d<DIM; d++ ) {
 	  				(swimmers+i)->M.Q[d] = (swimmers+i)->H.Q[d] - 0.49*SS->ro*U[d];
 	  				(swimmers+i)->H.Q[d] = (swimmers+i)->H.Q[d] + 0.49*SS->ro*U[d];

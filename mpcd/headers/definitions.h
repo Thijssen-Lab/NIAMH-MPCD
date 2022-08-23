@@ -128,6 +128,8 @@
 # define PLANEX 7
 //Align all particles in the direction of origin towards positive right hand corner of any cartesian plane
 # define ALIGNTR 8
+//Align all particles in the direction of two oppositely charged defects
+# define ALIGNDEFECTPAIR 9
 
 //Lower cutoff for MC method to generate new orientations from Maier-Saupe
 # define BUSMIN 0.5
