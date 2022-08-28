@@ -2660,7 +2660,7 @@ particleMD *GrowRodChain (simptr sim, int type, int layout, int n, particleMD *p
 			pNew->wz = sim->box[z_]*0.5;
 			pNew->x0 = sim->box[x_]*0.5 - n/2;
 			pNew->y0 = sim->box[y_]*0.5;
-			pNew->y0 = sim->box[z_]*0.5;
+			pNew->z0 = sim->box[z_]*0.5;
 		}
 
 		// continue growing (recursively), and remove candidate if stunted growth
@@ -2785,7 +2785,7 @@ particleMD *GrowUChain (simptr sim, int type, int layout, int n, particleMD *p0,
 				pNew->rx = sim->box[x_]*0.5 - (n+1)*0.25*sim->r0Fene/1.5; // n can be used as this is always the first iteration with highest n
 				pNew->ry = sim->box[y_]*0.5 + sim->r0Fene/3.0;
 				pNew->rz = sim->box[z_]*0.5;
-				pNew->wx = sim->box[x_]*0.5 - n*0.25*sim->r0Fene/1.5;
+				pNew->wx = sim->box[x_]*0.5 - (n+1)*0.25*sim->r0Fene/1.5;
 				pNew->wy = sim->box[y_]*0.5 + sim->r0Fene/3.0;
 				pNew->wz = sim->box[z_]*0.5;
 				pNew->x0 = sim->box[x_]*0.5 - (n+1)*0.25*sim->r0Fene/1.5;
