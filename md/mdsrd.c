@@ -2032,9 +2032,9 @@ real bendHarmonic (particleMD *p1, particleMD *p2, particleMD *p3,
 		dcz1=k*ir12*( dz23*ir23 - c*dz12*ir12 );
 
 		// last
-		dcx3=k*ir23*( c*dx23*ir23 - dx23*ir12 );
-		dcy3=k*ir23*( c*dy23*ir23 - dy23*ir12 );
-		dcz3=k*ir23*( c*dz23*ir23 - dz23*ir12 );
+		dcx3=k*ir23*( c*dx23*ir23 - dx12*ir12 );
+		dcy3=k*ir23*( c*dy23*ir23 - dy12*ir12 );
+		dcz3=k*ir23*( c*dz23*ir23 - dz12*ir12 );
 
 		if (bendStyle==0) { //angular harmonic
 			// computes 1/sinc(theta)
