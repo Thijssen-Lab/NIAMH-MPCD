@@ -1481,7 +1481,7 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
     Notice that all of this must be entirely in 3D even if system is 2D since angular momentum is perpendicular
 */
 	int i,j,id;
-	double M,MASS,ACT,pmOne;
+	double M,MASS,ACT,pmOne,sigWidth,sigPos;
 	double RV[CL->POP][_3D];	//Random velocities
 	double RS[_3D];			//Sum of random velocities
 	double DV[CL->POP][_3D];	//Damping velocities
@@ -1534,17 +1534,39 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 	for( i=0; i<DIM; i++ ) PLANE.Q[i] = CL->CM[i];
 
 	MASS=CL->MASS;
-	//Calculate total activity of cell
+	//Calculate total activity and the average sigmoidal width of cell
 	tmpc = CL->pp;
 	ACT=0.;
+	sigWidth=0.;
+	sigPos=0.;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
-		ACT += (double)(SP+id)->ACT;
+
+		// do a check to see if the subpopulation is of sufficient quantity to compute activity
+		if ( ((double)(SP+id)->MINACTRATIO == 0.0) || (((double)(SP+id)->MINACTRATIO)*nDNST < (double)CL->SP[id]) ) {
+			ACT += (double)(SP+id)->ACT / (double)(SP+id)->MASS;
+			sigWidth += (double)(SP+id)->SIGWIDTH;
+			sigPos += (double)(SP+id)->SIGPOS;
+		}
 		tmpc = tmpc->next;
 	}
 	//If DIPOLE_DIR_SUM then use the sum just calculated
-	//If DIPOLE_DIR_AV then use the average value everywhere
-	if( RTECH==DIPOLE_DIR_AV ) ACT *= nDNST/((double)CL->POP);
+	//If DIPOLE_DIR_AV or DIPOLE_DIR_SIG then use the average value everywhere
+	if( RTECH==DIPOLE_DIR_AV || RTECH==DIPOLE_DIR_SIG) ACT *= nDNST/((double)CL->POP);
+
+	// Now, if using sigmoidal dipole set up a sigmoidal falloff based on the cell population
+	if (RTECH==DIPOLE_DIR_SIG || RTECH==DIPOLE_DIR_SIG_SUM) {
+		// compute average within cell by normalising with cell population
+		sigWidth /= (double)CL->POP; 
+		sigPos /= (double)CL->POP; 
+
+		// compute the sigmoidal falloff function
+		double falloffFactor = (1 - tanh( ((double)CL->POP  - nDNST * (1 + sigPos) ) / (nDNST * sigWidth) ) );
+		double rescaleFactor = 2;
+
+		// rescale the activity
+		ACT *= falloffFactor / rescaleFactor;
+	}
 
 	// Scale activity by the timestep size to remove timestep dependence
 	ACT *= dt;

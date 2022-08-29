@@ -656,7 +656,7 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 	//Allocate the needed amount of memory for the species SP
 	(*SP) = (spec*) malloc( NSPECI * sizeof( spec ) );
 	for( i=0; i<NSPECI; i++ ) {
-		if(fscanf( finput,"%lf %i %i %i %i %lf %lf %lf %lf %lf %lf %lf",&((*SP+i)->MASS), &((*SP+i)->POP), &((*SP+i)->QDIST), &((*SP+i)->VDIST), &((*SP+i)->ODIST), &((*SP+i)->RFC), &((*SP+i)->LEN), &((*SP+i)->TUMBLE), &((*SP+i)->CHIHI), &((*SP+i)->CHIA), &((*SP+i)->ACT), &((*SP+i)->DAMP) ));	//Read the species' mass
+		if(fscanf( finput,"%lf %i %i %i %i %lf %lf %lf %lf %lf %lf %lf %lf %lf",&((*SP+i)->MASS), &((*SP+i)->POP), &((*SP+i)->QDIST), &((*SP+i)->VDIST), &((*SP+i)->ODIST), &((*SP+i)->RFC), &((*SP+i)->LEN), &((*SP+i)->TUMBLE), &((*SP+i)->CHIHI), &((*SP+i)->CHIA), &((*SP+i)->ACT), &((*SP+i)->SIGWIDTH), &((*SP+i)->SIGPOS), &((*SP+i)->DAMP) ));	//Read the species' mass
 		else printf("Warning: Failed to read species %i.\n",i);
 		for( j=0; j<NSPECI; j++ ) {
 			//Read the species' interaction matrix with other species
@@ -1013,6 +1013,14 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			(*SP+i)->CHIHI = getJObjDou(objElem, "shearSusc", 0.5, jsonTagList); // chiHi
 			(*SP+i)->CHIA = getJObjDou(objElem, "magnSusc", 0.001, jsonTagList); // chiA
 			(*SP+i)->ACT = getJObjDou(objElem, "act", 0.05, jsonTagList); // act
+			(*SP+i)->SIGWIDTH = getJObjDou(objElem, "sigWidth", 1, jsonTagList); // sigWidth
+			// error check, is SIGWIDTH 0?
+			if ((*SP+i)->SIGWIDTH == 0) {
+				printf("Error: SIGWIDTH cannot be 0.\n");
+				exit(EXIT_FAILURE);
+			}
+			(*SP+i)->SIGPOS = getJObjDou(objElem, "sigPos", (*SP+i)->SIGWIDTH, jsonTagList); // sigPos
+			(*SP+i)->MINACTRATIO = getJObjDou(objElem, "minActRatio", 0.0, jsonTagList); // minActRatio
 			(*SP+i)->DAMP = getJObjDou(objElem, "damp", 0.0, jsonTagList); // damp
 		}
 	} else { // if nothing found in the JSON then fallback to the default
@@ -1037,6 +1045,9 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			(*SP+i)->CHIHI = 0.5; // chiHi
 			(*SP+i)->CHIA = 0.001; // chiA
 			(*SP+i)->ACT = 0.05; // act
+			(*SP+i)->SIGWIDTH = 1; // sigwidth
+			(*SP+i)->SIGPOS = 1; // sigpos
+			(*SP+i)->MINACTRATIO = 0.0; // minActRatio
 			(*SP+i)->DAMP = 0; // damp
 		}
 	}
