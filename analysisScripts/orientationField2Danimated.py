@@ -27,6 +27,7 @@ print( "Arguments:" )
 for arg in sys.argv:
 	print( "\t" + arg )
 
+
 dataName = sys.argv[1]		# Name of the data
 xyzSize[0] = int(sys.argv[2])	# System size
 xyzSize[1] = int(sys.argv[3])	# System size
