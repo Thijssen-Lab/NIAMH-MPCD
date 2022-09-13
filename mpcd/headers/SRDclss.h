@@ -213,7 +213,7 @@ typedef struct outputFilesList {
 	FILE *fcorrVV,*fcorrNN,*fcorrWW,*fcorrDD,*fcorrSS,*fcorrPP,*fbinder;
 	FILE *fhistVel,*fhistSpeed,*fhistVort,*fhistEnstr,*fhistDir,*fhistS,*fhistDens;
 	FILE *fenergyspect,*fenstrophyspect;
-	FILE *fdefects;
+	FILE *ftopo,*fdefects,*fdisclination;
 	FILE *fdetail[MAXSPECI];
 	FILE *fsolids[MAXBC];
 	FILE *fswimmers,*fswimmersOri,*fruntumble;
@@ -225,7 +225,7 @@ typedef struct outputFlagsList {
 	int FLOWOUT;				//Flag for if the flow field is outputted
 	int HISTVELOUT,HISTSPEEDOUT,HISTVORTOUT,HISTENSTROUT,HISTDIROUT,HISTSOUT,HISTNOUT;	//Flag for if distributions are outputted
 	int ENERGYSPECTOUT,ENSTROPHYSPECTOUT;	//Flag for if energy and enstrophy spectra are outputted
-	int DEFECTOUT;			//Flag for if defect positions are outputted
+	int TOPOOUT,DEFECTOUT,DISCLINOUT;	//Flag for if topological charge field, defect position list and disclination tensor field are outputted
 	int ENOUT;					//Flag for if system energy is outputted
 	int ENFIELDOUT,ENNEIGHBOURS;	//Flag for if orientational energy as a function of position is outputted
 	int SPOUT;					//Flag for if the colour/phi/species-type field is outputted

@@ -292,8 +292,14 @@ void readpc( char fpath[],outputFlagsList *out ) {
 	read=fscanf( finput,"%d %s",&(out->SOLOUT),STR );
 	checkRead( read,"solid trajectory",inSTR);
 	//Read how often the topological charge field data is outputted
-	read=fscanf( finput,"%d %s",&(out->DEFECTOUT),STR );
+	read=fscanf( finput,"%d %s",&(out->TOPOOUT),STR );
 	checkRead( read,"topological charge field",inSTR);
+	//Read how often the defects positional data is outputted
+	read=fscanf( finput,"%d %s",&(out->DEFECTOUT),STR );
+	checkRead( read,"defect positions",inSTR);
+	//Read how often the disclination tensor field data is outputted
+	read=fscanf( finput,"%d %s",&(out->DISCLINOUT),STR );
+	checkRead( read,"disclination tensor field",inSTR);
 	//Read how often the energy data is outputted
 	read=fscanf( finput,"%d %s",&(out->ENOUT),STR );
 	checkRead( read,"energy",inSTR);
@@ -648,7 +654,7 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 	else printf("Warning: Failed to read output.\n");
 	if(fscanf( finput,"%d %d %d %d %d %d %d",&(out->HISTVELOUT), &(out->HISTSPEEDOUT), &(out->HISTVORTOUT), &(out->HISTENSTROUT), &(out->HISTDIROUT), &(out->HISTSOUT), &(out->HISTNOUT) ));
 	else printf("Warning: Failed to read histogram output.\n");
-	if(fscanf( finput,"%d %d %d",&(out->ENERGYSPECTOUT), &(out->ENSTROPHYSPECTOUT), &(out->DEFECTOUT) ));
+	if(fscanf( finput,"%d %d %d %d %d",&(out->ENERGYSPECTOUT), &(out->ENSTROPHYSPECTOUT), &(out->TOPOOUT), &(out->DEFECTOUT), &(out->DISCLINOUT) ));
 	else printf("Warning: Failed to read histogram output.\n");
 	if(fscanf( finput,"%d %d %d",&(out->SWOUT), &(out->SWORIOUT), &(out->RTOUT) ));
 	else printf("Warning: Failed to read histogram output.\n");
@@ -1096,7 +1102,9 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	out->HISTSOUT = getJObjInt(jObj, "histSOut", 0, jsonTagList); // histSOut
 	out->HISTNOUT = getJObjInt(jObj, "histNOut", 0, jsonTagList); // histNOut
 	out->SOLOUT = getJObjInt(jObj, "solidTrajOut", 0, jsonTagList); // solOut
-	out->DEFECTOUT = getJObjInt(jObj, "topoFieldOut", 0, jsonTagList); // defectOut
+	out->TOPOOUT = getJObjInt(jObj, "topoFieldOut", 0, jsonTagList); // topoOut
+	out->DEFECTOUT = getJObjInt(jObj, "defectsOut", 0, jsonTagList); // defectOut
+	out->DISCLINOUT = getJObjInt(jObj, "disclinOut", 0, jsonTagList); // disclinationTensorFieldOut
 	out->ENOUT = getJObjInt(jObj, "energyOut", 0, jsonTagList); // enOut
 	out->CVVOUT = getJObjInt(jObj, "velCorrOut", 0, jsonTagList); // cvvOut
 	out->CNNOUT = getJObjInt(jObj, "dirCorrOut", 0, jsonTagList); // cnnOut
