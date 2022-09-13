@@ -514,7 +514,7 @@ void topoheader( FILE *fout ) {
 }
 void defectheader( FILE *fout ) {
 /* Simple header for output columns */
-	fprintf( fout,"t\t numDefects\t linebreak \t QX\t\t QY\t\t charge\t\t angle\t\temptyline\n" );
+	fprintf( fout,"t\t numDefects\t \n QX\t\t QY\t\t charge\t\t angle\n" );
 }
 void disclinTensorheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -1365,7 +1365,8 @@ void topoChargeAndDefectsOut( FILE *ftopo,int TOPOOUT,FILE *fdefect,int DEFECTOU
 	 Only designed to work for 2D since topological charge is only defined in 2D
 	 */
 	//FIXME: 
-	int i,j,k;
+	int i,j,k,cntD;
+	double m,cmx,cmy,avC,avA;
 
 	double topoC[XYZ[0]][XYZ[1]]; //init topo charge array
 	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) topoC[i][j] = 0.0;
@@ -1377,9 +1378,10 @@ void topoChargeAndDefectsOut( FILE *ftopo,int TOPOOUT,FILE *fdefect,int DEFECTOU
 	//loop through non-CB boundary cells and calculate topo angle
 	for( i=2; i<XYZ[0]-2; i++ ) for( j=2; j<XYZ[1]-2; j++ ){
 		///FIXME: Too lazy to handle derivatives properly at the boundaries, so we just ignoring another layer there instead. Oopsies. Same goes for the loop above. 
-		if (fabs(topoC[i][j]) > TOL) topoAngle[i][j] = topoAngleLocal(CL, i, j, 0, topoC[i][j]); 
+		//Tyler: I think this is reasonable since we don't want to assume PBCs
+		if( fabs(topoC[i][j])>TOL ) topoAngle[i][j] = topoAngleLocal(CL, i, j, 0, topoC[i][j]); 
 	} 
-	if(TOPOOUT) {
+	if( TOPOOUT ) {
 		//Output
 		for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) for( k=0; k<XYZ[2]; k++ ) {
 			fprintf( ftopo,"%.2f\t%5d\t%5d\t%5d\t",t,i,j,k );
@@ -1390,9 +1392,78 @@ void topoChargeAndDefectsOut( FILE *ftopo,int TOPOOUT,FILE *fdefect,int DEFECTOU
 			fflush(ftopo);
 		#endif
 	}
-	if(DEFECTOUT) {
-		//Track defects and output their positions
-		printf("Warning: Defect tracker not yet implemented\n");
+	if( DEFECTOUT ) {
+		// Group topological charges into "clusters" of nearby non-zero values
+		int defID[XYZ[0]][XYZ[1]]; //ID value for each "cluster"
+		for( j=0; j<XYZ[1]; j++ ) for( i=0; i<XYZ[0]; i++ ) defID[i][j]=0; //ID is zero everywhere there is NO "cluster"
+		cntD=0;	// Counts the number of "clusters" (blurry defects)
+		for( j=0; j<XYZ[1]; j++ ) for( i=0; i<XYZ[0]; i++ ) if( fabs(topoC[i][j])>TOL ) {
+			// First MPCD cell
+			if( i==0 && j==0 ) {
+				//Simply set to new cluster
+				cntD+=1;
+				defID[i][j]=cntD;
+			}
+			// First row
+			else if( j==0 ) {
+				//Check backwards (that has an ID already and the same topological charge [product positive])
+				if( defID[i-1][j]>0 && topoC[i-1][j]*topoC[i][j]>0.0 ) defID[i][j]=defID[i-1][j];
+				else { //New cluster
+					cntD+=1;
+					defID[i][j]=cntD;
+				}
+			}
+			// First column
+			else if( i==0 ) {
+				//Check directly below
+				if( defID[i][j-1]>0 && topoC[i][j]*topoC[i][j]>0.0 ) defID[i][j]=defID[i][j-1];
+				//Check below and forward
+				else if( defID[i+1][j-1]>0 && topoC[i][j]*topoC[i][j]>0.0 ) defID[i][j]=defID[i+1][j-1];
+				else { //New cluster
+					cntD+=1;
+					defID[i][j]=cntD;
+				}
+			}
+			// Bulk
+			else {
+				//Check below and back
+				if( defID[i-1][j-1]>0 && topoC[i-1][j-1]*topoC[i][j]>0.0 ) defID[i][j]=defID[i-1][j-1];
+				//Check directly below
+				else if( defID[i][j-1]>0 && topoC[i][j-1]*topoC[i][j]>0.0 ) defID[i][j]=defID[i][j-1];
+				//Check below and forward
+				else if( defID[i+1][j-1]>0 && topoC[i+1][j-1]*topoC[i][j]>0.0 ) defID[i][j]=defID[i+1][j-1];
+				//Check directly back
+				else if( defID[i-1][j]>0 && topoC[i-1][j]*topoC[i][j]>0.0 ) defID[i][j]=defID[i-1][j];
+				else { //New cluster
+					cntD+=1;
+					defID[i][j]=cntD;
+				}
+			}
+		}
+		//Average each cluster's values and output their positions
+		fprintf( fdefect,"%.2f\t%d\n",t,cntD );
+		for( k=1; k<=cntD; k++ ) {
+			cmx=0.0;
+			cmy=0.0;
+			avC=0.0;
+			avA=0.0;
+			m=0.0;
+			for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) if( defID[i][j]==k ) {
+				m+=1.0;
+				cmx+=(double)i + 0.5;
+				cmy+=(double)j + 0.5;
+				avC+=topoC[i][j];
+				avA+=topoAngle[i][j];
+			}
+			if( m>TOL ){
+				cmx/=m;
+				cmy/=m;
+				avC/=m;
+				avA/=m;
+			}
+			fprintf( fdefect,"%12.5e\t%12.5e\t%06.3f\t%12.5e\n",cmx,cmy,avC,avA );
+		}
+		fprintf( fdefect,"\n" );
 		#ifdef FFLSH
 			fflush(fdefect);
 		#endif
