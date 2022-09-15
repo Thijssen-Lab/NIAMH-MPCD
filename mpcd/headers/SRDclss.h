@@ -234,6 +234,7 @@ typedef struct outputFlagsList {
 	int DENSOUT;				//Flag for density standard deviation is outputted
 	int ENSTROPHYOUT;		//Flag for if total average enstrophy is outputted
 	int CHCKPNT;				//Flag for checkpointing
+	float CHCKPNTTIMER;			//Flag for checkpointing based on a timer
 	int CHCKPNTrcvr;		//Flag for simulation from recovery of checkpoint
 	int BINDER,BINDERBIN;	//Flag for Binder cumulant and the bin size of the Binder cumulant
 	int printSP;				//How many of the species are printed
