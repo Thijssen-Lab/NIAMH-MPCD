@@ -231,12 +231,7 @@ int main(int argc, char* argv[]) {
 			/* *************** CHECKPOINT *************** */
 			/* ****************************************** */
 			if( outFlags.CHCKPNT>=OUT && warmtime%outFlags.CHCKPNT==0 ) {
-				#ifdef DBG
-					if( DBUG >= DBGRUN ) printf( "\nCheckpointing.\n" );
-				#endif
-				openCheckpoint( &(outFiles.fchckpnt),op );
-				checkpoint( outFiles.fchckpnt, inputVar, SPECIES, SRDparticles, MDmode, WALL, outFlags, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory,specS, swimmers );
-				fclose( outFiles.fchckpnt );
+                runCheckpoint( op, outFiles.fchckpnt, inputVar, SPECIES, SRDparticles, MDmode, WALL, outFlags, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory,specS, swimmers );
 			}
 		}
 		inputVar.warmupSteps=0;
@@ -270,13 +265,8 @@ int main(int argc, char* argv[]) {
 		/* *************** CHECKPOINT *************** */
 		/* ****************************************** */
 		if( outFlags.CHCKPNT>=OUT && runtime%outFlags.CHCKPNT==0 ) {
-			#ifdef DBG
-				if( DBUG >= DBGRUN ) printf( "\nCheckpointing.\n" );
-			#endif
-			openCheckpoint( &(outFiles.fchckpnt),op );
-			checkpoint( outFiles.fchckpnt, inputVar, SPECIES, SRDparticles, MDmode, WALL, outFlags, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory,specS, swimmers );
-			fclose( outFiles.fchckpnt );
-		}
+            runCheckpoint( op, outFiles.fchckpnt, inputVar, SPECIES, SRDparticles, MDmode, WALL, outFlags, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory,specS, swimmers );
+        }
 	}
 	#ifdef DBG
 		if( DBUG > DBGRUN ) printf( "Temperal loop complete\n" );
