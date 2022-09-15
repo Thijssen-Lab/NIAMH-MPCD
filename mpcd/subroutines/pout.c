@@ -1608,13 +1608,29 @@ void spectout( FILE *fout,double spect[],double t ) {
 // predeclaration for below
 void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,bc *WALL,outputFlagsList outFlag,int runtime,int warmtime,double AVVEL,double AVS,double avDIR[_3D],double S4,double stdN,double KBTNOW,double AVV[_3D],double AVNOW[_3D],kinTheory theory,specSwimmer specS,swimmer *sw );
 
-void runCheckpoint(char op[500],FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,bc *WALL,outputFlagsList outFlag,int runtime,int warmtime,double AVVEL,double AVS,double avDIR[_3D],double S4,double stdN,double KBTNOW,double AVV[_3D],double AVNOW[_3D],kinTheory theory,specSwimmer specS,swimmer *sw ) {
+void runCheckpoint(char op[500],time_t *lastCheckpoint,FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,bc *WALL,outputFlagsList outFlag,int runtime,int warmtime,double AVVEL,double AVS,double avDIR[_3D],double S4,double stdN,double KBTNOW,double AVV[_3D],double AVNOW[_3D],kinTheory theory,specSwimmer specS,swimmer *sw ) {
     /*
      * Run a checkpoint operation, used to clean up code in mpcd.c
      */
+
+    // if time-based checkpointing has been enabled, see if a checkpoint needs to be made
+    // otherwise return early
+    if (outFlag.CHCKPNTTIMER != 0.0) {
+        time_t currTime = time(NULL);
+        if (currTime - *lastCheckpoint >= outFlag.CHCKPNTTIMER*60*60) {
+            // if time diff is more than the set checkpointing time
+            #ifdef DBG
+                if( DBUG >= DBGRUN ) printf( "\nTimer based checkpoint triggered." );
+            #endif
+            lastCheckpoint = &currTime;
+        } else {
+            return; // early return, no checkpoint needed
+        }
+    }
     #ifdef DBG
         if( DBUG >= DBGRUN ) printf( "\nCheckpointing.\n" );
     #endif
+    // normal checkpoint
     openCheckpoint( &(fout),op );
     checkpoint( fout, in, SP, pSRD, MDmode, WALL, outFlag, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory, specS, sw);
     fclose( fout );

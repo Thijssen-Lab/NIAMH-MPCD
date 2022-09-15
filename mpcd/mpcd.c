@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
 	inputList inputVar;
 	kinTheory theory;				//Theoretical values based on input
 	//Timer variables
-	time_t to,tf;
+	time_t to,tf,lastCheckpoint;
 	clock_t co,cf;
 	//Simulation variables
 	double KBTNOW;					//Current un-thermostated temperature
@@ -231,7 +231,7 @@ int main(int argc, char* argv[]) {
 			/* *************** CHECKPOINT *************** */
 			/* ****************************************** */
 			if( outFlags.CHCKPNT>=OUT && warmtime%outFlags.CHCKPNT==0 ) {
-                runCheckpoint( op, outFiles.fchckpnt, inputVar, SPECIES, SRDparticles, MDmode, WALL, outFlags, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory,specS, swimmers );
+                runCheckpoint( op, &lastCheckpoint, outFiles.fchckpnt, inputVar, SPECIES, SRDparticles, MDmode, WALL, outFlags, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory,specS, swimmers );
 			}
 		}
 		inputVar.warmupSteps=0;
@@ -265,7 +265,7 @@ int main(int argc, char* argv[]) {
 		/* *************** CHECKPOINT *************** */
 		/* ****************************************** */
 		if( outFlags.CHCKPNT>=OUT && runtime%outFlags.CHCKPNT==0 ) {
-            runCheckpoint( op, outFiles.fchckpnt, inputVar, SPECIES, SRDparticles, MDmode, WALL, outFlags, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory,specS, swimmers );
+            runCheckpoint( op, &lastCheckpoint, outFiles.fchckpnt, inputVar, SPECIES, SRDparticles, MDmode, WALL, outFlags, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory,specS, swimmers );
         }
 	}
 	#ifdef DBG
