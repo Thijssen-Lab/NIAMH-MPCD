@@ -1682,17 +1682,17 @@ void runCheckpoint(char op[500],time_t *lastCheckpoint,FILE *fout,inputList in,s
         time_t currTime = time(NULL);
         if (currTime - *lastCheckpoint >= outFlag.CHCKPNTTIMER*60*60) {
             // if time diff is more than the set checkpointing time
-#ifdef DBG
+            #ifdef DBG
             if( DBUG >= DBGRUN ) printf( "\nTimer based checkpoint triggered." );
-#endif
-            lastCheckpoint = &currTime;
+            #endif
+            *lastCheckpoint = currTime;
         } else {
             return; // early return, no checkpoint needed
         }
     }
-#ifdef DBG
+    #ifdef DBG
     if( DBUG >= DBGRUN ) printf( "\nCheckpointing.\n" );
-#endif
+    #endif
     // normal checkpoint
     openCheckpoint( &(fout),op );
     checkpoint( fout, in, SP, pSRD, MDmode, WALL, outFlag, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory, specS, sw);
