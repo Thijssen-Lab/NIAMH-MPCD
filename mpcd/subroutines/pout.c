@@ -1366,7 +1366,7 @@ void topoChargeAndDefectsOut( FILE *ftopo,int TOPOOUT,FILE *fdefect,int DEFECTOU
 	 */
 	//FIXME: 
 	int i,j,k,cntD;
-	double m,cmx,cmy,avC,avA;
+	double m,cmx,cmy,avC,avAx,avAy,avA;
 
 	double topoC[XYZ[0]][XYZ[1]]; //init topo charge array
 	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) topoC[i][j] = 0.0;
@@ -1443,24 +1443,29 @@ void topoChargeAndDefectsOut( FILE *ftopo,int TOPOOUT,FILE *fdefect,int DEFECTOU
 		//Average each cluster's values and output their positions
 		fprintf( fdefect,"%.2f\t%d\n",t,cntD );
 		for( k=1; k<=cntD; k++ ) {
-			cmx=0.0;
+            cmx=0.0; // CoM pos
 			cmy=0.0;
-			avC=0.0;
-			avA=0.0;
-			m=0.0;
+			avC=0.0; // charge
+            avAx=0.0; // x component of vector angle (for average)
+            avAy=0.0; // y component of vector angle (for average)
+            avA=0.0; // reset average angle (to dump)
+			m=0.0; // count
+
 			for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) if( defID[i][j]==k ) {
 				m+=1.0;
 				cmx+=(double)i + 0.5;
 				cmy+=(double)j + 0.5;
 				avC+=topoC[i][j];
-				avA+=topoAngle[i][j];
+
+                avAx += cos(topoAngle[i][j]);
+                avAy += sin(topoAngle[i][j]);
 			}
 			if( m>TOL ){
 				cmx/=m;
 				cmy/=m;
 				avC/=m;
-				avA/=m;
 			}
+            avA = atan2(avAy, avAx);
 			fprintf( fdefect,"%12.5e\t%12.5e\t%06.3f\t%12.5e\n",cmx,cmy,avC,avA );
 		}
 		fprintf( fdefect,"\n" );
