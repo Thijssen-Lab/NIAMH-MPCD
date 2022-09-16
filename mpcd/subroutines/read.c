@@ -865,9 +865,11 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 	// flags for overrides
 	int domainWalls = 0; // Whether to add domain walls. 0 = off, 1 = PBC, 2 = solid
+    float checkPointTimer = 0.0; // hours until MPCD will run a checkpoint
 
 	/// Get overrides
 	domainWalls = getJObjInt(jObj, "domainWalls", 0, jsonTagList); // domainWalls
+    checkPointTimer = getJObjDou(jObj, "checkpointTimerOut", 0.0, jsonTagList); // checkpointTimerOut
 
 	// perform general overrides
 	///NOTE: none here yet :)
@@ -1519,7 +1521,13 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	}
 	//Determine if any BCs are periodic boundaries
 	for( i=0; i<_3D; i++ ) XYZPBC[i]=0;
-	for( i=0; i<NBC; i++ ) setPBC( (*WALL+i) ); 
+	for( i=0; i<NBC; i++ ) setPBC( (*WALL+i) );
+
+    // handle checkpoint timer override
+    if (checkPointTimer != 0.0) {
+        out->CHCKPNT = 1; // just set this as a flag to enable behaviour
+        out->CHCKPNTTIMER = checkPointTimer;
+    }
 
 	// 4. Swimmers /////////////////////////////////////////////////////////////
 	// look at void readswimmers() in swimmers.c to see better descriptions & definitions for these
