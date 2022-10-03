@@ -1,5 +1,7 @@
 # MPCD
-Multi-Particle Collision Dynamics code developed by the Shendruk Lab
+Multi-Particle Collision Dynamics code developed by the Shendruk Lab.
+
+Build docs using `make docs` and view them in `doxyout/html/index.html`.
 
 ## Credits
 Code started and majority written by Tyler Shendruk, for the Polymer Physics Research Group at the University of Ottawa. 

@@ -16,3 +16,6 @@ Runs/*
 
 #ignore IDE bits
 .vscode/settings.json
+
+#doxygen
+doxyout/*
