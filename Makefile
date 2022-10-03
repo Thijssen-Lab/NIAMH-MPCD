@@ -59,5 +59,5 @@ clean:
 .PHONY: doc
 doc:    $(sources)
 	@echo "Building documentation"
-	doxygen doc/Doxyfile
+	doxygen doxyconfig.conf
 #----------------------------------------------------------------------------------------------------
