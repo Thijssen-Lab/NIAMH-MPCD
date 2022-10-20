@@ -1,0 +1,1 @@
+Simulates 2D flow in a channel of height 30 with a pressure gradient driven by gravity. No-slip boundary conditions on the bottom and top walls, periodic boundary conditions on the ends

@@ -1,0 +1,46 @@
+{
+    "domain":           [100, 50],
+    "simSteps":         8000,
+    "rTech":            2,
+    "species":
+    [
+        {
+            "pop":         50265
+        }
+    ],
+    "debugOut":         3,
+    "flowOut":          100,
+    "pressureOut":      0,
+    "avVelOut":         0,
+    "energyOut":        0,
+    "swimQOut":         100,
+    "swimOOut":         0,
+    "swimROut":         0,
+    "synopsisOut":      1,
+    "checkpointOut":    0,
+    "domainWalls":      1,
+    "BC":
+    [
+        {
+            "phantom":      1,
+            "Q":            [50, 25, 0],
+            "aInv":         [40.0, 20.0, 0],
+            "P":            [2, 2, 2, 2],
+            "R":            1,
+            "DN":           0,
+            "MVN":          -1,
+            "MVT":          -1,
+            "inv":          1
+        }
+    ],
+    "typeSwim":         2,
+    "nSwim":            30,
+    "headMSwim":        20,
+    "midMSwim":         20,
+    "fsSwim":           5,
+    "dsSwim":           1,
+    "kSwim":            30,
+    "roSwim":           4,
+    "sigSwim":          4,
+    "epsSwim":          1
+}

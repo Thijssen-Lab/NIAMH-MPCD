@@ -1,0 +1,36 @@
+{
+    "domain":           [100, 25, 25],
+    "warmUp":           500,
+    "simSteps":         500,
+    "rTech":            2,
+    "grav":             [0.01, 0, 0],
+    "mag":              [0, 0, 0],
+    "species":
+    [
+        {
+            "pop":          628319
+        }
+    ],
+    "debugOut":         3,
+    "flowOut":          20,
+    "pressureOut":      0,
+    "avVelOut":         5,
+    "energyOut":        5,
+    "synopsisOut":      1,
+    "checkpointOut":    0,
+    "domainWalls":      1,
+    "BC":
+    [
+        {
+            "phantom":      1,
+            "Q":            [0, 12.5, 12.5],
+            "aInv":         [0, 1, 1],
+            "P":            [1, 2, 2, 2],
+            "R":            10,
+            "DN":           0,
+            "MVN":          -1,
+            "MVT":          -1,
+            "inv":          1
+        }
+    ]
+}

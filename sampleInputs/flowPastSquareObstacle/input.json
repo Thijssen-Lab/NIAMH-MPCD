@@ -1,0 +1,35 @@
+{
+    "domain":           [200, 100],
+    "warmUp":           1000,
+    "simSteps":         1000,
+    "rTech":            2,
+    "grav":             [0.002, 0, 0],
+    "mag":              [0, 0, 0],
+    "species":
+    [
+        {
+            "pop":         398000
+        }
+    ],
+    "debugOut":         3,
+    "flowOut":          100,
+    "pressureOut":      0,
+    "avVelOut":         10,
+    "energyOut":        10,
+    "synopsisOut":      1,
+    "checkpointOut":    0,
+    "domainWalls":      1,
+    "BC":
+    [
+        {
+            "phantom":      1,
+            "Q":            [100, 50, 0],
+            "aInv":         [1, 1, 0],
+            "P":            [8, 8, 1, 8],
+            "R":            10,
+            "DN":           0,
+            "MVN":          -1,
+            "MVT":          -1
+        }
+    ]
+}

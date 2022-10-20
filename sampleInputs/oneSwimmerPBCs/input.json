@@ -1,0 +1,30 @@
+{
+    "debugOut":         3,
+    "domain":           [30, 30],
+    "simSteps":         2000,
+    "rTech":            2,
+    "species":
+    [
+        {
+            "dens":         20
+        }
+    ],
+    "domainWalls":      1,
+    "typeSwim":         2,
+    "nSwim":            1,
+    "headMSwim":        20,
+    "midMSwim":         20,
+    "fsSwim":           20,
+    "dsSwim":           1,
+    "kSwim":            30,
+    "roSwim":           4,
+    "sigSwim":          4,
+    "epsSwim":          1,
+    "flowOut":          50,
+    "avVelOut":         0,
+    "energyOut":        0,
+    "swimQOut":         50,
+    "swimOOut":         0,
+    "swimROut":         0,
+    "synopsisOut":      1
+}

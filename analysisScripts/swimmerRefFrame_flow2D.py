@@ -368,9 +368,9 @@ if(makeAni):
     print( "\tAnimating ..." )
     plt.close("all")
     if rotAx:
-        name='swimmerVelField_refFrameRotated_animation%s'%suffix
+        name='%s/swimmerVelField_refFrameRotated_animation%s'%(dataPath,suffix)
     else:
-        name='swimmerVelField_RefFrameCentred_animation%s'%suffix
+        name='%s/swimmerVelField_RefFrameCentred_animation%s'%(dataPath,suffix)
     myCommand="rm %s"%name
     call(myCommand,shell=True)
     myCommand = "ffmpeg -f image2 -r %d"%(framerate)+" -i frame%04d.png"+" -vcodec %s -b %dk -r %d %s"%(codec,bitrate,framerate,name)
@@ -408,8 +408,8 @@ ylabel(r'$%s$'%labY, fontsize = FS)
 #plt.axis(xmax=xyzSize[0], xmin=0, ymax=xyzSize[1], ymin=0)
 plt.axis(xmax=rotSize, xmin=0, ymax=rotSize, ymin=0)
 if rotAx:
-    name='swimmerVelField_refFrameRotated_av.pdf'
+    name='%s/swimmerVelField_refFrameRotated_av.pdf'%(dataPath)
 else:
-    name='swimmerVelField_RefFrameCentred_av.pdf'
+    name='%s/swimmerVelField_RefFrameCentred_av.pdf'%(dataPath)
 savefig( name )
 show()

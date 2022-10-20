@@ -1,0 +1,1 @@
+Simulates 2D flow past a squ-ircle obstacle of length 10 with a pressure gradient driven by gravity. No-slip boundary conditions on the obstacle and periodic boundary conditions on the control volume

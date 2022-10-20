@@ -466,11 +466,11 @@ if(fieldType=="nem"):
 # Animate
 print( "\tAnimating ..." )
 if(fieldType=="vel"):
-  name='swimmerVelField_animation%s'%suffix
+  name='%s/swimmerVelField_animation%s'%(dataPath,suffix)
 elif(fieldType=="vor"):
-  name='swimmerVorField_animation%s'%suffix
+  name='%s/swimmerVorField_animation%s'%(dataPath,suffix)
 elif(fieldType=="nem"):
-  name='swimmerDirField_animation%s'%suffix
+  name='%s/swimmerDirField_animation%s'%(dataPath,suffix)
 myCommand="rm %s"%name
 call(myCommand,shell=True)
 myCommand = "ffmpeg -f image2 -r %d"%(framerate)+" -i frame%04d.png"+" -vcodec %s -b %dk -r %d %s"%(codec,bitrate,framerate,name)
