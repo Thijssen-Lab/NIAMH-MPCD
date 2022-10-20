@@ -1513,8 +1513,8 @@ real LennardJones (particleMD *p1, particleMD *p2, real dx, real dy, real dz,
 	if (r2 < rCut2) {
 		r2i   = 1/r2;
 		r6i   = r2i*r2i*r2i;
-		potE  = 0.5*4*r6i*(r6i-1);  //note we multiply by half in these two lines since we call the function twice for each pair of particles
-		fMag  = 0.5*48 * r2i * r6i;
+		potE  = 4*r6i*(r6i-1);  
+		fMag  = 48 * r2i * r6i;
 		#ifdef TEMPERATURE_CONF
 			Tdivf = fMag * (11*r6i - 2.5);
 		#endif
