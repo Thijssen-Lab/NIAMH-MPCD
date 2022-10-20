@@ -895,7 +895,7 @@ void InitPolymers (simptr sim)
 		}
 
 		switch (polyLayout[set]) {
-			case LAYOUT_SURFACE:		polySurfaceTot+=polyM[set];
+			case LAYOUT_SURFACE:	polySurfaceTot+=polyM[set];
 									break;
 			case LAYOUT_PLATES:		polySurfaceTot+=polyM[set];
 									break;
@@ -1896,12 +1896,14 @@ void SetupFeneList (simptr sim)
 {
 	// Initializes a list of pairs that are bounded by a FENE interaction.
 
-	int			n, nAtom;
+	int			n, nn, i, nAtom, nPolymer, nMonomer;
 	particleMD	*atom, *p;
 
 	// local sim variables
 	atom  = sim->atom.items;
 	nAtom = sim->atom.n;
+	nPolymer = sim->polyM[0];
+	nMonomer = sim->polyN[0];
 
 	// report
 	LOG ("Building list of FENE pairs\n");
@@ -1910,9 +1912,12 @@ void SetupFeneList (simptr sim)
 	ResetList2STD (&sim->fene);
 
 	// build list of all anchored atom pointers
-	for (n=0; n<nAtom; n++) {
-		p = atom+n;
-		if (p->next) AddItem2STD (&sim->fene, p, p->next);
+	for(i=0 ; i<nPolymer ;i++){
+		nn = i*nMonomer ;
+		for (n=nn; n<nn+nMonomer-1; n++) {
+			p = atom+n;
+			AddItem2STD (&sim->fene, p, p->next);
+		}
 	}
 
 	// report
@@ -1926,12 +1931,14 @@ void SetupBendList (simptr sim)
 {
 	// Initializes a list of pairs that are bounded by a bend interaction.
 
-	int			n, nAtom;
+	int			n, nn, i, nAtom, nPolymer, nMonomer;
 	particleMD	*atom, *p;
 
 	// local sim variables
 	atom  = sim->atom.items;
 	nAtom = sim->atom.n;
+	nPolymer = sim->polyM[0];
+	nMonomer = sim->polyN[0];
 
 	// report
 	LOG ("Building list of bend triplets\n");
@@ -1940,9 +1947,14 @@ void SetupBendList (simptr sim)
 	ResetList3STD (&sim->bend);
 
 	// build list of all anchored atom pointers
-	if (nAtom>=3) for (n=1; n<nAtom; n++) {
-		p = atom+n;
-		if (p->next) AddItem3STD (&sim->bend, p->prev, p, p->next);
+	if (nAtom>=3){
+		for(i=0 ; i<nPolymer ;i++){
+			nn = 1 + i*nMonomer ;
+			for (n=nn; n<nn+nMonomer-2; n++) {
+				p = atom+n;
+				AddItem3STD (&sim->bend, p->prev, p, p->next);
+			}
+		}
 	}
 
 	// report
