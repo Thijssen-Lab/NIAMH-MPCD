@@ -935,7 +935,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	// mag array
 	cJSON *arrMag = NULL;
 	getCJsonArray(jObj, &arrMag, "mag", jsonTagList, arrayList, 0);
-	if (arrGrav != NULL) { // if grav has been found then....
+	if (arrMag != NULL) { // if mag has been found then....
 		if (cJSON_GetArraySize(arrMag) != _3D) { // check dimensionality is valid
 			printf("Error: Mag must be a 3D array.\n");
 			exit(EXIT_FAILURE);
