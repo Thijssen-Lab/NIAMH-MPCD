@@ -5,6 +5,13 @@
     "rTech":            2,
     "lc":               1,
     "mfpot":            20,
+    "species":
+    [
+        {
+            "c":            "For the density to be 20, must subtract the volume of the colloid",
+            "pop":          521904
+        }
+    ],
     "BC":
     [
         {
@@ -32,8 +39,6 @@
     "c":                "domainWalls=1 will ADDITIVELY add PBCs on top of existing BCs",
     "domainWalls":      1,
     "debugOut":         3,
-    "coarseOut":        250,
-    "flowOut":          250,
-    "dirSOut":          250,
+    "dirSOut":          100,
     "synopsisOut":      1
 }
