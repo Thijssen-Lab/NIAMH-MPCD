@@ -1902,6 +1902,7 @@ void SetupFeneList (simptr sim)
 	// local sim variables
 	atom  = sim->atom.items;
 	nAtom = sim->atom.n;
+	// need to consider multiple polymer chains
 	nPolymer = sim->polyM[0];
 	nMonomer = sim->polyN[0];
 
@@ -1937,6 +1938,7 @@ void SetupBendList (simptr sim)
 	// local sim variables
 	atom  = sim->atom.items;
 	nAtom = sim->atom.n;
+	// need to consider multiple polymer chains
 	nPolymer = sim->polyM[0];
 	nMonomer = sim->polyN[0];
 
@@ -2605,6 +2607,7 @@ particleMD *GrowLinearChain (simptr sim, int type, int layout, int n, particleMD
 			RandomVector3D (v);
 			p1.rx = p0->rx + v[x_]*sim->r0Fene/1.5;
 			p1.ry = p0->ry + v[y_]*sim->r0Fene/1.5;
+			// To allow 2d and 3d operation
 			if (sim->box[z_] != 0.0 ){
 				p1.rz = p0->rz + v[z_]*sim->r0Fene/1.5;
 			}
