@@ -895,7 +895,7 @@ void InitPolymers (simptr sim)
 		}
 
 		switch (polyLayout[set]) {
-			case LAYOUT_SURFACE:		polySurfaceTot+=polyM[set];
+			case LAYOUT_SURFACE:	polySurfaceTot+=polyM[set];
 									break;
 			case LAYOUT_PLATES:		polySurfaceTot+=polyM[set];
 									break;
@@ -1896,12 +1896,15 @@ void SetupFeneList (simptr sim)
 {
 	// Initializes a list of pairs that are bounded by a FENE interaction.
 
-	int			n, nAtom;
+	int			n, nn, i, nAtom, nPolymer, nMonomer;
 	particleMD	*atom, *p;
 
 	// local sim variables
 	atom  = sim->atom.items;
 	nAtom = sim->atom.n;
+	// need to consider multiple polymer chains
+	nPolymer = sim->polyM[0];
+	nMonomer = sim->polyN[0];
 
 	// report
 	LOG ("Building list of FENE pairs\n");
@@ -1910,9 +1913,12 @@ void SetupFeneList (simptr sim)
 	ResetList2STD (&sim->fene);
 
 	// build list of all anchored atom pointers
-	for (n=0; n<nAtom; n++) {
-		p = atom+n;
-		if (p->next) AddItem2STD (&sim->fene, p, p->next);
+	for(i=0 ; i<nPolymer ;i++){
+		nn = i*nMonomer ;
+		for (n=nn; n<nn+nMonomer-1; n++) {
+			p = atom+n;
+			AddItem2STD (&sim->fene, p, p->next);
+		}
 	}
 
 	// report
@@ -1926,12 +1932,15 @@ void SetupBendList (simptr sim)
 {
 	// Initializes a list of pairs that are bounded by a bend interaction.
 
-	int			n, nAtom;
+	int			n, nn, i, nAtom, nPolymer, nMonomer;
 	particleMD	*atom, *p;
 
 	// local sim variables
 	atom  = sim->atom.items;
 	nAtom = sim->atom.n;
+	// need to consider multiple polymer chains
+	nPolymer = sim->polyM[0];
+	nMonomer = sim->polyN[0];
 
 	// report
 	LOG ("Building list of bend triplets\n");
@@ -1940,9 +1949,14 @@ void SetupBendList (simptr sim)
 	ResetList3STD (&sim->bend);
 
 	// build list of all anchored atom pointers
-	if (nAtom>=3) for (n=1; n<nAtom; n++) {
-		p = atom+n;
-		if (p->next) AddItem3STD (&sim->bend, p->prev, p, p->next);
+	if (nAtom>=3){
+		for(i=0 ; i<nPolymer ;i++){
+			nn = 1 + i*nMonomer ;
+			for (n=nn; n<nn+nMonomer-2; n++) {
+				p = atom+n;
+				AddItem3STD (&sim->bend, p->prev, p, p->next);
+			}
+		}
 	}
 
 	// report
@@ -2593,7 +2607,13 @@ particleMD *GrowLinearChain (simptr sim, int type, int layout, int n, particleMD
 			RandomVector3D (v);
 			p1.rx = p0->rx + v[x_]*sim->r0Fene/1.5;
 			p1.ry = p0->ry + v[y_]*sim->r0Fene/1.5;
-			p1.rz = p0->rz + v[z_]*sim->r0Fene/1.5;
+			// To allow 2d and 3d operation
+			if (sim->box[z_] != 0.0 ){
+				p1.rz = p0->rz + v[z_]*sim->r0Fene/1.5;
+			}
+			else {
+				p1.rz = 0.0;
+			}
 			pNew = AtomInsert (sim, type, layout, &p1, CHECK, CHECK);
 		}
 		else {
@@ -2660,7 +2680,7 @@ particleMD *GrowRodChain (simptr sim, int type, int layout, int n, particleMD *p
 			pNew->wz = sim->box[z_]*0.5;
 			pNew->x0 = sim->box[x_]*0.5 - n/2;
 			pNew->y0 = sim->box[y_]*0.5;
-			pNew->y0 = sim->box[z_]*0.5;
+			pNew->z0 = sim->box[z_]*0.5;
 		}
 
 		// continue growing (recursively), and remove candidate if stunted growth
@@ -2785,7 +2805,7 @@ particleMD *GrowUChain (simptr sim, int type, int layout, int n, particleMD *p0,
 				pNew->rx = sim->box[x_]*0.5 - (n+1)*0.25*sim->r0Fene/1.5; // n can be used as this is always the first iteration with highest n
 				pNew->ry = sim->box[y_]*0.5 + sim->r0Fene/3.0;
 				pNew->rz = sim->box[z_]*0.5;
-				pNew->wx = sim->box[x_]*0.5 - n*0.25*sim->r0Fene/1.5;
+				pNew->wx = sim->box[x_]*0.5 - (n+1)*0.25*sim->r0Fene/1.5;
 				pNew->wy = sim->box[y_]*0.5 + sim->r0Fene/3.0;
 				pNew->wz = sim->box[z_]*0.5;
 				pNew->x0 = sim->box[x_]*0.5 - (n+1)*0.25*sim->r0Fene/1.5;
