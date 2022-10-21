@@ -1,6 +1,7 @@
 {
     "domain":           [30, 30],
     "simSteps":         40000,
+    "c":                "Nematic LC using Andersen MPCD",
     "rTech":            2,
     "lc":               1,
     "mfpot":            20,
@@ -8,9 +9,11 @@
     [
         {
             "dens":         20,
+            "c":            "Susceptibility of LC to align with swimmers",
             "magnSusc":     0.1
         }
     ],
+    "c":                "Output",
     "debugOut":         3,
     "flowOut":          200,
     "dirSOut":          200,
@@ -19,8 +22,11 @@
     "swimROut":         0,
     "synopsisOut":      1,
     "checkpointOut":    0,
+    "c":                "Periodic boundary conditions",
     "domainWalls":      1,
+    "c":                "Dumb-dumbell swimmers",
     "typeSwim":         2,
+    "c":                "Two swimmers",
     "nSwim":            2,
     "headMSwim":        20,
     "midMSwim":         20,
@@ -30,5 +36,6 @@
     "roSwim":           4,
     "sigSwim":          4,
     "epsSwim":          1,
+    "c":                "Strength of coupling swimmer orientation to LC",
     "magMomSwim":       50.0
 }

@@ -1,10 +1,12 @@
 {
+    "c":                "Rectangular geometry",
     "domain":           [150, 30],
     "warmUp":           500,
     "simSteps":         500,
+    "c":                "Isotropic fluid using Andersen MPCD",
     "rTech":            2,
+    "c":                "Gravity-generated pressure gradient",
     "grav":             [0.01, 0, 0],
-    "mag":              [0, 0, 0],
     "species":
     [
         {
@@ -18,9 +20,11 @@
     "energyOut":        10,
     "synopsisOut":      1,
     "checkpointOut":    0,
+    "c":                "BCs are two periodic boundary conditions (PBC) and two impermeable, no-slip walls",
     "BC":
     [
         {
+            "c":            "Left PBC",
             "phantom":      0,
             "Q":            [0, 0, 0],
             "aInv":         [1, 0, 0],
@@ -31,6 +35,7 @@
             "MVT":          1
         },
         {
+            "c":            "Right PBC",
             "phantom":      0,
             "Q":            [150, 0, 0],
             "aInv":         [-1, 0, 0],
@@ -41,6 +46,7 @@
             "MVT":          1
         },
         {
+            "c":            "Bottom wall",
             "phantom":      1,
             "Q":            [0, 0, 0],
             "aInv":         [0, 1, 0],
@@ -51,6 +57,7 @@
             "MVT":          -1
         },
         {
+            "c":            "Top wall",
             "phantom":      1,
             "Q":            [0, 30, 0],
             "aInv":         [0, -1, 0],
