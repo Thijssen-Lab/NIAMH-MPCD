@@ -130,8 +130,8 @@ void chooseBC_MD( bc WALL[],particleMD *atom,double *t_min,double *chosenW,int *
 			crosstime_MD( atom,WALL[i],&t1,&t2,time );
 			tc = chooseT( t_step,t1,t2,0,&flag );
 			if( flag ) {
-				printf( "Error: Cross time unacceptable MD: %lf.\n",tc );
-				// exit( 1 );
+				printf( "Warning: Cross time unacceptable MD: %lf.\n",tc );
+				// exit( 1 );		no need to exit. it is solved by further actions in MD_BCcollision
 			}
 
 			if( tc < *t_min ) {
