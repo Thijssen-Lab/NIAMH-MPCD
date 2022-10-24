@@ -178,6 +178,30 @@ int getJObjInt(cJSON *cJSONRoot, const char* jsonTag, int d, linkedList *head){
    return buff;
 }
 
+int getJObjIntMultiple(cJSON *cJSONRoot, const char** jsonTags, int count, int d, linkedList *head) {
+    /*
+     * Returns an integer object from the given cJSON file searching for one of a particular jsonTag.
+     * The last json tag in jsonTags is prioritised.
+     * If no appropriate json tag is found then it will return default value d
+     */
+    int i;
+    int buff = d; // buffer to return appropriate val, set to default initially
+
+    for (i = 0; i < count; i++) { // loop through tags
+        const char* jsonTag = jsonTags[i]; // get current tag we iterate over
+
+        pushLL(head, jsonTag); // add jsonTag to head
+
+        // cJson bits
+        cJSON *jObj = cJSON_GetObjectItemCaseSensitive(cJSONRoot, jsonTag);
+        if (jObj != NULL){ // check for non-existence
+            buff = jObj->valueint; // make a buffer to return an appropriate val
+        }
+    }
+
+    return buff;
+}
+
 double getJObjDou(cJSON *cJSONRoot, const char* jsonTag, double d, linkedList *head){
    /*
       Returns a double object from the given cJSON file searching for a particular jsonTag.

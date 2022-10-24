@@ -34,6 +34,7 @@ void freeLL(linkedList *head);
 void getCJsonArray(cJSON *jObj, cJSON **toReturn, const char* val, 
    linkedList *jsonList, linkedList *arrayList, int type);
 int getJObjInt(cJSON *cJSONRoot, const char* jsonTag, int d, linkedList *head);
+int getJObjIntMultiple(cJSON *cJSONRoot, const char** jsonTags, int count, int d, linkedList *head);
 double getJObjDou(cJSON *cJSONRoot, const char* jsonTag, double d, 
     linkedList *head);
 void getJObjStr(cJSON *cJSONRoot, const char* jsonTag, const char* d, 
