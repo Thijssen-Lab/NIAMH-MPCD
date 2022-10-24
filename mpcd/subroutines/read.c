@@ -956,9 +956,10 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 	// Handle MD
 	getJObjStr(jObj, "mdIn", "", &mdInputFile, jsonTagList);
+    int mdCoupleMode = getJObjInt(jObj, "mdCoupleMode", 1, jsonTagList); // coupling mode for MD
 	if (strcmp(mdInputFile, "") == 0){ // if no input file was found
 		MDmode = 0;
-	} else MDmode = 1; // otherwise enable MD if input file found
+	} else MDmode = mdCoupleMode; // otherwise set MD to correct coupling mode to enable it
 
 	in->stepsMD = getJObjInt(jObj, "stepsMD", 20, jsonTagList); // stepsMD
 
