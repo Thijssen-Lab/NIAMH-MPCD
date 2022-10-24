@@ -107,7 +107,7 @@ Tag             | Type          | Default Value | Description
 `binderBin`     | int           | 0             | Binder cumulant bin size
 `swimQOut`      | int           | 0             | Swimmer positions
 `swimOOut`      | int           | 0             | Swimmer orientations
-`swimROut`      | int           | 0             | Swimmer run/ tumble
+`swimROut` OR `swimRTOut`| int           | 0             | Swimmer run/ tumble. `swimRTOut` is prioritised.
 `synopsisOut`   | int           | 1             | Synopsis output. Highly recommended to be on. 1 = on, 0 = off
 `checkpointOut` | int           | 0             | Simulation checkpointing. Unlike all other `out` tags this **will** work during the warmup stage, and will overwrite the file every time it runs. Note that this just controls dump rate --- To actually load a saved checkpoint, set `seed` to -1
 ---             | ---           | ---           | ---
@@ -288,7 +288,7 @@ As a reminder, if you wish to use the default value for a tag, you can leave it 
     "binderBin":        0,
     "swimQOut":         0,
     "swimOOut":         0,
-    "swimROut":         0,
+    "swimRTOut":         0,
     "synopsisOut":      1,
     "checkpointOut":    0,
     "BC":

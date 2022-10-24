@@ -1101,7 +1101,8 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	out->BINDERBIN = getJObjInt(jObj, "binderBin", 0, jsonTagList); // binderBinOut
 	out->SWOUT = getJObjInt(jObj, "swimQOut", 0, jsonTagList); // swOut
 	out->SWORIOUT = getJObjInt(jObj, "swimOOut", 0, jsonTagList); // swOriOut
-	out->RTOUT = getJObjInt(jObj, "swimROut", 0, jsonTagList); // swVelOut
+    const char* swimROutTags[2] = {"swimROut", "swimRTOut"}; // possible tags for collision operator
+    out->RTOUT = getJObjIntMultiple(jObj, collOpTags, 2, 0, jsonTagList); // RTECH
 	out->SYNOUT = getJObjInt(jObj, "synopsisOut", 1, jsonTagList); // swSynOut
 	out->CHCKPNT = getJObjInt(jObj, "checkpointOut", 0, jsonTagList); // chkpntOut
 
