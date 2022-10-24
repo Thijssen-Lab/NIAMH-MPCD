@@ -56,7 +56,7 @@ Tag             | Type          | Default Value | Description
 `zeroNetMom`    | int           | 0             | This substracts any excess momentum every time step (generally have this off)
 `galInv`        | int           | 1             | Whether to enable the random shift of particles to counter gallilean invariance
 `tsTech`        | int           | 0             | Which thermostat technique to use. Note some collsion operators have thermostats built in. See definitions.h for list
-`rTech`         | int           | 2             | Which collision operator to use. See definitions.h for list
+`rTech` OR `collOp`| int           | 2             | Which collision operator to use. See definitions.h for list. `collOp` is prioritised.
 `lc`            | int           | 0             | Liquid crystal mode. 2 = global S, 1 = local S, 0 = off
 `tau`           | double        | 0.5           | Thermal relaxation time scale
 `rotAng`        | double        | 1.570796      | This is the angle used in the original SRD collision operator
@@ -221,7 +221,7 @@ As a reminder, if you wish to use the default value for a tag, you can leave it 
     "zeroNetMom":       0,
     "galInv":           1,
     "tsTech":           0,
-    "rTech":            2,
+    "collOp":            2,
     "lc":               0,
     "tau":              0.5,
     "rotAng":           1.570796,
