@@ -131,8 +131,7 @@ void chooseBC_MD( bc WALL[],particleMD *atom,double *t_min,double *chosenW,int *
 			tc = chooseT( t_step,t1,t2,0,&flag );
 			if( flag ) {
 				printf( "Warning: Cross time unacceptable MD: %lf.\n",tc );
-				// No need to exit the simulation. Just warn the user that it happened and will be handled
-				// exit( 1 );
+				// exit( 1 );		no need to exit. it is solved by further actions in MD_BCcollision
 			}
 
 			if( tc < *t_min ) {
@@ -602,8 +601,9 @@ void swimmer_BCcollision( smono *atom,bc WALL[],specSwimmer SS,double t_step ) {
 	int flag=1;			//flag for if should keep looping. Loop while 1.
 	int cnt=0;				//Count the loop iterations
 	double n[_3D] = {0.,0.,0.};	//Normal to the surface
-	double W;
+	double W,W1=0.0;
 	double shift[DIM];
+	double RX=0.0,RY=0.0,RZ=0.0;
 
 	t_delta = 0.;
 	time = t_step;
@@ -615,6 +615,12 @@ void swimmer_BCcollision( smono *atom,bc WALL[],specSwimmer SS,double t_step ) {
 		if( W>TOL ) flag = 0;
 		//Otherwise, COLLISON
 		else {
+			cnt++;
+			if(cnt==1){
+				RX=atom->Q[x_];
+				RY=atom->Q[y_];
+				RZ=atom->Q[z_];
+			}
 			// #ifdef DBG
 			// 	if( DBUG == DBGSWIMMER ) printf( "\tW=%f BC=%d\n",W,chosenBC );
 			// #endif
@@ -647,10 +653,14 @@ void swimmer_BCcollision( smono *atom,bc WALL[],specSwimmer SS,double t_step ) {
 			//Let the BC stream the rest of the way
 			stream_swimmer( atom,time );
 			//Return to the top and try to move again for the rest of the time.
-			cnt++;
-			if( cnt>NBOUNCE ) {
-				time*=1.1;
-				t_step*=1.1;
+			W1 = calcW_swimmer(WALL[chosenBC],atom);
+			if (W1 < -TOL){
+				atom->Q[x_]=RX;
+				atom->Q[y_]=RY;
+				atom->Q[z_]=RZ;
+				atom->V[x_]=0.0;
+				atom->V[y_]=0.0;
+				atom->V[z_]=0.0;
 			}
 		}
 	}
@@ -664,7 +674,7 @@ void chooseBC_swimmer( bc WALL[],smono *atom,double *t_min,double *chosenW,int *
 	double t1,t2,tc;
 	double tempW,shift[DIM];
 
-	*t_min = t_step;
+	*t_min = time;
 	*chosenW=1.;
 	tempW = 1.;
 	flag=0;
@@ -683,8 +693,8 @@ void chooseBC_swimmer( bc WALL[],smono *atom,double *t_min,double *chosenW,int *
 			crosstime_swimmer( atom,WALL[i],&t1,&t2,time );
 			tc = chooseT( t_step,t1,t2,0,&flag );
 			if( flag ) {
-				printf( "Error: Cross time unacceptable: %lf.\n",tc );
-				exit( 1 );
+				printf( "Warning: Cross time unacceptable swimmers: %lf.\n",tc );
+				// exit( 1 );      //no need to exit, it is solved by further actions in swimmer_BCcollision
 			}
 
 			if( tc < *t_min ) {
