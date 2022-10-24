@@ -735,6 +735,11 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 	int arg;
 	int strln;
+
+    // input/ output checkers
+    int inProvided = 0;
+    int outProvided = 0;
+
 	// Default
 	#ifdef DBG
 		if( DBUG >= DBGINIT ) printf("Read arguments\n");
@@ -749,6 +754,7 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 					*inMode = 0;
 					arg++;
 					sprintf(ip,"%s",argv[arg]);
+                    inProvided = 1;
 					break;
 				case 'L': // legacy
 					if (argv[arg][2] == 'i'){ // arg 'Li' for legacy input
@@ -758,6 +764,7 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 						// Make sure that the directory ends with a "/"
 						strln = strlen(ip);
 						if( ip[strln-1]!='/' ) strcat( ip,"/" );
+                        inProvided = 1;
 						break;
 					}
 				case 'o':
@@ -766,6 +773,7 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 					// Make sure that the directory ends with a "/"
 					strln = strlen(op);
 					if( op[strln-1]!='/' ) strcat( op,"/" );
+                    outProvided = 1;
 					break;
 				case 'v':
 					printVersionSummary( );
@@ -788,6 +796,16 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 			}
 		}
 	}
+
+    // do check to see if input and output were provided
+    if (inProvided == 0){
+        printf("Error: No input provided. See -h for help\n");
+        exit(EXIT_FAILURE);
+    }
+    if (outProvided == 0){
+        printf("Error: No output provided. See -h for help\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 /*
