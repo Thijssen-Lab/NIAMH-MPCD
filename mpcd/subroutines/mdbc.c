@@ -130,7 +130,8 @@ void chooseBC_MD( bc WALL[],particleMD *atom,double *t_min,double *chosenW,int *
 			crosstime_MD( atom,WALL[i],&t1,&t2,time );
 			tc = chooseT( t_step,t1,t2,0,&flag );
 			if( flag ) {
-				printf( "Error: Cross time unacceptable MD: %lf.\n",tc );
+				printf( "Warning: Cross time unacceptable MD: %lf.\n",tc );
+				// No need to exit the simulation. Just warn the user that it happened and will be handled
 				// exit( 1 );
 			}
 
