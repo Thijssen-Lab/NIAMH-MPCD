@@ -23,7 +23,7 @@ Every parameter in the simulation can be fed in with a corresponding name/value 
 The name, or "tag", uniquely represents each parameter, is case sensitive, but can be given in any order within the json file. 
 
 There are some exceptions to this rule, namely overrides.
-Overrides do not correspond to simulation input parameters, but instead will override some other behaviour in a helpful manner.
+Overrides do not correspond to simulation inpu33t parameters, but instead will override some other behaviour in a helpful manner.
 These are given in their own table, and each override explained in more detail.
 
 If a tag is not specified, then that parameter will assume the default value in the table below --- This means that, with the exception of some parameters used when declaring a BC, you may only need to specify several parameters in your input file.
@@ -31,6 +31,7 @@ Some defaults will instead set an override.
 
 The table below lists all tags, their types, their default values, and their description.
 Tags will generally be named the same as they are named in the code (in the various input structs), unless there is a good reason to change it for legibility or clarity.
+When in doubt about which tags correspond to which variable names in the code, please consult SRDclss.h, definitions.h and the subroutine readJson() in read.c.
 
 Some tags will take an array of custom objects (for example, species and boundary conditions). 
 These are each defined in their own table following the main one.
