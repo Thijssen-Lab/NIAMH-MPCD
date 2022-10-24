@@ -1,22 +1,26 @@
 {
     "domain":           [50, 50],
-    "simSteps":         1000,
+    "simSteps":         400,
     "warmUp":           0,
-    "rTech":            2,
+    "collOp":           2,
     "lc":               1,
-    "c":                "This species array corresponds to default so is extreneous",
+    "comment":          "Set the nematic mean field potential to a value much higher than the isotropic-nematic transition value of 4.1 (critical value of 4.2 in 3D)",
+    "mfpot":            20,
+    "comment":          "This species array corresponds to default so is extreneous",
     "species":
     [
         {
-            "c":            "dens is an alternative to pop for setting the average cell density",    
+            "comment":      "Initialize the director in random directions",
+            "oDist":        0,
+            "comment":      "dens is an alternative to pop for setting the average cell density",
             "dens":         20
         }
     ],
-    "c":                "domainWalls=1 sets PBCs around the domain, which is the default so this is also extreneous",
+    "comment":          "domainWalls=1 sets PBCs around the domain, which is the default so this is also extreneous",
     "domainWalls":      1,
     "debugOut":         3,
-    "coarseOut":        250,
-    "flowOut":          250,
-    "dirSOut":          250,
+    "coarseOut":        0,
+    "flowOut":          0,
+    "dirSOut":          10,
     "synopsisOut":      1
 }

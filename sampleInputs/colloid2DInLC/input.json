@@ -2,40 +2,41 @@
     "domain":           [60, 60],
     "simSteps":         1000,
     "warmUp":           0,
-    "rTech":            2,
+    "comment":          "Nematic fluid using Andersen MPCD",
+    "collOp":           2,
     "lc":               1,
     "species":
     [
         {
-            "c":            "For the density to be 20, must subtract the volume of the colloid",
+            "comment":      "For the density to be 20, must subtract the volume of the colloid",
             "pop":          65717
         }
     ],
     "BC":
     [
         {
-            "c":            "Colloid",
-            "c":            "Colloids require phantom particles enabled",
+            "comment":      "Colloid",
+            "comment":      "Colloids require phantom particles enabled",
             "phantom":      1,
             "Q":            [30, 30, 0],
             "aInv":         [1, 1, 1],
             "P":            [2, 2, 1, 2],
             "R":            10,
-            "c":            "No PBC on this colloid, but this is necessary for JSON",
+            "comment":      "No PBC on this colloid, but this is necessary for JSON",
             "DN":           0,
-            "c":            "Apply BC conditions to velocity",
+            "comment":      "Apply BC conditions to velocity",
             "MVN":          -1,
             "MVT":          -1,
-            "c":            "Apply BC conditions to orientation",
+            "comment":      "Apply BC conditions to orientation",
             "MUN":          1,
             "MUT":          0,
-            "c":            "Allow BC to move",
+            "comment":      "Allow BC to move",
             "dsplc":        1,
-            "c":            "Need to set mass to be equal to volume but prop. to av. dens.",
+            "comment":      "Need to set mass to be equal to volume but prop. to av. dens.",
             "mass":         6283
         }
     ],
-    "c":                "domainWalls=1 will ADDITIVELY add PBCs on top of existing BCs",
+    "comment":          "domainWalls=1 will ADDITIVELY add PBCs on top of existing BCs",
     "domainWalls":      1,
     "debugOut":         3,
     "dirSOut":          100,

@@ -1,1 +1,1 @@
-Simulates 2 swimmers in a 2D nematic liquid crystal in periodic boundary conditions.
+Simulates twp swimmers in a 2D nematic liquid crystal in periodic boundary conditions.

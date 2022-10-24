@@ -1,0 +1,1 @@
+Simulates 2D passive nematic liquid crystal in the ordered phase but initialized in random orientations --- necessitating defect annihilation to order. Periodic boundary conditions on the control volume.

@@ -3,11 +3,10 @@
     "simSteps": 100000,
     "warmUp": 0,
     "rFrame": 0,
+    "comment":"Active nematic fluid",
     "lc":1,
     "mfpot":10,
-    "rTech":17,
-
-
+    "collOp":17,
     "species":
     [
         {
@@ -29,6 +28,7 @@
     "BC":
     [
         {
+            "comment":"Bottom wall",
             "phantom":1,
             "aInv":[0,1,0],
             "P":[1,1,1,1],
@@ -40,6 +40,7 @@
             "MUT":1
         },
         {
+            "comment":"Top wall",
             "phantom":1,
             "aInv":[0,-1,0],
             "P":[1,1,1,1],
@@ -51,6 +52,7 @@
             "MUT":1
         },
         {
+            "comment":"Wavy bottom wall",
             "phantom":1,
             "aInv":[0,1,0],
             "P":[1,1,1,1],
@@ -64,6 +66,7 @@
             "wavy":[5,0.31415,0]
         },
         {
+            "comment":"Wavy top wall",
             "phantom":1,
             "aInv":[0,-1,0],
             "P":[1,1,1,1],
@@ -77,6 +80,7 @@
             "wavy":[5,0.31415,0]
         },
         {
+            "comment":"First fixed circular pillar",
             "phantom":1,
             "aInv":[1,1,1],
             "P":[2,2,2,2],
@@ -91,6 +95,7 @@
             "dsplc":0
         },
         {
+            "comment":"Second fixed circular pillar",
             "phantom":1,
             "aInv":[1,1,1],
             "P":[2,2,2,2],
@@ -105,6 +110,7 @@
             "dsplc":0
         },
         {
+            "comment":"Third fixed circular pillar",
             "phantom":1,
             "aInv":[1,1,1],
             "P":[2,2,2,2],
@@ -119,6 +125,7 @@
             "dsplc":0
         },
         {        
+            "comment":"Fourth fixed circular pillar",
             "phantom":1,
             "aInv":[1,1,1],
             "P":[2,2,2,2],
@@ -133,6 +140,7 @@
             "dsplc":0
         },
         {
+            "comment":"Fifth fixed circular pillar",
             "phantom":1,
             "aInv":[1,1,1],
             "P":[2,2,2,2],
@@ -147,6 +155,7 @@
             "dsplc":0
         },
         {
+            "comment":"Left periodic boundary condition",
             "phantom":0,
             "aInv":[1,0,0],
             "P":[1,1,1,1],
@@ -158,6 +167,7 @@
             "MUT":1
         },
         {
+            "comment":"Right periodic boundary condition",
             "phantom":0,
             "aInv":[-1,0,0],
             "P":[1,1,1,1],
