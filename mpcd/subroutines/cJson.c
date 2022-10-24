@@ -190,12 +190,9 @@ int getJObjIntMultiple(cJSON *cJSONRoot, const char** jsonTags, int count, int d
     for (i = 0; i < count; i++) { // loop through tags
         const char* jsonTag = jsonTags[i]; // get current tag we iterate over
 
-        pushLL(head, jsonTag); // add jsonTag to head
-
-        // cJson bits
-        cJSON *jObj = cJSON_GetObjectItemCaseSensitive(cJSONRoot, jsonTag);
-        if (jObj != NULL){ // check for non-existence
-            buff = jObj->valueint; // make a buffer to return an appropriate val
+        int tagValue = getJObjInt(cJSONRoot, jsonTag, d, head); // get value of tag
+        if (tagValue != d) { // if it's not the default value then we found something
+            buff = tagValue; // set buffer to this value
         }
     }
 

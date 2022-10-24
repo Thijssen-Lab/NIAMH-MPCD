@@ -907,7 +907,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	in->zeroNetMom = getJObjInt(jObj, "zeroNetMom", 0, jsonTagList); // zeroNetMom
 	in->GALINV = getJObjInt(jObj, "galInv", 1, jsonTagList); // GALINV
 	in->TSTECH = getJObjInt(jObj, "tsTech", 0, jsonTagList); // TSTECH
-    const char** collOpTags = {"rTech", "collOp"}; // possible tags for collision operator
+    const char* collOpTags[2] = {"rTech", "collOp"}; // possible tags for collision operator
 	in->RTECH = getJObjIntMultiple(jObj, collOpTags, 2, 2, jsonTagList); // RTECH
 	in->LC = getJObjInt(jObj, "lc", 0, jsonTagList); // LC
 	in->TAU = getJObjDou(jObj, "tau", 0.5, jsonTagList); // TAU
