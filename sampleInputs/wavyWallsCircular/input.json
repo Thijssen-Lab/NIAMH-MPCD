@@ -3,8 +3,8 @@
     "simSteps":         5000,
     "warmUp":           0,
     "rFrame":           0,
-    "comment":"Active nematic fluid",
-    "collOp":            17,
+    "comment":          "Active nematic fluid",
+    "collOp":           17,
     "lc":               1,
     "mfpot":            10,
     "species":
