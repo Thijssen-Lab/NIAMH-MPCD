@@ -11,8 +11,8 @@
 #include "../headers/cJson.h"
 
 // list of exclusions for "comment" tags
-char* commentTags[] = {"c", "comment", "//", "#"};
 const int commentTagCount = 4;
+char* commentTags[] = {"c", "comment", "//", "#"};
 
 /* 
    Helper methods and structs to check if an element in the .json exists to the code or not
@@ -63,7 +63,9 @@ int isComment(const char* tag){
    // Returns 1 if tag appears in the comment list, 0 if not
    int i; // counter
    for (i = 0; i < commentTagCount; i++) {
-      if (strcmp(tag, commentTags[i])) return 1;
+      if (strcmp(tag, commentTags[i]) == 0) {
+          return 1;
+      }
    }
 
    return 0; // if you get here then the tag isn't in the comment list
