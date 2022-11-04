@@ -545,7 +545,7 @@ void avenstrophyheader( FILE *fout ) {
 }
 void flowheader( FILE *fout ) {
 /* Simple header for output columns */
-	fprintf( fout,"   QX\t   QY\t   QZ\tVcmX\t\tVcmY\t\tVcmZ\n" );
+	fprintf( fout,"   t\t   QX\t   QY\t   QZ\tVcmX\t\tVcmY\t\tVcmZ\n" );
 }
 void solidsheader( FILE *fout ) {
 /* Simple header for output columns */
