@@ -139,10 +139,16 @@ n=-1
 while infile:
   i=i+1
   line = infile.readline()
-  if( len(line)!= 57):
+  if not line:
     break
   else:
-    Qx,Qy,Qz,Vx,Vy,Vz = line.split("\t",6)
+    split = line.split("\t")
+    if len(split) == 6:
+      Qx,Qy,Qz,Vx,Vy,Vz = split
+    elif len(split) == 7:
+      _,Qx,Qy,Qz,Vx,Vy,Vz = split # to take into account old vs new format
+    else:
+      break # error handling
     XYZ[0][int(Qx)][int(Qy)][int(Qz)] = float(Qx) + 0.5
     XYZ[1][int(Qx)][int(Qy)][int(Qz)] = float(Qy) + 0.5
     XYZ[2][int(Qx)][int(Qy)][int(Qz)] = float(Qz) + 0.5
