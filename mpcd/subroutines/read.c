@@ -735,6 +735,11 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 	int arg;
 	int strln;
+
+    // input/ output checkers
+    int inProvided = 0;
+    int outProvided = 0;
+
 	// Default
 	#ifdef DBG
 		if( DBUG >= DBGINIT ) printf("Read arguments\n");
@@ -749,6 +754,7 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 					*inMode = 0;
 					arg++;
 					sprintf(ip,"%s",argv[arg]);
+                    inProvided = 1;
 					break;
 				case 'L': // legacy
 					if (argv[arg][2] == 'i'){ // arg 'Li' for legacy input
@@ -758,6 +764,7 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 						// Make sure that the directory ends with a "/"
 						strln = strlen(ip);
 						if( ip[strln-1]!='/' ) strcat( ip,"/" );
+                        inProvided = 1;
 						break;
 					}
 				case 'o':
@@ -766,6 +773,7 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 					// Make sure that the directory ends with a "/"
 					strln = strlen(op);
 					if( op[strln-1]!='/' ) strcat( op,"/" );
+                    outProvided = 1;
 					break;
 				case 'v':
 					printVersionSummary( );
@@ -788,6 +796,16 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 			}
 		}
 	}
+
+    // do check to see if input and output were provided
+    if (inProvided == 0){
+        printf("Error: No input provided. See -h for help\n");
+        exit(EXIT_FAILURE);
+    }
+    if (outProvided == 0){
+        printf("Error: No output provided. See -h for help\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 /*
@@ -907,7 +925,8 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	in->zeroNetMom = getJObjInt(jObj, "zeroNetMom", 0, jsonTagList); // zeroNetMom
 	in->GALINV = getJObjInt(jObj, "galInv", 1, jsonTagList); // GALINV
 	in->TSTECH = getJObjInt(jObj, "tsTech", 0, jsonTagList); // TSTECH
-	in->RTECH = getJObjInt(jObj, "rTech", 2, jsonTagList); // RTECH
+    const char* collOpTags[2] = {"rTech", "collOp"}; // possible tags for collision operator
+	in->RTECH = getJObjIntMultiple(jObj, collOpTags, 2, 2, jsonTagList); // RTECH
 	in->LC = getJObjInt(jObj, "lc", 0, jsonTagList); // LC
 	in->TAU = getJObjDou(jObj, "tau", 0.5, jsonTagList); // TAU
 	in->RA = getJObjDou(jObj, "rotAng", 1.570796, jsonTagList); // rotAng
@@ -955,9 +974,10 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 	// Handle MD
 	getJObjStr(jObj, "mdIn", "", &mdInputFile, jsonTagList);
+    int mdCoupleMode = getJObjInt(jObj, "mdCoupleMode", 1, jsonTagList); // coupling mode for MD
 	if (strcmp(mdInputFile, "") == 0){ // if no input file was found
 		MDmode = 0;
-	} else MDmode = 1; // otherwise enable MD if input file found
+	} else MDmode = mdCoupleMode; // otherwise set MD to correct coupling mode to enable it
 
 	in->stepsMD = getJObjInt(jObj, "stepsMD", 20, jsonTagList); // stepsMD
 
@@ -1100,7 +1120,8 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	out->BINDERBIN = getJObjInt(jObj, "binderBin", 0, jsonTagList); // binderBinOut
 	out->SWOUT = getJObjInt(jObj, "swimQOut", 0, jsonTagList); // swOut
 	out->SWORIOUT = getJObjInt(jObj, "swimOOut", 0, jsonTagList); // swOriOut
-	out->RTOUT = getJObjInt(jObj, "swimROut", 0, jsonTagList); // swVelOut
+    const char* swimROutTags[2] = {"swimROut", "swimRTOut"}; // possible tags for collision operator
+    out->RTOUT = getJObjIntMultiple(jObj, swimROutTags, 2, 0, jsonTagList); // RTECH
 	out->SYNOUT = getJObjInt(jObj, "synopsisOut", 1, jsonTagList); // swSynOut
 	out->CHCKPNT = getJObjInt(jObj, "checkpointOut", 0, jsonTagList); // chkpntOut
 

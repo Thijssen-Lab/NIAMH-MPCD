@@ -1,0 +1,1 @@
+Simulates a complex geometry confining a 2D active nematic fluid. The boundaries form the pedels of a flower: The system is a circular annulus but the outer wall is a wavy sinusoid. The outer wall is no-slip with planar anchoring, while the inner wall is no-slip but with the director free to take any orientation.

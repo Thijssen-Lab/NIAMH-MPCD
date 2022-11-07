@@ -11,8 +11,8 @@
 #include "../headers/cJson.h"
 
 // list of exclusions for "comment" tags
-char* commentTags[] = {"c", "comment", "//", "#"};
 const int commentTagCount = 4;
+char* commentTags[] = {"c", "comment", "//", "#"};
 
 /* 
    Helper methods and structs to check if an element in the .json exists to the code or not
@@ -63,7 +63,9 @@ int isComment(const char* tag){
    // Returns 1 if tag appears in the comment list, 0 if not
    int i; // counter
    for (i = 0; i < commentTagCount; i++) {
-      if (strcmp(tag, commentTags[i])) return 1;
+      if (strcmp(tag, commentTags[i]) == 0) {
+          return 1;
+      }
    }
 
    return 0; // if you get here then the tag isn't in the comment list
@@ -176,6 +178,27 @@ int getJObjInt(cJSON *cJSONRoot, const char* jsonTag, int d, linkedList *head){
    
    int buff = jObj->valueint; // make a buffer to return an appropriate val
    return buff;
+}
+
+int getJObjIntMultiple(cJSON *cJSONRoot, const char** jsonTags, int count, int d, linkedList *head) {
+    /*
+     * Returns an integer object from the given cJSON file searching for one of a particular jsonTag.
+     * The last json tag in jsonTags is prioritised.
+     * If no appropriate json tag is found then it will return default value d
+     */
+    int i;
+    int buff = d; // buffer to return appropriate val, set to default initially
+
+    for (i = 0; i < count; i++) { // loop through tags
+        const char* jsonTag = jsonTags[i]; // get current tag we iterate over
+
+        int tagValue = getJObjInt(cJSONRoot, jsonTag, d, head); // get value of tag
+        if (tagValue != d) { // if it's not the default value then we found something
+            buff = tagValue; // set buffer to this value
+        }
+    }
+
+    return buff;
 }
 
 double getJObjDou(cJSON *cJSONRoot, const char* jsonTag, double d, linkedList *head){

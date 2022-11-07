@@ -1,12 +1,12 @@
 {
     "domain":           [20, 20],
     "simSteps":         50000,
-    "c":                "Isotropic fluid using Andersen MPCD",
-    "rTech":            2,
+    "comment":          "Isotropic fluid using Andersen MPCD",
+    "collOp":           2,
     "species":
     [
         {
-            "c":            "For the density to be 20, must subtract the volume of the colloid",
+            "comment":      "For the density to be 20, must subtract the volume of the colloid",
             "pop":          7435
         }
     ],
@@ -15,22 +15,22 @@
     "solidTrajOut":     1000,
     "energyOut":        0,
     "synopsisOut":      1,
-    "c":                "Periodic boundary conditions on the domain",
+    "comment":          "Periodic boundary conditions on the domain",
     "domainWalls":      1,
     "BC":
     [
         {
-            "c":            "The spherical colloid",
+            "comment":      "The spherical colloid",
             "phantom":      1,
             "Q":            [10, 10, 0],
             "aInv":         [1, 1, 0],
             "P":            [2, 2, 2, 2],
-            "c":            "Colloid radius",
+            "comment":      "Colloid radius",
             "R":            3,
             "DN":           0,
             "MVN":          -1,
             "MVT":          -1,
-            "c":            "The colloid should be mobile, i.e. free to be displaced",
+            "comment":      "The colloid should be mobile, i.e. free to be displaced",
             "dsplc":        1,
             "mass":         565
         }

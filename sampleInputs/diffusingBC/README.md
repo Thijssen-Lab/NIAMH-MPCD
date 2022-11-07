@@ -1,1 +1,0 @@
-Simulates 2D mobile particle of radius 3 that diffuses due to thermal fluctuations in periodic boundary conditions.

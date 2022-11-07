@@ -57,7 +57,7 @@ Tag             | Type          | Default Value | Description
 `zeroNetMom`    | int           | 0             | This substracts any excess momentum every time step (generally have this off)
 `galInv`        | int           | 1             | Whether to enable the random shift of particles to counter gallilean invariance
 `tsTech`        | int           | 0             | Which thermostat technique to use. Note some collsion operators have thermostats built in. See definitions.h for list
-`rTech`         | int           | 2             | Which collision operator to use. See definitions.h for list
+`rTech` OR `collOp`| int           | 2             | Which collision operator to use. See definitions.h for list. `collOp` is prioritised.
 `lc`            | int           | 0             | Liquid crystal mode. 2 = global S, 1 = local S, 0 = off
 `tau`           | double        | 0.5           | Thermal relaxation time scale
 `rotAng`        | double        | 1.570796      | This is the angle used in the original SRD collision operator
@@ -67,6 +67,7 @@ Tag             | Type          | Default Value | Description
 `mag`           | array(double) | [0,0,0]       | Constant external magnetic field. MUST be 3D
 `seed`          | int           | 0             | Seed for random number generator. 0 for pseudorandom seed. Set to -1 to load a checkpoint.
 `mdIn`          | string        | ""            | Path to the MD input file. This also acts as the switch for enabling MD --- If set to `""`, then MD is disabled, otherwise MD is enabled with the corresponding input file.
+`mdCoupleMode`  | int           | 1             | Coupling mode for MD. Only matters if `mdIn` is set. Set to 1 for MD particles to be treated as MPCD particles, 2 for MD particles to be treated as MD particles in the MPCD simulator.
 `stepsMD`       | int           | 20            | MD time steps per MPCD time step
 `species`       | array(species)| 1 default spec  | An array of species objects. See the species table for species tags.
 ---             | ---           | ---           | ---
@@ -108,34 +109,34 @@ Tag             | Type          | Default Value | Description
 `binderBin`     | int           | 0             | Binder cumulant bin size
 `swimQOut`      | int           | 0             | Swimmer positions
 `swimOOut`      | int           | 0             | Swimmer orientations
-`swimROut`      | int           | 0             | Swimmer run/ tumble
+`swimROut` OR `swimRTOut`| int           | 0             | Swimmer run/ tumble. `swimRTOut` is prioritised.
 `synopsisOut`   | int           | 1             | Synopsis output. Highly recommended to be on. 1 = on, 0 = off
 `checkpointOut` | int           | 0             | Simulation checkpointing. Unlike all other `out` tags this **will** work during the warmup stage, and will overwrite the file every time it runs. Note that this just controls dump rate --- To actually load a saved checkpoint, set `seed` to -1
 ---             | ---           | ---           | ---
 `BC`            | array(BC)     | PBCs around domain | The array of boundary objects. See the BC table for BC tags.
----             | ---           | ---           | ---
-`typeSwim`      | int           | 2             | Swimmer type. Default is a dumbell swimmer with excluded volume interactions
-`nSwim`         | int           | 0             | Swimmer population
-`qDistSwim`     | int           | 0             | Initial distribution of swimmer positions
-`oDistSwim`     | int           | 0             | Initial distribution of swimmer orientations
-`headMSwim`     | int           | 20            | Mass of head monomer
-`midMSwim`      | int           | 20            | Mass of middle monomer
-`hspIdSwim`     | int           | 1             | Multiphase fluid particle type of the head monomer in the swimmer
-`mspIdSwim`     | int           | 1             | Multiphase fluid particle type of the middle monomer in the swimmer
-`fsSwim`        | double        | 20            | Magnitude of swimmer propulsion force
-`dsSwim`        | double        | 1             | Dipole strength
-`tsSwim`        | double        | 0             | Magnitude of swimmer torque
-`sizeShrinkSwim`| double        | 0.1           | How much do LJ sigma ro shrink when tumbling
-`springShrinkSwim`| double        | 0.1           | How much the spring constant is shrunk when tumbling
-`kSwim`         | double        | 30            | Spring constant
-`roSwim`        | double        | 4             | Spring seperation
-`sigSwim`       | double        | 4             | Diameter approx sigma
-`epsSwim`       | double        | 1             | Interaction energy
-`runTSwim`      | double        | 0             | Average run time in units of MPCD timesteps dt
-`tumTSwim`      | double        | 0             | Average tumble time in units of MPCD timesteps dt
-`shrTSwim`      | double        | 2             | Set time to shrink/ extend in units of MPCD timesteps dt
-`magMomSwim`    | double        | 1             | Magnetic moment/ strength
-`fixDistSwim`   | double        | 0             | The fixed distance from the wall for DUMBELL_NEARWALL mode
+---             | ---           | ---                | ---
+`typeSwim`      | int           | 2                  | Swimmer type. Default is a dumbell swimmer with excluded volume interactions
+`nSwim`         | int           | 0                  | Swimmer population
+`qDistSwim`     | int           | 0                  | Initial distribution of swimmer positions
+`oDistSwim`     | int           | 0                  | Initial distribution of swimmer orientations
+`headMSwim`     | int           | 20                 | Mass of head monomer
+`midMSwim`      | int           | 20                 | Mass of middle monomer
+`hspIdSwim`     | int           | 1                  | Multiphase fluid particle type of the head monomer in the swimmer
+`mspIdSwim`     | int           | 1                  | Multiphase fluid particle type of the middle monomer in the swimmer
+`fsSwim`        | double        | 20                 | Magnitude of swimmer propulsion force
+`dsSwim`        | double        | 1                  | Dipole strength
+`tsSwim`        | double        | 0                  | Magnitude of swimmer torque
+`sizeShrinkSwim`| double        | 0.1                | How much do LJ sigma ro shrink when tumbling
+`springShrinkSwim`| double        | 0.1                | How much the spring constant is shrunk when tumbling
+`kSwim`         | double        | 30                 | Spring constant
+`roSwim`        | double        | 4                  | Spring seperation
+`sigSwim`       | double        | 4                  | Diameter approx sigma
+`epsSwim`       | double        | 1                  | Interaction energy
+`runTSwim`      | double        | 0                  | Average run time in units of MPCD timesteps dt
+`tumTSwim`      | double        | 0                  | Average tumble time in units of MPCD timesteps dt
+`shrTSwim`      | double        | 2                  | Set time to shrink/ extend in units of MPCD timesteps dt
+`magMomSwim`    | double        | 1                  | Magnetic moment/ strength
+`fixDistSwim`   | double        | 0                  | The fixed distance from the wall for DUMBELL_NEARWALL mode
 
 #### Overrides
 Override Tag    | Type          | Override param| Description
@@ -222,7 +223,7 @@ As a reminder, if you wish to use the default value for a tag, you can leave it 
     "zeroNetMom":       0,
     "galInv":           1,
     "tsTech":           0,
-    "rTech":            2,
+    "collOp":            2,
     "lc":               0,
     "tau":              0.5,
     "rotAng":           1.570796,
@@ -289,7 +290,7 @@ As a reminder, if you wish to use the default value for a tag, you can leave it 
     "binderBin":        0,
     "swimQOut":         0,
     "swimOOut":         0,
-    "swimROut":         0,
+    "swimRTOut":         0,
     "synopsisOut":      1,
     "checkpointOut":    0,
     "BC":
