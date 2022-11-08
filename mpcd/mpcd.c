@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
 	inputList inputVar;
 	kinTheory theory;				//Theoretical values based on input
 	//Timer variables
-	time_t to,tf;
+	time_t to,tf,lastCheckpoint;
 	clock_t co,cf;
 	//Simulation variables
 	double KBTNOW;					//Current un-thermostated temperature
@@ -212,6 +212,7 @@ int main(int argc, char* argv[]) {
 	/* ****************************************** */
 	/* ****************************************** */
 	/* ****************************************** */
+    lastCheckpoint = time(NULL); // set NOW to last checkpoint time
 
 	/* ****************************************** */
 	/* *************** WARMUP LOOP ************** */
@@ -231,12 +232,7 @@ int main(int argc, char* argv[]) {
 			/* *************** CHECKPOINT *************** */
 			/* ****************************************** */
 			if( outFlags.CHCKPNT>=OUT && warmtime%outFlags.CHCKPNT==0 ) {
-				#ifdef DBG
-					if( DBUG >= DBGRUN ) printf( "\nCheckpointing.\n" );
-				#endif
-				openCheckpoint( &(outFiles.fchckpnt),op );
-				checkpoint( outFiles.fchckpnt, inputVar, SPECIES, SRDparticles, MDmode, WALL, outFlags, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory,specS, swimmers );
-				fclose( outFiles.fchckpnt );
+                runCheckpoint( op, &lastCheckpoint, outFiles.fchckpnt, inputVar, SPECIES, SRDparticles, MDmode, WALL, outFlags, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory,specS, swimmers );
 			}
 		}
 		inputVar.warmupSteps=0;
@@ -270,13 +266,8 @@ int main(int argc, char* argv[]) {
 		/* *************** CHECKPOINT *************** */
 		/* ****************************************** */
 		if( outFlags.CHCKPNT>=OUT && runtime%outFlags.CHCKPNT==0 ) {
-			#ifdef DBG
-				if( DBUG >= DBGRUN ) printf( "\nCheckpointing.\n" );
-			#endif
-			openCheckpoint( &(outFiles.fchckpnt),op );
-			checkpoint( outFiles.fchckpnt, inputVar, SPECIES, SRDparticles, MDmode, WALL, outFlags, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory,specS, swimmers );
-			fclose( outFiles.fchckpnt );
-		}
+            runCheckpoint( op, &lastCheckpoint, outFiles.fchckpnt, inputVar, SPECIES, SRDparticles, MDmode, WALL, outFlags, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory,specS, swimmers );
+        }
 	}
 	#ifdef DBG
 		if( DBUG > DBGRUN ) printf( "Temperal loop complete\n" );

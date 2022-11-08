@@ -1605,6 +1605,7 @@ void spectout( FILE *fout,double spect[],double t ) {
 		fflush(fout);
 	#endif
 }
+
 void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,bc *WALL,outputFlagsList outFlag,int runtime,int warmtime,double AVVEL,double AVS,double avDIR[_3D],double S4,double stdN,double KBTNOW,double AVV[_3D],double AVNOW[_3D],kinTheory theory,specSwimmer specS,swimmer *sw ) {
 	/*
 	 Checkpoint the entire simulation
@@ -1637,7 +1638,7 @@ void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,b
 	//Species of MPCD particles
 	for( i=0; i<NSPECI; i++ ) {
 		fprintf( fout,"%lf %i %i %i %i ",(SP+i)->MASS,(SP+i)->POP,(SP+i)->QDIST,(SP+i)->VDIST,(SP+i)->ODIST );
-		fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf\n",(SP+i)->RFC, (SP+i)->LEN, (SP+i)->TUMBLE, (SP+i)->CHIHI, (SP+i)->CHIA, (SP+i)->ACT, (SP+i)->DAMP );
+		fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf\n",(SP+i)->RFC, (SP+i)->LEN, (SP+i)->TUMBLE, (SP+i)->CHIHI, (SP+i)->CHIA, (SP+i)->ACT, (SP+i)->SIGWIDTH, (SP+i)->SIGPOS, (SP+i)->DAMP );
 		for( j=0; j<NSPECI; j++ ) fprintf( fout,"%lf ",(SP+i)->M[j] );			//Binary fluid control parameters
 		fprintf( fout,"\n" );
 	}
@@ -1668,9 +1669,35 @@ void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,b
 		fprintf( fout,"%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n",(sw+i)->M.HorM,(sw+i)->M.Q[0],(sw+i)->M.Q[1],(sw+i)->M.Q[2],(sw+i)->M.V[0],(sw+i)->M.V[1],(sw+i)->M.V[2],(sw+i)->M.A[0],(sw+i)->M.A[1],(sw+i)->M.A[2] );
 	}
 
-	#ifdef FFLSH
-		fflush(fout);
-	#endif
+	fflush(fout); // force flush
+}
+
+void runCheckpoint(char op[500],time_t *lastCheckpoint,FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,bc *WALL,outputFlagsList outFlag,int runtime,int warmtime,double AVVEL,double AVS,double avDIR[_3D],double S4,double stdN,double KBTNOW,double AVV[_3D],double AVNOW[_3D],kinTheory theory,specSwimmer specS,swimmer *sw ) {
+    /*
+     * Run a checkpoint operation, used to clean up code in mpcd.c
+     */
+
+    // if time-based checkpointing has been enabled, see if a checkpoint needs to be made
+    // otherwise return early
+    if (outFlag.CHCKPNTTIMER != 0.0) {
+        time_t currTime = time(NULL);
+        if (currTime - *lastCheckpoint >= outFlag.CHCKPNTTIMER*60*60) {
+            // if time diff is more than the set checkpointing time
+            #ifdef DBG
+            if( DBUG >= DBGRUN ) printf( "\nTimer based checkpoint triggered." );
+            #endif
+            *lastCheckpoint = currTime;
+        } else {
+            return; // early return, no checkpoint needed
+        }
+    }
+    #ifdef DBG
+    if( DBUG >= DBGRUN ) printf( "\nCheckpointing.\n" );
+    #endif
+    // normal checkpoint
+    openCheckpoint( &(fout),op );
+    checkpoint( fout, in, SP, pSRD, MDmode, WALL, outFlag, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory, specS, sw);
+    fclose( fout );
 }
 
 void outputResults( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr simMD,specSwimmer SS, swimmer swimmers[],double AVNOW[_3D],double AVV[_3D],double avDIR[_3D], int runtime, inputList in, double AVVEL, double KBTNOW,double *AVS,double *S4,double *stdN,int MDmode,outputFlagsList outFlag,outputFilesList outFiles ) {

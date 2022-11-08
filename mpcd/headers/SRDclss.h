@@ -36,6 +36,11 @@ typedef struct spec {
 	double ACT;				//The activity of the particle --- json 'act'
 	double DAMP;			//A damping/friction coefficient to go from wet to dry (to kill hydrodynamics) [0,1] --- json 'damp'
 	double M[MAXSPECI];	//Interaction matrix for multiphase fluids --- each species has a different interaction with all others --- json 'interMatr'
+	double SIGWIDTH;		//The width of the sigmoid for active dipole sigmoid (CO#20)
+	double SIGPOS;			//The position of the sigmoid for active dipole sigmoid (CO#20)
+	double MINACTRATIO;		//Minimum proportion of particles in the cell for activity to be applied
+	double DAMP;			//A damping/friction coefficient to go from wet to dry (to kill hydrodynamics) [0,1]
+	double M[MAXSPECI];	//Interaction matrix for multiphase fluids --- each species has a different interaction with all others
 } spec;
 typedef struct bc {
 /*
@@ -235,6 +240,7 @@ typedef struct outputFlagsList {
 	int DENSOUT;				//Flag for density standard deviation is outputted --- json 'densSDOut'
 	int ENSTROPHYOUT;		//Flag for if total average enstrophy is outputted --- json 'enstrophyOut'
 	int CHCKPNT;				//Flag for checkpointing --- json 'checkpointOut'
+	float CHCKPNTTIMER;			//Flag for checkpointing based on a timer --- json 'checkpointTimerOut'
 	int CHCKPNTrcvr;		//Flag for simulation from recovery of checkpoint
 	int BINDER,BINDERBIN;	//Flag for Binder cumulant and the bin size of the Binder cumulant --- json 'binderOut' and 'binderBin'
 	int printSP;				//How many of the species are printed --- json 'trajSpecOut'

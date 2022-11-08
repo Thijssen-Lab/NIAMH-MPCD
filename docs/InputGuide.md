@@ -139,9 +139,10 @@ Tag             | Type          | Default Value | Description
 `fixDistSwim`   | double        | 0                  | The fixed distance from the wall for DUMBELL_NEARWALL mode
 
 #### Overrides
-Override Tag    | Type          | Override param| Description
----             | ---           | ---           | ---
-`domainWalls`   | int           | `BC`          | This override will add extra BCs to the simulation, on top of the declared ones, on the domain walls. If set to 1, it places PBCs, and if set to 0 it places solid walls. 
+Override Tag    | Type  | Override param | Description
+---             |-------|--------------| ---
+`domainWalls`   | int   | `BC`         | This override will add extra BCs to the simulation, on top of the declared ones, on the domain walls. If set to 1, it places PBCs, and if set to 0 it places solid walls. 
+`checkpointTimerOut`| float| `checkpointOut`| This override enables checkpointing, but puts it on a timer. It will checkpoint every X **hours**, where X is specified by this parameter. 
 
 ### Species Tag Table
 Tag             | Type          | Default Value | Description
@@ -158,6 +159,9 @@ Tag             | Type          | Default Value | Description
 `shearSusc`     | double        | 0.5           | Shear susceptibility
 `magnSusc`      | double        | 0.001         | Magnetic susceptibility
 `act`           | double        | 0.05          | Species activity
+`sigWidth`      | double        | 1.0           | Sigmoid width for activity faloff, specifically for CO#20. **Cannot be 0**.
+`sigPos`        | double        | `sigWidth`    | Sigmoid position for activity faloff, specifically for CO#20
+`minActRatio`   | double        | 0             | Minimum ratio of particles (of mean density) of this species to allow activity to be calculated in this cell. If 0, then this is ignored.
 `damp`          | double        | 0             | Damping friction to kill hydrodynamics. Between 0 and 1.
 
 #### Species Overrides
@@ -249,7 +253,10 @@ As a reminder, if you wish to use the default value for a tag, you can leave it 
             "shearSusc":    0.5,
             "magnSusc":     0.001,
             "act":          0.05,
-            "damp":         0
+            "damp":         0,
+            "sigWidth":     1.0,
+            "sigPos":       0.0,
+            "minActRatio":  0.0
         }
     ],
     "debugOut":         3,
