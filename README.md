@@ -5,8 +5,7 @@ Multi-Particle Collision Dynamics code developed by the Shendruk Lab
 Code started and majority written by Tyler Shendruk, for the Polymer Physics Research Group at the University of Ottawa. 
 Originally started in October 2008 and known as Stochastic Rotation Dynamics.
 
-The MD simulator used was written by F Tessier, started in 2005.
-TODO: who exactly is this???
+The MD simulator used was written by Frédéric Tessier, started in 2005 at the University of Ottawa.
 
 Major contributors to the code include Louise Head and Timofey Kozhukhov at the University of Edinburgh.
 

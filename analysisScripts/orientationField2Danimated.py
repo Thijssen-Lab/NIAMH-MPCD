@@ -1,11 +1,20 @@
+"""
+	Orientation field (director) rendering script.
+	Uses defect handler (from https://github.com/Shendruk-Lab/MPCDDefectLoader)
+
+	Originally from Tyler N. Shendruk
+	Modified by Timofey Kozhukhov
+"""
+
 from pylab import *
-from numpy import ma
 from subprocess import call
-from mpl_toolkits.mplot3d import axes3d
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+import sys
+
+from defectHandler import getDefectData
 
 ###########################################################
 ### Plots 2D averaging over user defined direction
+### Input files: directorfield.dat (OrderParaAndDirField)
 ###########################################################
 
 ###########################################################
@@ -17,6 +26,8 @@ xyzSize=zeros( 3,dtype=int )
 print( "Arguments:" )
 for arg in sys.argv:
 	print( "\t" + arg )
+
+
 dataName = sys.argv[1]		# Name of the data
 xyzSize[0] = int(sys.argv[2])	# System size
 xyzSize[1] = int(sys.argv[3])	# System size
@@ -29,6 +40,23 @@ avdim = sys.argv[9]			# Dimension to average over
 c = float(sys.argv[10])		#Length of director lines approx 0.5
 myAspect=sys.argv[11]		#'auto' - reshapes into square graph or 'equal' keeps whatever aspect ratio the true values
 keepFrames=int(sys.argv[12])	#0=don't keep (delete) frames; 1=keep frames
+defectData = ""
+try:
+	defectData = sys.argv[13]		# Name of the defect data ("" if no defect data)
+except:
+	print("No defect data found")
+
+# defect handling if needed
+LOADDEFECTS = False
+defects = []
+if defectData != "":
+	print("Loading defects for rendering")
+	LOADDEFECTS = True
+
+	defContainer = getDefectData(defectData, np.array([xyzSize[0], xyzSize[1], xyzSize[2]]))
+	for defList in defContainer:
+		defects.append(defList.defectList)
+	print("Finished loading defects")
 
 ###########################################################
 ### Format and style
@@ -43,10 +71,12 @@ myMap=ed.plasma
 # deepsea = lsc.from_list("", [purple,ceruleandarker,limegreen])
 # Adjust line width
 myLW=1.0
+# adjust line length
+c *= (qx+qy)/2
 
 #Animation stuff
 bitrate=5000
-framerate=4		#Number of frames per second in the output video
+framerate=12		#Number of frames per second in the output video
 codec='libx264'		#Other options include mpeg4
 suffix='.mp4'
 
@@ -205,15 +235,37 @@ while infile:
 			n=n+1
 			fig1 = plt.figure(1)
 			plt.cla()
-			for x in range(xyzSize[d1]):
-				for y in range(xyzSize[d2]):
-					if( x%qx==0 and y%qy==0 ):
-						plot( [ XY[0][x][y]-c*MEAN[d1][x][y],XY[0][x][y]+c*MEAN[d1][x][y] ],[ XY[1][x][y]-c*MEAN[d2][x][y],XY[1][x][y]+c*MEAN[d2][x][y] ],color=myMap(AVS[x][y],1),linewidth=myLW )
+
+			quiver( XY[0][::qx, ::qy], XY[1][::qx, ::qy], 
+					c*MEAN[0][::qx, ::qy], c*MEAN[1][::qx, ::qy], 
+					AVS[::qx, ::qy], cmap=myMap, clim=(0, 1), scale=50/c,
+					width=0.005*myLW, headlength=0, headwidth=0, 
+					headaxislength=0, pivot='middle')
+					# linewidth=myLW, headaxislength=1)
+
+			# old method - draw a bunch of individual lines. slow and painful
+			# for x in range(xyzSize[d1]):
+			# 	for y in range(xyzSize[d2]):
+			# 		if( x%qx==0 and y%qy==0 ):
+			# 			plot( [ XY[0][x][y]-c*MEAN[d1][x][y],XY[0][x][y]+c*MEAN[d1][x][y] ],[ XY[1][x][y]-c*MEAN[d2][x][y],XY[1][x][y]+c*MEAN[d2][x][y] ],color=myMap(AVS[x][y],1),linewidth=myLW )
+
+			# load defects and draw them as necessary
+			# FIXME: only works for 2d for now, doesnt take into account d1 or d2
+			if LOADDEFECTS and (j < len(defects)):
+				print(f"\tDrawing defects {j}/{len(defects)-1}")
+				for defect in defects[j-1]: # j is not 0 indexed reeeeee
+					defect.drawDefect(c*2, myLW*2)
+
 			xlabel(r'$%s$'%labX, fontsize = FS)
 			ylabel(r'$%s$'%labY, fontsize = FS)
 			plt.axis(xmax=xyzSize[d1], xmin=0, ymax=xyzSize[d2], ymin=0)
 			name='frame%04d.png'%(n)
 			# savefig( name )
+
+			# uncomment below for snapshots
+			plt.axis('off') 
+			plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+
 			savefig( name,bbox_inches='tight',pad_inches=0 )
 
 			#Zero matrix

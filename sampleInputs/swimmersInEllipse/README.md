@@ -1,0 +1,1 @@
+Simulates thirty swimmers in a 2D confining ellipse with impermeable, no-slip boundary conditions.

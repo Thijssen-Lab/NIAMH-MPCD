@@ -1,0 +1,55 @@
+{
+    "domain":           [100, 50],
+    "simSteps":         8000,
+    "comment":          "Isotropic fluid using Andersen MPCD",
+    "collOp":            2,
+    "species":
+    [
+        {
+            "comment":     "Number of fluid particles = 20*volume of ellipse",
+            "pop":         50265
+        }
+    ],
+    "comment":          "Output",
+    "debugOut":         3,
+    "flowOut":          100,
+    "pressureOut":      0,
+    "avVelOut":         0,
+    "energyOut":        0,
+    "swimQOut":         100,
+    "swimOOut":         0,
+    "swimROut":         0,
+    "synopsisOut":      1,
+    "checkpointOut":    0,
+    "comment":          "Periodic boundary conditions around the elliptical wall --- redundant",
+    "domainWalls":      1,
+    "BC":
+    [
+        {
+            "comment":      "Impermeable, no-slip elliptical container",
+            "phantom":      1,
+            "Q":            [50, 25, 0],
+            "comment":      "Ellipse width and height",
+            "aInv":         [40.0, 20.0, 0],
+            "P":            [2, 2, 2, 2],
+            "R":            1,
+            "DN":           0,
+            "MVN":          -1,
+            "MVT":          -1,
+            "comment":      "Invert the surface so the fluid is inside the pipe",
+            "inv":          1
+        }
+    ],
+    "comment":          "Dumb-dumbell swimmers",
+    "typeSwim":         2,
+    "comment":          "Thirty swimmers",
+    "nSwim":            30,
+    "headMSwim":        20,
+    "midMSwim":         20,
+    "fsSwim":           5,
+    "dsSwim":           1,
+    "kSwim":            30,
+    "roSwim":           4,
+    "sigSwim":          4,
+    "epsSwim":          1
+}
