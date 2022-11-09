@@ -68,12 +68,12 @@ int main(int argc, char* argv[]) {
 	/* ****************************************** */
 	/* ****************************************** */
 	int i,j;						//Counting variables
-	simptr simMD;					//The md simulation is a pointer
+	simptr simMD=NULL;				//The md simulation is a pointer
 	cell ***CL;						//The array of all the cell lists
 	particleMPC *SRDparticles;		//The array of particles
 	spec *SPECIES;					//SPECIES is an array of the population of each species
 	bc *WALL;						//The boundary conditions
-	int runtime,warmtime;			//Temperal loop counter --- iterations NOT sim time
+	int starttime,runtime,warmtime;	//Temperal loop counter --- iterations NOT sim time
 	//Input
 	inputList inputVar;
 	kinTheory theory;				//Theoretical values based on input
@@ -222,8 +222,9 @@ int main(int argc, char* argv[]) {
 			if( DBUG > DBGRUN ) printf( "Begin warmup loop\n" );
 		#endif
 		if(outFlags.SYNOUT == OUT) fprintf( outFiles.fsynopsis,"\nBegin warmup loop.\n" );
-		// This is the main loop of the SRD program. The temporal loop.
-		for( warmtime=warmtime; warmtime<=inputVar.warmupSteps; warmtime++ ) {
+		// This is the main loop of the SRD program. The temporal loop. 
+		starttime=warmtime;
+		for( warmtime=starttime; warmtime<=inputVar.warmupSteps; warmtime++ ) {
 			/* ****************************************** */
 			/* ***************** UPDATE ***************** */
 			/* ****************************************** */
@@ -249,7 +250,8 @@ int main(int argc, char* argv[]) {
 	#endif
 	if(outFlags.SYNOUT == OUT) fprintf( outFiles.fsynopsis,"\nBegin temperal loop.\n" );
 	// This is the main loop of the SRD program. The temporal loop.
-	for( runtime=runtime; runtime<=inputVar.simSteps; runtime++ ) {
+	starttime=runtime;
+	for( runtime=starttime; runtime<=inputVar.simSteps; runtime++ ) {
 		/* ****************************************** */
 		/* ***************** UPDATE ***************** */
 		/* ****************************************** */
