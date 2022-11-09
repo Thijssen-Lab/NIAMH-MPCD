@@ -603,7 +603,7 @@ void push( double V[],double KBT,int PL,double MASS,FILE *fin ) {
 		exit( 1 );
 	}
 }
-void orient( double U[],int PL ) {
+void orient( double U[],double Q[],int PL ) {
 /*
    This subroutine sets the orientation. Currently is places them
    randomly or all aligned
@@ -670,6 +670,44 @@ void orient( double U[],int PL ) {
 
 		for( d=0; d<DIM; d++ ) U[d] = XYZ[d]/L2;
 	}
+	else if( PL==ALIGNDEFECTPAIR ) {
+		// Orientation points as if around two oppositely charged defects
+		// of the system size, with unit size
+		double QP[_2D],QM[_2D];		//Position of the Plus and Minus defects
+		double UP[_2D],UM[_2D];		//Orientations of the defects
+		double kP=0.5,kM=-0.5;		//Charges of the defects
+		double phiP,phiM;			//Director angles at the point Q
+		double wP,wM,wY;			//Weightings of U for each defect at the point Q and the walls(linear)
+		double r,R;
+
+		//Linear weighting slope
+		R=0.5*sqrt( 2.25*((double)XYZ[0])*((double)XYZ[0]) + ((double)XYZ[1])*((double)XYZ[1]) );
+		// Do the +1/2 defect on the left side
+		QP[0] = ((double)XYZ[0])*0.25;
+		QP[1] = ((double)XYZ[1])*0.5;
+		phiP = atan2(QP[1]-Q[1],QP[0]-Q[0]);
+		UP[0] = cos(kP*phiP);
+		UP[1] = sin(kP*phiP);
+		r=sqrt( pow(QP[0]-Q[0],2.0)+pow(QP[1]-Q[1],2.0) );
+		wP=1.0-r/R;
+		// Do the -1/2 defect on the right side
+		QM[0] = ((double)XYZ[0])*0.75;
+		QM[1] = ((double)XYZ[1])*0.5;
+		phiM = atan2(-QM[1]+Q[1],-QM[0]+Q[0]);
+		UM[0] = cos(kM*phiM);
+		UM[1] = sin(kM*phiM);
+		r=sqrt( pow(QM[0]-Q[0],2.0)+pow(QM[1]-Q[1],2.0) );
+		wM=1.0-r/R;
+		if(Q[1]<=0.5*((double)XYZ[1])) wY=1.0-2.0*Q[1]/(double)XYZ[1];
+		else wY=1.0-2.0*((double)XYZ[1]-Q[1])/(double)XYZ[1];
+
+		// Set the director field with a linear weighting from each
+		U[0] = wP*UP[0] + wM*UM[0] + wY;
+		U[1] = wP*UP[1] + wM*UM[1];
+		if( DIM>_2D ) U[2] = 0.0;
+		norm( U,DIM );
+	}
+
 	else{
 		printf( "Error: Particle orientation distribution unacceptable.\n" );
 		exit( 1 );
@@ -816,7 +854,7 @@ void setcoord( char dir[],spec SP[],particleMPC *pp,double KBT,double AVVEL[],bc
 		//Shift first mode of the velocity dist by the average velocity (push() centres about zero)
 		for( j=0; j<DIM; j++ ) (pp+i)->V[j] += AVVEL[j];
 
-		if( LC>ISOF ) orient( (pp+i)->U,SP[(pp+i)->SPID].ODIST );
+		if( LC>ISOF ) orient( (pp+i)->U,(pp+i)->Q,SP[(pp+i)->SPID].ODIST );
 	}
 	for( j=0; j<DIM; j++ ) AVVEL[j] /= (double)GPOP;
 	//Check particleMPC coordinates

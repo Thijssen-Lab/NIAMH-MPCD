@@ -26,7 +26,7 @@ void initvar( unsigned long *seed,time_t *to,clock_t *co,int *runtime,int *warmt
 void place( double Q[],int PL,FILE *fin );
 void replace( particleMPC *p );
 void push( double V[],double KBT,int PL,double MASS,FILE *fin );
-void orient( double U[],int PL );
+void orient( double U[],double Q[],int PL );
 void setcoord( char dir[],spec SP[],particleMPC *pp,double KBT,double VEL[],bc WALL[],simptr simMD,int MDmode,int LC );
 int checkplaceMPC( int IN,particleMPC *pp,spec SP[],bc WALL[] );
 void replacePos_WithCheck( particleMPC *pp,bc WALL[] );
