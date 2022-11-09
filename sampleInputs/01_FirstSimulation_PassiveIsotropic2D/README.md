@@ -1,0 +1,1 @@
+Simulates 2D isotropic fluid in periodic boundic boundary conditions with no external forces, or solutes or anything interesting. Just a thermalized fluid to introduce how the input files work for first time users

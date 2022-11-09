@@ -545,7 +545,7 @@ void avenstrophyheader( FILE *fout ) {
 }
 void flowheader( FILE *fout ) {
 /* Simple header for output columns */
-	fprintf( fout,"   QX\t   QY\t   QZ\tVcmX\t\tVcmY\t\tVcmZ\n" );
+	fprintf( fout,"   t\t   QX\t   QY\t   QZ\tVcmX\t\tVcmY\t\tVcmZ\n" );
 }
 void solidsheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -1320,7 +1320,7 @@ void binderout( FILE *fout,double t,double UL ) {
 		fflush(fout);
 	#endif
 }
-void flowout( FILE *fout,cell ***CL,int interval ) {
+void flowout( FILE *fout,cell ***CL,int interval, double t) {
 /*
     Turns sum of cells' vcm into average, prints average to
     file, zeros sums to start anew
@@ -1333,6 +1333,7 @@ void flowout( FILE *fout,cell ***CL,int interval ) {
 	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) for( k=0; k<XYZ[2]; k++ ) {
 	// for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) {
 		for( h=0; h<DIM; h++ ) av[h] = CL[i][j][k].FLOW[h]/dint;		//Normalize the sum to get the average
+		fprintf( fout,"%12.5e\t", t); // print time
 		fprintf( fout, "%5d\t%5d\t%5d\t",i,j,k );
 		fprintf( fout, "%12.5e\t%12.5e\t%12.5e\n",av[0],av[1],av[2] );
 		for( h=0; h<DIM; h++ ) CL[i][j][k].FLOW[h] = 0.0;		//Reset sum
@@ -1604,6 +1605,7 @@ void spectout( FILE *fout,double spect[],double t ) {
 		fflush(fout);
 	#endif
 }
+
 void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,bc *WALL,outputFlagsList outFlag,int runtime,int warmtime,double AVVEL,double AVS,double avDIR[_3D],double S4,double stdN,double KBTNOW,double AVV[_3D],double AVNOW[_3D],kinTheory theory,specSwimmer specS,swimmer *sw ) {
 	/*
 	 Checkpoint the entire simulation
@@ -1636,7 +1638,7 @@ void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,b
 	//Species of MPCD particles
 	for( i=0; i<NSPECI; i++ ) {
 		fprintf( fout,"%lf %i %i %i %i ",(SP+i)->MASS,(SP+i)->POP,(SP+i)->QDIST,(SP+i)->VDIST,(SP+i)->ODIST );
-		fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf\n",(SP+i)->RFC, (SP+i)->LEN, (SP+i)->TUMBLE, (SP+i)->CHIHI, (SP+i)->CHIA, (SP+i)->ACT, (SP+i)->DAMP );
+		fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf\n",(SP+i)->RFC, (SP+i)->LEN, (SP+i)->TUMBLE, (SP+i)->CHIHI, (SP+i)->CHIA, (SP+i)->ACT, (SP+i)->SIGWIDTH, (SP+i)->SIGPOS, (SP+i)->DAMP );
 		for( j=0; j<NSPECI; j++ ) fprintf( fout,"%lf ",(SP+i)->M[j] );			//Binary fluid control parameters
 		fprintf( fout,"\n" );
 	}
@@ -1667,9 +1669,35 @@ void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,b
 		fprintf( fout,"%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n",(sw+i)->M.HorM,(sw+i)->M.Q[0],(sw+i)->M.Q[1],(sw+i)->M.Q[2],(sw+i)->M.V[0],(sw+i)->M.V[1],(sw+i)->M.V[2],(sw+i)->M.A[0],(sw+i)->M.A[1],(sw+i)->M.A[2] );
 	}
 
-	#ifdef FFLSH
-		fflush(fout);
-	#endif
+	fflush(fout); // force flush
+}
+
+void runCheckpoint(char op[500],time_t *lastCheckpoint,FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,bc *WALL,outputFlagsList outFlag,int runtime,int warmtime,double AVVEL,double AVS,double avDIR[_3D],double S4,double stdN,double KBTNOW,double AVV[_3D],double AVNOW[_3D],kinTheory theory,specSwimmer specS,swimmer *sw ) {
+    /*
+     * Run a checkpoint operation, used to clean up code in mpcd.c
+     */
+
+    // if time-based checkpointing has been enabled, see if a checkpoint needs to be made
+    // otherwise return early
+    if (outFlag.CHCKPNTTIMER != 0.0) {
+        time_t currTime = time(NULL);
+        if (currTime - *lastCheckpoint >= outFlag.CHCKPNTTIMER*60*60) {
+            // if time diff is more than the set checkpointing time
+            #ifdef DBG
+            if( DBUG >= DBGRUN ) printf( "\nTimer based checkpoint triggered." );
+            #endif
+            *lastCheckpoint = currTime;
+        } else {
+            return; // early return, no checkpoint needed
+        }
+    }
+    #ifdef DBG
+    if( DBUG >= DBGRUN ) printf( "\nCheckpointing.\n" );
+    #endif
+    // normal checkpoint
+    openCheckpoint( &(fout),op );
+    checkpoint( fout, in, SP, pSRD, MDmode, WALL, outFlag, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory, specS, sw);
+    fclose( fout );
 }
 
 void outputResults( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr simMD,specSwimmer SS, swimmer swimmers[],double AVNOW[_3D],double AVV[_3D],double avDIR[_3D], int runtime, inputList in, double AVVEL, double KBTNOW,double *AVS,double *S4,double *stdN,int MDmode,outputFlagsList outFlag,outputFilesList outFiles ) {
@@ -1838,7 +1866,7 @@ void outputResults( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],sim
 		if( DBUG >= DBGTITLE ) printf( "Write Data Out.\n" );
 	#endif
 	if(outFlag.printSP>0) if( outFlag.TRAJOUT>=OUT  && runtime%outFlag.TRAJOUT==0 ) coordout( outFiles.fdetail,outFlag.printSP,time_now,SRDparticles,SP );
-	if( outFlag.FLOWOUT>=OUT && runtime%outFlag.FLOWOUT==0 && runtime!=0 ) flowout( outFiles.fflow,CL,outFlag.FLOWOUT );
+	if( outFlag.FLOWOUT>=OUT && runtime%outFlag.FLOWOUT==0 ) flowout( outFiles.fflow,CL,outFlag.FLOWOUT, time_now);
 	if( outFlag.COAROUT>=OUT && runtime%outFlag.COAROUT==0 ) coarseout( outFiles.fcoarse,time_now,CL );
 	if(in.LC!=ISOF) if( outFlag.ORDEROUT>=OUT && runtime%outFlag.ORDEROUT==0 ) orderout( outFiles.forder,time_now,CL,in.LC );
 	if(in.LC!=ISOF) if( outFlag.QTENSOUT>=OUT && runtime%outFlag.QTENSOUT==0 ) orderQout( outFiles.forderQ,time_now,CL,in.LC );

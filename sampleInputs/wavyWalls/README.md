@@ -1,0 +1,1 @@
+Simulates a complex geometry confining a 2D active nematic fluid. The system is a channel with periodic boundaries in the x-direction. The confining channel is a wavy sinusoid. Additionally there are fixed circular obstacles between each maximum/minimum pair of the wavy walls. 

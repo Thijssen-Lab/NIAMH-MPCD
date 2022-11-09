@@ -1,0 +1,71 @@
+{
+    "comment":          "Rectangular geometry",
+    "domain":           [150, 30],
+    "warmUp":           500,
+    "simSteps":         500,
+    "comment":          "Isotropic fluid using Andersen MPCD",
+    "collOp":           2,
+    "comment":          "Gravity-generated pressure gradient",
+    "grav":             [0.01, 0, 0],
+    "species":
+    [
+        {
+            "dens":         20
+        }
+    ],
+    "debugOut":         3,
+    "flowOut":          20,
+    "pressureOut":      0,
+    "avVelOut":         10,
+    "energyOut":        10,
+    "synopsisOut":      1,
+    "checkpointOut":    0,
+    "comment":          "BCs are two periodic boundary conditions (PBC) and two impermeable, no-slip walls",
+    "BC":
+    [
+        {
+            "comment":      "Left PBC",
+            "phantom":      0,
+            "Q":            [0, 0, 0],
+            "aInv":         [1, 0, 0],
+            "P":            [1, 1, 1, 1],
+            "R":            0,
+            "DN":           150,
+            "MVN":          1,
+            "MVT":          1
+        },
+        {
+            "comment":      "Right PBC",
+            "phantom":      0,
+            "Q":            [150, 0, 0],
+            "aInv":         [-1, 0, 0],
+            "P":            [1, 1, 1, 1],
+            "R":            0,
+            "DN":           150,
+            "MVN":          1,
+            "MVT":          1
+        },
+        {
+            "comment":      "Bottom wall",
+            "phantom":      1,
+            "Q":            [0, 0, 0],
+            "aInv":         [0, 1, 0],
+            "P":            [1, 1, 1, 1],
+            "R":            0,
+            "DN":           0,
+            "MVN":          -1,
+            "MVT":          -1
+        },
+        {
+            "comment":      "Top wall",
+            "phantom":      1,
+            "Q":            [0, 30, 0],
+            "aInv":         [0, -1, 0],
+            "P":            [1, 1, 1, 1],
+            "R":            0,
+            "DN":           0,
+            "MVN":          -1,
+            "MVT":          -1
+        }
+    ]
+}

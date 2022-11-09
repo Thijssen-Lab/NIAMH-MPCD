@@ -12,7 +12,7 @@
 /* ****************************************** */
 /* ************ COMPILE OPTIONS ************* */
 /* ****************************************** */
-// If running sims don't define DBG. If debugging define DBG and choose a debug mode (bottom of page)
+// If running sims don't define DBG. If debugging define DBG and choose a debug mode (bottom of page) ---- json 'debugOut'
 # define DBG
 // If you want the files get printed immediately include this option for force flushing the buffer
 # define FFLSH
@@ -83,7 +83,8 @@
 /* ****************************************** */
 /* ******************* QDIST **************** */
 /* ****************************************** */
-//The following global variables are flag values for the variable QDIST in species structures
+//The following global variables are flag values for the variable QDIST in species structures 
+//Used for both MPCD particles and swimmers --- qDist in json
 //PPF indicates that the particles can be placed randomly and freely within the control volume
 # define PRF 0
 //READ indicates that the particles' positions should be read from a file
@@ -95,6 +96,7 @@
 /* ******************* VDIST **************** */
 /* ****************************************** */
 //The following global variables are flag values for the variable VDIST in species structures
+//Used for both MPCD particles and swimmers --- vDist in json
 //RANDVEL indicates that the particles' velosities are drawn from a have uniformly random velocity distribution
 # define RANDVEL 0
 //READ must be applied to both
@@ -110,6 +112,7 @@
 /* ******************* UDIST **************** */
 /* ****************************************** */
 //The following global variables are flag values for the variable UDIST in species structures
+//Used for both MPCD particles and swimmers --- oDist in json
 //RANDORIENT indicates that the particles' direction are drawn from a have uniformly random direction
 # define RANDORIENT 0
 //Align all particles along X axis
@@ -146,7 +149,8 @@
 /* ****************************************** */
 /* *************** THERMOSTAT *************** */
 /* ****************************************** */
-//The folloing global variables are flags for the thermostat used
+//The folloing global variables are flags for the thermostat used 
+//Used by TSTECH in inputList in c-code and 'tsTech' in json input
 //NOTHERM indicates that no thermostat is implemented
 # define NOTHERM 0
 //VSC indicates that velocity scaling is used as the thermometer
@@ -159,9 +163,10 @@
 # define MAXV 4
 
 /* ****************************************** */
-/* **************** ROTATION **************** */
+/* *********** COLLISION OPERATOR *********** */
 /* ****************************************** */
-//The following global variables are flag values for the rotation technique.
+//The following global variables are flag values for the collision operator / rotation technique.
+//Used by RTECH in inputList in c-code and 'colOp' in json input
 //ARBAXIS indicates that the rotation operator is a rotation about a randomly chosen axis
 # define ARBAXIS 0
 //ORTHAXIS applies the rotatation about one of the three cartesian axes (randomly chosen
@@ -203,6 +208,10 @@
 # define MULTIPHASE 18
 // The Langevin version of MPC that conserves angular momentum
 # define RLANG 19
+// Cell-based dipole force in direction of local director (average of all activities with sigmoidal falloff)
+# define DIPOLE_DIR_SIG 20
+// Cell-based dipole force in direction of local director (sum of all activities with sigmoidal falloff)
+# define DIPOLE_DIR_SIG_SUM 21
 
 /* ****************************************** */
 /* ******************** BCS ***************** */

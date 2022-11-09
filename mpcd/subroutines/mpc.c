@@ -538,10 +538,10 @@ void gridShift_all( double SHIFT[],int shiftBack,particleMPC *SRDparticles,bc WA
 	//Shift each particle
 	for( i=0; i<GPOP; i++ ) for( j=0; j<DIM; j++ ){
 		 SRDparticles[i].Q[j] += signedSHIFT[j]; // perform the shift
-		
+
 		 // The Gallilean shift can (sometimes) force particles outside the boundaries of the system.
 		 // 	These lines will periodically shift those particles to the other side of the domain, while
-		 //	keeping those that escaped naturally (ie not due to the shift) in place. It will also return 
+		 //	keeping those that escaped naturally (ie not due to the shift) in place. It will also return
 		 //	them to the correct place when needing to shift back for streaming.
 		 if (shiftBack == 0 && SRDparticles[i].Q[j] > XYZ[j] && SRDparticles[i].Q[j] <= XYZ[j] + signedSHIFT[j] )	SRDparticles[i].Q[j] -= XYZ[j];
 		 else if (shiftBack == 1 && SRDparticles[i].Q[j] < 0.0 && SRDparticles[i].Q[j] >= signedSHIFT[j] ) SRDparticles[i].Q[j] += XYZ[j];
@@ -2590,7 +2590,7 @@ void MPCcollision( cell *CL,spec *SP,specSwimmer SS,double KBT,int RTECH,double 
 
 	//Liquid Crystal
 	if( LC!=ISOF ) {
-		if( RTECH==DIPOLE_DIR_SUM || RTECH==DIPOLE_DIR_AV ) dipoleAndersenROT_LC( CL,SP,SS,KBT,RELAX,TimeStep,RTECH,CLQ,outP );
+		if( RTECH==DIPOLE_DIR_SUM || RTECH==DIPOLE_DIR_AV || RTECH==DIPOLE_DIR_SIG || RTECH==DIPOLE_DIR_SIG_SUM ) dipoleAndersenROT_LC( CL,SP,SS,KBT,RELAX,TimeStep,RTECH,CLQ,outP );
 		else andersenROT_LC( CL,SP,SS,KBT,TimeStep,CLQ,outP );
 	}
 	//Newtonian Fluid

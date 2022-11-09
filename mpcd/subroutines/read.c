@@ -527,16 +527,17 @@ void bcin( FILE *fbc,bc *WALL,char fname[] ) {
 	WALL->MASS = l;
 
 	// Set the planar flag
-	if( feq(WALL->P[0],1.0) && feq(WALL->P[1],1.0) && feq(WALL->P[2],1.0) ) {
-		// Left or right wall
-		if( fneq(WALL->A[0],0.0) && feq(WALL->A[1],0.0) && feq(WALL->A[2],0.0) ) WALL->PLANAR = 1;
-		// Top or bottom wall
-		else if( feq(WALL->A[0],0.0) && fneq(WALL->A[1],0.0) && feq(WALL->A[2],0.0) ) WALL->PLANAR = 1;
-		// Far or near wall
-		else if( feq(WALL->A[0],0.0) && feq(WALL->A[1],0.0) && fneq(WALL->A[2],0.0) ) WALL->PLANAR = 1;
-		else WALL->PLANAR = 0;
+	WALL->PLANAR = 0;							// sets default to non-planar
+	if ( feq(WALL->B[0],0.0) ) {	// if not wavy, check if planar
+		if( feq(WALL->P[0],1.0) && feq(WALL->P[1],1.0) && feq(WALL->P[2],1.0) ) {
+			// Left or right wall
+			if( fneq(WALL->A[0],0.0) && feq(WALL->A[1],0.0) && feq(WALL->A[2],0.0) ) WALL->PLANAR = 1;
+			// Top or bottom wall
+			else if( feq(WALL->A[0],0.0) && fneq(WALL->A[1],0.0) && feq(WALL->A[2],0.0) ) WALL->PLANAR = 1;
+			// Far or near wall
+			else if( feq(WALL->A[0],0.0) && feq(WALL->A[1],0.0) && fneq(WALL->A[2],0.0) ) WALL->PLANAR = 1;
+		}
 	}
-	else WALL->PLANAR = 0;
 }
 void setPBC( bc *WALL ) {
 /*
@@ -656,7 +657,7 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 	//Allocate the needed amount of memory for the species SP
 	(*SP) = (spec*) malloc( NSPECI * sizeof( spec ) );
 	for( i=0; i<NSPECI; i++ ) {
-		if(fscanf( finput,"%lf %i %i %i %i %lf %lf %lf %lf %lf %lf %lf",&((*SP+i)->MASS), &((*SP+i)->POP), &((*SP+i)->QDIST), &((*SP+i)->VDIST), &((*SP+i)->ODIST), &((*SP+i)->RFC), &((*SP+i)->LEN), &((*SP+i)->TUMBLE), &((*SP+i)->CHIHI), &((*SP+i)->CHIA), &((*SP+i)->ACT), &((*SP+i)->DAMP) ));	//Read the species' mass
+		if(fscanf( finput,"%lf %i %i %i %i %lf %lf %lf %lf %lf %lf %lf %lf %lf",&((*SP+i)->MASS), &((*SP+i)->POP), &((*SP+i)->QDIST), &((*SP+i)->VDIST), &((*SP+i)->ODIST), &((*SP+i)->RFC), &((*SP+i)->LEN), &((*SP+i)->TUMBLE), &((*SP+i)->CHIHI), &((*SP+i)->CHIA), &((*SP+i)->ACT), &((*SP+i)->SIGWIDTH), &((*SP+i)->SIGPOS), &((*SP+i)->DAMP) ));	//Read the species' mass
 		else printf("Warning: Failed to read species %i.\n",i);
 		for( j=0; j<NSPECI; j++ ) {
 			//Read the species' interaction matrix with other species
@@ -734,6 +735,11 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 	int arg;
 	int strln;
+
+    // input/ output checkers
+    int inProvided = 0;
+    int outProvided = 0;
+
 	// Default
 	#ifdef DBG
 		if( DBUG >= DBGINIT ) printf("Read arguments\n");
@@ -748,8 +754,9 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 					*inMode = 0;
 					arg++;
 					sprintf(ip,"%s",argv[arg]);
+                    inProvided = 1;
 					break;
-				case 'L': // legacy 
+				case 'L': // legacy
 					if (argv[arg][2] == 'i'){ // arg 'Li' for legacy input
 						*inMode = 1;
 						arg++;
@@ -757,6 +764,7 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 						// Make sure that the directory ends with a "/"
 						strln = strlen(ip);
 						if( ip[strln-1]!='/' ) strcat( ip,"/" );
+                        inProvided = 1;
 						break;
 					}
 				case 'o':
@@ -765,6 +773,7 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 					// Make sure that the directory ends with a "/"
 					strln = strlen(op);
 					if( op[strln-1]!='/' ) strcat( op,"/" );
+                    outProvided = 1;
 					break;
 				case 'v':
 					printVersionSummary( );
@@ -787,16 +796,26 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 			}
 		}
 	}
+
+    // do check to see if input and output were provided
+    if (inProvided == 0){
+        printf("Error: No input provided. See -h for help\n");
+        exit(EXIT_FAILURE);
+    }
+    if (outProvided == 0){
+        printf("Error: No output provided. See -h for help\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 /*
-	Checks if a given BC, as a cJSON object, is valid and contains all the 
-	 	necessary parameters it needs. 
+	Checks if a given BC, as a cJSON object, is valid and contains all the
+	 	necessary parameters it needs.
 	Returns 1 if valid, 0 if not.
 */
 int checkBC(cJSON *bc){
 	/*
-		Need to check if the following json tags exist, do so using cJSON 
+		Need to check if the following json tags exist, do so using cJSON
 			primitives:
 		- "aInv"
 		- "P"
@@ -817,8 +836,8 @@ int checkBC(cJSON *bc){
 	return 1; // if you're here without returning then all succesful
 }
 
-void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD, 
-   cell ****CL, int *MDMode, outputFlagsList *out, bc **WALL, 
+void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
+   cell ****CL, int *MDMode, outputFlagsList *out, bc **WALL,
    specSwimmer *specS, swimmer **sw){
 /*
 	Main method for reading in Json, parsing it, and populating ALL inputs
@@ -828,17 +847,17 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	char* fileStr = NULL;
 	if(getFileStr(fpath, &fileStr) != 0){ // read, return on error
 		exit(EXIT_FAILURE);
-	} 
+	}
 
 	#ifdef DBG // print json to user if in relevent debug mode
 		if( DBUG > DBGTITLE ){
 			printf("==== Read JSON =====\n%s", fileStr);
 			printf("\n\n");
-		} 
+		}
 	#endif
 
 	//now can actually parse the json
-	cJSON *jObj = cJSON_Parse(fileStr); // create the json object 
+	cJSON *jObj = cJSON_Parse(fileStr); // create the json object
 	if (jObj == NULL) // error checking
 	{
 		const char *error_ptr = cJSON_GetErrorPtr();
@@ -856,7 +875,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	initLL(&arrayList);
 
 	////////////////////////////////////////////////////////////////////////////
-	// Perform parsing here. 
+	// Perform parsing here.
 	// This is done in the order declared in docs/InputGuide.md
 	////////////////////////////////////////////////////////////////////////////
 
@@ -865,13 +884,15 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 	// flags for overrides
 	int domainWalls = 0; // Whether to add domain walls. 0 = off, 1 = PBC, 2 = solid
+    float checkPointTimer = 0.0; // hours until MPCD will run a checkpoint
 
 	/// Get overrides
 	domainWalls = getJObjInt(jObj, "domainWalls", 0, jsonTagList); // domainWalls
+    checkPointTimer = getJObjDou(jObj, "checkpointTimerOut", 0.0, jsonTagList); // checkpointTimerOut
 
 	// perform general overrides
 	///NOTE: none here yet :)
-	
+
 	// 1. Old input.inp ////////////////////////////////////////////////////////
 	// scroll up to void readin() to see better descriptions & definitions for these
 
@@ -888,7 +909,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 		for (i = 0; i < _3D; i++) {
 			if (i == 2 && DIM == 2) XYZ[i] = 1; // if 2D, set z to 1
 			else XYZ[i] = cJSON_GetArrayItem(arrDomain, i)->valueint; // get the value
-		}		
+		}
 	} else { // if array cannot be found then fallback to default
 		DIM = 2;
 		XYZ[0] = 30;
@@ -906,13 +927,14 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	in->zeroNetMom = getJObjInt(jObj, "zeroNetMom", 0, jsonTagList); // zeroNetMom
 	in->GALINV = getJObjInt(jObj, "galInv", 1, jsonTagList); // GALINV
 	in->TSTECH = getJObjInt(jObj, "tsTech", 0, jsonTagList); // TSTECH
-	in->RTECH = getJObjInt(jObj, "rTech", 2, jsonTagList); // RTECH
+    const char* collOpTags[2] = {"rTech", "collOp"}; // possible tags for collision operator
+	in->RTECH = getJObjIntMultiple(jObj, collOpTags, 2, 2, jsonTagList); // RTECH
 	in->LC = getJObjInt(jObj, "lc", 0, jsonTagList); // LC
 	in->TAU = getJObjDou(jObj, "tau", 0.5, jsonTagList); // TAU
 	in->RA = getJObjDou(jObj, "rotAng", 1.570796, jsonTagList); // rotAng
 	in->FRICCO = getJObjDou(jObj, "fricCoef", 1.0, jsonTagList); // fricCo
 	in->MFPOT = getJObjDou(jObj, "mfpot", 10.0, jsonTagList); // mfpPot
-	
+
 	// grav array
 	cJSON *arrGrav = NULL;
 	getCJsonArray(jObj, &arrGrav, "grav", jsonTagList, arrayList, 0);
@@ -923,8 +945,8 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 		}
 
 		for (i = 0; i < _3D; i++) { // get the value
-			in->GRAV[i] = cJSON_GetArrayItem(arrGrav, i)->valuedouble; 
-		}	
+			in->GRAV[i] = cJSON_GetArrayItem(arrGrav, i)->valuedouble;
+		}
 	} else { // if no grav specified then fallback
 		in->GRAV[0] = 0;
 		in->GRAV[1] = 0;
@@ -934,15 +956,15 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	// mag array
 	cJSON *arrMag = NULL;
 	getCJsonArray(jObj, &arrMag, "mag", jsonTagList, arrayList, 0);
-	if (arrGrav != NULL) { // if grav has been found then....
+	if (arrMag != NULL) { // if mag has been found then....
 		if (cJSON_GetArraySize(arrMag) != _3D) { // check dimensionality is valid
 			printf("Error: Mag must be a 3D array.\n");
 			exit(EXIT_FAILURE);
 		}
 
 		for (i = 0; i < _3D; i++) { // get the value
-			in->MAG[i] = cJSON_GetArrayItem(arrMag, i)->valuedouble; 
-		}	
+			in->MAG[i] = cJSON_GetArrayItem(arrMag, i)->valuedouble;
+		}
 	} else { // if no grav specified then fallback
 		in->MAG[0] = 0;
 		in->MAG[1] = 0;
@@ -954,9 +976,10 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 	// Handle MD
 	getJObjStr(jObj, "mdIn", "", &mdInputFile, jsonTagList);
+    int mdCoupleMode = getJObjInt(jObj, "mdCoupleMode", 1, jsonTagList); // coupling mode for MD
 	if (strcmp(mdInputFile, "") == 0){ // if no input file was found
 		MDmode = 0;
-	} else MDmode = 1; // otherwise enable MD if input file found
+	} else MDmode = mdCoupleMode; // otherwise set MD to correct coupling mode to enable it
 
 	in->stepsMD = getJObjInt(jObj, "stepsMD", 20, jsonTagList); // stepsMD
 
@@ -967,7 +990,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	getCJsonArray(jObj, &arrSpecies, "species", jsonTagList, arrayList, 1);
 	if(arrSpecies != NULL){ // if this can be found in the json
 		NSPECI = cJSON_GetArraySize(arrSpecies); // get the number of species
-		
+
 		//Allocate the needed amount of memory for the species SP
 		(*SP) = (spec*) malloc( NSPECI * sizeof( spec ) );
 		for (i = 0; i < NSPECI; i++) { // loop through the species
@@ -998,12 +1021,12 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 				}
 
 				for (j = 0; j < NSPECI; j++) { // get the value
-					(*SP+i)->M[j] = cJSON_GetArrayItem(arrBFM, j)->valuedouble; 
-				}	
-			} else { 
+					(*SP+i)->M[j] = cJSON_GetArrayItem(arrBFM, j)->valuedouble;
+				}
+			} else {
 				for (j = 0; j < NSPECI; j++) { // get the value
-					(*SP+i)->M[j] = 0; 
-				}	
+					(*SP+i)->M[j] = 0;
+				}
 			}
 
 			// get second set of primitives
@@ -1013,6 +1036,14 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			(*SP+i)->CHIHI = getJObjDou(objElem, "shearSusc", 0.5, jsonTagList); // chiHi
 			(*SP+i)->CHIA = getJObjDou(objElem, "magnSusc", 0.001, jsonTagList); // chiA
 			(*SP+i)->ACT = getJObjDou(objElem, "act", 0.05, jsonTagList); // act
+			(*SP+i)->SIGWIDTH = getJObjDou(objElem, "sigWidth", 1, jsonTagList); // sigWidth
+			// error check, is SIGWIDTH 0?
+			if ((*SP+i)->SIGWIDTH == 0) {
+				printf("Error: SIGWIDTH cannot be 0.\n");
+				exit(EXIT_FAILURE);
+			}
+			(*SP+i)->SIGPOS = getJObjDou(objElem, "sigPos", (*SP+i)->SIGWIDTH, jsonTagList); // sigPos
+			(*SP+i)->MINACTRATIO = getJObjDou(objElem, "minActRatio", 0.0, jsonTagList); // minActRatio
 			(*SP+i)->DAMP = getJObjDou(objElem, "damp", 0.0, jsonTagList); // damp
 		}
 	} else { // if nothing found in the JSON then fallback to the default
@@ -1029,14 +1060,17 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			(*SP+i)->VDIST = 0; // vDist
 			(*SP+i)->ODIST = 2; // oDist
 			for (j = 0; j < NSPECI; j++) { // interaction matrix
-				(*SP+i)->M[j] = 0; 
-			}	
+				(*SP+i)->M[j] = 0;
+			}
 			(*SP+i)->RFC = 0.01; // rfCoef
 			(*SP+i)->LEN = 0.007; // len
 			(*SP+i)->TUMBLE = 2; // tumble
 			(*SP+i)->CHIHI = 0.5; // chiHi
 			(*SP+i)->CHIA = 0.001; // chiA
 			(*SP+i)->ACT = 0.05; // act
+			(*SP+i)->SIGWIDTH = 1; // sigwidth
+			(*SP+i)->SIGPOS = 1; // sigpos
+			(*SP+i)->MINACTRATIO = 0.0; // minActRatio
 			(*SP+i)->DAMP = 0; // damp
 		}
 	}
@@ -1057,7 +1091,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			(*CL)[i][j] = (cell*) malloc( XYZ_P1[2] * sizeof( cell ) );
 		}
 	}
-	
+
 	// 3. Printcom /////////////////////////////////////////////////////////////
 	// scroll up to void readpc() to see better descriptions & definitions for these
 
@@ -1099,7 +1133,8 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	out->BINDERBIN = getJObjInt(jObj, "binderBin", 0, jsonTagList); // binderBinOut
 	out->SWOUT = getJObjInt(jObj, "swimQOut", 0, jsonTagList); // swOut
 	out->SWORIOUT = getJObjInt(jObj, "swimOOut", 0, jsonTagList); // swOriOut
-	out->RTOUT = getJObjInt(jObj, "swimROut", 0, jsonTagList); // swVelOut
+    const char* swimROutTags[2] = {"swimROut", "swimRTOut"}; // possible tags for collision operator
+    out->RTOUT = getJObjIntMultiple(jObj, swimROutTags, 2, 0, jsonTagList); // RTECH
 	out->SYNOUT = getJObjInt(jObj, "synopsisOut", 1, jsonTagList); // swSynOut
 	out->CHCKPNT = getJObjInt(jObj, "checkpointOut", 0, jsonTagList); // chkpntOut
 
@@ -1110,14 +1145,14 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	getCJsonArray(jObj, &arrBC, "BC", jsonTagList, arrayList, 1);
 	if(arrBC != NULL){ // if this can be found in the json
 		NBC = cJSON_GetArraySize(arrBC); // get the number of BCs
-		
+
 		//Allocate the needed amount of memory for the BCs
 		(*WALL) = (bc*) malloc( NBC * sizeof( bc ) );
 		for (i = 0; i < NBC; i++) { // loop through the BCs
 			cJSON *objElem = cJSON_GetArrayItem(arrBC, i); // get the BC object
 			bc *currWall = (*WALL + i); // get the pointer to the BC we want to write to
 
-			// Do a check if the necessary parameters are present 
+			// Do a check if the necessary parameters are present
 			if (!checkBC(objElem)){
 				printf("Error: BC %d is missing essential parameters\n", i);
 				exit(EXIT_FAILURE);
@@ -1138,12 +1173,12 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 				}
 
 				for (j = 0; j < _3D; j++) { // get the value
-					currWall->Q[j] = cJSON_GetArrayItem(arrQ, j)->valuedouble; 
-				}	
-			} else { 
+					currWall->Q[j] = cJSON_GetArrayItem(arrQ, j)->valuedouble;
+				}
+			} else {
 				for (j = 0; j < _3D; j++) { // get the value
-					currWall->Q[j] = 0; 
-				}	
+					currWall->Q[j] = 0;
+				}
 			}
 
 			// V array
@@ -1156,12 +1191,12 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 				}
 
 				for (j = 0; j < _3D; j++) { // get the value
-					currWall->V[j] = cJSON_GetArrayItem(arrV, j)->valuedouble; 
-				}	
-			} else { 
+					currWall->V[j] = cJSON_GetArrayItem(arrV, j)->valuedouble;
+				}
+			} else {
 				for (j = 0; j < _3D; j++) { // get the value
-					currWall->V[j] = 0; 
-				}	
+					currWall->V[j] = 0;
+				}
 			}
 
 			// O array
@@ -1174,12 +1209,12 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 				}
 
 				for (j = 0; j < _3D; j++) { // get the value
-					currWall->O[j] = cJSON_GetArrayItem(arrO, j)->valuedouble; 
-				}	
-			} else { 
+					currWall->O[j] = cJSON_GetArrayItem(arrO, j)->valuedouble;
+				}
+			} else {
 				for (j = 0; j < _3D; j++) { // get the value
-					currWall->O[j] = 0; 
-				}	
+					currWall->O[j] = 0;
+				}
 			}
 
 			// L array
@@ -1192,12 +1227,12 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 				}
 
 				for (j = 0; j < _3D; j++) { // get the value
-					currWall->L[j] = cJSON_GetArrayItem(arrL, j)->valuedouble; 
-				}	
+					currWall->L[j] = cJSON_GetArrayItem(arrL, j)->valuedouble;
+				}
 			} else {
 				for (j = 0; j < _3D; j++) { // get the value
-					currWall->L[j] = 0; 
-				}	
+					currWall->L[j] = 0;
+				}
 			}
 
 			// G array
@@ -1210,12 +1245,12 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 				}
 
 				for (j = 0; j < _3D; j++) { // get the value
-					currWall->G[j] = cJSON_GetArrayItem(arrG, j)->valuedouble; 
-				}	
+					currWall->G[j] = cJSON_GetArrayItem(arrG, j)->valuedouble;
+				}
 			} else {
 				for (j = 0; j < _3D; j++) { // get the value
-					currWall->G[j] = 0; 
-				}	
+					currWall->G[j] = 0;
+				}
 			}
 
 			// aInv array - NECESSARY
@@ -1228,10 +1263,10 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 				}
 
 				for (j = 0; j < _3D; j++) { // get the value
-					currWall->AINV[j] = cJSON_GetArrayItem(arrAInv, j)->valuedouble; 
+					currWall->AINV[j] = cJSON_GetArrayItem(arrAInv, j)->valuedouble;
 					if( fneq(currWall->AINV[j],0.0) ) currWall->A[j] = 1.0/currWall->AINV[j];
 					else currWall->A[j] = 0.0;
-				}	
+				}
 			} else {
 				printf("Error: Could not find aInv in BC %d.\n", i);
 				exit(EXIT_FAILURE);
@@ -1247,8 +1282,8 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 				}
 
 				for (j = 0; j < 2; j++) { // get the value
-					currWall->ROTSYMM[j] = cJSON_GetArrayItem(arrRotSym, j)->valuedouble; 
-				}	
+					currWall->ROTSYMM[j] = cJSON_GetArrayItem(arrRotSym, j)->valuedouble;
+				}
 			} else {
 				for (j = 0; j < 2; j++) { // get the value
 					currWall->ROTSYMM[j] = 4;
@@ -1268,7 +1303,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 				for (j = 0; j < 4; j++) { // get the value
 					currWall->P[j] = cJSON_GetArrayItem(arrP, j)->valuedouble;
-				}	
+				}
 			} else {
 				printf("Error: Could not find P in BC %d.\n", i);
 				exit(EXIT_FAILURE);
@@ -1291,8 +1326,8 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 				}
 
 				for (j = 0; j < _3D; j++) { // get the value
-					currWall->DVxyz[j] = cJSON_GetArrayItem(arrDVxyz, j)->valuedouble; 
-				}	
+					currWall->DVxyz[j] = cJSON_GetArrayItem(arrDVxyz, j)->valuedouble;
+				}
 			} else {
 				for (j = 0; j < _3D; j++) { // get the value
 					currWall->DVxyz[j] = 0;
@@ -1314,8 +1349,8 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 				}
 
 				for (j = 0; j < _3D; j++) { // get the value
-					currWall->MUxyz[j] = cJSON_GetArrayItem(arrMUxyz, j)->valuedouble; 
-				}	
+					currWall->MUxyz[j] = cJSON_GetArrayItem(arrMUxyz, j)->valuedouble;
+				}
 			} else {
 				for (j = 0; j < _3D; j++) { // get the value
 					currWall->MUxyz[j] = 1;
@@ -1332,8 +1367,8 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 				}
 
 				for (j = 0; j < _3D; j++) { // get the value
-					currWall->DUxyz[j] = cJSON_GetArrayItem(arrDUxyz, j)->valuedouble; 
-				}	
+					currWall->DUxyz[j] = cJSON_GetArrayItem(arrDUxyz, j)->valuedouble;
+				}
 			} else {
 				for (j = 0; j < _3D; j++) { // get the value
 					currWall->DUxyz[j] = 0;
@@ -1344,6 +1379,22 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			currWall->DSPLC = getJObjInt(objElem, "dsplc", 0, jsonTagList); // dspc
 			currWall->INV = getJObjInt(objElem, "inv", 0, jsonTagList); // inv
 			currWall->MASS = getJObjDou(objElem, "mass", 1, jsonTagList); // mass
+
+			// B array
+			cJSON *arrB = NULL;
+			getCJsonArray(objElem, &arrB, "wavy", jsonTagList, arrayList, 0);
+			if (arrB != NULL) { // if wavewall parameters have been found then....
+				if (cJSON_GetArraySize(arrB) != _3D) { // check dimensionality is valid
+					printf("Error: B must be 3D.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < _3D; j++) { // get the value
+					currWall->B[j] = cJSON_GetArrayItem(arrB, j)->valuedouble;
+				}
+			} else for (j = 0; j < _3D; j++) { // get the value
+					currWall->B[j] = 0.0;
+			}
 
 			// Handle BC overrides /////////////////////////////////////////////
 			// anchoring
@@ -1356,16 +1407,17 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			}
 
 			// Set the planar flag
-			if( feq(currWall->P[0],1.0) && feq(currWall->P[1],1.0) && feq(currWall->P[2],1.0) ) {
-				// Left or right wall
-				if( fneq(currWall->A[0],0.0) && feq(currWall->A[1],0.0) && feq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
-				// Top or bottom wall
-				else if( feq(currWall->A[0],0.0) && fneq(currWall->A[1],0.0) && feq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
-				// Far or near wall
-				else if( feq(currWall->A[0],0.0) && feq(currWall->A[1],0.0) && fneq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
-				else currWall->PLANAR = 0;
+			currWall->PLANAR = 0;							// sets default to non-planar
+			if ( feq(currWall->B[0],0.0) ) {	// if not wavy, check if planar
+				if( feq(currWall->P[0],1.0) && feq(currWall->P[1],1.0) && feq(currWall->P[2],1.0) ) {
+					// Left or right wall
+					if( fneq(currWall->A[0],0.0) && feq(currWall->A[1],0.0) && feq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
+					// Top or bottom wall
+					else if( feq(currWall->A[0],0.0) && fneq(currWall->A[1],0.0) && feq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
+					// Far or near wall
+					else if( feq(currWall->A[0],0.0) && feq(currWall->A[1],0.0) && fneq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
+				}
 			}
-			else currWall->PLANAR = 0;
 		}
 	} else { // otherwise default to periodic BCs about domain
 		domainWalls = 1; // just trigger the domain walls override w PBCs
@@ -1379,59 +1431,59 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 		// realloc memory to store extra BCs
 		NBC += DIM * 2; // creating 2 extra BCs for each dimension
 		if (oldBCNo > 0) { // if wall already exists then realloc
-			(*WALL) = (bc*) realloc(*WALL, NBC * sizeof(bc)); // realloc mem	
+			(*WALL) = (bc*) realloc(*WALL, NBC * sizeof(bc)); // realloc mem
 		} else { // otherwise need to malloc
 			(*WALL) = (bc*) malloc(NBC * sizeof(bc)); // malloc mem
 		}
-		
+
 		//set up PBCs on the xy plane based on the domain dimensions
 		for (i = 0; i < 2 * DIM; i++) { // use i as the fundamental counter for setting these up
 			bc *currWall = (*WALL + i + oldBCNo); // get the pointer to the BC we want to write to
 
 			// handle the things that change for each wall first
 			for (j = 0; j < _3D; j++) { // set A, Ainv to default vals
-				currWall->AINV[j] = 0; 
+				currWall->AINV[j] = 0;
 				currWall->A[j] = 0.0;
-			}	
+			}
 			switch (i) { // set up walls based on index
 				case 0: // left wall
 					currWall->AINV[0] = 1; // aInv array - NECESSARY
-					currWall->A[0] = 1.0/currWall->AINV[0]; 
+					currWall->A[0] = 1.0/currWall->AINV[0];
 					currWall->R = 0; // r
 					currWall->DN = XYZ[0]; // dn
 					break;
-				
+
 				case 1: // right wall
 					currWall->AINV[0] = -1; // aInv array - NECESSARY
-					currWall->A[0] = 1.0/currWall->AINV[0]; 
+					currWall->A[0] = 1.0/currWall->AINV[0];
 					currWall->R = -XYZ[0]; // r
 					currWall->DN = XYZ[0]; // dn
 					break;
 
 				case 2: // bottom wall
 					currWall->AINV[1] = 1; // aInv array - NECESSARY
-					currWall->A[1] = 1.0/currWall->AINV[1]; 
+					currWall->A[1] = 1.0/currWall->AINV[1];
 					currWall->R = 0; // r
 					currWall->DN = XYZ[1]; // dn
 					break;
 
 				case 3: // top wall
 					currWall->AINV[1] = -1; // aInv array - NECESSARY
-					currWall->A[1] = 1.0/currWall->AINV[1]; 
+					currWall->A[1] = 1.0/currWall->AINV[1];
 					currWall->R = -XYZ[1]; // r
 					currWall->DN = XYZ[1]; // dn
 					break;
 
 				case 4: // near wall
 					currWall->AINV[2] = 1; // aInv array - NECESSARY
-					currWall->A[2] = 1.0/currWall->AINV[2]; 
+					currWall->A[2] = 1.0/currWall->AINV[2];
 					currWall->R = 0; // r
 					currWall->DN = XYZ[2]; // dn
 					break;
 
 				case 5: // far wall
 					currWall->AINV[2] = -1; // aInv array - NECESSARY
-					currWall->A[2] = 1.0/currWall->AINV[2]; 
+					currWall->A[2] = 1.0/currWall->AINV[2];
 					currWall->R = -XYZ[2]; // r
 					currWall->DN = XYZ[2]; // dn
 					break;
@@ -1439,9 +1491,9 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 			// check if we're using PBCs or solid BCs
 			if (domainWalls == 1) { // if PBCs, set appropriate flags
-				currWall->PHANTOM = 0; 
-				currWall->MVN = 1; 
-				currWall->MVT = 1; 
+				currWall->PHANTOM = 0;
+				currWall->MVN = 1;
+				currWall->MVT = 1;
 			} else { // otherwise, set flags for solid walls
 				currWall->PHANTOM = 1;
 				currWall->DN = 0; // override the value of DN from earlier, needs to be 0 for solid
@@ -1453,27 +1505,27 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			currWall->COLL_TYPE = 1; // collType
 			currWall->E = -1.0; // E
 			for (j = 0; j < _3D; j++) { // Q array
-				currWall->Q[j] = 0; 
-			}	
+				currWall->Q[j] = 0;
+			}
 			for (j = 0; j < _3D; j++) { // V array
-				currWall->V[j] = 0; 
-			}	
+				currWall->V[j] = 0;
+			}
 			for (j = 0; j < _3D; j++) { // O array
-				currWall->O[j] = 0; 
-			}	
+				currWall->O[j] = 0;
+			}
 			for (j = 0; j < _3D; j++) { // L array
-				currWall->L[j] = 0; 
-			}	
+				currWall->L[j] = 0;
+			}
 			for (j = 0; j < _3D; j++) { // G array
-				currWall->G[j] = 0; 
-			}	
+				currWall->G[j] = 0;
+			}
 			for (j = 0; j < 2; j++) { // rotsymm array
 				currWall->ROTSYMM[j] = 4;
 			}
 			currWall->ABS = 0; // abs
 			for (j = 0; j < 4; j++) { // P array - NECESSARY
 				currWall->P[j] = 1;
-			}	
+			}
 			currWall->DT = 0; // dt
 			currWall->DVN = 0; // dvn
 			currWall->DVT = 0; // dvt
@@ -1494,21 +1546,28 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			currWall->MASS = 1; // mass
 
 			// Set the planar flag
-			if( feq(currWall->P[0],1.0) && feq(currWall->P[1],1.0) && feq(currWall->P[2],1.0) ) {
-				// Left or right wall
-				if( fneq(currWall->A[0],0.0) && feq(currWall->A[1],0.0) && feq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
-				// Top or bottom wall
-				else if( feq(currWall->A[0],0.0) && fneq(currWall->A[1],0.0) && feq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
-				// Far or near wall
-				else if( feq(currWall->A[0],0.0) && feq(currWall->A[1],0.0) && fneq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
-				else currWall->PLANAR = 0;
+			currWall->PLANAR = 0;							// sets default to non-planar
+			if ( feq(currWall->B[0],0.0) ) {	// if not wavy, check if planar
+				if( feq(currWall->P[0],1.0) && feq(currWall->P[1],1.0) && feq(currWall->P[2],1.0) ) {
+					// Left or right wall
+					if( fneq(currWall->A[0],0.0) && feq(currWall->A[1],0.0) && feq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
+					// Top or bottom wall
+					else if( feq(currWall->A[0],0.0) && fneq(currWall->A[1],0.0) && feq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
+					// Far or near wall
+					else if( feq(currWall->A[0],0.0) && feq(currWall->A[1],0.0) && fneq(currWall->A[2],0.0) ) currWall->PLANAR = 1;
+				}
 			}
-			else currWall->PLANAR = 0;
 		}
 	}
 	//Determine if any BCs are periodic boundaries
 	for( i=0; i<_3D; i++ ) XYZPBC[i]=0;
-	for( i=0; i<NBC; i++ ) setPBC( (*WALL+i) ); 
+	for( i=0; i<NBC; i++ ) setPBC( (*WALL+i) );
+
+    // handle checkpoint timer override
+    if (checkPointTimer != 0.0) {
+        out->CHCKPNT = 1; // just set this as a flag to enable behaviour
+        out->CHCKPNTTIMER = checkPointTimer;
+    }
 
 	// 4. Swimmers /////////////////////////////////////////////////////////////
 	// look at void readswimmers() in swimmers.c to see better descriptions & definitions for these
