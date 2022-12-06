@@ -612,7 +612,7 @@ void swimmer_BCcollision( smono *atom,bc WALL[],specSwimmer SS,double t_step ) {
 		chooseBC_swimmer( WALL,atom,&t_min,&W,&chosenBC,time,t_step );
 
 		//If no particles were inside then we are done.
-		if( W>TOL ) flag = 0;
+		if( W > -TOL ) flag = 0;
 		//Otherwise, COLLISON
 		else {
 			cnt++;
