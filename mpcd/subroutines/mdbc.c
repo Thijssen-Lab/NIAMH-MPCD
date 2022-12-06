@@ -612,22 +612,21 @@ void swimmer_BCcollision( smono *atom,bc WALL[],specSwimmer SS,double t_step ) {
 		chooseBC_swimmer( WALL,atom,&t_min,&W,&chosenBC,time,t_step );
 
 		//If no particles were inside then we are done.
-		if( W>TOL ) flag = 0;
+		if( W > -TOL ) flag = 0;
 		//Otherwise, COLLISON
 		else {
 			cnt++;
-			if(cnt==1){
-				RX=atom->Q[x_];
-				RY=atom->Q[y_];
-				RZ=atom->Q[z_];
-			}
 			// #ifdef DBG
 			// 	if( DBUG == DBGSWIMMER ) printf( "\tW=%f BC=%d\n",W,chosenBC );
 			// #endif
 			//We have the BC to collide with and the time at which it collided
 			//Rewind the particle back to it's old position
 			rewind_swimmer( atom,time );
-
+			if(cnt==1){
+				RX=atom->Q[x_];
+				RY=atom->Q[y_];
+				RZ=atom->Q[z_];
+			}
 			//Update the time
 			t_delta += t_min;
 
