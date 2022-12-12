@@ -612,7 +612,7 @@ void swimmer_BCcollision( smono *atom,bc WALL[],specSwimmer SS,double t_step ) {
 		chooseBC_swimmer( WALL,atom,&t_min,&W,&chosenBC,time,t_step );
 
 		//If no particles were inside then we are done.
-		if( W > -TOL ) flag = 0;
+		if( W > TOL ) flag = 0;
 		//Otherwise, COLLISON
 		else {
 			cnt++;
@@ -653,7 +653,7 @@ void swimmer_BCcollision( smono *atom,bc WALL[],specSwimmer SS,double t_step ) {
 			stream_swimmer( atom,time );
 			//Return to the top and try to move again for the rest of the time.
 			W1 = calcW_swimmer(WALL[chosenBC],atom);
-			if (W1 < -TOL){
+			if (W1 < 0.0){
 				atom->Q[x_]=RX;
 				atom->Q[y_]=RY;
 				atom->Q[z_]=RZ;
