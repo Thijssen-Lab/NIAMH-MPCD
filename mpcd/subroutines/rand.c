@@ -18,31 +18,28 @@
 static unsigned long mt[NN];	//Mersenne twister variable: the array for the state vector
 static int mti=NN+1;		//Mersenne twister variable: mti==NN+1 means mt[NN] is not initialized
 
-//================================================================================
-unsigned long RandomSeedSRD (unsigned long seed)
-//================================================================================
+unsigned long MT_RandomSeedSRD (unsigned long seed)
 {
 // STOLEN FROM FRED!
 
-	// Get a seed from time*pid if seed=0
-	// 	if (!seed) seed = time(0)*getpid();
-	// if (!seed) seed = time(0);
-	struct timeval tv;
-  gettimeofday(&tv, NULL); // Get the time to use the microseconds as an "random" seed
-	if (!seed) seed = tv.tv_usec+getpid();
+    // Get a seed from time*pid if seed=0
+    // 	if (!seed) seed = time(0)*getpid();
+    // if (!seed) seed = time(0);
+    struct timeval tv;
+    gettimeofday(&tv, NULL); // Get the time to use the microseconds as an "random" seed
+    if (!seed) seed = tv.tv_usec+getpid();
 
-	// Initialize mersenne twister array
-	mt[0]= seed & 0xffffffff;
-	for (mti=1; mti<NN; mti++) {
-		mt[mti] = (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti);
-		mt[mti] &= 0xffffffffUL;
-	}
+    // Initialize mersenne twister array
+    mt[0]= seed & 0xffffffff;
+    for (mti=1; mti<NN; mti++) {
+        mt[mti] = (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti);
+        mt[mti] &= 0xffffffffUL;
+    }
 
-	return (seed);
+    return (seed);
 }
 
-
-void init_genrand(unsigned long s){
+void MT_init_genrand(unsigned long s){
 /*
    Mersenne twister
    http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/CODES/mt19937ar.c
@@ -51,7 +48,7 @@ void init_genrand(unsigned long s){
     mt[0]= s & 0xffffffffUL;
     for (mti=1; mti<NN; mti++) {
         mt[mti] =
-	    (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti);
+                (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti);
         /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
         /* In the previous versions, MSBs of the seed affect   */
         /* only MSBs of the array mt[].                        */
@@ -60,7 +57,7 @@ void init_genrand(unsigned long s){
         /* for >32 bit machines */
     }
 }
-void init_by_array(unsigned long init_key[], int key_length){
+void MT_init_by_array(unsigned long init_key[], int key_length){
 /*
    Mersenne twister
    http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/CODES/mt19937ar.c
@@ -70,16 +67,16 @@ void init_by_array(unsigned long init_key[], int key_length){
 */
     int i, j, k;
 
-		struct timeval tv;
-		gettimeofday(&tv, NULL); // Get the time to use the microseconds as an "random" seed
-    init_genrand(tv.tv_usec);
+    struct timeval tv;
+    gettimeofday(&tv, NULL); // Get the time to use the microseconds as an "random" seed
+    MT_init_genrand(tv.tv_usec);
     //init_genrand(19650218UL);
 
     i=1; j=0;
     k = (NN>key_length ? NN : key_length);
     for (; k; k--) {
         mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1664525UL))
-          + init_key[j] + j; /* non linear */
+                + init_key[j] + j; /* non linear */
         mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
         i++; j++;
         if (i>=NN) { mt[0] = mt[NN-1]; i=1; }
@@ -87,7 +84,7 @@ void init_by_array(unsigned long init_key[], int key_length){
     }
     for (k=NN-1; k; k--) {
         mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1566083941UL))
-          - i; /* non linear */
+                - i; /* non linear */
         mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
         i++;
         if (i>=NN) { mt[0] = mt[NN-1]; i=1; }
@@ -95,7 +92,7 @@ void init_by_array(unsigned long init_key[], int key_length){
 
     mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */
 }
-unsigned long genrand_int32(void){
+unsigned long MT_genrand_int32(void){
 /*
    Mersenne twister
    http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/CODES/mt19937ar.c
@@ -103,17 +100,17 @@ unsigned long genrand_int32(void){
 */
     unsigned long y;
     static unsigned long mag01[2]={0x0UL, MATRIX_A};
-		struct timeval tv;
+    struct timeval tv;
 
     /* mag01[x] = x * MATRIX_A  for x=0,1 */
     if (mti >= NN) { /* generate NN words at one time */
         int kk;
 
         if (mti == NN+1) {  /* if init_genrand() has not been called, */
-						gettimeofday(&tv, NULL); // Get the time to use the microseconds as an "random" seed
-            init_genrand(tv.tv_usec);
-						//init_genrand(5489UL); /* a default initial seed is used */
-				}
+            gettimeofday(&tv, NULL); // Get the time to use the microseconds as an "random" seed
+            MT_init_genrand(tv.tv_usec);
+            //init_genrand(5489UL); /* a default initial seed is used */
+        }
         for (kk=0;kk<NN-MM;kk++) {
             y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
             mt[kk] = mt[kk+MM] ^ (y >> 1) ^ mag01[y & 0x1UL];
@@ -136,6 +133,53 @@ unsigned long genrand_int32(void){
 
     return y;
 }
+
+/* ****************************************** */
+/* ****************************************** */
+/* ****************************************** */
+/* *************** xoshiro128++ ************* */
+/* ****************************************** */
+/* ****************************************** */
+/* ****************************************** */
+///TODO: make xoshiro128++ globals here
+
+///TODO: make xoshiro128++ methods here
+
+/* ****************************************** */
+/* ****************************************** */
+/* ****************************************** */
+/* ************ interface methods *********** */
+/* ****************************************** */
+/* ****************************************** */
+/* ****************************************** */
+
+unsigned long RandomSeedSRD (unsigned long seed)
+{
+#ifdef RNG_MERSENNE
+    return MT_RandomSeedSRD(seed);
+#else
+    //TODO: add xoshiro128++ seed
+    return 0;
+#endif
+}
+
+void init_genrand(unsigned long s){
+#ifdef RNG_MERSENNE
+    MT_init_genrand(s);
+#else
+    //TODO: call xoshiro128++ init
+#endif
+}
+
+unsigned long genrand_int32(void){
+#ifdef RNG_MERSENNE
+    return MT_genrand_int32();
+#else
+    //TODO: call xoshiro128++ init
+    return 0;
+#endif
+}
+
 long genrand_int31(void){
 /*
    Mersenne twister
