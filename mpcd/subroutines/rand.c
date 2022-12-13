@@ -143,7 +143,18 @@ unsigned long MT_genrand_int32(void){
 /* ****************************************** */
 ///TODO: make xoshiro128++ globals here
 
-///TODO: make xoshiro128++ methods here
+unsigned long X_RandomSeedSRD (unsigned long seed) {
+    ///TODO
+    ///TODO: must return finally computed seed
+}
+
+void X_init_genrand(unsigned long s) {
+    ///TODO
+}
+
+unsigned long X_genrand_int32(void) {
+    ///TODO
+}
 
 /* ****************************************** */
 /* ****************************************** */
@@ -155,28 +166,36 @@ unsigned long MT_genrand_int32(void){
 
 unsigned long RandomSeedSRD (unsigned long seed)
 {
+    /*
+     * Initialise the random number generators using a pseudo-random seed
+     */
 #ifdef RNG_MERSENNE
     return MT_RandomSeedSRD(seed);
 #else
-    //TODO: add xoshiro128++ seed
-    return 0;
+    return X_RandomSeedSRD(seed);
 #endif
 }
 
 void init_genrand(unsigned long s){
+    /*
+     * Initialise the random number generators.
+     * Note: Not sure how necessary this method is, but it works, so I'm not going to touch it.
+     */
 #ifdef RNG_MERSENNE
     MT_init_genrand(s);
 #else
-    //TODO: call xoshiro128++ init
+    X_init_genrand(s);
 #endif
 }
 
 unsigned long genrand_int32(void){
+    /*
+     * Base RNG method. Returns a random unsigned long.
+     */
 #ifdef RNG_MERSENNE
     return MT_genrand_int32();
 #else
-    //TODO: call xoshiro128++ init
-    return 0;
+    return X_genrand_int32();
 #endif
 }
 
