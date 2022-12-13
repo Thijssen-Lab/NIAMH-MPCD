@@ -2,6 +2,7 @@
 # include <sys/time.h>
 # include <stdio.h>
 # include <unistd.h>
+# include <stdint.h>
 
 # include "../headers/definitions.h"
 # include "../headers/SRDclss.h"
@@ -141,19 +142,91 @@ unsigned long MT_genrand_int32(void){
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
-///TODO: make xoshiro128++ globals here
 
-unsigned long X_RandomSeedSRD (unsigned long seed) {
-    ///TODO
-    ///TODO: must return finally computed seed
+/*  Taken from: https://prng.di.unimi.it/xoshiro128plusplus.c
+
+    Written in 2019 by David Blackman and Sebastiano Vigna (vigna@acm.org)
+
+    To the extent possible under law, the author has dedicated all copyright
+    and related and neighboring rights to this software to the public domain
+    worldwide. This software is distributed without any warranty.
+
+    See <http://creativecommons.org/publicdomain/zero/1.0/>. */
+
+static unsigned long X_state[4]; // RNG state
+int X_seeded = 0; // flag to show whether this has been seeded or not.
+
+static inline unsigned long X_rotl(const long int x, int k) {
+    /* Rotate x left by k bits */
+    return (x << k) | (x >> (32 - k));
 }
 
 void X_init_genrand(unsigned long s) {
-    ///TODO
+    /*
+     * Initialize the RNG state with the seed using SplitMix64
+     *
+     * Note that unlike MT: We need to prepare 4 pseudo-random values to initialise the RNG state
+     * Hence, we initialise a temporary instance of SplitMix64, using the existing seed, to generate the initial state
+    */
+    int i; // counting variable
+
+    /* SplitMix64 code taken from: https://github.com/svaarala/duktape/blob/master/misc/splitmix64.c
+     * Written in 2015 by Sebastiano Vigna (vigna@acm.org)
+        To the extent possible under law, the author has dedicated all copyright
+        and related and neighboring rights to this software to the public domain
+        worldwide. This software is distributed without any warranty.
+        See <http://creativecommons.org/publicdomain/zero/1.0/>. */
+
+    unsigned long sm_state = s; // splitmix64 state
+
+    for (i = 0; i < 4; i++) {
+        // generate the next value in splitmix
+        unsigned long z = (sm_state += UINT64_C(0x9E3779B97F4A7C15));
+        z = (z ^ (z >> 30)) * UINT64_C(0xBF58476D1CE4E5B9);
+        z = (z ^ (z >> 27)) * UINT64_C(0x94D049BB133111EB);
+
+        X_state[i] = z ^ (z >> 31); // output value from splitmix
+    }
+
+    X_seeded = 1; // mark as seeded
+}
+
+unsigned long X_RandomSeedSRD (unsigned long seed) {
+    /*
+     * Perform the same seeding as in the MT
+    */
+    struct timeval tv;
+    gettimeofday(&tv, NULL); // Get the time to use the microseconds as an "random" seed
+    if (!seed) seed = tv.tv_usec+getpid();
+
+    if (X_seeded == 0) {
+        X_init_genrand(seed);
+    }
+
+    return seed;
 }
 
 unsigned long X_genrand_int32(void) {
-    ///TODO
+    /*
+     * Performs the next() step from the xoshiro128++ algorithm
+    */
+    if (X_seeded == 0) { // ensure seed is properly set
+        X_RandomSeedSRD(0);
+    }
+
+    const unsigned long result = X_rotl(X_state[0] + X_state[3], 7) + X_state[0];
+    const unsigned long t = X_state[1] << 9;
+
+    X_state[2] ^= X_state[0];
+    X_state[3] ^= X_state[1];
+    X_state[1] ^= X_state[2];
+    X_state[0] ^= X_state[3];
+
+    X_state[2] ^= t;
+
+    X_state[3] = X_rotl(X_state[3], 11);
+
+    return result;
 }
 
 /* ****************************************** */
@@ -167,7 +240,8 @@ unsigned long X_genrand_int32(void) {
 unsigned long RandomSeedSRD (unsigned long seed)
 {
     /*
-     * Initialise the random number generators using a pseudo-random seed
+     * Check if a random seed is required. If so then generates one pseudo-randomly.
+     * Then initialise the random number generators using a pseudo-random seed
      */
 #ifdef RNG_MERSENNE
     return MT_RandomSeedSRD(seed);
@@ -178,8 +252,7 @@ unsigned long RandomSeedSRD (unsigned long seed)
 
 void init_genrand(unsigned long s){
     /*
-     * Initialise the random number generators.
-     * Note: Not sure how necessary this method is, but it works, so I'm not going to touch it.
+     * Initialise the random number generators WITHOUT creating a random seed.
      */
 #ifdef RNG_MERSENNE
     MT_init_genrand(s);

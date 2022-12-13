@@ -17,7 +17,7 @@
 // If you want the files get printed immediately include this option for force flushing the buffer
 # define FFLSH
 // If you want to use the LEGACY mersenne twister RNG then uncomment the below
-# define RNG_MERSENNE
+//# define RNG_MERSENNE
 
 /* ****************************************** */
 /* ************ PROGRAM CONSTANTS *********** */
