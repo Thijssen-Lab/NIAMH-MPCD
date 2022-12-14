@@ -208,9 +208,9 @@ unsigned long X_RandomSeedSRD (unsigned long seed) {
 
 unsigned long X_genrand_int32(void) {
     /*
-     * Performs the next() step from the xoshiro128++ algorithm
+     * Performs the next() step from the xoshiro128++ algorithm, generating a random integer
     */
-    if (X_seeded == 0) { // ensure seed is properly set
+    if (X_seeded == 0) { // ensure seed is properly set, if not then seed with a random value
         X_RandomSeedSRD(0);
     }
 
@@ -282,12 +282,11 @@ long genrand_int31(void){
 }
 double genrand_real(void){
 /*
-   Mersenne twister
-   http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/CODES/mt19937ar.c
-   Generates a random number on [0,1)-real-interval
+   Maps the generated random number onto a [0,1) interval
+   divisor controls the precision of the random number. The higher the divisor, the more precise the double.
 */
-   return genrand_int32()*(1.0/4294967296.0);
-    /* divided by 2^32 */
+    const double divisor = 4294967296.0; // 2^32 by default
+    return (genrand_int32() % (unsigned long) divisor) * (1.0/divisor); // modulo ensures this is always bounded
 }
 double genrand_pmOne(void){
 	/*
