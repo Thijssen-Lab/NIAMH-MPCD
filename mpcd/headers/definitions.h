@@ -198,7 +198,7 @@
 // Now made these general for any collision rule. 5, 6 and 18 are now available to be re-used as new collisions
 // # define NOHI_ARBAXIS 5
 // # define NOHI_MPCAT 6
-// # define XXX_MULTIPHASE_XXX 18
+// # define XXXX_MULTIPHASE_XXXX 18
 // An MPCD version of the Vicsek algorithm
 # define VICSEK 7
 // An MPCD version of the Chate algorithm
