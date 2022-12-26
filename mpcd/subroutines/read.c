@@ -625,6 +625,8 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 	else printf("Warning: Failed to Galilean transform, rest frame, thermostat mode, collision mode or liquid crystal mode.\n");
 	if(fscanf( finput,"%lf %lf %lf %lf",&(in->TAU),&(in->RA),&(in->FRICCO),&(in->MFPOT) ));		//Read the thermal relaxation time scale
 	else printf("Warning: Failed to read relaxation time, rotation angle, friction coefficient or mean-field potential.\n");
+	if(fscanf( finput,"%d %d %d",&(in->noHI),&(in->inCOMP),&(in->MULTIPHASE) ));		//Read no hydrodynamics, incompressibility and multi-phase
+	else printf("Warning: Failed to read no hydrodynamics or incompressibility.\n");
 	if(fscanf( finput,"%lf %lf %lf",&(in->GRAV[0]),&(in->GRAV[1]),&(in->GRAV[2]) ));	//Read the constant external acceleration
 	else printf("Warning: Failed to read acceleration.\n");
 	if(fscanf( finput,"%lf %lf %lf",&(in->MAG[0]),&(in->MAG[1]),&(in->MAG[2]) ));	//Read the constant external magnetic field
@@ -934,6 +936,9 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	in->RA = getJObjDou(jObj, "rotAng", 1.570796, jsonTagList); // rotAng
 	in->FRICCO = getJObjDou(jObj, "fricCoef", 1.0, jsonTagList); // fricCo
 	in->MFPOT = getJObjDou(jObj, "mfpot", 10.0, jsonTagList); // mfpPot
+	in->noHI = getJObjInt(jObj, "noHI", 0, jsonTagList); // noHI
+	in->inCOMP = getJObjInt(jObj, "incomp", 0, jsonTagList); // inCOMP
+	in->MULTIPHASE = getJObjInt(jObj, "multiphase", 0, jsonTagList); // multiPhase
 
 	// grav array
 	cJSON *arrGrav = NULL;
