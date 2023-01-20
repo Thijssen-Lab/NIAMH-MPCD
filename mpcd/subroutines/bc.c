@@ -558,18 +558,21 @@ void velBC( particleMPC *pp,bc *WALL,double n[_3D],spec *SP,double KBT ) {
 			}
 		#endif
 		//Set the angular velocity of BC
-		//Recall R is vector from contact point to centre of mass
-		//Use VT as crossprod of separation with direction of imp
-		//NOTE: Zero for reflective
-		crossprod( R,V,VT );
-		//Use VN as dotprod of mom inertia tens with VT
-		dotprodMatVec( IIwall,VT,VN,_3D );
-		for( i=0; i<_3D; i++) WALL->dL[i] -= VN[i] * J;
-		#ifdef DBG
-			if( DBUG == DBGMPCBC ) {
-				printf( "\tWall dL: [%lf,%lf,%lf]\n",-VN[0]*J,VN[1]*J,VN[2]*J );
-			}
-		#endif
+		if(DIM>1) {
+			//Recall R is vector from contact point to centre of mass
+			//Use VT as crossprod of separation with direction of imp
+			//NOTE: Zero for reflective
+			crossprod( R,V,VT );
+			//Use VN as dotprod of mom inertia tens with VT
+			dotprodMatVec( IIwall,VT,VN,_3D );
+			for( i=0; i<_3D; i++) WALL->dL[i] -= VN[i] * J;
+			#ifdef DBG
+				if( DBUG == DBGMPCBC ) {
+					printf( "\tWall dL: [%lf,%lf,%lf]\n",-VN[0]*J,VN[1]*J,VN[2]*J );
+				}
+			#endif
+		}
+		else for( i=0; i<_3D; i++) WALL->dL[i] = 0.0; // fallback for 1D
 	}
 }
 void posBC( particleMPC *pp,bc WALL,double n[] ) {
@@ -1315,7 +1318,6 @@ void MPC_BCcollision( particleMPC *pp,int currentP,bc WALL[],spec *pSP,double KB
 }
 double *normal( double *n,bc WALL,double *point,int dimension ) {
 	//2D!?
-
 /*
    Find the normal to the surface at this point (particleMPC is
    presently ON surface). We take the gradient of

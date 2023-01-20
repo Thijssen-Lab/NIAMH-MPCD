@@ -38,6 +38,10 @@ void genrand_maierSaupe( double DIR[],double rotAx[],double rotAngle,double U[],
 // 		//else if( BUS<BUSMIN ) genrand_maierSaupeEXP_2D( DIR,rotAx,rotAngle,U,KBT,S,effM );
 // 		else genrand_maierSaupeMetropolis_2D( DIR,rotAx,rotAngle,U,KBT,S,effM );
 	}
+	else if(DIM==_1D) {
+		// In 1D, the orientation MUST lie on the axis regardless of anything else
+		U[0]=genrand_pmOne();
+	}
 	else printf("Warning: genrand_maierSaupe() only programmed for DIM={3,2}, not DIM=%d\n",DIM);
 }
 void genrand_maierSaupeGAUSS_3D( double rotAx[],double rotAngle,double U[],double KBT,double S,double effM ) {
@@ -1345,96 +1349,103 @@ void andersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double dt,doubl
 		// The rest don't matter and can remain zero
 	}
 	else if( DIM == 1 ) {
-		printf( "Error: Angular momentum conservation in 1D is nonsequitur. Change collision technique or dimension.\n" );
+		//Angular momentum conservation in 1D is nonsequitur. Leave as zero
+		II[2][2] = 0.0;
+	}
+	else {
+		printf( "Error: Dimension higher than 3. Change dimension.\n" );
 		exit( 1 );
 	}
 
 	/* ****************************************** */
 	/* ******* Find angular velocity term ******* */
 	/* ****************************************** */
-	for( i=0; i<_3D; i++ ) {
-		Llm[i] = 0.;
-		Lnm[i] = 0.;
-	}
-	i=0;
-	//MPC particles
-	tmpc = CL->pp;
-	while( tmpc!=NULL ) {
-		//First account for the change in angular momentum due to the effect of the linear momenum collision
-		id = tmpc->SPID;
-		MASS = (SP+id)->MASS;
-		//Position relative to centre of mass
-		for( j=0; j<DIM; j++ ) relQ[i][j] = tmpc->Q[j] - CL->CM[j];
-		for( j=0; j<DIM; j++ ) diffV[j] = MASS * (tmpc->V[j] - RV[i][j]);
-		if( DIM < _3D ) {
-			relQ[i][2] = 0.;
-			diffV[2] = 0.;
+	if(DIM>1) {
+		for( i=0; i<_3D; i++ ) {
+			Llm[i] = 0.;
+			Lnm[i] = 0.;
 		}
-		if( DIM < _2D ) {
-			relQ[i][1] = 0.;
-			diffV[1] = 0.;
-		}
-		crossprod( relQ[i],diffV,angmom );
-		for( j=0; j<_3D; j++ ) Llm[j] += angmom[j];
-		//Next account for the torque on the fluid due to the rotation of the rods
-		// net torque=0 (overdamped) therefore HI-torque (on rod) = negative of all other torques
-		// torque on fluid = minus HI-torque on rods ---> positive sum of all other torques
-		for( j=0; j<_3D; j++ ) Lnm[j] += tmpc->T[j]*dt;
+		i=0;
+		//MPC particles
+		tmpc = CL->pp;
+		while( tmpc!=NULL ) {
+			//First account for the change in angular momentum due to the effect of the linear momenum collision
+			id = tmpc->SPID;
+			MASS = (SP+id)->MASS;
+			//Position relative to centre of mass
+			for( j=0; j<DIM; j++ ) relQ[i][j] = tmpc->Q[j] - CL->CM[j];
+			for( j=0; j<DIM; j++ ) diffV[j] = MASS * (tmpc->V[j] - RV[i][j]);
+			if( DIM < _3D ) {
+				relQ[i][2] = 0.;
+				diffV[2] = 0.;
+			}
+			if( DIM < _2D ) {
+				relQ[i][1] = 0.;
+				diffV[1] = 0.;
+			}
+			crossprod( relQ[i],diffV,angmom );
+			for( j=0; j<_3D; j++ ) Llm[j] += angmom[j];
+			//Next account for the torque on the fluid due to the rotation of the rods
+			// net torque=0 (overdamped) therefore HI-torque (on rod) = negative of all other torques
+			// torque on fluid = minus HI-torque on rods ---> positive sum of all other torques
+			for( j=0; j<_3D; j++ ) Lnm[j] += tmpc->T[j]*dt;
 
-		tmpc = tmpc->next;
-		i++;
+			tmpc = tmpc->next;
+			i++;
+		}
+		//MD particles
+		tmd = CL->MDpp;
+		while( tmd!=NULL ) {
+			//Account for the change in angular momentum due to the effect of the linear momenum collision
+			MASS = tmd->mass;
+			//Position relative to centre of mass
+			relQ[i][0] = tmd->rx - CL->CM[0];
+			relQ[i][1] = tmd->ry - CL->CM[1];
+			relQ[i][2] = tmd->rz - CL->CM[2];
+			diffV[0] = MASS * (tmd->vx - RV[i][0]);
+			diffV[1] = MASS * (tmd->vy - RV[i][1]);
+			diffV[2] = MASS * (tmd->vz - RV[i][2]);
+			if( DIM < _3D ) {
+				relQ[i][2] = 0.;
+				diffV[2] = 0.;
+			}
+			if( DIM < _2D ) {
+				relQ[i][1] = 0.;
+				diffV[1] = 0.;
+			}
+			crossprod( relQ[i],diffV,angmom );
+			for( j=0; j<_3D; j++ ) Llm[j] += angmom[j];
+			tmd = tmd->nextSRD;
+			i++;
+		}
+		//Swimmer particles
+		tsm = CL->sp;
+		while( tsm!=NULL ) {
+			//First account for the change in angular momentum due to the effect of the linear momenum collision
+			if( tsm->HorM ) MASS = SS.middM;
+			else MASS = SS.headM;
+			//Position relative to centre of mass
+			for( j=0; j<DIM; j++ ) relQ[i][j] = tsm->Q[j] - CL->CM[j];
+			for( j=0; j<DIM; j++ ) diffV[j] = MASS * (tsm->V[j] - RV[i][j]);
+			if( DIM < _3D ) {
+				relQ[i][2] = 0.;
+				diffV[2] = 0.;
+			}
+			if( DIM < _2D ) {
+				relQ[i][1] = 0.;
+				diffV[1] = 0.;
+			}
+			crossprod( relQ[i],diffV,angmom );
+			for( j=0; j<_3D; j++ ) Llm[j] += angmom[j];
+			tsm = tsm->next;
+			i++;
+		}
+		//Lnm is due to the torque on the rotating rod --- the same must be added to the fluid
+		for( i=0; i<_3D; i++ ) L[i]=Llm[i] + Lnm[i];
+		//for( i=0; i<_3D; i++ ) L[i]=Llm[i] - Lnm[i];
+		dotprodMatVec( II,L,W,_3D );
 	}
-	//MD particles
-	tmd = CL->MDpp;
-	while( tmd!=NULL ) {
-		//Account for the change in angular momentum due to the effect of the linear momenum collision
-		MASS = tmd->mass;
-		//Position relative to centre of mass
-		relQ[i][0] = tmd->rx - CL->CM[0];
-		relQ[i][1] = tmd->ry - CL->CM[1];
-		relQ[i][2] = tmd->rz - CL->CM[2];
-		diffV[0] = MASS * (tmd->vx - RV[i][0]);
-		diffV[1] = MASS * (tmd->vy - RV[i][1]);
-		diffV[2] = MASS * (tmd->vz - RV[i][2]);
-		if( DIM < _3D ) {
-			relQ[i][2] = 0.;
-			diffV[2] = 0.;
-		}
-		if( DIM < _2D ) {
-			relQ[i][1] = 0.;
-			diffV[1] = 0.;
-		}
-		crossprod( relQ[i],diffV,angmom );
-		for( j=0; j<_3D; j++ ) Llm[j] += angmom[j];
-		tmd = tmd->nextSRD;
-		i++;
-	}
-	//Swimmer particles
-	tsm = CL->sp;
-	while( tsm!=NULL ) {
-		//First account for the change in angular momentum due to the effect of the linear momenum collision
-		if( tsm->HorM ) MASS = SS.middM;
-		else MASS = SS.headM;
-		//Position relative to centre of mass
-		for( j=0; j<DIM; j++ ) relQ[i][j] = tsm->Q[j] - CL->CM[j];
-		for( j=0; j<DIM; j++ ) diffV[j] = MASS * (tsm->V[j] - RV[i][j]);
-		if( DIM < _3D ) {
-			relQ[i][2] = 0.;
-			diffV[2] = 0.;
-		}
-		if( DIM < _2D ) {
-			relQ[i][1] = 0.;
-			diffV[1] = 0.;
-		}
-		crossprod( relQ[i],diffV,angmom );
-		for( j=0; j<_3D; j++ ) Llm[j] += angmom[j];
-		tsm = tsm->next;
-		i++;
-	}
-	//Lnm is due to the torque on the rotating rod --- the same must be added to the fluid
-	for( i=0; i<_3D; i++ ) L[i]=Llm[i] + Lnm[i];
-	//for( i=0; i<_3D; i++ ) L[i]=Llm[i] - Lnm[i];
-	dotprodMatVec( II,L,W,_3D );
+	else for( j=0; j<DIM; j++ ) W[j]=0.0; // fallback for 1D
 
 	/* ****************************************** */
 	/* *************** Collision **************** */
@@ -1643,97 +1654,104 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 		// The rest don't matter and can remain zero
 	}
 	else if( DIM == 1 ) {
-		printf( "Error: Angular momentum conservation in 1D is nonsequitur. Change collision technique or dimension.\n" );
+		//Angular momentum conservation in 1D is nonsequitur. Leave as zero
+		II[2][2] = 0.0;
+	}
+	else {
+		printf( "Error: Dimension higher than 3. Change dimension.\n" );
 		exit( 1 );
 	}
 
 	/* ****************************************** */
 	/* ******* Find angular velocity term ******* */
 	/* ****************************************** */
-	for( i=0; i<_3D; i++ ) {
-		Llm[i] = 0.;
-		Lnm[i] = 0.;
-	}
-	i=0;
-	//MPC particles
-	tmpc = CL->pp;
-	while( tmpc!=NULL ) {
-		//First account for the change in angular momentum due to the effect of the linear momenum collision
-		id = tmpc->SPID;
-		M = (SP+id)->MASS;
-		//Position relative to centre of mass
-		for( j=0; j<DIM; j++ ) relQ[i][j] = tmpc->Q[j] - CL->CM[j];
-		//Difference in velocity --- with BOTH active and random terms
-		for( j=0; j<DIM; j++ ) diffV[j] = M * (tmpc->V[j] - RV[i][j] - AV[i][j]);
-		if( DIM < _3D ) {
-			relQ[i][2] = 0.;
-			diffV[2] = 0.;
+	if(DIM>1) {
+		for( i=0; i<_3D; i++ ) {
+			Llm[i] = 0.;
+			Lnm[i] = 0.;
 		}
-		if( DIM < _2D ) {
-			relQ[i][1] = 0.;
-			diffV[1] = 0.;
-		}
-		crossprod( relQ[i],diffV,angmom );
-		for( j=0; j<_3D; j++ ) Llm[j] += angmom[j];
-		//Next account for the torque on the fluid due to the rotation of the rods
-		// net torque=0 (overdamped) therefore HI-torque (on rod) = negative of all other torques
-		// torque on fluid = minus HI-torque on rods ---> positive sum of all other torques
-		for( j=0; j<_3D; j++ ) Lnm[j] += tmpc->T[j]*dt;
+		i=0;
+		//MPC particles
+		tmpc = CL->pp;
+		while( tmpc!=NULL ) {
+			//First account for the change in angular momentum due to the effect of the linear momenum collision
+			id = tmpc->SPID;
+			M = (SP+id)->MASS;
+			//Position relative to centre of mass
+			for( j=0; j<DIM; j++ ) relQ[i][j] = tmpc->Q[j] - CL->CM[j];
+			//Difference in velocity --- with BOTH active and random terms
+			for( j=0; j<DIM; j++ ) diffV[j] = M * (tmpc->V[j] - RV[i][j] - AV[i][j]);
+			if( DIM < _3D ) {
+				relQ[i][2] = 0.;
+				diffV[2] = 0.;
+			}
+			if( DIM < _2D ) {
+				relQ[i][1] = 0.;
+				diffV[1] = 0.;
+			}
+			crossprod( relQ[i],diffV,angmom );
+			for( j=0; j<_3D; j++ ) Llm[j] += angmom[j];
+			//Next account for the torque on the fluid due to the rotation of the rods
+			// net torque=0 (overdamped) therefore HI-torque (on rod) = negative of all other torques
+			// torque on fluid = minus HI-torque on rods ---> positive sum of all other torques
+			for( j=0; j<_3D; j++ ) Lnm[j] += tmpc->T[j]*dt;
 
-		tmpc = tmpc->next;
-		i++;
-	}
-	//MD particles
-	tmd = CL->MDpp;
-	while( tmd!=NULL ) {
-		//Account for the change in angular momentum due to the effect of the linear momenum collision
-		M = tmd->mass;
-		//Position relative to centre of mass
-		relQ[i][0] = tmd->rx - CL->CM[0];
-		relQ[i][1] = tmd->ry - CL->CM[1];
-		relQ[i][2] = tmd->rz - CL->CM[2];
-		diffV[0] = M * (tmd->vx - RV[i][0]);
-		diffV[1] = M * (tmd->vy - RV[i][1]);
-		diffV[2] = M * (tmd->vz - RV[i][2]);
-		if( DIM < _3D ) {
-			relQ[i][2] = 0.;
-			diffV[2] = 0.;
+			tmpc = tmpc->next;
+			i++;
 		}
-		if( DIM < _2D ) {
-			relQ[i][1] = 0.;
-			diffV[1] = 0.;
+		//MD particles
+		tmd = CL->MDpp;
+		while( tmd!=NULL ) {
+			//Account for the change in angular momentum due to the effect of the linear momenum collision
+			M = tmd->mass;
+			//Position relative to centre of mass
+			relQ[i][0] = tmd->rx - CL->CM[0];
+			relQ[i][1] = tmd->ry - CL->CM[1];
+			relQ[i][2] = tmd->rz - CL->CM[2];
+			diffV[0] = M * (tmd->vx - RV[i][0]);
+			diffV[1] = M * (tmd->vy - RV[i][1]);
+			diffV[2] = M * (tmd->vz - RV[i][2]);
+			if( DIM < _3D ) {
+				relQ[i][2] = 0.;
+				diffV[2] = 0.;
+			}
+			if( DIM < _2D ) {
+				relQ[i][1] = 0.;
+				diffV[1] = 0.;
+			}
+			crossprod( relQ[i],diffV,angmom );
+			for( j=0; j<_3D; j++ ) Llm[j] += angmom[j];
+			tmd = tmd->nextSRD;
+			i++;
 		}
-		crossprod( relQ[i],diffV,angmom );
-		for( j=0; j<_3D; j++ ) Llm[j] += angmom[j];
-		tmd = tmd->nextSRD;
-		i++;
-	}
-	//Swimmer particles
-	tsm = CL->sp;
-	while( tsm!=NULL ) {
-		//First account for the change in angular momentum due to the effect of the linear momenum collision
-		if( tsm->HorM ) M = SS.middM;
-		else M = SS.headM;
-		//Position relative to centre of mass
-		for( j=0; j<DIM; j++ ) relQ[i][j] = tsm->Q[j] - CL->CM[j];
-		//Difference in velocity
-		for( j=0; j<DIM; j++ ) diffV[j] = M * (tsm->V[j] - RV[i][j] );
-		if( DIM < _3D ) {
-			relQ[i][2] = 0.;
-			diffV[2] = 0.;
+		//Swimmer particles
+		tsm = CL->sp;
+		while( tsm!=NULL ) {
+			//First account for the change in angular momentum due to the effect of the linear momenum collision
+			if( tsm->HorM ) M = SS.middM;
+			else M = SS.headM;
+			//Position relative to centre of mass
+			for( j=0; j<DIM; j++ ) relQ[i][j] = tsm->Q[j] - CL->CM[j];
+			//Difference in velocity
+			for( j=0; j<DIM; j++ ) diffV[j] = M * (tsm->V[j] - RV[i][j] );
+			if( DIM < _3D ) {
+				relQ[i][2] = 0.;
+				diffV[2] = 0.;
+			}
+			if( DIM < _2D ) {
+				relQ[i][1] = 0.;
+				diffV[1] = 0.;
+			}
+			crossprod( relQ[i],diffV,angmom );
+			for( j=0; j<_3D; j++ ) Llm[j] += angmom[j];
+			tsm = tsm->next;
+			i++;
 		}
-		if( DIM < _2D ) {
-			relQ[i][1] = 0.;
-			diffV[1] = 0.;
-		}
-		crossprod( relQ[i],diffV,angmom );
-		for( j=0; j<_3D; j++ ) Llm[j] += angmom[j];
-		tsm = tsm->next;
-		i++;
-	}
 
-	for( i=0; i<_3D; i++ ) L[i]=Llm[i]+Lnm[i];
-	dotprodMatVec( II,L,W,_3D );
+		for( i=0; i<_3D; i++ ) L[i]=Llm[i]+Lnm[i];
+		dotprodMatVec( II,L,W,_3D );
+	}
+	else for( j=0; j<DIM; j++ ) W[j]=0.0; // fallback for 1D
 
 	/* ****************************************** */
 	/* *************** Collision **************** */

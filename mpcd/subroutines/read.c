@@ -901,13 +901,14 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	getCJsonArray(jObj, &arrDomain, "domain", jsonTagList, arrayList, 0);
 	if(arrDomain != NULL) { // if the can be found in the json
 		DIM = cJSON_GetArraySize(arrDomain);
-		if(DIM != 2 && DIM != 3){ // check dimensionality is valid
-			printf("Error: Dimensionality must be 2 or 3.\n");
+		if(DIM > 3){ // check dimensionality is valid
+			printf("Error: Dimensionality must be 3 or less.\n");
 			exit(EXIT_FAILURE);
 		}
 
 		for (i = 0; i < _3D; i++) {
-			if (i == 2 && DIM == 2) XYZ[i] = 1; // if 2D, set z to 1
+			if (i == 1 && DIM == 1) XYZ[i] = 1; // if 1D, set y to 1
+			else if (i == 2 && (DIM == 2 || DIM == 1)) XYZ[i] = 1; // if 1D or 2D, set z to 1
 			else XYZ[i] = cJSON_GetArrayItem(arrDomain, i)->valueint; // get the value
 		}
 	} else { // if array cannot be found then fallback to default

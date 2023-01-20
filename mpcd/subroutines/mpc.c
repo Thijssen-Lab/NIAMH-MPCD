@@ -1527,87 +1527,93 @@ void andersenROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 		II[2][2] = 1./CL->I[2][2];
 		// The rest don't matter and can remain zero
 	}
+	else if( DIM == 1 ) {
+		//Angular momentum conservation in 1D is nonsequitur. Leave as zero
+		II[2][2] = 0.0;
+	}
 	else {
-		printf( "Error: Angular momentum conservation in 1D is nonsequitur. Higher dimensions not done. Change collision technique or dimension.\n" );
+		printf( "Error: Dimension higher than 3. Change dimension.\n" );
 		exit( 1 );
 	}
 
 	/* ****************************************** */
 	/* ******* Find angular velocity term ******* */
 	/* ****************************************** */
-	for( i=0; i<_3D; i++ ) L[i] = 0.;
-	i=0;
-	//MPC particles
-	tmpc = CL->pp;
-	while( tmpc!=NULL ) {
-		id = tmpc->SPID;
-		MASS = (SP+id)->MASS;
-		//Position relative to centre of mass
-		for( j=0; j<DIM; j++ ) relQ[i][j] = tmpc->Q[j] - CL->CM[j];
-		//Difference in velocity
-		for( j=0; j<DIM; j++ ) diffV[j] = MASS * (tmpc->V[j] - RV[i][j]);
-		if( DIM < _3D ) {
-			relQ[i][2] = 0.;
-			diffV[2] = 0.;
-		}
-		if( DIM < _2D ) {
-			relQ[i][1] = 0.;
-			diffV[1] = 0.;
-		}
-		crossprod( relQ[i],diffV,angmom );
-		for( j=0; j<_3D; j++ ) L[j] += angmom[j];
+	if(DIM>1) {
+		for( i=0; i<_3D; i++ ) L[i] = 0.;
+		i=0;
+		//MPC particles
+		tmpc = CL->pp;
+		while( tmpc!=NULL ) {
+			id = tmpc->SPID;
+			MASS = (SP+id)->MASS;
+			//Position relative to centre of mass
+			for( j=0; j<DIM; j++ ) relQ[i][j] = tmpc->Q[j] - CL->CM[j];
+			//Difference in velocity
+			for( j=0; j<DIM; j++ ) diffV[j] = MASS * (tmpc->V[j] - RV[i][j]);
+			if( DIM < _3D ) {
+				relQ[i][2] = 0.;
+				diffV[2] = 0.;
+			}
+			if( DIM < _2D ) {
+				relQ[i][1] = 0.;
+				diffV[1] = 0.;
+			}
+			crossprod( relQ[i],diffV,angmom );
+			for( j=0; j<_3D; j++ ) L[j] += angmom[j];
 
-		tmpc = tmpc->next;
-		i++;
-	}
-	//MD particles
-	tmd = CL->MDpp;
-	while( tmd!=NULL ) {
-		MASS = tmd->mass;
-		//Position relative to centre of mass
-		relQ[i][0] = tmd->rx - CL->CM[0];
-		relQ[i][1] = tmd->ry - CL->CM[1];
-		relQ[i][2] = tmd->rz - CL->CM[2];
-		diffV[0] = MASS * (tmd->vx - RV[i][0]);
-		diffV[1] = MASS * (tmd->vy - RV[i][1]);
-		diffV[2] = MASS * (tmd->vz - RV[i][2]);
-		if( DIM < _3D ) {
-			relQ[i][2] = 0.;
-			diffV[2] = 0.;
+			tmpc = tmpc->next;
+			i++;
 		}
-		if( DIM < _2D ) {
-			relQ[i][1] = 0.;
-			diffV[1] = 0.;
-		}
-		crossprod( relQ[i],diffV,angmom );
-		for( j=0; j<_3D; j++ ) L[j] += angmom[j];
+		//MD particles
+		tmd = CL->MDpp;
+		while( tmd!=NULL ) {
+			MASS = tmd->mass;
+			//Position relative to centre of mass
+			relQ[i][0] = tmd->rx - CL->CM[0];
+			relQ[i][1] = tmd->ry - CL->CM[1];
+			relQ[i][2] = tmd->rz - CL->CM[2];
+			diffV[0] = MASS * (tmd->vx - RV[i][0]);
+			diffV[1] = MASS * (tmd->vy - RV[i][1]);
+			diffV[2] = MASS * (tmd->vz - RV[i][2]);
+			if( DIM < _3D ) {
+				relQ[i][2] = 0.;
+				diffV[2] = 0.;
+			}
+			if( DIM < _2D ) {
+				relQ[i][1] = 0.;
+				diffV[1] = 0.;
+			}
+			crossprod( relQ[i],diffV,angmom );
+			for( j=0; j<_3D; j++ ) L[j] += angmom[j];
 
-		tmd = tmd->nextSRD;
-		i++;
-	}
-	//Swimmer particles
-	tsm = CL->sp;
-	while( tsm!=NULL ) {
-		if( tsm->HorM ) MASS = (double) SS.middM;
-		else MASS = (double) SS.headM;
-		//Position relative to centre of mass
-		for( j=0; j<DIM; j++ ) relQ[i][j] = tsm->Q[j] - CL->CM[j];
-		for( j=0; j<DIM; j++ ) diffV[j] = MASS * (tsm->V[j] - RV[i][j]);
-		if( DIM < _3D ) {
-			relQ[i][2] = 0.;
-			diffV[2] = 0.;
+			tmd = tmd->nextSRD;
+			i++;
 		}
-		if( DIM < _2D ) {
-			relQ[i][1] = 0.;
-			diffV[1] = 0.;
+		//Swimmer particles
+		tsm = CL->sp;
+		while( tsm!=NULL ) {
+			if( tsm->HorM ) MASS = (double) SS.middM;
+			else MASS = (double) SS.headM;
+			//Position relative to centre of mass
+			for( j=0; j<DIM; j++ ) relQ[i][j] = tsm->Q[j] - CL->CM[j];
+			for( j=0; j<DIM; j++ ) diffV[j] = MASS * (tsm->V[j] - RV[i][j]);
+			if( DIM < _3D ) {
+				relQ[i][2] = 0.;
+				diffV[2] = 0.;
+			}
+			if( DIM < _2D ) {
+				relQ[i][1] = 0.;
+				diffV[1] = 0.;
+			}
+			crossprod( relQ[i],diffV,angmom );
+			for( j=0; j<_3D; j++ ) L[j] += angmom[j];
+			tsm = tsm->next;
+			i++;
 		}
-		crossprod( relQ[i],diffV,angmom );
-		for( j=0; j<_3D; j++ ) L[j] += angmom[j];
-		tsm = tsm->next;
-		i++;
+		dotprodMatVec( II,L,W,_3D );
 	}
-// 	dotprodmat( L,II,W,_3D );
-	dotprodMatVec( II,L,W,_3D );
+	else for( j=0; j<DIM; j++ ) W[j]=0.0; // fallback for 1D
 
 	/* ****************************************** */
 	/* *************** Collision **************** */

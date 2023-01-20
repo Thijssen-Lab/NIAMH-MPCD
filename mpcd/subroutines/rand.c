@@ -317,7 +317,14 @@ void genrand_coneNP( double vec[],double theta,int dimension ) {
 		vec[0]=cos(phi);
 		vec[1]=sin(phi);
 	}
-	else printf("Warning: genrand_coneNP() only programmed for DIM={3,2}, not DIM=%d\n",dimension);
+    else if( dimension==_1D ) {
+		// A bit of a funny definition of a cone in 1D.
+        // Checks if cos(phi) 2D would be parallel or antiparallel
+		phi=theta*0.5*pi*(1.-2.*genrand_real());
+        if(phi>1.0 || phi<-1.0) vec[0]=-1.0;
+        else vec[0]=1.0;
+	}
+	else printf("Warning: genrand_coneNP() only programmed for DIM={3,2,1}, not DIM=%d\n",dimension);
 }
 void genrand_cone( double axis[],double vecOut[],double theta,int dimension ) {
 	/*
