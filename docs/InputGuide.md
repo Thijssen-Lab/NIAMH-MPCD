@@ -63,6 +63,9 @@ Tag             | Type          | Default Value | Description
 `rotAng`        | double        | 1.570796      | This is the angle used in the original SRD collision operator
 `fricCoef`      | double        | 1.0           | Friction coefficient for langevin thermostat
 `mfpot`         | double        | 10            | Liquid crystal mean field potential
+`noHI`          | int           | 0             | Enable no HI mode. 1 = on, 0 = off
+`incomp`        | int           | 0             | Enable incompressibility correction. 1 = on, 0 = off
+`multiphase`    | int           | 0             | Enable multiphase mode, applying multiphase interactions. 1 = on, 0 = off
 `grav`          | array(double) | [0,0,0]       | Constant acceleration due to external force. MUST be 3D
 `mag`           | array(double) | [0,0,0]       | Constant external magnetic field. MUST be 3D
 `seed`          | int           | 0             | Seed for random number generator. 0 for pseudorandom seed. Set to -1 to load a checkpoint.
