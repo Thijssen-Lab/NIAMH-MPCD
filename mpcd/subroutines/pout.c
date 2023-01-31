@@ -896,7 +896,7 @@ void listinput( inputList in,double AVVEL,spec SP[],kinTheory theory ) {
 			printf( "\tMean Free Path: %lf\n",theory.MFP );
 			printf( "\tKinematic Viscosity: %lf\n",theory.VISC );
 			printf( "\tSelf Diffusion Coefficient: %lf\n",theory.SDIFF );
-			printf( "\tSchmidt number: %lf\n",theory.VISC/theory.SDIFF );
+			printf( "\tSchmidt number: %lf\n",theory.VISC/theory.SDIFF/mDNST );
 			printf( "\tSpeed of sound: %lf\n",theory.SPEEDOFSOUND );
 			printf( "\tThermal Diffusion Coefficient: %lf\n",theory.THERMD );
 		}
@@ -928,6 +928,7 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 		fprintf( fsynopsis,"Time: tau = a * sqrt(m/kT) = 1\n" );
 		fprintf( fsynopsis,"Density units: 1/a^d = 1/a^%i\n",DIM );
 		fprintf( fsynopsis,"Diffusion const: a * sqrt(kT/m) = a^2/tau\n" );
+		fprintf( fsynopsis,"Stress: kT/a^d = kT/a^%i\n",DIM );
 		fprintf( fsynopsis,"Dynamic viscosity: sqrt(m*kT)/a^(d-1) = kT*tau/a^d = kT*tau/a^%i\n",DIM );
 		fprintf( fsynopsis,"Kinetic viscosity: kT*tau/m\n",DIM );
 
