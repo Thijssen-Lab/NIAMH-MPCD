@@ -48,44 +48,44 @@ All tags suffixed with "out", unless otherwise specified, take a value represent
 
 Tag             | Type          | Default Value | Description
 ---             | ---           | ---           | ---
-`domain`        | array(int)    | [30, 30]      | The system size, given as [X, Y] or [X, Y, Z]. Array dimensions correspond to DIM. If attempting to run in 1D or D>3, sim won't run.
-`kbt`           | double        | 1             | The thermal energy of the system. Should ALWAYS be 1. 
-`dt`            | double        | 0.1           | The size of the simulation timestep
+`domain`        | array(int)    | [30, 30]      | The system size, given as [X, Y] or [X, Y, Z]. Array dimensions correspond to DIM. If attempting to run in 1D or D>3, sim won't run
+`kbt`           | double        | 1             | The thermal energy of the system. Should **always** be 1 since sets energy scale 
+`dt`            | double        | 0.1           | The size of the simulation timestep in units of MPCD time (cell size/sqrt(particle mass*thermal energy))
 `simSteps`      | int           | 2000          | How many total timesteps to run the simulation for
 `warmUp`        | int           | 0             | How much warmup time to run before starting the simulation. Note that during warmup no output is written to file
-`rFrame`        | int           | 1             | Takes of net non-zero average momentum post initialisation to minimise drift. 1 = on, 0 = off
-`zeroNetMom`    | int           | 0             | This substracts any excess momentum every time step (generally have this off)
-`galInv`        | int           | 1             | Whether to enable the random shift of particles to counter gallilean invariance
-`tsTech`        | int           | 0             | Which thermostat technique to use. Note some collsion operators have thermostats built in. See definitions.h for list
-`rTech` OR `collOp`| int           | 2             | Which collision operator to use. See definitions.h for list. `collOp` is prioritised.
+`rFrame`        | int           | 1             | Takes of net non-zero average momentum post initialisation to remove any drift. 1 = on, 0 = off
+`zeroNetMom`    | int           | 0             | This substracts any excess momentum EVERY time step (generally have this off)
+`galInv`        | int           | 1             | Whether to enable the random shift of particles to counter Gallilean variance of grid-based algorithm
+`tsTech`        | int           | 0             | Which thermostat technique to use. 0 = off. Note some collsion operators have thermostats built in, see definitions.h for list
+`rTech` OR `collOp`| int           | 2             | Which collision operator to use. See definitions.h for list. `collOp` is prioritised
 `lc`            | int           | 0             | Liquid crystal mode. 2 = global S, 1 = local S, 0 = off
 `tau`           | double        | 0.5           | Thermal relaxation time scale
 `rotAng`        | double        | 1.570796      | This is the angle used in the original SRD collision operator
 `fricCoef`      | double        | 1.0           | Friction coefficient for langevin thermostat
-`mfpot`         | double        | 10            | Liquid crystal mean field potential
-`grav`          | array(double) | [0,0,0]       | Constant acceleration due to external force. MUST be 3D
-`mag`           | array(double) | [0,0,0]       | Constant external magnetic field. MUST be 3D
-`seed`          | int           | 0             | Seed for random number generator. 0 for pseudorandom seed. Set to -1 to load a checkpoint.
-`mdIn`          | string        | ""            | Path to the MD input file. This also acts as the switch for enabling MD --- If set to `""`, then MD is disabled, otherwise MD is enabled with the corresponding input file.
-`mdCoupleMode`  | int           | 1             | Coupling mode for MD. Only matters if `mdIn` is set. Set to 1 for MD particles to be treated as MPCD particles, 2 for MD particles to be treated as MD particles in the MPCD simulator.
+`mfpot`         | double        | 10            | Liquid crystal mean field potential in units of thermal energy
+`grav`          | array(double) | [0,0,0]       | Constant acceleration due to external force. **Must** be 3D
+`mag`           | array(double) | [0,0,0]       | Constant external magnetic field. **Must** be 3D
+`seed`          | int           | 0             | Seed for random number generator. 0 for pseudorandom seed. Set to -1 to load a checkpoint
+`mdIn`          | string        | ""            | Path to the MD input file. This also acts as the switch for enabling MD --- If set to `""`, then MD is disabled, otherwise MD is enabled with the corresponding input file
+`mdCoupleMode`  | int           | 1             | Coupling mode for MD. Only matters if `mdIn` is set. Set to 1 for MD particles to be treated as MPCD particles, 2 for MD particles to be treated as MD particles in the MPCD simulator
 `stepsMD`       | int           | 20            | MD time steps per MPCD time step
-`species`       | array(species)| 1 default spec  | An array of species objects. See the species table for species tags.
+`species`       | array(species)| 1 default spec  | An array of species objects.  See the [species table](#species-tag-table) for species tags
 ---             | ---           | ---           | ---
-`debugOut`      | int           | 3             | Debug (verbosity) level. See definitions.h for list.
-`trajOut`       | int           | 0             | Detailed species trajectories
+`debugOut`      | int           | 3             | Debug (verbosity) level. See definitions.h for list
+`trajOut`       | int           | 0             | Detailed particle trajectories for every particle of species type given by `trajSpecOut`
 `trajSpecOut`   | int           | 0             | Which number of species whose detailed trajectories to output
-`coarseOut`     | int           | 0             | Coarse grain data (densities, etc). Field.
-`flowOut`       | int           | 0             | Flow field
-`avVelOut`      | int           | 0             | Total average MPCD velocity. Scalar
+`coarseOut`     | int           | 0             | Coarse grain data (cell velocity, densities, density of each species) field
+`flowOut`       | int           | 0             | Flow field averaged between output times
+`avVelOut`      | int           | 0             | Total average MPCD velocity. System-averaged single value
 `dirSOut`       | int           | 0             | Director and scalar order parameter fields
 `qTensOut`      | int           | 0             | Q tensor field
 `qkTensOut`     | int           | 0             | Reciprocal Q tensor field
 `oriEnOut`      | int           | 0             | Orientational energy field
 `colourOut`     | int           | 0             | Colour/ phi/ species-type field
 `pressureOut`   | int           | 0             | Pressure field
-`neighbourEnOut`| int           | 0             | Orientational energy from neighbours. Scalar
-`avSOut`        | int           | 0             | Total average scalar order parameter. Scalar
-`densSDOut`     | int           | 0             | SD of the number per cell. Scalar
+`neighbourEnOut`| int           | 0             | Orientational energy from neighbours. System-averaged single value
+`avSOut`        | int           | 0             | Total average scalar order parameter. System-averaged single value
+`densSDOut`     | int           | 0             | SD of the number per cell. System-averaged single value
 `enstrophyOut`  | int           | 0             | Enstrophy field
 `histVelOut`    | int           | 0             | Velocity distribution
 `histSpeedOut`  | int           | 0             | Speed distribution
@@ -109,11 +109,11 @@ Tag             | Type          | Default Value | Description
 `binderBin`     | int           | 0             | Binder cumulant bin size
 `swimQOut`      | int           | 0             | Swimmer positions
 `swimOOut`      | int           | 0             | Swimmer orientations
-`swimROut` OR `swimRTOut`| int           | 0             | Swimmer run/ tumble. `swimRTOut` is prioritised.
+`swimROut` OR `swimRTOut`| int           | 0             | Swimmer run/ tumble. `swimRTOut` is prioritised
 `synopsisOut`   | int           | 1             | Synopsis output. Highly recommended to be on. 1 = on, 0 = off
 `checkpointOut` | int           | 0             | Simulation checkpointing. Unlike all other `out` tags this **will** work during the warmup stage, and will overwrite the file every time it runs. Note that this just controls dump rate --- To actually load a saved checkpoint, set `seed` to -1
 ---             | ---           | ---           | ---
-`BC`            | array(BC)     | PBCs around domain | The array of boundary objects. See the BC table for BC tags.
+`BC`            | array(BC)     | PBCs around domain | The array of boundary objects. See the [BC table](#bc-tag-table) for BC tags
 ---             | ---           | ---                | ---
 `typeSwim`      | int           | 2                  | Swimmer type. Default is a dumbell swimmer with excluded volume interactions
 `nSwim`         | int           | 0                  | Swimmer population
@@ -132,11 +132,11 @@ Tag             | Type          | Default Value | Description
 `roSwim`        | double        | 4                  | Spring seperation
 `sigSwim`       | double        | 4                  | Diameter approx sigma
 `epsSwim`       | double        | 1                  | Interaction energy
-`runTSwim`      | double        | 0                  | Average run time in units of MPCD timesteps dt
-`tumTSwim`      | double        | 0                  | Average tumble time in units of MPCD timesteps dt
-`shrTSwim`      | double        | 2                  | Set time to shrink/ extend in units of MPCD timesteps dt
+`runTSwim`      | double        | 0                  | Average run time in units of MPCD timesteps dt (iterations, not MPCD time units)
+`tumTSwim`      | double        | 0                  | Average tumble time in units of MPCD timesteps dt (iterations, not MPCD time units)
+`shrTSwim`      | double        | 2                  | Set time to shrink/ extend in units of MPCD timesteps dt (iterations, not MPCD time units)
 `magMomSwim`    | double        | 1                  | Magnetic moment/ strength
-`fixDistSwim`   | double        | 0                  | The fixed distance from the wall for DUMBELL_NEARWALL mode
+`fixDistSwim`   | double        | 0                  | The fixed distance from the wall for `DUMBELL_NEARWALL` mode
 
 #### Overrides
 Override Tag    | Type  | Override param | Description
@@ -147,11 +147,11 @@ Override Tag    | Type  | Override param | Description
 ### Species Tag Table
 Tag             | Type          | Default Value | Description
 ---             | ---           | ---           | ---
-`mass`          | double        | 1             | Mass of this species of particles  
+`mass`          | double        | 1             | Mass of this species of particles. Should **always** be 1 for at least one species since sets mass scale 
 `pop`           | int           | 18000         | Number of particles of this species
-`qDist`         | int           | 0             | Positional distribution function for the species. See definitions.h for a list.
-`vDist`         | int           | 0             | Velocity distribution function for the species. See definitions.h for a list.
-`oDist`         | int           | 2             | Orientation distribution function for the species. See definitions.h for a list.
+`qDist`         | int           | 0             | Initial positional distribution function for the species. See definitions.h for a list
+`vDist`         | int           | 0             | Initial velocity distribution function for the species. See definitions.h for a list
+`oDist`         | int           | 2             | Initial orientation distribution function for the species. See definitions.h for a list
 `interMatr`     | array(double) | [0,...]       | Interaction matrix for this species, against other species. Must be of the same length as the number of species. Default will autopopulate with 0s
 `rfc`           | double        | 0.01          | Nematogen rotational friction coefficient
 `len`           | double        | 0.007         | Effective rod length (specifically for solid boundary interactions)
@@ -159,15 +159,15 @@ Tag             | Type          | Default Value | Description
 `shearSusc`     | double        | 0.5           | Shear susceptibility
 `magnSusc`      | double        | 0.001         | Magnetic susceptibility
 `act`           | double        | 0.05          | Species activity
-`sigWidth`      | double        | 1.0           | Sigmoid width for activity faloff, specifically for CO#20. **Cannot be 0**.
+`sigWidth`      | double        | 1.0           | Sigmoid width for activity faloff, specifically for CO#20. **Cannot be 0**
 `sigPos`        | double        | `sigWidth`    | Sigmoid position for activity faloff, specifically for CO#20
-`minActRatio`   | double        | 0             | Minimum ratio of particles (of mean density) of this species to allow activity to be calculated in this cell. If 0, then this is ignored.
-`damp`          | double        | 0             | Damping friction to kill hydrodynamics. Between 0 and 1.
+`minActRatio`   | double        | 0             | Minimum ratio of particles (of mean density) of this species to allow activity to be calculated in this cell. If 0, then this is ignored
+`damp`          | double        | 0             | Damping friction to kill hydrodynamics. Between 0 and 1
 
 #### Species Overrides
 Override Tag    | Type          | Override param| Description
 ---             | ---           | ---           | ---
-`dens`          | double        | `pop`         | This override will set a given species population to correspond to a cell density. This sets pop to the volume of the system times this given value.
+`dens`          | double        | `pop`         | This override will set a given species population to correspond to a cell density. This sets pop to the volume of the **whole system** (i.e. volume of the domain, not excluding any excluded regions due to BCs) times this given value
 
 ### BC Tag Table
 
@@ -176,7 +176,7 @@ These are noted as NECESSARY in the default value column.
 
 Tag             | Type          | Default Value | Description
 ---             | ---           | ---           | ---
-`colType`       | int           | 1             | Which BC type do you want to use. See definitions.h for a list.
+`colType`       | int           | 1             | Which BC type do you want to use. See definitions.h for a list
 `phantom`       | int           | 0             | Use phantom particles if 1, 0 otherwise
 `E`             | double        | -1            | Coefficient of restitution
 `Q`             | array(double) | [0,0,0]       | Position of the boundary, MUST be 3D
@@ -204,13 +204,13 @@ Tag             | Type          | Default Value | Description
 `dsplc`         | int           | 0             | Whether the wall can displace/ is mobile. 0 = no, 1 = yes
 `inv`           | int           | 0             | Whether to invert the bc (ie, multiply the A's by -1). 0 = no, 1 = yes
 `mass`          | double        | 1             | Mass of the wall in MPCD units. Should be the same density as the fluid if its displaceable
-`wavy`          | array(double) | [0,0,0]       | Generalized amplitudes and frequencies for wavy-walls. Must be 3D.
+`wavy`          | array(double) | [0,0,0]       | Generalized amplitudes and frequencies for wavy-walls. Must be 3D
 
 #### BC Overrides
 Override Tag    | Type          | Override param| Description
 ---             | ---           | ---           | ---
-`homeotropic`   | int           | `MUN`, `MUT`  | Setting this override with a value of 1 will give the wall homeotropic anchoring conditions. 
-`planar`        | int           | `MUN`, `MUT`  | Setting this override with a value of 1 will give the wall planar anchoring conditions. 
+`homeotropic`   | int           | `MUN`, `MUT`  | Setting this override with a value of 1 will give the wall homeotropic anchoring conditions
+`planar`        | int           | `MUN`, `MUT`  | Setting this override with a value of 1 will give the wall planar anchoring conditions
 
 ## Example
 Below is an example JSON input file that uses all tags but sets them to the defaults.
