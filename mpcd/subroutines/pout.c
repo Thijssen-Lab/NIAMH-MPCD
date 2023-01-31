@@ -930,7 +930,7 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 		fprintf( fsynopsis,"Diffusion const: a * sqrt(kT/m) = a^2/tau\n" );
 		fprintf( fsynopsis,"Stress: kT/a^d = kT/a^%i\n",DIM );
 		fprintf( fsynopsis,"Dynamic viscosity: sqrt(m*kT)/a^(d-1) = kT*tau/a^d = kT*tau/a^%i\n",DIM );
-		fprintf( fsynopsis,"Kinetic viscosity: kT*tau/m\n",DIM );
+		fprintf( fsynopsis,"Kinetic viscosity: kT*tau/m\n" );
 
 		fprintf( fsynopsis,"\nUser defined variables:\n" );
 		fprintf( fsynopsis,"Dimensionality: %i\n",DIM );
