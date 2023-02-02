@@ -258,7 +258,7 @@ typedef struct kinTheory {
 typedef struct inputList {
 	double KBT;					//Temperature: A third of thermal energy --- sets energy scale --- json 'kbt'
 	double dt;					//MPCD time step value --- json 'dt'
-  double tolD;				//Tolerance of defect tracker --- json 'tolD'
+        double tolD;				//Tolerance of defect tracker --- json 'tolD'
 	int stepsMD;				//Number of MD steps per SRD step (NOTE make variable) --- json 'stepsMD'
 	int warmupSteps,simSteps;	//Number of iterations in the warmup and simulation phases --- json 'warmUp' and 'simSteps'
 	unsigned long seed;			//seed for random number generator --- json 'seed'
