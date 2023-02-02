@@ -214,7 +214,7 @@ typedef struct outputFilesList {
 	FILE *fcorrVV,*fcorrNN,*fcorrWW,*fcorrDD,*fcorrSS,*fcorrPP,*fbinder;
 	FILE *fhistVel,*fhistSpeed,*fhistVort,*fhistEnstr,*fhistDir,*fhistS,*fhistDens;
 	FILE *fenergyspect,*fenstrophyspect;
-	FILE *fdefects;
+	FILE *ftopo,*fdefects,*fdisclination;
 	FILE *fdetail[MAXSPECI];
 	FILE *fsolids[MAXBC];
 	FILE *fswimmers,*fswimmersOri,*fruntumble;
@@ -226,7 +226,7 @@ typedef struct outputFlagsList {
 	int FLOWOUT;				//Flag for if the flow field is outputted --- json 'flowOut'
 	int HISTVELOUT,HISTSPEEDOUT,HISTVORTOUT,HISTENSTROUT,HISTDIROUT,HISTSOUT,HISTNOUT;	//Flag for if distributions are outputted --- json 'histVelOut', etc (camel case)
 	int ENERGYSPECTOUT,ENSTROPHYSPECTOUT;	//Flag for if energy and enstrophy spectra are outputted --- json 'energySpecOut' and 'enstrophySpecOut'
-	int DEFECTOUT;				//Flag for if defect positions are outputted --- json 'defectsOut'
+	int TOPOOUT,DEFECTOUT,DISCLINOUT;	//Flag for if topological charge field, defect position list and disclination tensor field are outputted --- json 'topoFieldOut', 'defectsOut' and 'disclinOut'                              
 	int ENOUT;					//Flag for if system energy is outputted --- json 'energyOut'
 	int ENFIELDOUT,ENNEIGHBOURS;	//Flag for if orientational energy as a function of position is outputted --- json 'oriEnOut' and 'neighbourEnOut'
 	int SPOUT;					//Flag for if the colour/phi/species-type field is outputted --- json 'colourOut'
@@ -258,6 +258,7 @@ typedef struct kinTheory {
 typedef struct inputList {
 	double KBT;					//Temperature: A third of thermal energy --- sets energy scale --- json 'kbt'
 	double dt;					//MPCD time step value --- json 'dt'
+        double tolD;				//Tolerance of defect tracker --- json 'tolD'
 	int stepsMD;				//Number of MD steps per SRD step (NOTE make variable) --- json 'stepsMD'
 	int warmupSteps,simSteps;	//Number of iterations in the warmup and simulation phases --- json 'warmUp' and 'simSteps'
 	unsigned long seed;			//seed for random number generator --- json 'seed'

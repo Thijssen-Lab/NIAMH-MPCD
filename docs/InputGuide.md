@@ -99,6 +99,8 @@ Tag             | Type          | Default Value | Description
 `histNOut`      | int           | 0             | Number per cell distribution
 `solidTrajOut`  | int           | 0             | Solid BC trajectories
 `topoFieldOut`  | int           | 0             | Topological charge field
+`defectsOut`    | int           | 0             | Defect positions and orientations
+`disclinOut`    | int           | 0             | Disclination tensor field
 `energyOut`     | int           | 0             | System energy field
 `velCorrOut`    | int           | 0             | Velocity autocorrelation (radial function)
 `dirCorrOut`    | int           | 0             | Director autocorrelation (radial function)
@@ -287,6 +289,8 @@ As a reminder, if you wish to use the default value for a tag, you can leave it 
     "histNOut":         0,
     "solidTrajOut":     0,
     "topoFieldOut":     0,
+    "defectsOut":       0,
+    "disclinOut":       0,
     "energyOut":        0,
     "velCorrOut":       0,
     "dirCorrOut":       0,
