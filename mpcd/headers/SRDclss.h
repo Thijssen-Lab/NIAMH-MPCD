@@ -226,7 +226,7 @@ typedef struct outputFlagsList {
 	int FLOWOUT;				//Flag for if the flow field is outputted --- json 'flowOut'
 	int HISTVELOUT,HISTSPEEDOUT,HISTVORTOUT,HISTENSTROUT,HISTDIROUT,HISTSOUT,HISTNOUT;	//Flag for if distributions are outputted --- json 'histVelOut', etc (camel case)
 	int ENERGYSPECTOUT,ENSTROPHYSPECTOUT;	//Flag for if energy and enstrophy spectra are outputted --- json 'energySpecOut' and 'enstrophySpecOut'
-	int TOPOOUT,DEFECTOUT,DISCLINOUT;	//Flag for if topological charge field, defect position list and disclination tensor field are outputted
+	int TOPOOUT,DEFECTOUT,DISCLINOUT;	//Flag for if topological charge field, defect position list and disclination tensor field are outputted --- json 'topoFieldOut', 'defectsOut' and 'disclinOut'                              
 	int ENOUT;					//Flag for if system energy is outputted --- json 'energyOut'
 	int ENFIELDOUT,ENNEIGHBOURS;	//Flag for if orientational energy as a function of position is outputted --- json 'oriEnOut' and 'neighbourEnOut'
 	int SPOUT;					//Flag for if the colour/phi/species-type field is outputted --- json 'colourOut'
