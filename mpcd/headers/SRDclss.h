@@ -256,6 +256,7 @@ typedef struct kinTheory {
 typedef struct inputList {
 	double KBT;					//Temperature: A third of thermal energy --- sets energy scale
 	double dt;					//MPCD time step value
+	double tolD;				//Tolerance of defect tracker
 	int stepsMD;				//Number of MD steps per SRD step (NOTE make variable)
 	int warmupSteps,simSteps;	//Number of iterations in the warmup and simulation phases
 	unsigned long seed;	//seed for random number generator

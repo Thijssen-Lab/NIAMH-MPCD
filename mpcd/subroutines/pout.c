@@ -1359,7 +1359,7 @@ void solidout( FILE *fout,bc WALL,double t ) {
 		fflush(fout);
 	#endif
 }
-void topoChargeAndDefectsOut( FILE *ftopo,int TOPOOUT,FILE *fdefect,int DEFECTOUT,double t,cell ***CL ){
+void topoChargeAndDefectsOut( FILE *ftopo,int TOPOOUT,FILE *fdefect,int DEFECTOUT,double t,cell ***CL,double tolD){
 	/*
 	 Print topological charge data to file
 	 Only designed to work for 2D since topological charge is only defined in 2D
@@ -1397,7 +1397,7 @@ void topoChargeAndDefectsOut( FILE *ftopo,int TOPOOUT,FILE *fdefect,int DEFECTOU
 		int defID[XYZ[0]][XYZ[1]]; //ID value for each "cluster"
 		for( j=0; j<XYZ[1]; j++ ) for( i=0; i<XYZ[0]; i++ ) defID[i][j]=0; //ID is zero everywhere there is NO "cluster"
 		cntD=0;	// Counts the number of "clusters" (blurry defects)
-		for( j=0; j<XYZ[1]; j++ ) for( i=0; i<XYZ[0]; i++ ) if( fabs(topoC[i][j])>TOL ) {
+		for( j=0; j<XYZ[1]; j++ ) for( i=0; i<XYZ[0]; i++ ) if( fabs(fabs(topoC[i][j])-0.5)<tolD ) {
 			// First MPCD cell
 			if( i==0 && j==0 ) {
 				//Simply set to new cluster
@@ -1457,15 +1457,30 @@ void topoChargeAndDefectsOut( FILE *ftopo,int TOPOOUT,FILE *fdefect,int DEFECTOU
 				cmy+=(double)j + 0.5;
 				avC+=topoC[i][j];
 
-                avAx += cos(topoAngle[i][j]);
-                avAy += sin(topoAngle[i][j]);
+				//Wrapping defect orientation on proper period prior to average
+				double locAngle;
+				if( topoC[i][j]>0.0 ){
+					// +1/2 defects have a 2 pi symmetry so can be handled reasonably
+					locAngle = fmod(topoAngle[i][j], 2.0*M_PI);
+					locAngle = (locAngle < 0.0) ? (2.0*M_PI + locAngle) : locAngle;
+				} else {
+					// -1/2 defects need additional considerations due to 3-fold symmetry
+					locAngle = fmod(topoAngle[i][j], 2.0*M_PI/3.0);
+					locAngle = 3.0*(locAngle < 0.0) ? (2.0*M_PI/3.0 + locAngle) : locAngle;
+				}
+                avAx += cos(locAngle);
+                avAy += sin(locAngle);
 			}
 			if( m>TOL ){
 				cmx/=m;
 				cmy/=m;
 				avC/=m;
 			}
-            avA = atan2(avAy, avAx);
+
+			//Scaling back to proper period
+			avA = atan2(-avAy, -avAx) + M_PI;
+			avA = (avC>0.0) ? avA : avA/3.0;
+
 			fprintf( fdefect,"%12.5e\t%12.5e\t%06.3f\t%12.5e\n",cmx,cmy,avC,avA );
 		}
 		fprintf( fdefect,"\n" );
@@ -1988,7 +2003,7 @@ void outputResults( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],sim
 	/* ****************************************** */
 	/* ************** TRACK DEFECTS ************* */
 	/* ****************************************** */
-	if(in.LC!=ISOF && DIM==_2D) if((outFlag.TOPOOUT>=OUT && runtime%outFlag.TOPOOUT==0)||(outFlag.DEFECTOUT>=OUT && runtime%outFlag.DEFECTOUT==0)) topoChargeAndDefectsOut( outFiles.ftopo, outFlag.TOPOOUT, outFiles.fdefects, outFlag.DEFECTOUT, time_now, CL);
+	if(in.LC!=ISOF && DIM==_2D) if((outFlag.TOPOOUT>=OUT && runtime%outFlag.TOPOOUT==0)||(outFlag.DEFECTOUT>=OUT && runtime%outFlag.DEFECTOUT==0)) topoChargeAndDefectsOut( outFiles.ftopo, outFlag.TOPOOUT, outFiles.fdefects, outFlag.DEFECTOUT, time_now, CL, in.tolD);
 }
 
 void outputHist( cell ***CL,int runtime, inputList in,outputFlagsList outFlag,outputFilesList outFiles ) {

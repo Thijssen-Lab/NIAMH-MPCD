@@ -635,6 +635,7 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 	if(fscanf( finput,"%lf %lf %lf",&(in->MAG[0]),&(in->MAG[1]),&(in->MAG[2]) ));	//Read the constant external magnetic field
 	else printf("Warning: Failed to read magnetic field.\n");
 
+
 	if(fscanf( finput,"%d %d",MDmode,&(in->stepsMD) ));	//Read the MD coupling mode
 	else printf("Warning: Failed to read MD coupling.\n");
 	if(fscanf( finput,"%d %d",&GPOP,&NSPECI ));	//Read the number of MPC particles
@@ -918,6 +919,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	in->RA = getJObjDou(jObj, "rotAng", 1.570796, jsonTagList); // rotAng
 	in->FRICCO = getJObjDou(jObj, "fricCoef", 1.0, jsonTagList); // fricCo
 	in->MFPOT = getJObjDou(jObj, "mfpot", 10.0, jsonTagList); // mfpPot
+	in->tolD = getJObjDou(jObj, "tolD", 0.01, jsonTagList); //defect tolerance
 	
 	// grav array
 	cJSON *arrGrav = NULL;
