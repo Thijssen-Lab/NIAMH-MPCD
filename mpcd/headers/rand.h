@@ -9,6 +9,8 @@
 /* ****************************************** */
 /* ****************************************** */
 
+// Methods exclusive to specific RNGs are not prototyped here
+
 unsigned long RandomSeedSRD (unsigned long seed);
 
 void init_genrand( unsigned long s );

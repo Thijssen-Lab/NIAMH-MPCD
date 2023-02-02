@@ -1,0 +1,44 @@
+{
+    "domain":           [30, 30, 30],
+    "simSteps":         1000,
+    "warmUp":           0,
+    "collOp":           2,
+    "lc":               1,
+    "mfpot":            20,
+    "species":
+    [
+        {
+            "comment":      "For the density to be 20, must subtract the volume of the colloid",
+            "pop":          521904
+        }
+    ],
+    "BC":
+    [
+        {
+            "comment":      "Colloid",
+            "comment":      "Colloids require phantom particles enabled",
+            "phantom":      1,
+            "Q":            [15, 15, 15],
+            "aInv":         [1, 1, 1],
+            "P":            [2, 2, 2, 2],
+            "R":            6,
+            "comment":      "No PBC on this colloid, but this is necessary for JSON",
+            "DN":           0,
+            "comment":      "Apply BC conditions to velocity",
+            "MVN":          -1,
+            "MVT":          -1,
+            "comment":      "Apply BC conditions to orientation",
+            "MUN":          1,
+            "MUT":          0,
+            "comment":      "Allow BC to move",
+            "dsplc":        1,
+            "comment":      "Need to set mass to be equal to volume but prop. to av. dens.",
+            "mass":         18095
+        }
+    ],
+    "comment":          "domainWalls=1 will ADDITIVELY add PBCs on top of existing BCs",
+    "domainWalls":      1,
+    "debugOut":         3,
+    "dirSOut":          100,
+    "synopsisOut":      1
+}

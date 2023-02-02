@@ -1,0 +1,1 @@
+Simulates 3D active nematic droplet as a fixed impermeable, slip spherical-shell boundary. 

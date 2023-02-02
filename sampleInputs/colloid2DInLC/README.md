@@ -1,0 +1,1 @@
+Simulates a "colloid" in 2D in nematic liquid crystal. Colloidal radius is 10 with no-slip boundary conditions and homeotropic anchoring. Periodic boundary conditions surround the entire system.

@@ -18,6 +18,7 @@ void MPC_BCcollision( particleMPC *pp,int currentP,bc WALL[],spec *pSP,double KB
 void BC_MPCcollision(bc WALL[],int BCcurrent,particleMPC *pp,spec *pSP,double KBT,double GRAV[],double t_step,simptr simMD,int MDmode,int LC,int *bcCNT,int *reCNT,int *rethermCNT);
 
 double calcW( bc WALL,particleMPC P );
+double calcWavyW( bc WALL,double POS[], double W );
 double calcW_BC( bc movingWall,bc stillWall,int flagCentre );
 double calcW_PLANE( bc WALL,particleMPC P );
 
@@ -44,6 +45,7 @@ void chooseP( bc WALL,particleMPC *pp,double *chosenW,int *chosenP );
 void chooseBC( bc WALL[],int currentP,particleMPC *pp,double *t_min,double *chosenW,int *chosenBC,double time );
 
 double *normal( double *n,bc WALL,double *point,int dimension );
+double *normalWavy( double *n,bc WALL,double *point,int dimension );
 double *normalNon4foldSymm( double *n,bc WALL,double *point,int dimension );
 
 void rudimentaryPBC( particleMPC *pp,int axis );

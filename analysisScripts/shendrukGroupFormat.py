@@ -1,6 +1,8 @@
 # Make our own custom colours
 from matplotlib.colors import LinearSegmentedColormap as lsc
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
+from pylab import *
 
 # To find where to put the shendrukGroupStyle.mplstyle file run the following two lines in python
 # import matplotlib as mpl
@@ -94,6 +96,10 @@ spring_r = reverse_colourmap(spring)
 cool_r = reverse_colourmap(cool)
 xmas_r = reverse_colourmap(xmas)
 autumn_r = reverse_colourmap(autumn)
+
+def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
+    new_cmap = mcolors.LinearSegmentedColormap.from_list('trunc({n},{a:.2f},{b:.2f})'.format(n=cmap.name, a=minval, b=maxval),cmap(linspace(minval, maxval, n)))
+    return new_cmap
 
 def plot_colortable(colorsDict, title="" ):
     cell_width = 212

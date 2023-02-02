@@ -1,0 +1,50 @@
+{
+    "domain":           [80, 80, 80],
+    "simSteps":         5000,
+    "warmUp":           0,
+    "comment":          "Active nematic fluid",
+    "collOp":           17,
+    "lc":               1,
+    "species":
+    [
+        {
+            "comment":      "Number of particles should be 20*vol",
+            "pop":          1329941,
+            "act":          0.08
+        }
+    ],
+    "comment":          "domainWalls=1 sets PBCs around the domain, which is the default so this is extreneous",
+    "domainWalls":      1,
+    "comment":          "The spherical shell",
+    "BC":
+    [
+        {
+            "comment":      "Inner sphere",
+            "phantom":      0,
+            "Q":            [40, 40, 40],
+            "aInv":         [1, 1, 1],
+            "P":            [2, 2, 2, 2],
+            "R":            30,
+            "DN":           0,
+            "MVN":          -1,
+            "MVT":          1
+        },
+        {
+            "comment":      "Outer sphere",
+            "phantom":      0,
+            "Q":            [40, 40, 40],
+            "aInv":         [1, 1, 1],
+            "P":            [2, 2, 2, 2],
+            "R":            35,
+            "DN":           0,
+            "MVN":          -1,
+            "MVT":          1,
+            "inv":          1
+        }
+    ],
+    "debugOut":         3,
+    "coarseOut":        250,
+    "flowOut":          250,
+    "dirSOut":          250,
+    "synopsisOut":      1
+}

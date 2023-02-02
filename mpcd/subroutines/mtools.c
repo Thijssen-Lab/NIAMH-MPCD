@@ -6,6 +6,7 @@
 # include "../headers/SRDclss.h"
 # include "../headers/pout.h"
 # include "../headers/ctools.h"
+# include "../headers/bc.h"
 
 /* ****************************************** */
 /* ****************************************** */
@@ -874,6 +875,9 @@ double surf_func( bc WALL,double POS[], int dimension ) {
 		if( WALL.ABS ) terms=fabs(terms);
 		terms = smrtPow( terms,WALL.P[3] );
 		W -= terms;
+		//Check if need wavy wall complications
+		if( !feq(WALL.B[0],0.0) ) W += calcWavyW(WALL,POS,W);
+		//Check if invert wall
 		if( WALL.INV ) W *= -1.;
 	}
 	else {
@@ -1083,6 +1087,12 @@ void solveEigensystem( double **m,int dimension,double eigval[] ) {
 		eigenvalues3x3( m,eigval );
 		eigenvectors3x3( m,eigval,eigvec );
 		for( i=0;i<dimension;i++ ) for( j=0;j<dimension;j++ ) m[i][j]=eigvec[i][j];
+	}
+	else if( dimension==_1D ) {
+		// In 1D, the idea of eigenvectors and values is a bit silly
+		// But for programmatic reasons, to run in 1D we just set the vector to be it's only possible axis and value to be the value
+		eigval[0]=m[0][0];
+		m[0][0]=1.0;
 	}
 	else {
 		printf( "Error: Solving the eigensystem for dimensions greater than 3 is not coded (DIM=%d).\n",dimension );

@@ -12,10 +12,12 @@
 /* ****************************************** */
 /* ************ COMPILE OPTIONS ************* */
 /* ****************************************** */
-// If running sims don't define DBG. If debugging define DBG and choose a debug mode (bottom of page)
+// If running sims don't define DBG. If debugging define DBG and choose a debug mode (bottom of page) ---- json 'debugOut'
 # define DBG
 // If you want the files get printed immediately include this option for force flushing the buffer
 # define FFLSH
+// If you want to use the LEGACY mersenne twister RNG then uncomment below
+//# define RNG_MERSENNE
 
 /* ****************************************** */
 /* ************ PROGRAM CONSTANTS *********** */
@@ -83,7 +85,8 @@
 /* ****************************************** */
 /* ******************* QDIST **************** */
 /* ****************************************** */
-//The following global variables are flag values for the variable QDIST in species structures
+//The following global variables are flag values for the variable QDIST in species structures 
+//Used for both MPCD particles and swimmers --- qDist in json
 //PPF indicates that the particles can be placed randomly and freely within the control volume
 # define PRF 0
 //READ indicates that the particles' positions should be read from a file
@@ -95,6 +98,7 @@
 /* ******************* VDIST **************** */
 /* ****************************************** */
 //The following global variables are flag values for the variable VDIST in species structures
+//Used for both MPCD particles and swimmers --- vDist in json
 //RANDVEL indicates that the particles' velosities are drawn from a have uniformly random velocity distribution
 # define RANDVEL 0
 //READ must be applied to both
@@ -110,6 +114,7 @@
 /* ******************* UDIST **************** */
 /* ****************************************** */
 //The following global variables are flag values for the variable UDIST in species structures
+//Used for both MPCD particles and swimmers --- oDist in json
 //RANDORIENT indicates that the particles' direction are drawn from a have uniformly random direction
 # define RANDORIENT 0
 //Align all particles along X axis
@@ -128,6 +133,8 @@
 # define PLANEX 7
 //Align all particles in the direction of origin towards positive right hand corner of any cartesian plane
 # define ALIGNTR 8
+//Align all particles in the direction of two oppositely charged defects
+# define ALIGNDEFECTPAIR 9
 
 //Lower cutoff for MC method to generate new orientations from Maier-Saupe
 # define BUSMIN 0.5
@@ -140,11 +147,26 @@
 # define LCL 1
 //Nematic LC using the global S value
 # define LCG 2
+//Hydrodynamic interactions turned off
+# define HIOFF 1
+//Hydrodynamic interactions left on
+# define HION 0
+//Incompressibility correction turned on
+# define INCOMPON 1
+//Incompressibility correction left off
+# define INCOMPOFF 0
+//Multiphase interactions left off
+# define MPHOFF 0
+//Kira Koch's Surface fitter-version of multiphase interactions
+# define MPHSURF 1
+//Point gradient-version of multiphase interactions
+# define MPHPOINT 2
 
 /* ****************************************** */
 /* *************** THERMOSTAT *************** */
 /* ****************************************** */
-//The folloing global variables are flags for the thermostat used
+//The folloing global variables are flags for the thermostat used 
+//Used by TSTECH in inputList in c-code and 'tsTech' in json input
 //NOTHERM indicates that no thermostat is implemented
 # define NOTHERM 0
 //VSC indicates that velocity scaling is used as the thermometer
@@ -157,9 +179,10 @@
 # define MAXV 4
 
 /* ****************************************** */
-/* **************** ROTATION **************** */
+/* *********** COLLISION OPERATOR *********** */
 /* ****************************************** */
-//The following global variables are flag values for the rotation technique.
+//The following global variables are flag values for the collision operator / rotation technique.
+//Used by RTECH in inputList in c-code and 'colOp' in json input
 //ARBAXIS indicates that the rotation operator is a rotation about a randomly chosen axis
 # define ARBAXIS 0
 //ORTHAXIS applies the rotatation about one of the three cartesian axes (randomly chosen
@@ -171,10 +194,11 @@
 # define RAT 3
 // The Langevin version of MPC
 # define LANG 4
-// The Brownian thermostat version (uses ARBAXIS version) i.e. no Hydrodynamic Interactions
-# define NOHI_ARBAXIS 5
-// The Brownian thermostat version (uses MPCAT version) i.e. no Hydrodynamic Interactions
-# define NOHI_MPCAT 6
+// Killed the two specific no HI collision rules and the multiphase collision rule. 
+// Now made these general for any collision rule. 5, 6 and 18 are now available to be re-used as new collisions
+// # define NOHI_ARBAXIS 5
+// # define NOHI_MPCAT 6
+// # define XXXX_MULTIPHASE_XXXX 18
 // An MPCD version of the Vicsek algorithm
 # define VICSEK 7
 // An MPCD version of the Chate algorithm
@@ -197,8 +221,6 @@
 # define DIPOLE_DIR_SUM 16
 // Cell-based dipole force in direction of local director (average of all activities)
 # define DIPOLE_DIR_AV 17
-// Romain and my new binary fluid
-# define MULTIPHASE 18
 // The Langevin version of MPC that conserves angular momentum
 # define RLANG 19
 // Cell-based dipole force in direction of local director (average of all activities with sigmoidal falloff)

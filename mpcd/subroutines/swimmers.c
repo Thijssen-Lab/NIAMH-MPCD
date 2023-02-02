@@ -168,7 +168,7 @@ void setswimmers( specSwimmer *SS,swimmer *swimmers,bc WALL[],int stepsMD,double
 	  		}
 				// orient() should produce the correct direction to do all ODIST options
 	  		if( SS->ODIST == RANDORIENT ) {
-	  			orient( U,SS->ODIST );
+	  			orient( U,(swimmers+i)->H.Q,SS->ODIST );
 	  			for( d=0; d<DIM; d++ ) {
 	  				(swimmers+i)->M.Q[d] = (swimmers+i)->H.Q[d] - 0.49*SS->ro*U[d];
 	  				(swimmers+i)->H.Q[d] = (swimmers+i)->H.Q[d] + 0.49*SS->ro*U[d];
@@ -401,7 +401,7 @@ double swimmerSpring6( double r,double k ) {
 	double r2=r*r;
 	return -k*r*r2*r2;
 }
-void swimmerVerlet_nonInteracting( specSwimmer SS,swimmer *s,double dt,int springType) {
+void swimmerVerlet_nonInteracting( specSwimmer SS,swimmer *s,double dt,int springType,bc WALL[],int i) {
 /*
 	The leapfrog/Verlet-Velocity algorithm
 */
@@ -417,6 +417,23 @@ void swimmerVerlet_nonInteracting( specSwimmer SS,swimmer *s,double dt,int sprin
 	//Update position using the half-step velocity
 	for( d=0; d<DIM; d++ ) s->H.Q[d] += dt*s->H.V[d];
 	for( d=0; d<DIM; d++ ) s->M.Q[d] += dt*s->M.V[d];
+	
+	//Head
+	#ifdef DBG
+	if( DBUG == DBGSWIMMER || DBUG == DBGSWIMMERDEETS ) {
+		printf( "\tBCs S%d:\n",i );
+		printf( "\t\tHead bead BCs.\n" );
+	}
+	#endif
+	swimmer_BCcollision( &(s->H),WALL,SS,dt );
+	//Middle
+	#ifdef DBG
+	if( DBUG == DBGSWIMMER || DBUG == DBGSWIMMERDEETS ) printf( "\t\tMiddle bead BCs.\n" );
+	#endif
+	swimmer_BCcollision( &(s->M),WALL,SS,dt );
+	#ifdef DBG
+		if( DBUG == DBGSWIMMERDEETS ) {swcoord(*s);}
+	#endif
 
 	//Verlet step 3
 	//Update the forces using the new positions
@@ -431,7 +448,7 @@ void swimmerVerlet_nonInteracting( specSwimmer SS,swimmer *s,double dt,int sprin
 	for( d=0; d<DIM; d++ ) s->H.V[d] += 0.5*dt*s->H.A[d];
 	for( d=0; d<DIM; d++ ) s->M.V[d] += 0.5*dt*s->M.A[d];
 }
-void swimmerVerlet_all( specSwimmer SS,swimmer swimmers[],double dt,int springType) {
+void swimmerVerlet_all( specSwimmer SS,swimmer swimmers[],double dt,int springType,bc WALL[]) {
 /*
 	The leapfrog/Verlet-Velocity algorithm
 */
@@ -454,6 +471,27 @@ void swimmerVerlet_all( specSwimmer SS,swimmer swimmers[],double dt,int springTy
 		(swimmers+i)->M.A[d] = 0.0;
 	}
 
+	for( i=0; i<NS; i++ ) {
+		//Head
+		#ifdef DBG
+		if( DBUG == DBGSWIMMER || DBUG == DBGSWIMMERDEETS ) {
+			printf( "\tBCs S%d:\n",i );
+			printf( "\t\tHead bead BCs.\n" );
+		}
+		#endif
+		swimmer_BCcollision( &(swimmers[i].H),WALL,SS,dt );
+		//Middle
+		#ifdef DBG
+		if( DBUG == DBGSWIMMER || DBUG == DBGSWIMMERDEETS ) printf( "\t\tMiddle bead BCs.\n" );
+		#endif
+		swimmer_BCcollision( &(swimmers[i].M),WALL,SS,dt );
+			#ifdef DBG
+				if( DBUG == DBGSWIMMERDEETS ) for( i=0; i<NS; i++ ) {
+					printf( "\tS%d:\n",i );
+					swcoord(swimmers[i]);
+				}
+			#endif
+	}
 	//Verlet step 3
 	//Update the forces using the new positions
 	for( i=0; i<NS; i++ ) {
@@ -598,36 +636,36 @@ void integrateSwimmers( specSwimmer SS,swimmer swimmers[],bc WALL[],int stepsMD,
 	      if( DBUG == DBGSWIMMER || DBUG == DBGSWIMMERDEETS ) printf( "\tVelocity Verlet.\n" );
 	    #endif
 			// Velocity Verlet integration
-			if(SS.TYPE==DUMBBELL_EXVOL) swimmerVerlet_all( SS,swimmers,dt,springType );
-			else for( i=0; i<NS; i++ ) swimmerVerlet_nonInteracting( SS,(swimmers+i),dt,springType );
+			if(SS.TYPE==DUMBBELL_EXVOL) swimmerVerlet_all( SS,swimmers,dt,springType,WALL);
+			else for( i=0; i<NS; i++ ) swimmerVerlet_nonInteracting( SS,(swimmers+i),dt,springType,WALL,i);
 			#ifdef DBG
 				if( DBUG == DBGSWIMMERDEETS ) for( i=0; i<NS; i++ ) {
 					printf( "\tS%d:\n",i );
 					swcoord(swimmers[i]);
 				}
 			#endif
-	    // Swimmer BC
-			for( i=0; i<NS; i++ ) {
-		    //Head
-		    #ifdef DBG
-		      if( DBUG == DBGSWIMMER || DBUG == DBGSWIMMERDEETS ) {
-		        printf( "\tBCs S%d:\n",i );
-		        printf( "\t\tHead bead BCs.\n" );
-		      }
-		    #endif
-		    swimmer_BCcollision( &(swimmers[i].H),WALL,SS,dt );
-		    //Middle
-		    #ifdef DBG
-		      if( DBUG == DBGSWIMMER || DBUG == DBGSWIMMERDEETS ) printf( "\t\tMiddle bead BCs.\n" );
-		    #endif
-		    swimmer_BCcollision( &(swimmers[i].M),WALL,SS,dt );
-				#ifdef DBG
-					if( DBUG == DBGSWIMMERDEETS ) for( i=0; i<NS; i++ ) {
-						printf( "\tS%d:\n",i );
-						swcoord(swimmers[i]);
-					}
-				#endif
-			}
+	    // // Swimmer BC
+		// 	for( i=0; i<NS; i++ ) {
+		//     //Head
+		//     #ifdef DBG
+		//       if( DBUG == DBGSWIMMER || DBUG == DBGSWIMMERDEETS ) {
+		//         printf( "\tBCs S%d:\n",i );
+		//         printf( "\t\tHead bead BCs.\n" );
+		//       }
+		//     #endif
+		//     swimmer_BCcollision( &(swimmers[i].H),WALL,SS,dt );
+		//     //Middle
+		//     #ifdef DBG
+		//       if( DBUG == DBGSWIMMER || DBUG == DBGSWIMMERDEETS ) printf( "\t\tMiddle bead BCs.\n" );
+		//     #endif
+		//     swimmer_BCcollision( &(swimmers[i].M),WALL,SS,dt );
+		// 		#ifdef DBG
+		// 			if( DBUG == DBGSWIMMERDEETS ) for( i=0; i<NS; i++ ) {
+		// 				printf( "\tS%d:\n",i );
+		// 				swcoord(swimmers[i]);
+		// 			}
+		// 		#endif
+		// 	}
 			//If held near wall then set z=1 (in 3D) or y=1 (in 2D)
 			if( SS.TYPE==DUMBBELL_NEARWALL ) for( i=0; i<NS; i++ ) {
 				(swimmers+i)->H.Q[DIM-1]=SS.fixDist;

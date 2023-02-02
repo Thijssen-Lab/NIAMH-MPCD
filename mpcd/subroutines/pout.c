@@ -550,7 +550,7 @@ void avenstrophyheader( FILE *fout ) {
 }
 void flowheader( FILE *fout ) {
 /* Simple header for output columns */
-	fprintf( fout,"   QX\t   QY\t   QZ\tVcmX\t\tVcmY\t\tVcmZ\n" );
+	fprintf( fout,"   t\t   QX\t   QY\t   QZ\tVcmX\t\tVcmY\t\tVcmZ\n" );
 }
 void solidsheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -877,6 +877,9 @@ void listinput( inputList in,double AVVEL,spec SP[],kinTheory theory ) {
 			printf( "\tLiquid Crystal Mean-Field Potential: %lf\n",in.MFPOT );
 			printf( "\tRotation angle: %lf\n",in.RA );
 			printf( "\tSystem Size: [%i,%i,%i]\n",XYZ[0],XYZ[1],XYZ[2] );
+			printf( "\tNo hydodynamic interaction: %i\n",in.noHI);
+			printf( "\tIncompressibility correction: %i\n",in.inCOMP);
+			printf( "\tMultiphase interactions: %i\n",in.MULTIPHASE);
 			printf( "\tConstant external acceleration:" );
 			pvec( in.GRAV,DIM );
 			printf( "\tConstant external magnetic field:" );
@@ -938,6 +941,13 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 		fprintf( fsynopsis,"Thermal relaxation time scale: %lf\n",in.TAU );
 		fprintf( fsynopsis,"Rotation angle: %lf\n",in.RA );
 		fprintf( fsynopsis,"Langevin friction coefficient: %lf\n",in.FRICCO );
+		fprintf( fsynopsis,"Hydodynamic interactions: ");
+		if(in.noHI) fprintf( fsynopsis,"OFF\n" );
+		else fprintf( fsynopsis,"On\n" );
+		fprintf( fsynopsis,"Incompressibility correction: ");
+		if(in.inCOMP) fprintf( fsynopsis,"OFF\n" );
+		else fprintf( fsynopsis,"On\n" );
+		fprintf( fsynopsis,"Multiphase interactions mode: %d\n",in.MULTIPHASE );
 		fprintf( fsynopsis,"External acceleration: (%lf,%lf,%lf)\n",in.GRAV[0],in.GRAV[1],in.GRAV[2] );
 		fprintf( fsynopsis,"External magnetic field: (%lf,%lf,%lf)\n",in.MAG[0],in.MAG[1],in.MAG[2] );
 		fprintf( fsynopsis,"Total simulation iterations: %d\n",in.simSteps );
@@ -1325,7 +1335,7 @@ void binderout( FILE *fout,double t,double UL ) {
 		fflush(fout);
 	#endif
 }
-void flowout( FILE *fout,cell ***CL,int interval ) {
+void flowout( FILE *fout,cell ***CL,int interval, double t) {
 /*
     Turns sum of cells' vcm into average, prints average to
     file, zeros sums to start anew
@@ -1338,6 +1348,7 @@ void flowout( FILE *fout,cell ***CL,int interval ) {
 	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) for( k=0; k<XYZ[2]; k++ ) {
 	// for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) {
 		for( h=0; h<DIM; h++ ) av[h] = CL[i][j][k].FLOW[h]/dint;		//Normalize the sum to get the average
+		fprintf( fout,"%12.5e\t", t); // print time
 		fprintf( fout, "%5d\t%5d\t%5d\t",i,j,k );
 		fprintf( fout, "%12.5e\t%12.5e\t%12.5e\n",av[0],av[1],av[2] );
 		for( h=0; h<DIM; h++ ) CL[i][j][k].FLOW[h] = 0.0;		//Reset sum
@@ -1753,6 +1764,7 @@ void spectout( FILE *fout,double spect[],double t ) {
 		fflush(fout);
 	#endif
 }
+
 void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,bc *WALL,outputFlagsList outFlag,int runtime,int warmtime,double AVVEL,double AVS,double avDIR[_3D],double S4,double stdN,double KBTNOW,double AVV[_3D],double AVNOW[_3D],kinTheory theory,specSwimmer specS,swimmer *sw ) {
 	/*
 	 Checkpoint the entire simulation
@@ -1766,6 +1778,7 @@ void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,b
 	fprintf( fout,"%d %d %d %d %lf %lf\n",DIM,XYZ[0],XYZ[1],XYZ[2],in.KBT,KBTNOW );
 	fprintf( fout,"%d %d %d %d %d %d\n",in.RFRAME,in.zeroNetMom,in.GALINV,in.TSTECH,in.RTECH,in.LC );
 	fprintf( fout,"%lf %lf %lf %lf\n",in.TAU,in.RA,in.FRICCO,in.MFPOT );
+	fprintf( fout,"%d %d %d\n",in.noHI,in.inCOMP,in.MULTIPHASE );
 	fprintf( fout,"%lf %lf %lf\n",in.GRAV[0],in.GRAV[1],in.GRAV[2] );		//Acceleration (external force)
 	fprintf( fout,"%lf %lf %lf\n",in.MAG[0],in.MAG[1],in.MAG[2] );			//External magnetic field
 	fprintf( fout,"%d %d\n",MDmode,in.stepsMD );		//MD coupling mode and number of MD steps per SRD step
@@ -1816,9 +1829,35 @@ void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,b
 		fprintf( fout,"%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n",(sw+i)->M.HorM,(sw+i)->M.Q[0],(sw+i)->M.Q[1],(sw+i)->M.Q[2],(sw+i)->M.V[0],(sw+i)->M.V[1],(sw+i)->M.V[2],(sw+i)->M.A[0],(sw+i)->M.A[1],(sw+i)->M.A[2] );
 	}
 
-	#ifdef FFLSH
-		fflush(fout);
-	#endif
+	fflush(fout); // force flush
+}
+
+void runCheckpoint(char op[500],time_t *lastCheckpoint,FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,bc *WALL,outputFlagsList outFlag,int runtime,int warmtime,double AVVEL,double AVS,double avDIR[_3D],double S4,double stdN,double KBTNOW,double AVV[_3D],double AVNOW[_3D],kinTheory theory,specSwimmer specS,swimmer *sw ) {
+    /*
+     * Run a checkpoint operation, used to clean up code in mpcd.c
+     */
+
+    // if time-based checkpointing has been enabled, see if a checkpoint needs to be made
+    // otherwise return early
+    if (outFlag.CHCKPNTTIMER != 0.0) {
+        time_t currTime = time(NULL);
+        if (currTime - *lastCheckpoint >= outFlag.CHCKPNTTIMER*60*60) {
+            // if time diff is more than the set checkpointing time
+            #ifdef DBG
+            if( DBUG >= DBGRUN ) printf( "\nTimer based checkpoint triggered." );
+            #endif
+            *lastCheckpoint = currTime;
+        } else {
+            return; // early return, no checkpoint needed
+        }
+    }
+    #ifdef DBG
+    if( DBUG >= DBGRUN ) printf( "\nCheckpointing.\n" );
+    #endif
+    // normal checkpoint
+    openCheckpoint( &(fout),op );
+    checkpoint( fout, in, SP, pSRD, MDmode, WALL, outFlag, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory, specS, sw);
+    fclose( fout );
 }
 
 void outputResults( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr simMD,specSwimmer SS, swimmer swimmers[],double AVNOW[_3D],double AVV[_3D],double avDIR[_3D], int runtime, inputList in, double AVVEL, double KBTNOW,double *AVS,double *S4,double *stdN,int MDmode,outputFlagsList outFlag,outputFilesList outFiles ) {
@@ -1941,8 +1980,9 @@ void outputResults( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],sim
 		}
 	}
 	if( outFlag.CPPOUT>=OUT && runtime%outFlag.CPPOUT==0 ) {
-		if( in.RTECH==MULTIPHASE ) {
+		if( in.MULTIPHASE!=MPHOFF ) {
 			// phiphiCorr( CL,maxXYZ,XYZ,corr,DIM );
+			printf("Warning: phiphiCorr() needs to be checked.\n");
 			corrout( outFiles.fcorrPP,corr,time_now );
 		}
 	}
@@ -1987,7 +2027,7 @@ void outputResults( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],sim
 		if( DBUG >= DBGTITLE ) printf( "Write Data Out.\n" );
 	#endif
 	if(outFlag.printSP>0) if( outFlag.TRAJOUT>=OUT  && runtime%outFlag.TRAJOUT==0 ) coordout( outFiles.fdetail,outFlag.printSP,time_now,SRDparticles,SP );
-	if( outFlag.FLOWOUT>=OUT && runtime%outFlag.FLOWOUT==0 && runtime!=0 ) flowout( outFiles.fflow,CL,outFlag.FLOWOUT );
+	if( outFlag.FLOWOUT>=OUT && runtime%outFlag.FLOWOUT==0 ) flowout( outFiles.fflow,CL,outFlag.FLOWOUT, time_now);
 	if( outFlag.COAROUT>=OUT && runtime%outFlag.COAROUT==0 ) coarseout( outFiles.fcoarse,time_now,CL );
 	if(in.LC!=ISOF) if( outFlag.ORDEROUT>=OUT && runtime%outFlag.ORDEROUT==0 ) orderout( outFiles.forder,time_now,CL,in.LC );
 	if(in.LC!=ISOF) if( outFlag.QTENSOUT>=OUT && runtime%outFlag.QTENSOUT==0 ) orderQout( outFiles.forderQ,time_now,CL,in.LC );

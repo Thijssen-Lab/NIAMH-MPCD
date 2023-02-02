@@ -11,8 +11,14 @@
 #ignore files used for testing in the ./Runs/ folder
 Runs/*
 
+#ignore all visualisation output files
+*.png
+*.pdf
+*.mp4
+
 #ignore OS file system bits
 *.DS_Store
 
 #ignore IDE bits
 .vscode/settings.json
+/.idea/*

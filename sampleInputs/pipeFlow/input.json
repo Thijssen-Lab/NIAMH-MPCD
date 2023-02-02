@@ -1,0 +1,43 @@
+{
+    "domain":           [100, 25, 25],
+    "warmUp":           500,
+    "simSteps":         500,
+    "comment":          "Isotropic fluid using Andersen MPCD",
+    "collOp":           2,
+    "comment":          "Gravity-generated pressure gradient",
+    "grav":             [0.01, 0, 0],
+    "species":
+    [
+        {
+            "comment":      "Fluid density of 20 within cylindrical volume",
+            "pop":          628319
+        }
+    ],
+    "comment":          "Output",
+    "debugOut":         3,
+    "flowOut":          20,
+    "pressureOut":      0,
+    "avVelOut":         5,
+    "energyOut":        5,
+    "synopsisOut":      1,
+    "checkpointOut":    0,
+    "comment":          "Periodic boundary conditions on the domain",
+    "domainWalls":      1,
+    "comment":          "Impermeable, no-slip cylindrical pipe",
+    "BC":
+    [
+        {
+            "phantom":      1,
+            "Q":            [0, 12.5, 12.5],
+            "aInv":         [0, 1, 1],
+            "P":            [1, 2, 2, 2],
+            "comment":      "Radius",
+            "R":            10,
+            "DN":           0,
+            "MVN":          -1,
+            "MVT":          -1,
+            "comment":      "Invert the surface so the fluid is inside the pipe",
+            "inv":          1
+        }
+    ]
+}

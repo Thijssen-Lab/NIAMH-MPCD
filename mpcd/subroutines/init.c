@@ -281,12 +281,12 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 		if(DIM==_2D) B=1.0-cos(2.0*RA);
 		else B=(2.0/5.0)*(2.0-cos(RA)-cos(2.0*RA));
 	}
-	else if(RTECH==ARBAXIS || RTECH==NOHI_ARBAXIS){
+	else if(RTECH==ARBAXIS ){
 		A=2.0*inv_DIM*(1.0-sin(RA)/RA);
 		if(DIM==_2D) B=1.0-0.5*sin(2.0*RA)/RA;
 		else B=(2.0/5.0)*(2.0-sin(RA)/RA-0.5*sin(RA)/RA);
 	}
-	else if(RTECH==MPCAT || RTECH==RAT || RTECH==NOHI_MPCAT) {
+	else if(RTECH==MPCAT || RTECH==RAT ) {
 		A=1.0;
 		B=1.0;
 	}
@@ -303,7 +303,7 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 	VISCKIN = 0.0;
 	VISCCOL = 0.0;
 	//Kinetic part of viscosity
-	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==NOHI_ARBAXIS || RTECH==MPCAT || RTECH==NOHI_MPCAT || RTECH==LANG) {
+	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==MPCAT || RTECH==LANG) {
 		//All of the versions without angular-momentum conservation have the same form
 		CM=B/M;
 		VISCKIN=nDNST*KBT*dt*smrtPow(a,-DIM)*( 1.0/CM-0.5 );
@@ -320,7 +320,7 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 	}
 
 	//Collisional part of viscosity
-	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==NOHI_ARBAXIS || RTECH==MPCAT || RTECH==NOHI_MPCAT || RTECH==LANG) {
+	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==MPCAT || RTECH==LANG) {
 		//All of the versions without angular-momentum conservation have the same form
 		VISCCOL=(A*nDNST/M)*avMASS/(12.0*dt*smrtPow(a,DIM-2));
 	}
@@ -336,7 +336,7 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 	*VISC=VISCKIN+VISCCOL;
 
 	//Calculate the self diffusion coefficient
-	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==NOHI_ARBAXIS || RTECH==MPCAT || RTECH==NOHI_MPCAT || RTECH==LANG) {
+	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==MPCAT || RTECH==LANG) {
 		//All of the versions without angular-momentum conservation have the same form
 		SM=A/M;
 		*SDIFF = (KBT*dt/avMASS)*(SM-0.5);
@@ -353,7 +353,7 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 		*SDIFF = (KBT*dt/avMASS);
 	}
 
-	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==NOHI_ARBAXIS) {
+	if(RTECH==ORTHAXIS || RTECH==ARBAXIS ) {
 		//Calculate the thermal diffusion coefficient
 		if( DIM ==  _2D ) {
 			THERMDKIN = 2. / (1.-cos(RA));
@@ -612,7 +612,7 @@ void push( double V[],double KBT,int PL,double MASS,FILE *fin ) {
 		exit( 1 );
 	}
 }
-void orient( double U[],int PL ) {
+void orient( double U[],double Q[],int PL ) {
 /*
    This subroutine sets the orientation. Currently is places them
    randomly or all aligned
@@ -679,6 +679,44 @@ void orient( double U[],int PL ) {
 
 		for( d=0; d<DIM; d++ ) U[d] = XYZ[d]/L2;
 	}
+	else if( PL==ALIGNDEFECTPAIR ) {
+		// Orientation points as if around two oppositely charged defects
+		// of the system size, with unit size
+		double QP[_2D],QM[_2D];		//Position of the Plus and Minus defects
+		double UP[_2D],UM[_2D];		//Orientations of the defects
+		double kP=0.5,kM=-0.5;		//Charges of the defects
+		double phiP,phiM;			//Director angles at the point Q
+		double wP,wM,wY;			//Weightings of U for each defect at the point Q and the walls(linear)
+		double r,R;
+
+		//Linear weighting slope
+		R=0.5*sqrt( 2.25*((double)XYZ[0])*((double)XYZ[0]) + ((double)XYZ[1])*((double)XYZ[1]) );
+		// Do the +1/2 defect on the left side
+		QP[0] = ((double)XYZ[0])*0.25;
+		QP[1] = ((double)XYZ[1])*0.5;
+		phiP = atan2(QP[1]-Q[1],QP[0]-Q[0]);
+		UP[0] = cos(kP*phiP);
+		UP[1] = sin(kP*phiP);
+		r=sqrt( pow(QP[0]-Q[0],2.0)+pow(QP[1]-Q[1],2.0) );
+		wP=1.0-r/R;
+		// Do the -1/2 defect on the right side
+		QM[0] = ((double)XYZ[0])*0.75;
+		QM[1] = ((double)XYZ[1])*0.5;
+		phiM = atan2(-QM[1]+Q[1],-QM[0]+Q[0]);
+		UM[0] = cos(kM*phiM);
+		UM[1] = sin(kM*phiM);
+		r=sqrt( pow(QM[0]-Q[0],2.0)+pow(QM[1]-Q[1],2.0) );
+		wM=1.0-r/R;
+		if(Q[1]<=0.5*((double)XYZ[1])) wY=1.0-2.0*Q[1]/(double)XYZ[1];
+		else wY=1.0-2.0*((double)XYZ[1]-Q[1])/(double)XYZ[1];
+
+		// Set the director field with a linear weighting from each
+		U[0] = wP*UP[0] + wM*UM[0] + wY;
+		U[1] = wP*UP[1] + wM*UM[1];
+		if( DIM>_2D ) U[2] = 0.0;
+		norm( U,DIM );
+	}
+
 	else{
 		printf( "Error: Particle orientation distribution unacceptable.\n" );
 		exit( 1 );
@@ -825,7 +863,7 @@ void setcoord( char dir[],spec SP[],particleMPC *pp,double KBT,double AVVEL[],bc
 		//Shift first mode of the velocity dist by the average velocity (push() centres about zero)
 		for( j=0; j<DIM; j++ ) (pp+i)->V[j] += AVVEL[j];
 
-		if( LC>ISOF ) orient( (pp+i)->U,SP[(pp+i)->SPID].ODIST );
+		if( LC>ISOF ) orient( (pp+i)->U,(pp+i)->Q,SP[(pp+i)->SPID].ODIST );
 	}
 	for( j=0; j<DIM; j++ ) AVVEL[j] /= (double)GPOP;
 	//Check particleMPC coordinates
@@ -949,6 +987,21 @@ void checkSim( FILE *fsynopsis,int SYNOUT,inputList in,spec *SP,bc *WALL,specSwi
 	if( in.LC==LCG ) for( i=0; i<NSPECI; i++ ) if( SP[i].ODIST==RANDORIENT ) {
 		printf( "Warning: Using global S (LC=%d) but initiated in isotropic phase. Simulation may not reach nematic phase.\n",in.LC );
 		if(SYNOUT == OUT) fprintf( fsynopsis,"Warning: Using global S (LC=%d) but initiated in isotropic phase. Simulation may not reach nematic phase.\n",in.LC );
+	}
+	if( !( in.noHI==HION || in.noHI==HIOFF) ){
+		printf( "Error: Unrecognized value of noHI=%d.\n",in.noHI );
+		exit( 1 );
+	}
+	if( !( in.inCOMP==INCOMPON || in.inCOMP==INCOMPOFF) ){
+		printf( "Error: Unrecognized value of inCOMP=%d.\n",in.inCOMP );
+		exit( 1 );
+	}
+	if( !( in.MULTIPHASE==MPHOFF || in.MULTIPHASE==MPHPOINT || in.MULTIPHASE==MPHSURF ) ){
+		printf( "Error: Unrecognized value of MULTIPHASE=%d.\n",in.MULTIPHASE );
+		exit( 1 );
+	}
+	if( ( in.MULTIPHASE==MPHOFF && NSPECI>1 ) ){
+		printf( "Warning: MULTIPHASE=%d (off) but more than one species present (NSPECI=%d).\n",in.MULTIPHASE,NSPECI );
 	}
 	//Check that nematogens have non-zero friction
 	if( in.LC>ISOF ) for( i=0; i<NSPECI; i++ ) if( feq(SP[i].RFC,0.0) ) {
