@@ -783,7 +783,7 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 					printf("Originally by Tyler Shendruk\n");
 					printf("for the Polymer Physics Research Group, University of Ottawa\n");
 					printf("\nUsage:\n");
-					printf("\t-i\t[path to JSON input file]\t\t\tRequired. See `sampleInputs` for examples\n");
+					printf("\t-i\t[path to JSON input file]\t\t\tRequired. See `sampleInputs` for examples.\n");
 					printf("\t-o\t[path to output file directory]\t\t\tRequired.\n");
 					printf("\t-Li\t(legacy) [path to input file directory]\t\tdefault=`mpcd/data/`\n");
 					printf("\t-v\t(legacy) print version summary\n");
