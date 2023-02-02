@@ -272,12 +272,12 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 		if(DIM==_2D) B=1.0-cos(2.0*RA);
 		else B=(2.0/5.0)*(2.0-cos(RA)-cos(2.0*RA));
 	}
-	else if(RTECH==ARBAXIS || RTECH==NOHI_ARBAXIS){
+	else if(RTECH==ARBAXIS ){
 		A=2.0*inv_DIM*(1.0-sin(RA)/RA);
 		if(DIM==_2D) B=1.0-0.5*sin(2.0*RA)/RA;
 		else B=(2.0/5.0)*(2.0-sin(RA)/RA-0.5*sin(RA)/RA);
 	}
-	else if(RTECH==MPCAT || RTECH==RAT || RTECH==NOHI_MPCAT) {
+	else if(RTECH==MPCAT || RTECH==RAT ) {
 		A=1.0;
 		B=1.0;
 	}
@@ -294,7 +294,7 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 	VISCKIN = 0.0;
 	VISCCOL = 0.0;
 	//Kinetic part of viscosity
-	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==NOHI_ARBAXIS || RTECH==MPCAT || RTECH==NOHI_MPCAT || RTECH==LANG) {
+	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==MPCAT || RTECH==LANG) {
 		//All of the versions without angular-momentum conservation have the same form
 		CM=B/M;
 		VISCKIN=nDNST*KBT*dt*smrtPow(a,-DIM)*( 1.0/CM-0.5 );
@@ -311,7 +311,7 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 	}
 
 	//Collisional part of viscosity
-	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==NOHI_ARBAXIS || RTECH==MPCAT || RTECH==NOHI_MPCAT || RTECH==LANG) {
+	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==MPCAT || RTECH==LANG) {
 		//All of the versions without angular-momentum conservation have the same form
 		VISCCOL=(A*nDNST/M)*avMASS/(12.0*dt*smrtPow(a,DIM-2));
 	}
@@ -327,7 +327,7 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 	*VISC=VISCKIN+VISCCOL;
 
 	//Calculate the self diffusion coefficient
-	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==NOHI_ARBAXIS || RTECH==MPCAT || RTECH==NOHI_MPCAT || RTECH==LANG) {
+	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==MPCAT || RTECH==LANG) {
 		//All of the versions without angular-momentum conservation have the same form
 		SM=A/M;
 		*SDIFF = (KBT*dt/avMASS)*(SM-0.5);
@@ -344,7 +344,7 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 		*SDIFF = (KBT*dt/avMASS);
 	}
 
-	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==NOHI_ARBAXIS) {
+	if(RTECH==ORTHAXIS || RTECH==ARBAXIS ) {
 		//Calculate the thermal diffusion coefficient
 		if( DIM ==  _2D ) {
 			THERMDKIN = 2. / (1.-cos(RA));
@@ -978,6 +978,21 @@ void checkSim( FILE *fsynopsis,int SYNOUT,inputList in,spec *SP,bc *WALL,specSwi
 	if( in.LC==LCG ) for( i=0; i<NSPECI; i++ ) if( SP[i].ODIST==RANDORIENT ) {
 		printf( "Warning: Using global S (LC=%d) but initiated in isotropic phase. Simulation may not reach nematic phase.\n",in.LC );
 		if(SYNOUT == OUT) fprintf( fsynopsis,"Warning: Using global S (LC=%d) but initiated in isotropic phase. Simulation may not reach nematic phase.\n",in.LC );
+	}
+	if( !( in.noHI==HION || in.noHI==HIOFF) ){
+		printf( "Error: Unrecognized value of noHI=%d.\n",in.noHI );
+		exit( 1 );
+	}
+	if( !( in.inCOMP==INCOMPON || in.inCOMP==INCOMPOFF) ){
+		printf( "Error: Unrecognized value of inCOMP=%d.\n",in.inCOMP );
+		exit( 1 );
+	}
+	if( !( in.MULTIPHASE==MPHOFF || in.MULTIPHASE==MPHPOINT || in.MULTIPHASE==MPHSURF ) ){
+		printf( "Error: Unrecognized value of MULTIPHASE=%d.\n",in.MULTIPHASE );
+		exit( 1 );
+	}
+	if( ( in.MULTIPHASE==MPHOFF && NSPECI>1 ) ){
+		printf( "Warning: MULTIPHASE=%d (off) but more than one species present (NSPECI=%d).\n",in.MULTIPHASE,NSPECI );
 	}
 	//Check that nematogens have non-zero friction
 	if( in.LC>ISOF ) for( i=0; i<NSPECI; i++ ) if( feq(SP[i].RFC,0.0) ) {

@@ -25,10 +25,7 @@ void printVersionSummary( ) {
 	printf( "\t\tAlso added another check in ComputeBendForces() and use sinc() in bendHarmonic() as it should be more stable\n" );
 	printf( "\t\tPut a check in ComputeNemForces()\n" );
 	printf( "\t\tPut a check in ComputeNemForces()\n" );
-
-				printf( "\t\t(2) BC colloid that overlaps with a PBC feels a 'buoyancy force (swimmers can get a bit inside the colloid on the PBC side)'\n" );
-
-
+	printf( "\t\t(2) BC colloid that overlaps with a PBC feels a 'buoyancy force (swimmers can get a bit inside the colloid on the PBC side)'\n" );
 	printf( "Version 152\n\tMany swimmers in PBC will start to drift\n" );
 	printf( "\t\tIn swimmerForceDipole(), would sometimes get net force since only accelerated mpcd particles; now acc all\n" );
 	printf( "\t\tAdded some checks in bendHarmonic() and bendNematic() in mssrd.c\n" );
@@ -872,6 +869,9 @@ void listinput( inputList in,double AVVEL,spec SP[],kinTheory theory ) {
 			printf( "\tLiquid Crystal Mean-Field Potential: %lf\n",in.MFPOT );
 			printf( "\tRotation angle: %lf\n",in.RA );
 			printf( "\tSystem Size: [%i,%i,%i]\n",XYZ[0],XYZ[1],XYZ[2] );
+			printf( "\tNo hydodynamic interaction: %i\n",in.noHI);
+			printf( "\tIncompressibility correction: %i\n",in.inCOMP);
+			printf( "\tMultiphase interactions: %i\n",in.MULTIPHASE);
 			printf( "\tConstant external acceleration:" );
 			pvec( in.GRAV,DIM );
 			printf( "\tConstant external magnetic field:" );
@@ -933,6 +933,13 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 		fprintf( fsynopsis,"Thermal relaxation time scale: %lf\n",in.TAU );
 		fprintf( fsynopsis,"Rotation angle: %lf\n",in.RA );
 		fprintf( fsynopsis,"Langevin friction coefficient: %lf\n",in.FRICCO );
+		fprintf( fsynopsis,"Hydodynamic interactions: ");
+		if(in.noHI) fprintf( fsynopsis,"OFF\n" );
+		else fprintf( fsynopsis,"On\n" );
+		fprintf( fsynopsis,"Incompressibility correction: ");
+		if(in.inCOMP) fprintf( fsynopsis,"OFF\n" );
+		else fprintf( fsynopsis,"On\n" );
+		fprintf( fsynopsis,"Multiphase interactions mode: %d\n",in.MULTIPHASE );
 		fprintf( fsynopsis,"External acceleration: (%lf,%lf,%lf)\n",in.GRAV[0],in.GRAV[1],in.GRAV[2] );
 		fprintf( fsynopsis,"External magnetic field: (%lf,%lf,%lf)\n",in.MAG[0],in.MAG[1],in.MAG[2] );
 		fprintf( fsynopsis,"Total simulation iterations: %d\n",in.simSteps );
@@ -1619,6 +1626,7 @@ void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,b
 	fprintf( fout,"%d %d %d %d %lf %lf\n",DIM,XYZ[0],XYZ[1],XYZ[2],in.KBT,KBTNOW );
 	fprintf( fout,"%d %d %d %d %d %d\n",in.RFRAME,in.zeroNetMom,in.GALINV,in.TSTECH,in.RTECH,in.LC );
 	fprintf( fout,"%lf %lf %lf %lf\n",in.TAU,in.RA,in.FRICCO,in.MFPOT );
+	fprintf( fout,"%d %d %d\n",in.noHI,in.inCOMP,in.MULTIPHASE );
 	fprintf( fout,"%lf %lf %lf\n",in.GRAV[0],in.GRAV[1],in.GRAV[2] );		//Acceleration (external force)
 	fprintf( fout,"%lf %lf %lf\n",in.MAG[0],in.MAG[1],in.MAG[2] );			//External magnetic field
 	fprintf( fout,"%d %d\n",MDmode,in.stepsMD );		//MD coupling mode and number of MD steps per SRD step
@@ -1820,8 +1828,9 @@ void outputResults( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],sim
 		}
 	}
 	if( outFlag.CPPOUT>=OUT && runtime%outFlag.CPPOUT==0 ) {
-		if( in.RTECH==MULTIPHASE ) {
+		if( in.MULTIPHASE!=MPHOFF ) {
 			// phiphiCorr( CL,maxXYZ,XYZ,corr,DIM );
+			printf("Warning: phiphiCorr() needs to be checked.\n");
 			corrout( outFiles.fcorrPP,corr,time_now );
 		}
 	}

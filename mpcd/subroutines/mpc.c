@@ -40,7 +40,7 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 	smono *pSW;			//Temporary pointer to swimmer monomers
 
 	// int flag on whether to compute CM or not
-	int computeCM = (RTECH==RAT) || (LC!=ISOF) || (RTECH==DIPOLE_VCM) || (RTECH==DIPOLE_DIR_SUM) || (RTECH==DIPOLE_DIR_AV) || (RTECH==MULTIPHASE);
+	int computeCM = (RTECH==RAT) || (LC!=ISOF) || (RTECH==DIPOLE_VCM) || (RTECH==DIPOLE_DIR_SUM) || (RTECH==DIPOLE_DIR_AV);
 
 	// Zero
 	for( d=0; d<_3D; d++ ) V[d] = 0.0;
@@ -1001,7 +1001,7 @@ void stochrotMPC( cell *CL,int RTECH,double C,double S,double *CLQ,int outP ) {
 	//Generate random axis(used if RTECH=ARBAXIS)
 	if( RTECH == ARBAXIS ) ranvec( RV,DIM );
 	//Randomly pick an axis(used if RTECH=ORTHAXIS)
-	if( RTECH == ORTHAXIS || RTECH == NOHI_ARBAXIS ) CA = (int)DIM * genrand_real();
+	if( RTECH == ORTHAXIS ) CA = (int)DIM * genrand_real();
 
 	//Randomly pick a sign for the angle
 	SIGN = genrand_real();
@@ -1014,8 +1014,7 @@ void stochrotMPC( cell *CL,int RTECH,double C,double S,double *CLQ,int outP ) {
 		//Pressure term
 		if( outP ) calcPressureColl_preColl( relQ[i],dp[i],tmpc,CLQ );
 		for( j=0; j<DIM; j++ ) V[j] = tmpc->V[j] - CL->VCM[j];
-		if( RTECH == NOHI_ARBAXIS ) rotate( ORTHAXIS,C,S,V,RV,SIGN,CA );
-		else rotate( RTECH,C,S,V,RV,SIGN,CA );
+		rotate( RTECH,C,S,V,RV,SIGN,CA );
 		for( j=0; j<DIM; j++ ) tmpc->V[j] = CL->VCM[j] + V[j];
 		//Pressure term
 		if( outP ) calcPressureColl_postColl( relQ[i],dp[i],1.0,tmpc->V,CL );
@@ -1029,8 +1028,7 @@ void stochrotMPC( cell *CL,int RTECH,double C,double S,double *CLQ,int outP ) {
 		V[0] = tmd->vx - CL->VCM[0];
 		V[1] = tmd->vy - CL->VCM[1];
 		V[2] = tmd->vz - CL->VCM[2];
-		if( RTECH == NOHI_ARBAXIS ) rotate( ORTHAXIS,C,S,V,RV,SIGN,CA );
-		else rotate( RTECH,C,S,V,RV,SIGN,CA );
+		rotate( RTECH,C,S,V,RV,SIGN,CA );
 		tmd->vx = CL->VCM[0] + V[0];
 		tmd->vy = CL->VCM[1] + V[1];
 		tmd->vz = CL->VCM[2] + V[2];
@@ -1041,8 +1039,7 @@ void stochrotMPC( cell *CL,int RTECH,double C,double S,double *CLQ,int outP ) {
 	tsm = CL->sp;
 	while( tsm!=NULL ) {
 		for( i=0; i<DIM; i++ ) V[i] = tsm->V[i] - CL->VCM[i];
-		if( RTECH == NOHI_ARBAXIS ) rotate( ORTHAXIS,C,S,V,RV,SIGN,CA );
-		else rotate( RTECH,C,S,V,RV,SIGN,CA );
+		rotate( RTECH,C,S,V,RV,SIGN,CA );
 		for( i=0; i<DIM; i++ ) tsm->V[i] = CL->VCM[i] + V[i];
 		//Increment link in list
 		tsm = tsm->next;
@@ -1139,301 +1136,6 @@ void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 		tsm = tsm->next;
 		i++;
 	}
-}
-void andersenMULTIPHASE( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int outP ) {
-/*
-    Does the Andersen thermostat collision, and returns the
-    CM velocity and the local temperature of the cell.
-*/
-  int i,j,k,id;
-	int mixedCell=0;
-  double MASS,MASSsum;
-  double RV[CL->POP][DIM];        //Random velocities
-	double N,NSP[NSPECI];          //Number of each type
-  double RVSPsum[NSPECI][DIM]; //Sum of random velocities of each type
-  double RVsum[DIM];              //Sum of random velocities that aren't A or B-type (monomers/swimmers)
-
-  double DV[CL->POP][DIM];        //Damping velocity
-  particleMPC *tmpc;              //Temporary particleMPC
-  particleMD *tmd;                //Temporary particleMD
-  smono *tsm;                     //Temporary swimmer monomer
-
-  double relQ[DIM];               //Relative position
-  double VMUtot[DIM];             //Relative position
-  double gradSP[NSPECI][DIM];     //Directional gradient of each species
-	double thisGrad;								//A temporary gradient contribution component
-  double VMU[CL->POP][DIM];       //Grad. chemical potential  velocity of type A (B is negative this)
-
-  // Zero arrays
-  for( i=0; i<DIM; i++ ) {
-    RVsum[i] = 0.0;
-    relQ[i] = 0.0;
-		for( j=0; j<NSPECI; j++ ) {
-			RVSPsum[j][i] = 0.0;
-	    gradSP[j][i] = 0.0;
-		}
-  }
-  for( i=0;i<CL->POP;i++ ) for( j=0;j<DIM;j++ ) {
-    RV[i][j] = 0.0;
-    VMU[i][j] = 0.0;
-    VMUtot[j] = 0.;             //Relative position
-    DV[i][j] = 0.0;
-  }
-	for( j=0; j<NSPECI; j++ ) NSP[j]=0.0;
-	MASSsum=0.0;
-
-  //Calculate the number of each type
-  //MPCD particles
-  tmpc = CL->pp;
-  while( tmpc!=NULL ) {
-    id = tmpc->SPID;
-		NSP[id] += 1.0;
-		//Increment link in list
-    tmpc = tmpc->next;
-  }
-  //Swimmer monomers
-  tsm = CL->sp;
-  while( tsm!=NULL ) {
-    if( tsm->HorM ) id = SS.MSPid;
-    else id = SS.HSPid;
-		NSP[id] += 1.0;
-		//Increment link in list
-    tsm = tsm->next;
-  }
-	//MD particles --- ALWAYS type 0
-	id=0;
-	tmd = CL->MDpp;
-	while( tmd!=NULL ) {
-		NSP[id] += 1.0;
-		//Increment link in list
-		tmd = tmd->nextSRD;
-	}
-  N=0.0;
-	for( j=0; j<NSPECI; j++ ) N += NSP[j];
-
-  //Generate separation velocities
-	mixedCell=0;
-	for( j=0; j<NSPECI; j++ ) if( NSP[j]>0.0 ) mixedCell+=1;
-  if( mixedCell>1 ) {
-    // Calculate the gradient of the different species
-		// MPC particles
-    tmpc = CL->pp;
-    while( tmpc!=NULL ) {
-      id = tmpc->SPID;
-      //Particle-based gradient of this species
-      for( j=0; j<DIM; j++ ) relQ[j] = tmpc->Q[j] - CLQ[j];
-			for( j=0; j<DIM; j++ ) {
-				thisGrad = 8.0*relQ[j]*relQ[j]-3.0;
-				for( k=0; k<DIM; k++ ) thisGrad += 6.0*relQ[k]*relQ[k];
-				thisGrad *= 30.0*relQ[j];
-        gradSP[id][j] += thisGrad;
-      }
-			//Increment link in list
-      tmpc = tmpc->next;
-    }
-		//Swimmer monomers
-		tsm = CL->sp;
-		while( tsm!=NULL ) {
-			if( tsm->HorM ) id = SS.MSPid;
-			else id = SS.HSPid;
-			//Particle-based gradient of this species
-      for( j=0; j<DIM; j++ ) relQ[j] = tsm->Q[j] - CLQ[j];
-			for( j=0; j<DIM; j++ ) {
-				thisGrad = 8.0*relQ[j]*relQ[j]-3.0;
-				for( k=0; k<DIM; k++ ) thisGrad += 6.0*relQ[k]*relQ[k];
-				thisGrad *= 30.0*relQ[j];
-        gradSP[id][j] += thisGrad;
-      }
-			//Increment link in list
-			tsm = tsm->next;
-		}
-		//MD particles --- ALWAYS type 0
-		id=0;
-	  tmd = CL->MDpp;
-	  while( tmd!=NULL ) {
-			if( DIM>=_1D ) relQ[0] = tmd->rx - CLQ[0];
-			if( DIM>=_2D ) relQ[1] = tmd->ry - CLQ[1];
-			if( DIM>=_3D ) relQ[2] = tmd->rz - CLQ[2];
-			for( j=0; j<DIM; j++ ) {
-				thisGrad = 8.0*relQ[j]*relQ[j]-3.0;
-				for( k=0; k<DIM; k++ ) thisGrad += 6.0*relQ[k]*relQ[k];
-				thisGrad *= 30.0*relQ[j];
-        gradSP[id][j] += thisGrad;
-      }
-	    //Increment link in list
-	    tmd = tmd->nextSRD;
-	  }
-
-    //Calculate the velocities due to the cell's chemical potential
-    i=0;
-    //MPCD particles
-    tmpc = CL->pp;
-    while( tmpc!=NULL ) {
-      id = tmpc->SPID;
-      // MASS = (double) (SP+id)->MASS;
-			for( j=0; j<DIM; j++ ) {
-				for( k=0; k<NSPECI; k++ ) VMU[i][j] += gradSP[k][j]*((SP+id)->M[k]) / NSP[id];
-	      VMUtot[j] += VMU[i][j];
-			}
-			//Increment link in list
-      tmpc = tmpc->next;
-      i++;
-    }
-    //Swimmer monomers
-    tsm = CL->sp;
-    while( tsm!=NULL ) {
-			if( tsm->HorM ) {
-				id = SS.MSPid;
-				// MASS = (double) SS.middM;
-			}
-			else {
-				id = SS.HSPid;
-				// MASS = (double) SS.headM;
-			}
-			for( j=0; j<DIM; j++ ) {
-				for( k=0; k<NSPECI; k++ ) VMU[i][j] += gradSP[k][j]*((SP+id)->M[k]) / NSP[id];
-	      VMUtot[j] += VMU[i][j];
-			}
-			//Increment link in list
-      tsm = tsm->next;
-			i++;
-    }
-  }
-	//MD particles --- ALWAYS type 0
-	id=0;
-	tmd = CL->MDpp;
-	while( tmd!=NULL ) {
-		// MASS = (double) tmd->mass;
-		for( j=0; j<DIM; j++ ) {
-			for( k=0; k<NSPECI; k++ ) VMU[i][j] += gradSP[k][j]*((SP+id)->M[k]) / NSP[id];
-			VMUtot[j] += VMU[i][j];
-		}
-		//Increment link in list
-		tmd = tmd->nextSRD;
-		i++;
-	}
-
-  //Generate random velocities
-  i=0;
-  //MPC particles
-  tmpc = CL->pp;
-  while( tmpc!=NULL ) {
-    id = tmpc->SPID;
-    MASS = (double) (SP+id)->MASS;
-		MASSsum+=MASS;
-    for( j=0; j<DIM; j++ ) {
-      RV[i][j] = genrand_gaussMB( KBT,MASS );
-      // RVsum[j] += MASS*RV[i][j];
-			RVsum[j] += RV[i][j];
-			for( k=0; k<NSPECI; k++ ) RVSPsum[k][j] += RV[i][j];
-      DV[i][j] = ((SP+id)->DAMP)*(CL->VCM[j])/((double)CL->POP);
-    }
-		//Increment link in list
-    tmpc = tmpc->next;
-    i++;
-  }
-  //Swimmer monomers
-	tsm = CL->sp;
-	while( tsm!=NULL ) {
-		if( tsm->HorM ) {
-			id = SS.MSPid;
-			MASS = (double) SS.middM;
-		}
-		else {
-			id = SS.HSPid;
-			MASS = (double) SS.headM;
-		}
-		MASSsum+=MASS;
-		for( j=0; j<DIM; j++ ) {
-      RV[i][j] = genrand_gaussMB( KBT,MASS );
-      // RVsum[j] += MASS*RV[i][j];
-			RVsum[j] += RV[i][j];
-			for( k=0; k<NSPECI; k++ ) RVSPsum[k][j] += RV[i][j];
-			//No dampening on the swimmer itself
-      DV[i][j] = 0.0;
-    }
-		//Increment link in list
-		tsm = tsm->next;
-		i++;
-	}
-  //MD particles --- ALWAYS type 0
-	id=0;
-  tmd = CL->MDpp;
-  while( tmd!=NULL ) {
-    MASS = tmd->mass;
-    MASSsum+=MASS;
-		for( j=0; j<DIM; j++ ) {
-			RV[i][j] = genrand_gaussMB( KBT,MASS );
-			// RVsum[j] += MASS*RV[i][j];
-			RVsum[j] += RV[i][j];
-			for( k=0; k<NSPECI; k++ ) RVSPsum[k][j] += RV[i][j];
-			//No dampening on the swimmer itself
-			DV[i][j] = 0.0;
-		}
-		//Increment link in list
-    tmd = tmd->nextSRD;
-    i++;
-  }
-  //Turn sums into averages
-  // if( MASSsum>0.0 ) for( j=0; j<DIM; j++ ) RVsum[j] /= MASSsum;
-	if( MASSsum>0.0 ) for( j=0; j<DIM; j++ ) RVsum[j] /= N;
-	for( k=0; k<NSPECI; k++ ) if( NSP[k]>0.0 ) for( j=0; j<DIM; j++ ) RVSPsum[k][j] /= NSP[k];
-	for( j=0; j<DIM; j++ ) VMUtot[j] /= N;
-
-  //Collision
-  i=0;
-  // MPC particles
-  tmpc = CL->pp;
-  while( tmpc!=NULL ) {
-    id = tmpc->SPID;
-    // MASS = (double)(SP+id)->MASS;
-    // for( j=0; j<DIM; j++ ) tmpc->V[j] = CL->VCM[j] + RV[i][j] - RVsum[j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
-		for( j=0; j<DIM; j++ ) tmpc->V[j] = CL->VCM[j] + RV[i][j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
-    //Increment link in list
-    tmpc = tmpc->next;
-    i++;
-  }
-  // Swimmer monomers
-  tsm = CL->sp;
-  while( tsm!=NULL ) {
-		if( tsm->HorM ) {
-			id = SS.MSPid;
-			// MASS = (double) SS.middM;
-		}
-		else {
-			id = SS.HSPid;
-			// MASS = (double) SS.headM;
-		}
-		// for( j=0; j<DIM; j++ ) tsm->V[j] = CL->VCM[j] + RV[i][j] - RVsum[j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
-		for( j=0; j<DIM; j++ ) tsm->V[j] = CL->VCM[j] + RV[i][j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
-    //Increment link in list
-    tsm = tsm->next;
-    i++;
-  }
-  //MD particles --- ALWAYS type 0
-	id=0;
-  tmd = CL->MDpp;
-  while( tmd!=NULL ) {
-		// MASS = tmd->mass;
-		if( DIM>=_1D ) {
-			j=0;
-			// tmd->vx = CL->VCM[j] + RV[i][j] - RVsum[j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
-			tmd->vx = CL->VCM[j] + RV[i][j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
-		}
-		if( DIM>=_2D ) {
-			j=1;
-			// tmd->vy = CL->VCM[j] + RV[i][j] - RVsum[j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
-			tmd->vy = CL->VCM[j] + RV[i][j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
-		}
-		if( DIM>=_3D ) {
-			j=2;
-			// tmd->vz = CL->VCM[j] + RV[i][j] - RVsum[j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
-			tmd->vz = CL->VCM[j] + RV[i][j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
-		}
-    //Increment link in list
-    tmd = tmd->nextSRD;
-    i++;
-  }
 }
 void andersenROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int outP ) {
 /*
@@ -2602,12 +2304,11 @@ void MPCcollision( cell *CL,spec *SP,specSwimmer SS,double KBT,int RTECH,double 
 	//Newtonian Fluid
 	else{
 		//Passive MPC operators
-		if( RTECH == MPCAT || RTECH == NOHI_MPCAT) andersenMPC( CL,SP,SS,KBT,CLQ,outP );
+		if( RTECH == MPCAT ) andersenMPC( CL,SP,SS,KBT,CLQ,outP );
 		else if( RTECH == RAT ) andersenROT( CL,SP,SS,KBT,CLQ,outP );
 		else if( RTECH == LANG ) langevinMPC( CL,SP,SS,KBT,FRICCO,TimeStep,CLQ,outP );
 		else if( RTECH == RLANG ) langevinROT( CL,SP,SS,KBT,FRICCO,TimeStep,CLQ,outP );
-		else if( RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==NOHI_ARBAXIS) stochrotMPC( CL,RTECH,C,S,CLQ,outP );
-		else if( RTECH==MULTIPHASE ) andersenMULTIPHASE( CL,SP,SS,KBT,CLQ,outP );
+		else if( RTECH==ORTHAXIS || RTECH==ARBAXIS ) stochrotMPC( CL,RTECH,C,S,CLQ,outP );
 		//Active MPC operators
 		else if( RTECH==VICSEK ) vicsek( CL,SP,CLQ,outP );
 		else if( RTECH==CHATE ) chate( CL,SP,CLQ,outP );
@@ -2625,6 +2326,534 @@ void MPCcollision( cell *CL,spec *SP,specSwimmer SS,double KBT,int RTECH,double 
 
 	if( outP ) normPressureColl( CL,TimeStep );
 	if (MDmode==MPCinMD) CL->MDpp=tmd;
+}
+void multiphaseColl( cell *CL,spec *SP,specSwimmer SS,int multiphaseMode, double KBT,int MDmode,double *CLQ,int outP ) {
+/*
+    Modifies the collision operation to allow fluid particles of different species to interact
+    THIS IS WHERE KIRA SHOULD ADD HER NEW BIT!!!
+*/
+	if( multiphaseMode==MPHSURF ) {
+		printf("Error: Multiphase interaction not yet implemented.\nTo be implemented by Kira");
+		exit( 1 );
+	}
+	else if( multiphaseMode==MPHPOINT ) multiphaseCollPoint( CL,SP,SS,KBT,MDmode,CLQ,outP );
+	else {
+		printf( "Error: Multiphase interaction  technique unacceptable.\n" );
+		exit( 1 );
+	}
+}
+void multiphaseCollPoint( cell *CL,spec *SP,specSwimmer SS, double KBT,int MDmode,double *CLQ,int outP ) {
+	int i,j,k,id;
+	int mixedCell=0;
+	// double MASS,MASSsum;
+	double N,NSP[NSPECI];          //Number of each type
+
+	particleMPC *tmpc;              //Temporary particleMPC
+	particleMD *tmd;                //Temporary particleMD
+	smono *tsm;                     //Temporary swimmer monomer
+
+	double relQ[DIM];               //Relative position
+	double VMUtot[DIM];             //Velocity due to chemical potential
+	double gradSP[NSPECI][DIM];     //Directional gradient of each species
+	double thisGrad;				//A temporary gradient contribution component
+	double VMU[CL->POP][DIM];       //Grad. chemical potential  velocity of type A (B is negative this)
+
+	// Zero arrays
+	for( i=0; i<DIM; i++ ) {
+		relQ[i] = 0.0;
+		for( j=0; j<NSPECI; j++ ) gradSP[j][i] = 0.0;
+	}
+	for( i=0;i<CL->POP;i++ ) for( j=0;j<DIM;j++ ) {
+		VMU[i][j] = 0.0;
+		VMUtot[j] = 0.;
+	}
+	for( j=0; j<NSPECI; j++ ) NSP[j]=0.0;
+	// MASSsum=0.0;
+
+	//Calculate the number of each type
+	//MPCD particles
+	tmpc = CL->pp;
+	while( tmpc!=NULL ) {
+		id = tmpc->SPID;
+		NSP[id] += 1.0;
+		//Increment link in list
+		tmpc = tmpc->next;
+	}
+	//Swimmer monomers
+	tsm = CL->sp;
+	while( tsm!=NULL ) {
+		if( tsm->HorM ) id = SS.MSPid;
+		else id = SS.HSPid;
+		NSP[id] += 1.0;
+		//Increment link in list
+		tsm = tsm->next;
+	}
+	//MD particles --- ALWAYS type 0
+	id=0;
+	tmd = CL->MDpp;
+	while( tmd!=NULL ) {
+		NSP[id] += 1.0;
+		//Increment link in list
+		tmd = tmd->nextSRD;
+	}
+	N=0.0;
+	for( j=0; j<NSPECI; j++ ) N += NSP[j];
+
+	//Generate separation velocities
+	mixedCell=0;
+	for( j=0; j<NSPECI; j++ ) if( NSP[j]>0.0 ) mixedCell+=1;
+	if( mixedCell>1 ) {
+		// Calculate the gradient of the different species
+		// MPC particles
+		tmpc = CL->pp;
+		while( tmpc!=NULL ) {
+			id = tmpc->SPID;
+			//Particle-based gradient of this species
+			for( j=0; j<DIM; j++ ) relQ[j] = tmpc->Q[j] - CLQ[j];
+			for( j=0; j<DIM; j++ ) {
+				thisGrad = 8.0*relQ[j]*relQ[j]-3.0;
+				for( k=0; k<DIM; k++ ) thisGrad += 6.0*relQ[k]*relQ[k];
+				thisGrad *= 30.0*relQ[j];
+				gradSP[id][j] += thisGrad;
+			}
+			//Increment link in list
+			tmpc = tmpc->next;
+		}
+		//Swimmer monomers
+		tsm = CL->sp;
+		while( tsm!=NULL ) {
+			if( tsm->HorM ) id = SS.MSPid;
+			else id = SS.HSPid;
+			//Particle-based gradient of this species
+			for( j=0; j<DIM; j++ ) relQ[j] = tsm->Q[j] - CLQ[j];
+			for( j=0; j<DIM; j++ ) {
+				thisGrad = 8.0*relQ[j]*relQ[j]-3.0;
+				for( k=0; k<DIM; k++ ) thisGrad += 6.0*relQ[k]*relQ[k];
+				thisGrad *= 30.0*relQ[j];
+				gradSP[id][j] += thisGrad;
+			}
+			//Increment link in list
+			tsm = tsm->next;
+		}
+		//MD particles --- ALWAYS type 0
+		id=0;
+		tmd = CL->MDpp;
+		while( tmd!=NULL ) {
+			if( DIM>=_1D ) relQ[0] = tmd->rx - CLQ[0];
+			if( DIM>=_2D ) relQ[1] = tmd->ry - CLQ[1];
+			if( DIM>=_3D ) relQ[2] = tmd->rz - CLQ[2];
+			for( j=0; j<DIM; j++ ) {
+				thisGrad = 8.0*relQ[j]*relQ[j]-3.0;
+				for( k=0; k<DIM; k++ ) thisGrad += 6.0*relQ[k]*relQ[k];
+				thisGrad *= 30.0*relQ[j];
+				gradSP[id][j] += thisGrad;
+			}
+			//Increment link in list
+			tmd = tmd->nextSRD;
+		}
+
+		//Calculate the velocities due to the cell's chemical potential
+		i=0;
+		//MPCD particles
+		tmpc = CL->pp;
+		while( tmpc!=NULL ) {
+			id = tmpc->SPID;
+			// MASS = (double) (SP+id)->MASS;
+			for( j=0; j<DIM; j++ ) {
+				for( k=0; k<NSPECI; k++ ) VMU[i][j] += gradSP[k][j]*((SP+id)->M[k]) / NSP[id];
+				VMUtot[j] += VMU[i][j];
+			}
+			//Increment link in list
+			tmpc = tmpc->next;
+			i++;
+		}
+		//Swimmer monomers
+		tsm = CL->sp;
+		while( tsm!=NULL ) {
+			if( tsm->HorM ) {
+				id = SS.MSPid;
+				// MASS = (double) SS.middM;
+			}
+			else {
+				id = SS.HSPid;
+				// MASS = (double) SS.headM;
+			}
+			for( j=0; j<DIM; j++ ) {
+				for( k=0; k<NSPECI; k++ ) VMU[i][j] += gradSP[k][j]*((SP+id)->M[k]) / NSP[id];
+				VMUtot[j] += VMU[i][j];
+			}
+			//Increment link in list
+			tsm = tsm->next;
+			i++;
+		}
+	}
+	//MD particles --- ALWAYS type 0
+	id=0;
+	tmd = CL->MDpp;
+	while( tmd!=NULL ) {
+		// MASS = (double) tmd->mass;
+		for( j=0; j<DIM; j++ ) {
+			for( k=0; k<NSPECI; k++ ) VMU[i][j] += gradSP[k][j]*((SP+id)->M[k]) / NSP[id];
+			VMUtot[j] += VMU[i][j];
+		}
+		//Increment link in list
+		tmd = tmd->nextSRD;
+		i++;
+	}
+
+	//Turn sums into averages
+	for( j=0; j<DIM; j++ ) VMUtot[j] /= N;
+
+	//Collision
+	i=0;
+	// MPC particles
+	tmpc = CL->pp;
+	while( tmpc!=NULL ) {
+		id = tmpc->SPID;
+		// MASS = (double)(SP+id)->MASS;
+		for( j=0; j<DIM; j++ ) tmpc->V[j] += VMU[i][j] - VMUtot[j];
+		//Increment link in list
+		tmpc = tmpc->next;
+		i++;
+	}
+	// Swimmer monomers
+	tsm = CL->sp;
+	while( tsm!=NULL ) {
+		if( tsm->HorM ) {
+			id = SS.MSPid;
+			// MASS = (double) SS.middM;
+		}
+		else {
+			id = SS.HSPid;
+			// MASS = (double) SS.headM;
+		}
+		for( j=0; j<DIM; j++ ) tsm->V[j] += VMU[i][j] - VMUtot[j];
+		//Increment link in list
+		tsm = tsm->next;
+		i++;
+	}
+	//MD particles --- ALWAYS type 0
+	id=0;
+	tmd = CL->MDpp;
+	while( tmd!=NULL ) {
+		// MASS = tmd->mass;
+		if( DIM>=_1D ) {
+			j=0;
+			tmd->vx += VMU[i][j] - VMUtot[j];
+		}
+		if( DIM>=_2D ) {
+			j=1;
+			tmd->vy += VMU[i][j] - VMUtot[j];
+		}
+		if( DIM>=_3D ) {
+			j=2;
+			tmd->vz += VMU[i][j] - VMUtot[j];
+		}
+		//Increment link in list
+		tmd = tmd->nextSRD;
+		i++;
+	}
+}
+// KEEP COMMENTED OUT FOR NOW, UNTIL KIRA'S DONE
+// void multiphaseCollPoint( cell *CL,spec *SP,specSwimmer SS, double KBT,int MDmode,double *CLQ,int outP ) {
+// 	int i,j,k,id;
+// 	int mixedCell=0;
+// 	double MASS,MASSsum;
+// 	double RV[CL->POP][DIM];        //Random velocities
+// 	double N,NSP[NSPECI];          //Number of each type
+// 	double RVSPsum[NSPECI][DIM]; //Sum of random velocities of each type
+// 	double RVsum[DIM];              //Sum of random velocities that aren't A or B-type (monomers/swimmers)
+
+// 	double DV[CL->POP][DIM];        //Damping velocity
+// 	particleMPC *tmpc;              //Temporary particleMPC
+// 	particleMD *tmd;                //Temporary particleMD
+// 	smono *tsm;                     //Temporary swimmer monomer
+
+// 	double relQ[DIM];               //Relative position
+// 	double VMUtot[DIM];             //Relative position
+// 	double gradSP[NSPECI][DIM];     //Directional gradient of each species
+// 	double thisGrad;								//A temporary gradient contribution component
+// 	double VMU[CL->POP][DIM];       //Grad. chemical potential  velocity of type A (B is negative this)
+
+//   // Zero arrays
+//   for( i=0; i<DIM; i++ ) {
+//     RVsum[i] = 0.0;
+//     relQ[i] = 0.0;
+// 		for( j=0; j<NSPECI; j++ ) {
+// 			RVSPsum[j][i] = 0.0;
+// 	    gradSP[j][i] = 0.0;
+// 		}
+//   }
+//   for( i=0;i<CL->POP;i++ ) for( j=0;j<DIM;j++ ) {
+//     RV[i][j] = 0.0;
+//     VMU[i][j] = 0.0;
+//     VMUtot[j] = 0.;             //Relative position
+//     DV[i][j] = 0.0;
+//   }
+// 	for( j=0; j<NSPECI; j++ ) NSP[j]=0.0;
+// 	MASSsum=0.0;
+
+//   //Calculate the number of each type
+//   //MPCD particles
+//   tmpc = CL->pp;
+//   while( tmpc!=NULL ) {
+//     id = tmpc->SPID;
+// 		NSP[id] += 1.0;
+// 		//Increment link in list
+//     tmpc = tmpc->next;
+//   }
+//   //Swimmer monomers
+//   tsm = CL->sp;
+//   while( tsm!=NULL ) {
+//     if( tsm->HorM ) id = SS.MSPid;
+//     else id = SS.HSPid;
+// 		NSP[id] += 1.0;
+// 		//Increment link in list
+//     tsm = tsm->next;
+//   }
+// 	//MD particles --- ALWAYS type 0
+// 	id=0;
+// 	tmd = CL->MDpp;
+// 	while( tmd!=NULL ) {
+// 		NSP[id] += 1.0;
+// 		//Increment link in list
+// 		tmd = tmd->nextSRD;
+// 	}
+//   N=0.0;
+// 	for( j=0; j<NSPECI; j++ ) N += NSP[j];
+
+//   //Generate separation velocities
+// 	mixedCell=0;
+// 	for( j=0; j<NSPECI; j++ ) if( NSP[j]>0.0 ) mixedCell+=1;
+//   if( mixedCell>1 ) {
+//     // Calculate the gradient of the different species
+// 		// MPC particles
+//     tmpc = CL->pp;
+//     while( tmpc!=NULL ) {
+//       id = tmpc->SPID;
+//       //Particle-based gradient of this species
+//       for( j=0; j<DIM; j++ ) relQ[j] = tmpc->Q[j] - CLQ[j];
+// 			for( j=0; j<DIM; j++ ) {
+// 				thisGrad = 8.0*relQ[j]*relQ[j]-3.0;
+// 				for( k=0; k<DIM; k++ ) thisGrad += 6.0*relQ[k]*relQ[k];
+// 				thisGrad *= 30.0*relQ[j];
+//         gradSP[id][j] += thisGrad;
+//       }
+// 			//Increment link in list
+//       tmpc = tmpc->next;
+//     }
+// 		//Swimmer monomers
+// 		tsm = CL->sp;
+// 		while( tsm!=NULL ) {
+// 			if( tsm->HorM ) id = SS.MSPid;
+// 			else id = SS.HSPid;
+// 			//Particle-based gradient of this species
+//       for( j=0; j<DIM; j++ ) relQ[j] = tsm->Q[j] - CLQ[j];
+// 			for( j=0; j<DIM; j++ ) {
+// 				thisGrad = 8.0*relQ[j]*relQ[j]-3.0;
+// 				for( k=0; k<DIM; k++ ) thisGrad += 6.0*relQ[k]*relQ[k];
+// 				thisGrad *= 30.0*relQ[j];
+//         gradSP[id][j] += thisGrad;
+//       }
+// 			//Increment link in list
+// 			tsm = tsm->next;
+// 		}
+// 		//MD particles --- ALWAYS type 0
+// 		id=0;
+// 	  tmd = CL->MDpp;
+// 	  while( tmd!=NULL ) {
+// 			if( DIM>=_1D ) relQ[0] = tmd->rx - CLQ[0];
+// 			if( DIM>=_2D ) relQ[1] = tmd->ry - CLQ[1];
+// 			if( DIM>=_3D ) relQ[2] = tmd->rz - CLQ[2];
+// 			for( j=0; j<DIM; j++ ) {
+// 				thisGrad = 8.0*relQ[j]*relQ[j]-3.0;
+// 				for( k=0; k<DIM; k++ ) thisGrad += 6.0*relQ[k]*relQ[k];
+// 				thisGrad *= 30.0*relQ[j];
+//         gradSP[id][j] += thisGrad;
+//       }
+// 	    //Increment link in list
+// 	    tmd = tmd->nextSRD;
+// 	  }
+
+//     //Calculate the velocities due to the cell's chemical potential
+//     i=0;
+//     //MPCD particles
+//     tmpc = CL->pp;
+//     while( tmpc!=NULL ) {
+//       id = tmpc->SPID;
+//       // MASS = (double) (SP+id)->MASS;
+// 			for( j=0; j<DIM; j++ ) {
+// 				for( k=0; k<NSPECI; k++ ) VMU[i][j] += gradSP[k][j]*((SP+id)->M[k]) / NSP[id];
+// 	      VMUtot[j] += VMU[i][j];
+// 			}
+// 			//Increment link in list
+//       tmpc = tmpc->next;
+//       i++;
+//     }
+//     //Swimmer monomers
+//     tsm = CL->sp;
+//     while( tsm!=NULL ) {
+// 			if( tsm->HorM ) {
+// 				id = SS.MSPid;
+// 				// MASS = (double) SS.middM;
+// 			}
+// 			else {
+// 				id = SS.HSPid;
+// 				// MASS = (double) SS.headM;
+// 			}
+// 			for( j=0; j<DIM; j++ ) {
+// 				for( k=0; k<NSPECI; k++ ) VMU[i][j] += gradSP[k][j]*((SP+id)->M[k]) / NSP[id];
+// 	      VMUtot[j] += VMU[i][j];
+// 			}
+// 			//Increment link in list
+//       tsm = tsm->next;
+// 			i++;
+//     }
+//   }
+// 	//MD particles --- ALWAYS type 0
+// 	id=0;
+// 	tmd = CL->MDpp;
+// 	while( tmd!=NULL ) {
+// 		// MASS = (double) tmd->mass;
+// 		for( j=0; j<DIM; j++ ) {
+// 			for( k=0; k<NSPECI; k++ ) VMU[i][j] += gradSP[k][j]*((SP+id)->M[k]) / NSP[id];
+// 			VMUtot[j] += VMU[i][j];
+// 		}
+// 		//Increment link in list
+// 		tmd = tmd->nextSRD;
+// 		i++;
+// 	}
+
+//   //Generate random velocities
+//   i=0;
+//   //MPC particles
+//   tmpc = CL->pp;
+//   while( tmpc!=NULL ) {
+//     id = tmpc->SPID;
+//     MASS = (double) (SP+id)->MASS;
+// 		MASSsum+=MASS;
+//     for( j=0; j<DIM; j++ ) {
+//       RV[i][j] = genrand_gaussMB( KBT,MASS );
+//       // RVsum[j] += MASS*RV[i][j];
+// 			RVsum[j] += RV[i][j];
+// 			for( k=0; k<NSPECI; k++ ) RVSPsum[k][j] += RV[i][j];
+//       DV[i][j] = ((SP+id)->DAMP)*(CL->VCM[j])/((double)CL->POP);
+//     }
+// 		//Increment link in list
+//     tmpc = tmpc->next;
+//     i++;
+//   }
+//   //Swimmer monomers
+// 	tsm = CL->sp;
+// 	while( tsm!=NULL ) {
+// 		if( tsm->HorM ) {
+// 			id = SS.MSPid;
+// 			MASS = (double) SS.middM;
+// 		}
+// 		else {
+// 			id = SS.HSPid;
+// 			MASS = (double) SS.headM;
+// 		}
+// 		MASSsum+=MASS;
+// 		for( j=0; j<DIM; j++ ) {
+//       RV[i][j] = genrand_gaussMB( KBT,MASS );
+//       // RVsum[j] += MASS*RV[i][j];
+// 			RVsum[j] += RV[i][j];
+// 			for( k=0; k<NSPECI; k++ ) RVSPsum[k][j] += RV[i][j];
+// 			//No dampening on the swimmer itself
+//       DV[i][j] = 0.0;
+//     }
+// 		//Increment link in list
+// 		tsm = tsm->next;
+// 		i++;
+// 	}
+//   //MD particles --- ALWAYS type 0
+// 	id=0;
+//   tmd = CL->MDpp;
+//   while( tmd!=NULL ) {
+//     MASS = tmd->mass;
+//     MASSsum+=MASS;
+// 		for( j=0; j<DIM; j++ ) {
+// 			RV[i][j] = genrand_gaussMB( KBT,MASS );
+// 			// RVsum[j] += MASS*RV[i][j];
+// 			RVsum[j] += RV[i][j];
+// 			for( k=0; k<NSPECI; k++ ) RVSPsum[k][j] += RV[i][j];
+// 			//No dampening on the swimmer itself
+// 			DV[i][j] = 0.0;
+// 		}
+// 		//Increment link in list
+//     tmd = tmd->nextSRD;
+//     i++;
+//   }
+//   //Turn sums into averages
+//   // if( MASSsum>0.0 ) for( j=0; j<DIM; j++ ) RVsum[j] /= MASSsum;
+// 	if( MASSsum>0.0 ) for( j=0; j<DIM; j++ ) RVsum[j] /= N;
+// 	for( k=0; k<NSPECI; k++ ) if( NSP[k]>0.0 ) for( j=0; j<DIM; j++ ) RVSPsum[k][j] /= NSP[k];
+// 	for( j=0; j<DIM; j++ ) VMUtot[j] /= N;
+
+//   //Collision
+//   i=0;
+//   // MPC particles
+//   tmpc = CL->pp;
+//   while( tmpc!=NULL ) {
+//     id = tmpc->SPID;
+//     // MASS = (double)(SP+id)->MASS;
+//     // for( j=0; j<DIM; j++ ) tmpc->V[j] = CL->VCM[j] + RV[i][j] - RVsum[j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
+// 		for( j=0; j<DIM; j++ ) tmpc->V[j] = CL->VCM[j] + RV[i][j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
+//     //Increment link in list
+//     tmpc = tmpc->next;
+//     i++;
+//   }
+//   // Swimmer monomers
+//   tsm = CL->sp;
+//   while( tsm!=NULL ) {
+// 		if( tsm->HorM ) {
+// 			id = SS.MSPid;
+// 			// MASS = (double) SS.middM;
+// 		}
+// 		else {
+// 			id = SS.HSPid;
+// 			// MASS = (double) SS.headM;
+// 		}
+// 		// for( j=0; j<DIM; j++ ) tsm->V[j] = CL->VCM[j] + RV[i][j] - RVsum[j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
+// 		for( j=0; j<DIM; j++ ) tsm->V[j] = CL->VCM[j] + RV[i][j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
+//     //Increment link in list
+//     tsm = tsm->next;
+//     i++;
+//   }
+//   //MD particles --- ALWAYS type 0
+// 	id=0;
+//   tmd = CL->MDpp;
+//   while( tmd!=NULL ) {
+// 		// MASS = tmd->mass;
+// 		if( DIM>=_1D ) {
+// 			j=0;
+// 			// tmd->vx = CL->VCM[j] + RV[i][j] - RVsum[j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
+// 			tmd->vx = CL->VCM[j] + RV[i][j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
+// 		}
+// 		if( DIM>=_2D ) {
+// 			j=1;
+// 			// tmd->vy = CL->VCM[j] + RV[i][j] - RVsum[j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
+// 			tmd->vy = CL->VCM[j] + RV[i][j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
+// 		}
+// 		if( DIM>=_3D ) {
+// 			j=2;
+// 			// tmd->vz = CL->VCM[j] + RV[i][j] - RVsum[j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
+// 			tmd->vz = CL->VCM[j] + RV[i][j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
+// 		}
+//     //Increment link in list
+//     tmd = tmd->nextSRD;
+//     i++;
+//   }
+// }
+void incompColl( cell *CL,spec *SP,specSwimmer SS,double TimeStep,int MDmode,double *CLQ,int outP ) {
+/*
+    Applies a correction to the collision operation to give the fluid a non-ideal equation of state
+	i.e. make the fluid less compressible
+    Inspired by J. Chem. Phys. 154, 024105 (2021); https://doi.org/10.1063/5.0037934
+*/
+	printf("Incompressibility correction not yet implemented.\n");
+	exit( 1 );
 }
 void localVCM( double vcm[_3D],cell CL,spec *SP,specSwimmer specS ) {
 /*
@@ -3358,8 +3587,16 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 		CLQ[2]=k+0.5;
 		if( CL[i][j][k].POP > 1 ) MPCcollision( &CL[i][j][k],SP,*SS,in.KBT,in.RTECH,in.C,in.S,in.FRICCO,in.dt,MDmode,in.LC,in.TAU,CLQ,outPressure );
 	}
+	// Apply the multiphase interactions
+	if( in.MULTIPHASE != MPHOFF && NSPECI>1 ) {
+		for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) if( CL[i][j][k].POP > 1 ) multiphaseColl( &CL[i][j][k],SP,*SS,in.MULTIPHASE,in.KBT,MDmode,CLQ,outPressure );
+	}
+	// Apply the incompressibility correction
+	if( in.inCOMP == INCOMPON ) {
+		for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) if( CL[i][j][k].POP > 1 ) incompColl( &CL[i][j][k],SP,*SS,in.dt,MDmode,CLQ,outPressure );
+	}
 	// Brownian thermostat (no hydrodynamic interactions -scramble velocities)
-	if( in.RTECH == NOHI_ARBAXIS || in.RTECH == NOHI_MPCAT ) scramble( SRDparticles );
+	if( in.noHI == HIOFF ) scramble( SRDparticles );
 	//Calculate average
 	avVel( CL,AVNOW );
 	#ifdef DBG

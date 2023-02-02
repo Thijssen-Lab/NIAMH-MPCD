@@ -226,33 +226,33 @@ typedef struct outputFlagsList {
 	int FLOWOUT;				//Flag for if the flow field is outputted --- json 'flowOut'
 	int HISTVELOUT,HISTSPEEDOUT,HISTVORTOUT,HISTENSTROUT,HISTDIROUT,HISTSOUT,HISTNOUT;	//Flag for if distributions are outputted --- json 'histVelOut', etc (camel case)
 	int ENERGYSPECTOUT,ENSTROPHYSPECTOUT;	//Flag for if energy and enstrophy spectra are outputted --- json 'energySpecOut' and 'enstrophySpecOut'
-	int DEFECTOUT;			//Flag for if defect positions are outputted --- json 'defectsOut'
+	int DEFECTOUT;				//Flag for if defect positions are outputted --- json 'defectsOut'
 	int ENOUT;					//Flag for if system energy is outputted --- json 'energyOut'
 	int ENFIELDOUT,ENNEIGHBOURS;	//Flag for if orientational energy as a function of position is outputted --- json 'oriEnOut' and 'neighbourEnOut'
 	int SPOUT;					//Flag for if the colour/phi/species-type field is outputted --- json 'colourOut'
-	int PRESOUT;					//Flag for if the pressure field is outputted --- json 'pressureOut'
+	int PRESOUT;				//Flag for if the pressure field is outputted --- json 'pressureOut'
 	int SYNOUT;					//Flag for if system synopsis is outputted --- json 'synopsisOut'
 	int ORDEROUT;				//Flag for if the order parameter are outputted --- json 'dirSOut'
-	int QTENSOUT,QKOUT;		//Flag for if the order parameter tensor (and reciprocal space Q) is outputted --- json 'qTensOut' and 'qkTensOut'
+	int QTENSOUT,QKOUT;			//Flag for if the order parameter tensor (and reciprocal space Q) is outputted --- json 'qTensOut' and 'qkTensOut'
 	int AVSOUT;					//Flag for if total average scalar order parameter is outputted --- json 'avSOut'
 	int DENSOUT;				//Flag for density standard deviation is outputted --- json 'densSDOut'
-	int ENSTROPHYOUT;		//Flag for if total average enstrophy is outputted --- json 'enstrophyOut'
+	int ENSTROPHYOUT;			//Flag for if total average enstrophy is outputted --- json 'enstrophyOut'
 	int CHCKPNT;				//Flag for checkpointing --- json 'checkpointOut'
 	float CHCKPNTTIMER;			//Flag for checkpointing based on a timer --- json 'checkpointTimerOut'
-	int CHCKPNTrcvr;		//Flag for simulation from recovery of checkpoint
-	int BINDER,BINDERBIN;	//Flag for Binder cumulant and the bin size of the Binder cumulant --- json 'binderOut' and 'binderBin'
+	int CHCKPNTrcvr;			//Flag for simulation from recovery of checkpoint
+	int BINDER,BINDERBIN;		//Flag for Binder cumulant and the bin size of the Binder cumulant --- json 'binderOut' and 'binderBin'
 	int printSP;				//How many of the species are printed --- json 'trajSpecOut'
 	int SOLOUT;					//How often the solid bc trajectories are outputted --- json 'solidTrajOut'
 	int CVVOUT,CNNOUT,CWWOUT;	//Flag for if velocity-vel, director-dir and vorticity-vort spatial correlations are outputted --- json 'velCorrOut', etc
 	int CDDOUT,CSSOUT,CPPOUT;	//Flag for if density-dens, order-order and phi-phi (phase) spatial correlations are outputted --- json 'densCorrOut', etc
-	int SWOUT,SWORIOUT,RTOUT;				//Flag for if swimmer positions, orientations or run/tumbles are outputted --- json 'swimQOut', 'swimOOut' and 'swimRTOut'
+	int SWOUT,SWORIOUT,RTOUT;	//Flag for if swimmer positions, orientations or run/tumbles are outputted --- json 'swimQOut', 'swimOOut' and 'swimRTOut'
 } outputFlagsList;
 typedef struct kinTheory {
 	double MFP;					//Mean Free Path
 	double VISC;				//Kinematic viscosity
-	double THERMD;			//Thermal Diffusion
+	double THERMD;				//Thermal Diffusion
 	double SDIFF;				//Self diffusion
-	double SPEEDOFSOUND;	//Speed of sound
+	double SPEEDOFSOUND;		//Speed of sound
 	double sumM;				//Sum of all masses
 } kinTheory;
 typedef struct inputList {
@@ -260,59 +260,62 @@ typedef struct inputList {
 	double dt;					//MPCD time step value --- json 'dt'
 	int stepsMD;				//Number of MD steps per SRD step (NOTE make variable) --- json 'stepsMD'
 	int warmupSteps,simSteps;	//Number of iterations in the warmup and simulation phases --- json 'warmUp' and 'simSteps'
-	unsigned long seed;	//seed for random number generator --- json 'seed'
-	double RA,C,S;			//Rotation Angle,cos(RA),sin(RA) --- json 'rotAng' for RA
-	double GRAV[_3D];		//Constant acceleration from external force --- json 'grav'
-	double MAG[_3D];		//Constant external magnetic field to torque nematogens --- json 'mag'
+	unsigned long seed;			//seed for random number generator --- json 'seed'
+	double RA,C,S;				//Rotation Angle,cos(RA),sin(RA) --- json 'rotAng' for RA
+	double GRAV[_3D];			//Constant acceleration from external force --- json 'grav'
+	double MAG[_3D];			//Constant external magnetic field to torque nematogens --- json 'mag'
 	int GRAV_FLAG,MAG_FLAG;		//Flags if no acceleration or torque
-	double FRICCO;			//Friction coefficient for Langevin thermostat --- json 'fricCoef'
+	double FRICCO;				//Friction coefficient for Langevin thermostat --- json 'fricCoef'
 	int TSTECH;					//Temperature scaling technique --- json 'tsTech'
 	double TAU;					//The temperature relaxation time scale --- json 'tau'
 	double MFPOT;				//The mean-field potential from self-consistent mean-field liquid crystals --- json 'mfpot'
-	int RTECH;					//Rotation technique --- json 'colOp'
-	int LC;							//If LC=LCG=2 then liquid crystal using global S, if LC=LCL=1 then use local S, else isotropic (ISOF=0) --- json 'lc'
-	int RFRAME;						//Flags initial galilean trans to rest frame (0 No shift, 1 shift) --- json 'rFrame'
+	int RTECH;					//Rotation technique --- json 'collOp'
+	int LC;						//If LC=LCG=2 then liquid crystal using global S, if LC=LCL=1 then use local S, else isotropic (ISOF=0) --- json 'lc'
+	int RFRAME;					//Flags initial galilean trans to rest frame (0 No shift, 1 shift) --- json 'rFrame'
 	int zeroNetMom;				//If GAL=1 AND GRAV[D3] = [0,0,0] then zero every zeroNetMom steps. --- json 'zeroNetMom'
 	int GALINV;					//If rshift=1 do the random shifting of mpcd particles. If zero then do not zeroNetMom steps. --- json 'galInv'
+	int noHI;					//If noHI=1 remove hydrodynamic interactions by randomly scrambling of velocities
+	int inCOMP;					//If inCOMP=1 remove div(v) by ***ALGORITHM NOT CREATED YET. BUILD ON https://doi.org/10.1063/5.0037934?***
+	int MULTIPHASE;				//MULTIPHASE mode. If MULTIPHASE==0 then no interactions between particles of different species occurs
 } inputList;
 typedef struct specSwimmer {
-	int TYPE;						//Type of swimmer 0=fix-dipole; 1=dumbbell; 2=dumbell with excluded vol; 3=dumbell with no counter-force  --- json 'typeSwim'
+	int TYPE;					//Type of swimmer 0=fix-dipole; 1=dumbbell; 2=dumbell with excluded vol; 3=dumbell with no counter-force  --- json 'typeSwim'
 	int QDIST;					//QDIST is the flag which tells how the swimmers are intially placed --- json 'qDistSwim'
 	int ODIST;					//ODIST is the flag which tells how the swimmers are intially placed --- json 'oDistSwim'
-	int headM,middM;					//Mass of head and middle monomers in swimmer (tail mirrors the head) --- json 'headMSwim' and 'midMSwim'
-	double iheadM,imiddM;			//Inverse masses
-	int HSPid,MSPid;				//Multiphase fluid particle type of the head and middle monomers in the swimmer  (tail is invisible) --- json 'hspIdSwim' and 'mspIdSwim'
+	int headM,middM;			//Mass of head and middle monomers in swimmer (tail mirrors the head) --- json 'headMSwim' and 'midMSwim'
+	double iheadM,imiddM;		//Inverse masses
+	int HSPid,MSPid;			//Multiphase fluid particle type of the head and middle monomers in the swimmer  (tail is invisible) --- json 'hspIdSwim' and 'mspIdSwim'
 	double FS;					//Magnitude of propolsion force to set swimming speed --- json 'fsSwim'
 	double TS;					//Magnitude of torque to set swimmer rotlet dipole (sign sets CW or CCW) --- json 'tsSwim'
 	double DS;					//Dipole strength (DS>0 --->pusher; DS<0 --->puller) (i.e. length of dipole in multiples of head/middle separation) --- json 'dsSwim'
-	double sizeShrink;	//How much LJ sigma and ro are shrunk when tumbling --- json 'sizeShrinkSwim'
-	double springShrink;//How much the spring constant is shrunk when tumbling --- json 'springShrinkSwim'
-	double fixDist;			//The fixed distance from the wall for DUMBBELL_NEARWALL mode --- json 'fixDistSwim'
-	double k;						//Spring constant --- json 'kSwim'
-	double ro,iro;			//Spring separation --- json 'roSwim'
-	double sig,isig;		//LJ sigma --- diameter approx sigma --- json 'sigSwim'
+	double sizeShrink;			//How much LJ sigma and ro are shrunk when tumbling --- json 'sizeShrinkSwim'
+	double springShrink;		//How much the spring constant is shrunk when tumbling --- json 'springShrinkSwim'
+	double fixDist;				//The fixed distance from the wall for DUMBBELL_NEARWALL mode --- json 'fixDistSwim'
+	double k;					//Spring constant --- json 'kSwim'
+	double ro,iro;				//Spring separation --- json 'roSwim'
+	double sig,isig;			//LJ sigma --- diameter approx sigma --- json 'sigSwim'
 	double eps;					//LJ interaction energy --- json 'epsSwim'
 	double runTime,tumbleTime;	//Average run and tumble times (if either is zero then no run/tumble dynamics). In units of MPC time steps (dt) --- json 'runTSwim' and 'tumTSwim'
-	int shrinkTime;			//Set time to shrink/extend in units of MPC time steps (dt) --- json 'shrTSwim'
-	double MAGMOM;			//Magnetic moment strength/magnitude --- json 'magMomSwim'
+	int shrinkTime;				//Set time to shrink/extend in units of MPC time steps (dt) --- json 'shrTSwim'
+	double MAGMOM;				//Magnetic moment strength/magnitude --- json 'magMomSwim'
 } specSwimmer;
 typedef struct smono {
-	double Q[_3D];			//Q is the position of the monomer
-	double V[_3D];			//V is the velocity
-	double A[_3D];			//A is the acceleration
-	int HorM;						//Signfies whether monomer is a head, or a middle (0=head; 1=middle) --- tail takes the mass of the head and doesn't participate
-	struct smono *next;	//pointer to next particle in cell list
-	struct smono *previous;	//pointer to previous particle in cell list
+	double Q[_3D];				//Q is the position of the monomer
+	double V[_3D];				//V is the velocity
+	double A[_3D];				//A is the acceleration
+	int HorM;					//Signfies whether monomer is a head, or a middle (0=head; 1=middle) --- tail takes the mass of the head and doesn't participate
+	struct smono *next;			//pointer to next particle in cell list
+	struct smono *previous;		//pointer to previous particle in cell list
 } smono;
 typedef struct swimmer {
 	smono H,M;					//The head, middle and tail of the dumbbell
-	int RT;							//Flag for if in Run phase (0) or Tumble phase (1) or shrink phase (2) or extension phase (3)
-	double n0[_3D];			//Orientation vector of the swimmer at start of phase
+	int RT;						//Flag for if in Run phase (0) or Tumble phase (1) or shrink phase (2) or extension phase (3)
+	double n0[_3D];				//Orientation vector of the swimmer at start of phase
 	int timeCNT;				//Time counter for run or tumble
 	int timeRND;				//The randomly generated time that a given run or tumble will go for
-	double ro,iro;			//FENE separation --- Each swimmer needs it's own since it changes for run/tumbler
-	double sig,isig;		//LJ sigma --- diameter approx sigma --- Each swimmer needs it's own since it changes for run/tumbler
-	double k;			//FENE separation --- Each swimmer needs it's own since it changes for run/tumbler
+	double ro,iro;				//FENE separation --- Each swimmer needs it's own since it changes for run/tumbler
+	double sig,isig;			//LJ sigma --- diameter approx sigma --- Each swimmer needs it's own since it changes for run/tumbler
+	double k;					//FENE separation --- Each swimmer needs it's own since it changes for run/tumbler
 } swimmer;
 
 #endif
