@@ -182,7 +182,7 @@
 /* *********** COLLISION OPERATOR *********** */
 /* ****************************************** */
 //The following global variables are flag values for the collision operator / rotation technique.
-//Used by RTECH in inputList in c-code and 'colOp' in json input
+//Used by RTECH in inputList in c-code and 'collOp' (or 'rTech') in json input
 //ARBAXIS indicates that the rotation operator is a rotation about a randomly chosen axis
 # define ARBAXIS 0
 //ORTHAXIS applies the rotatation about one of the three cartesian axes (randomly chosen
@@ -281,6 +281,7 @@
 /* ******************* DEBUG **************** */
 /* ****************************************** */
 //The following global variables are flag values for debugging
+//Used by DBUG in c-code and 'debugOut' in json input
 //Debug modes:
 //Often used:
 # define DBGRUN 0

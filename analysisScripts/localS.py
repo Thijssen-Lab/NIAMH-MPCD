@@ -71,8 +71,8 @@ for i in range(N):
     dataLabel = sys.argv[i+3]
     plotData(dataName, dataLabel)
 
-plt.xlabel("t")
-plt.ylabel("local avS")
+plt.xlabel(r"Time, $t$")
+plt.ylabel(r"Local Order, $\left\langle S \right\rangle$")
 plt.title("Average Local Order Parameter")
 plt.legend()
 plt.show()

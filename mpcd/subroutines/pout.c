@@ -904,7 +904,7 @@ void listinput( inputList in,double AVVEL,spec SP[],kinTheory theory ) {
 			printf( "\tMean Free Path: %lf\n",theory.MFP );
 			printf( "\tKinematic Viscosity: %lf\n",theory.VISC );
 			printf( "\tSelf Diffusion Coefficient: %lf\n",theory.SDIFF );
-			printf( "\tSchmidt number: %lf\n",theory.VISC/theory.SDIFF );
+			printf( "\tSchmidt number: %lf\n",theory.VISC/theory.SDIFF/mDNST );
 			printf( "\tSpeed of sound: %lf\n",theory.SPEEDOFSOUND );
 			printf( "\tThermal Diffusion Coefficient: %lf\n",theory.THERMD );
 		}
@@ -927,6 +927,19 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 	int i;
 
 	if( out.SYNOUT == OUT ) {
+		// Units follow https://journals.aps.org/pre/abstract/10.1103/PhysRevE.78.016706
+		fprintf( fsynopsis,"\nBasic Units:\n" );
+		fprintf( fsynopsis,"Length: a = 1, MPCD cell size\n" );
+		fprintf( fsynopsis,"Mass: m = 1, MPCD particle mass\n" );
+		fprintf( fsynopsis,"Energy: kT = 1, thermal energy\n" );
+		fprintf( fsynopsis,"Derived Units:\n" );
+		fprintf( fsynopsis,"Time: tau = a * sqrt(m/kT) = 1\n" );
+		fprintf( fsynopsis,"Density units: 1/a^d = 1/a^%i\n",DIM );
+		fprintf( fsynopsis,"Diffusion const: a * sqrt(kT/m) = a^2/tau\n" );
+		fprintf( fsynopsis,"Stress: kT/a^d = kT/a^%i\n",DIM );
+		fprintf( fsynopsis,"Dynamic viscosity: sqrt(m*kT)/a^(d-1) = kT*tau/a^d = kT*tau/a^%i\n",DIM );
+		fprintf( fsynopsis,"Kinetic viscosity: kT*tau/m\n" );
+
 		fprintf( fsynopsis,"\nUser defined variables:\n" );
 		fprintf( fsynopsis,"Dimensionality: %i\n",DIM );
 		fprintf( fsynopsis,"System dimensions: (%i,%i,%i)\n",XYZ[0],XYZ[1],XYZ[2] );
@@ -953,7 +966,6 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 		fprintf( fsynopsis,"Total simulation iterations: %d\n",in.simSteps );
 		fprintf( fsynopsis,"Warmup iterations: %d\n",in.warmupSteps );
 		fprintf( fsynopsis,"Time step: %lf\n",in.dt );
-
 		fprintf( fsynopsis,"Random seed: %ld\n",in.seed );
 
 		fprintf( fsynopsis,"\nSpecies variables:\n" );

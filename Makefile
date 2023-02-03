@@ -54,7 +54,7 @@ prof:
 clean:
 	@echo "Removing executable and object files"
 # 	@echo "	About to perform:  /bin/rm -f $(program) $(objects) "
-	@( /bin/rm -f $(program) $(objects) )
+	@( /bin/rm -f $(program) $(objects) ./*.out )
 #----------------------------------------------------------------------------------------------------
 .PHONY: doc
 doc:    $(sources)

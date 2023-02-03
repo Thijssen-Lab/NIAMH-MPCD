@@ -1,4 +1,3 @@
-# include<stdio.h>
 # include<math.h>
 # include<time.h>
 # include<string.h>
@@ -253,7 +252,7 @@ void openruntumble( FILE **f,char dir[],char fname[],char ext[] ) {
 
 void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double *SPEEDOFSOUND,double RA,double FRICCO,double KBT,double dt,double sumM,int RTECH,int SYNOUT,FILE *fsynopsis ) {
 /*
-	Calculates kinematic viscosity, thermal diffusion coefficient
+	Calculates dynamic viscosity, thermal diffusion coefficient
 	and the self-diffusion coefficient. Cell size a =1 is assumed
 	This follows:
 	Noguchi & Gompper, Transport coefficients of off-lattice mesoscale-hydrodynamics simulation techniques, PRE 78, 016706 (2008)
@@ -300,11 +299,12 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 		B=1.0;
 	}
 	//Calculate the viscosity
+	// From https://journals.aps.org/pre/abstract/10.1103/PhysRevE.78.016706
 	VISCKIN = 0.0;
 	VISCCOL = 0.0;
 	//Kinetic part of viscosity
-	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==MPCAT || RTECH==LANG) {
-		//All of the versions without angular-momentum conservation have the same form
+	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==NOHI_ARBAXIS || RTECH==MPCAT || RTECH==NOHI_MPCAT || RTECH==LANG) {
+		//All of the versions without angular-momentum conservation have the same form 
 		CM=B/M;
 		VISCKIN=nDNST*KBT*dt*smrtPow(a,-DIM)*( 1.0/CM-0.5 );
 	}
@@ -387,10 +387,12 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 	*THERMD = THERMDKIN+THERMDCOL;
 	if( SYNOUT == OUT ) {
 		fprintf( fsynopsis,"Mean Free Path: %lf\n",*MFP );
-		fprintf( fsynopsis,"Kinematic Viscosity: %lf\n",*VISC );
+		fprintf( fsynopsis,"Dynamic Viscosity: %lf\n",*VISC );
 		fprintf( fsynopsis,"\tkinetic contribution: %lf\n\tcollisional contribution: %lf\n",VISCKIN,VISCCOL );
+		fprintf( fsynopsis,"Kinematic Viscosity: %lf\n",(*VISC)*inv_nDNST/avMASS );
+		fprintf( fsynopsis,"\tkinetic contribution: %lf\n\tcollisional contribution: %lf\n",VISCKIN*inv_nDNST/avMASS,VISCCOL*inv_nDNST/avMASS );
 		fprintf( fsynopsis,"Self Diffusion Coefficient: %lf\n",*SDIFF );
-		fprintf( fsynopsis,"Schmidt number: %lf\n",(*VISC)/(*SDIFF) );
+		fprintf( fsynopsis,"Schmidt number: %lf\n",(*VISC)/(*SDIFF)/mDNST );
 		fprintf( fsynopsis,"Speed of sound: %lf\n",*SPEEDOFSOUND );
 		fprintf( fsynopsis,"Thermal Diffusion Coefficient: %lf\n",*THERMD );
 	}
@@ -1264,11 +1266,11 @@ void initializeSIM( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],sim
 
 	#ifdef DBG
 		if( DBUG >= DBGINIT ) printf( "\tInitialize System\n" );
-		if( DBUG >= DBGINIT ) printf( "\tInitialize MPC\n" );
+		if( DBUG >= DBGINIT ) printf( "\tInitialize MPCD\n" );
 	#endif
 	//Intialize positions, velocity and angular velocity
 	#ifdef DBG
-		if( DBUG >= DBGINIT ) printf( "\tPlace MPC particle\n" );
+		if( DBUG >= DBGINIT ) printf( "\tPlace MPCD particle\n" );
 	#endif
 	setcoord( ip,SP,SRDparticles,in->KBT,AVV,WALL,simMD,MDmode,in->LC );
 	//Intialize positions and orientations of swimmers
@@ -1279,7 +1281,7 @@ void initializeSIM( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],sim
 		setswimmers( specS,swimmers,WALL,in->stepsMD,in->dt );
 	}
 
-	if(outFlags.SYNOUT == OUT) fprintf(fsynopsis,"\nMPC particles placed.\n" );
+	if(outFlags.SYNOUT == OUT) fprintf(fsynopsis,"\nMPCD particles placed.\n" );
 	//Calculate the theoretical properties of the SRD gas
 	theory_trans( &(theory->MFP),&(theory->VISC),&(theory->THERMD),&(theory->SDIFF),&(theory->SPEEDOFSOUND),in->RA,in->FRICCO,in->KBT,in->dt,theory->sumM,in->RTECH,outFlags.SYNOUT,fsynopsis );
 		//Zero counters
@@ -1287,11 +1289,11 @@ void initializeSIM( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],sim
 	if( in->TSTECH==MAXV ) for( j=0; j<DIM; j++ ) AVNOW[j]=AVV[j];
 	//Bin particles
 	#ifdef DBG
-		if( DBUG >= DBGINIT ) printf( "\tBin MPC particles\n" );
+		if( DBUG >= DBGINIT ) printf( "\tBin MPCD particles\n" );
 	#endif
 	binin( SRDparticles,CL );
 	bininSwimmers( *specS,swimmers,CL );
-	if(outFlags.SYNOUT == OUT) fprintf(fsynopsis,"\nMPC particles binned for first time.\n" );
+	if(outFlags.SYNOUT == OUT) fprintf(fsynopsis,"\nMPCD particles binned for first time.\n" );
 	if( MDmode ) bininMD( simMD,CL );
 	localPROP( CL,SP,*specS,in->RTECH,in->LC );
 	*S4=0.;
@@ -1358,9 +1360,9 @@ void initializeRecovery( cell ***CL,particleMPC *SRDparticles,spec SP[],specSwim
 	maxXYZ=(int) sqrt( (double)(XYZ[0]*XYZ[0]+XYZ[1]*XYZ[1]+XYZ[2]*XYZ[2]) );
 	//Bin particles
 	#ifdef DBG
-		if( DBUG >= DBGINIT ) printf( "\tBin MPC particles\n" );
+		if( DBUG >= DBGINIT ) printf( "\tBin MPCD particles\n" );
 	#endif
 	binin( SRDparticles,CL );
-	if(SYNOUT == OUT) fprintf(fsynopsis,"\nMPC particles binned for first time.\n" );
+	if(SYNOUT == OUT) fprintf(fsynopsis,"\nMPCD particles binned for first time.\n" );
 	localPROP( CL,SP,specS,RTECH,LC );
 }
