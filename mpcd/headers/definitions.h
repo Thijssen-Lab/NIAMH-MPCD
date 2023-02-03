@@ -147,6 +147,20 @@
 # define LCL 1
 //Nematic LC using the global S value
 # define LCG 2
+//Hydrodynamic interactions turned off
+# define HIOFF 1
+//Hydrodynamic interactions left on
+# define HION 0
+//Incompressibility correction turned on
+# define INCOMPON 1
+//Incompressibility correction left off
+# define INCOMPOFF 0
+//Multiphase interactions left off
+# define MPHOFF 0
+//Kira Koch's Surface fitter-version of multiphase interactions
+# define MPHSURF 1
+//Point gradient-version of multiphase interactions
+# define MPHPOINT 2
 
 /* ****************************************** */
 /* *************** THERMOSTAT *************** */
@@ -180,10 +194,11 @@
 # define RAT 3
 // The Langevin version of MPC
 # define LANG 4
-// The Brownian thermostat version (uses ARBAXIS version) i.e. no Hydrodynamic Interactions
-# define NOHI_ARBAXIS 5
-// The Brownian thermostat version (uses MPCAT version) i.e. no Hydrodynamic Interactions
-# define NOHI_MPCAT 6
+// Killed the two specific no HI collision rules and the multiphase collision rule. 
+// Now made these general for any collision rule. 5, 6 and 18 are now available to be re-used as new collisions
+// # define NOHI_ARBAXIS 5
+// # define NOHI_MPCAT 6
+// # define XXXX_MULTIPHASE_XXXX 18
 // An MPCD version of the Vicsek algorithm
 # define VICSEK 7
 // An MPCD version of the Chate algorithm
@@ -206,8 +221,6 @@
 # define DIPOLE_DIR_SUM 16
 // Cell-based dipole force in direction of local director (average of all activities)
 # define DIPOLE_DIR_AV 17
-// Romain and my new binary fluid
-# define MULTIPHASE 18
 // The Langevin version of MPC that conserves angular momentum
 # define RLANG 19
 // Cell-based dipole force in direction of local director (average of all activities with sigmoidal falloff)

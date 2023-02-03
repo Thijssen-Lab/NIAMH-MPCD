@@ -25,10 +25,7 @@ void printVersionSummary( ) {
 	printf( "\t\tAlso added another check in ComputeBendForces() and use sinc() in bendHarmonic() as it should be more stable\n" );
 	printf( "\t\tPut a check in ComputeNemForces()\n" );
 	printf( "\t\tPut a check in ComputeNemForces()\n" );
-
-				printf( "\t\t(2) BC colloid that overlaps with a PBC feels a 'buoyancy force (swimmers can get a bit inside the colloid on the PBC side)'\n" );
-
-
+	printf( "\t\t(2) BC colloid that overlaps with a PBC feels a 'buoyancy force (swimmers can get a bit inside the colloid on the PBC side)'\n" );
 	printf( "Version 152\n\tMany swimmers in PBC will start to drift\n" );
 	printf( "\t\tIn swimmerForceDipole(), would sometimes get net force since only accelerated mpcd particles; now acc all\n" );
 	printf( "\t\tAdded some checks in bendHarmonic() and bendNematic() in mssrd.c\n" );
@@ -511,9 +508,17 @@ void enstrophyspectheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\t k\t\t Omega\n" );
 }
-void defectheader( FILE *fout ) {
+void topoheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\t QX\t\t QY\t\t QZ\t\t charge\t\t angle\n" );
+}
+void defectheader( FILE *fout ) {
+/* Simple header for output columns */
+	fprintf( fout,"t\t numDefects\t \n QX\t\t QY\t\t charge\t\t angle\n" );
+}
+void disclinTensorheader( FILE *fout ) {
+/* Simple header for output columns */
+	fprintf( fout,"X\tY\tZ\tDXX\tDXY\tDXZ\tDYX\tDYY\tDYZ\tDZX\tDZY\tDZZ\n" );
 }
 void multiphaseheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -872,6 +877,9 @@ void listinput( inputList in,double AVVEL,spec SP[],kinTheory theory ) {
 			printf( "\tLiquid Crystal Mean-Field Potential: %lf\n",in.MFPOT );
 			printf( "\tRotation angle: %lf\n",in.RA );
 			printf( "\tSystem Size: [%i,%i,%i]\n",XYZ[0],XYZ[1],XYZ[2] );
+			printf( "\tNo hydodynamic interaction: %i\n",in.noHI);
+			printf( "\tIncompressibility correction: %i\n",in.inCOMP);
+			printf( "\tMultiphase interactions: %i\n",in.MULTIPHASE);
 			printf( "\tConstant external acceleration:" );
 			pvec( in.GRAV,DIM );
 			printf( "\tConstant external magnetic field:" );
@@ -946,6 +954,13 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 		fprintf( fsynopsis,"Thermal relaxation time scale: %lf\n",in.TAU );
 		fprintf( fsynopsis,"Rotation angle: %lf\n",in.RA );
 		fprintf( fsynopsis,"Langevin friction coefficient: %lf\n",in.FRICCO );
+		fprintf( fsynopsis,"Hydodynamic interactions: ");
+		if(in.noHI) fprintf( fsynopsis,"OFF\n" );
+		else fprintf( fsynopsis,"On\n" );
+		fprintf( fsynopsis,"Incompressibility correction: ");
+		if(in.inCOMP) fprintf( fsynopsis,"OFF\n" );
+		else fprintf( fsynopsis,"On\n" );
+		fprintf( fsynopsis,"Multiphase interactions mode: %d\n",in.MULTIPHASE );
 		fprintf( fsynopsis,"External acceleration: (%lf,%lf,%lf)\n",in.GRAV[0],in.GRAV[1],in.GRAV[2] );
 		fprintf( fsynopsis,"External magnetic field: (%lf,%lf,%lf)\n",in.MAG[0],in.MAG[1],in.MAG[2] );
 		fprintf( fsynopsis,"Total simulation iterations: %d\n",in.simSteps );
@@ -1367,33 +1382,177 @@ void solidout( FILE *fout,bc WALL,double t ) {
 		fflush(fout);
 	#endif
 }
-void topochargeout( FILE *fout,double t,cell ***CL ) {
+void topoChargeAndDefectsOut( FILE *ftopo,int TOPOOUT,FILE *fdefect,int DEFECTOUT,double t,cell ***CL,double tolD){
 	/*
 	 Print topological charge data to file
+	 Only designed to work for 2D since topological charge is only defined in 2D
 	 */
-	//FIXME: only designed to work for 2D!
-	int i,j,k;
+	//FIXME: 
+	int i,j,k,cntD;
+	double m,cmx,cmy,avC,avAx,avAy,avA;
 
 	double topoC[XYZ[0]][XYZ[1]]; //init topo charge array
-	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) topoC[i][j] = .0;
+	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) topoC[i][j] = 0.0;
 	double topoAngle[XYZ[0]][XYZ[1]]; //init topo angle array
-	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) topoAngle[i][j] = .0;
+	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) topoAngle[i][j] = 0.0;
 
 	//loop through non-CB boundary cells and calculate topo charge
 	for( i=1; i<XYZ[0]-1; i++ ) for( j=1; j<XYZ[1]-1; j++ ) topoC[i][j] = topoChargeLocal(CL, i, j, 0); 
 	//loop through non-CB boundary cells and calculate topo angle
 	for( i=2; i<XYZ[0]-2; i++ ) for( j=2; j<XYZ[1]-2; j++ ){
 		///FIXME: Too lazy to handle derivatives properly at the boundaries, so we just ignoring another layer there instead. Oopsies. Same goes for the loop above. 
-		if (fabs(topoC[i][j]) > TOL) topoAngle[i][j] = topoAngleLocal(CL, i, j, 0, topoC[i][j]); 
+		//Tyler: I think this is reasonable since we don't want to assume PBCs
+		if( fabs(topoC[i][j])>TOL ) topoAngle[i][j] = topoAngleLocal(CL, i, j, 0, topoC[i][j]); 
 	} 
-	
-	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) for( k=0; k<XYZ[2]; k++ ) {
+	if( TOPOOUT ) {
 		//Output
-		fprintf( fout,"%.2f\t",t );
-		fprintf( fout,"%5d\t%5d\t%5d\t",i,j,k );
-		if( CL[i][j][k].POP == 0 ) fprintf( fout, "%06.3f\t%12.5e\n", 0.0, 0.0);
-		else fprintf( fout, "%06.3f\t%12.5e\n",topoC[i][j], topoAngle[i][j]);
+		for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) for( k=0; k<XYZ[2]; k++ ) {
+			fprintf( ftopo,"%.2f\t%5d\t%5d\t%5d\t",t,i,j,k );
+			if( CL[i][j][k].POP == 0 ) fprintf( ftopo, "%06.3f\t%12.5e\n", 0.0, 0.0);
+			else fprintf( ftopo, "%06.3f\t%12.5e\n",topoC[i][j], topoAngle[i][j]);
+		}
+		#ifdef FFLSH
+			fflush(ftopo);
+		#endif
 	}
+	if( DEFECTOUT ) {
+		// Group topological charges into "clusters" of nearby non-zero values
+		int defID[XYZ[0]][XYZ[1]]; //ID value for each "cluster"
+		for( j=0; j<XYZ[1]; j++ ) for( i=0; i<XYZ[0]; i++ ) defID[i][j]=0; //ID is zero everywhere there is NO "cluster"
+		cntD=0;	// Counts the number of "clusters" (blurry defects)
+		for( j=0; j<XYZ[1]; j++ ) for( i=0; i<XYZ[0]; i++ ) if( fabs(fabs(topoC[i][j])-0.5)<tolD ) {
+			// First MPCD cell
+			if( i==0 && j==0 ) {
+				//Simply set to new cluster
+				cntD+=1;
+				defID[i][j]=cntD;
+			}
+			// First row
+			else if( j==0 ) {
+				//Check backwards (that has an ID already and the same topological charge [product positive])
+				if( defID[i-1][j]>0 && topoC[i-1][j]*topoC[i][j]>0.0 ) defID[i][j]=defID[i-1][j];
+				else { //New cluster
+					cntD+=1;
+					defID[i][j]=cntD;
+				}
+			}
+			// First column
+			else if( i==0 ) {
+				//Check directly below
+				if( defID[i][j-1]>0 && topoC[i][j]*topoC[i][j]>0.0 ) defID[i][j]=defID[i][j-1];
+				//Check below and forward
+				else if( defID[i+1][j-1]>0 && topoC[i][j]*topoC[i][j]>0.0 ) defID[i][j]=defID[i+1][j-1];
+				else { //New cluster
+					cntD+=1;
+					defID[i][j]=cntD;
+				}
+			}
+			// Bulk
+			else {
+				//Check below and back
+				if( defID[i-1][j-1]>0 && topoC[i-1][j-1]*topoC[i][j]>0.0 ) defID[i][j]=defID[i-1][j-1];
+				//Check directly below
+				else if( defID[i][j-1]>0 && topoC[i][j-1]*topoC[i][j]>0.0 ) defID[i][j]=defID[i][j-1];
+				//Check below and forward
+				else if( defID[i+1][j-1]>0 && topoC[i+1][j-1]*topoC[i][j]>0.0 ) defID[i][j]=defID[i+1][j-1];
+				//Check directly back
+				else if( defID[i-1][j]>0 && topoC[i-1][j]*topoC[i][j]>0.0 ) defID[i][j]=defID[i-1][j];
+				else { //New cluster
+					cntD+=1;
+					defID[i][j]=cntD;
+				}
+			}
+		}
+		//Average each cluster's values and output their positions
+		fprintf( fdefect,"%.2f\t%d\n",t,cntD );
+		for( k=1; k<=cntD; k++ ) {
+            cmx=0.0; // CoM pos
+			cmy=0.0;
+			avC=0.0; // charge
+            avAx=0.0; // x component of vector angle (for average)
+            avAy=0.0; // y component of vector angle (for average)
+            avA=0.0; // reset average angle (to dump)
+			m=0.0; // count
+
+			for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) if( defID[i][j]==k ) {
+				m+=1.0;
+				cmx+=(double)i + 0.5;
+				cmy+=(double)j + 0.5;
+				avC+=topoC[i][j];
+
+				//Wrapping defect orientation on proper period prior to average
+				double locAngle;
+				if( topoC[i][j]>0.0 ){
+					// +1/2 defects have a 2 pi symmetry so can be handled reasonably
+					locAngle = fmod(topoAngle[i][j], 2.0*M_PI);
+					locAngle = (locAngle < 0.0) ? (2.0*M_PI + locAngle) : locAngle;
+				} else {
+					// -1/2 defects need additional considerations due to 3-fold symmetry
+					locAngle = fmod(topoAngle[i][j], 2.0*M_PI/3.0);
+					locAngle = 3.0*(locAngle < 0.0) ? (2.0*M_PI/3.0 + locAngle) : locAngle;
+				}
+                avAx += cos(locAngle);
+                avAy += sin(locAngle);
+			}
+			if( m>TOL ){
+				cmx/=m;
+				cmy/=m;
+				avC/=m;
+			}
+
+			//Scaling back to proper period
+			avA = atan2(-avAy, -avAx) + M_PI;
+			avA = (avC>0.0) ? avA : avA/3.0;
+
+			fprintf( fdefect,"%12.5e\t%12.5e\t%06.3f\t%12.5e\n",cmx,cmy,avC,avA );
+		}
+		fprintf( fdefect,"\n" );
+		#ifdef FFLSH
+			fflush(fdefect);
+		#endif
+	}
+}
+void disclinationTensorOut( FILE *fout,double t,cell ***CL,int LC ) {
+	/*
+	 Print disclination tensor data to file
+	 From https://pubs.rsc.org/en/content/articlelanding/2022/SM/D1SM01584B
+	 @Louise implement D-tensor here
+	 */
+	printf( "Warning:\tdisclinationTensorOut() not yet implemented .\n" );
+
+	int i,j,k;
+	double **Q,**D;
+
+	//Allocate memory for tensor order parameter Q and disclination tensor D
+	Q = malloc ( _3D * sizeof( *Q ) );
+	D = malloc ( _3D * sizeof( *D ) );
+	for( i=0; i<_3D; i++ ) {
+		Q[i] = malloc ( _3D * sizeof( *Q[i] ) );
+		D[i] = malloc ( _3D * sizeof( *D[i] ) );
+	}
+	//Zero
+	for( i=0; i<_3D; i++ ) for( j=0; j<_3D; j++ ) {
+		Q[i][j] = 0.0;
+		D[i][j] = 0.0;
+	}
+
+	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) for( k=0; k<XYZ[2]; k++ ) {
+		// Find the local tensor order parameter
+		tensOrderParam( &CL[i][j][k],Q,LC );
+		//Calculate disclination tensor from Q
+
+		// Output the disclination tensor
+		// fprintf( fout,"%5d\t%5d\t%5d\t",i,j,k );
+		// if( CL[i][j][k].POP == 0 ) fprintf( fout, "%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\n" ,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0 );
+		// else fprintf( fout, "%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\n", D[0][0],D[0][1],D[0][2],D[1][0],D[1][1],D[1][2],D[2][0],D[2][1],D[2][2] );
+	}
+
+	for( i=0; i<_3D; i++ ) {
+		free( Q[i] );
+		free( D[i] );
+	}
+	free( Q );
+	free( D );
 	#ifdef FFLSH
 		fflush(fout);
 	#endif
@@ -1631,6 +1790,7 @@ void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,b
 	fprintf( fout,"%d %d %d %d %lf %lf\n",DIM,XYZ[0],XYZ[1],XYZ[2],in.KBT,KBTNOW );
 	fprintf( fout,"%d %d %d %d %d %d\n",in.RFRAME,in.zeroNetMom,in.GALINV,in.TSTECH,in.RTECH,in.LC );
 	fprintf( fout,"%lf %lf %lf %lf\n",in.TAU,in.RA,in.FRICCO,in.MFPOT );
+	fprintf( fout,"%d %d %d\n",in.noHI,in.inCOMP,in.MULTIPHASE );
 	fprintf( fout,"%lf %lf %lf\n",in.GRAV[0],in.GRAV[1],in.GRAV[2] );		//Acceleration (external force)
 	fprintf( fout,"%lf %lf %lf\n",in.MAG[0],in.MAG[1],in.MAG[2] );			//External magnetic field
 	fprintf( fout,"%d %d\n",MDmode,in.stepsMD );		//MD coupling mode and number of MD steps per SRD step
@@ -1644,7 +1804,7 @@ void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,b
 	fprintf( fout,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n",DBUG,outFlag.TRAJOUT,outFlag.printSP,outFlag.COAROUT,outFlag.FLOWOUT,outFlag.AVVELOUT,outFlag.ORDEROUT,outFlag.QTENSOUT,outFlag.QKOUT,outFlag.AVSOUT,outFlag.SOLOUT,outFlag.ENOUT,outFlag.ENFIELDOUT,outFlag.ENNEIGHBOURS,outFlag.ENSTROPHYOUT,outFlag.DENSOUT,outFlag.CVVOUT,outFlag.CNNOUT,outFlag.CWWOUT,outFlag.CDDOUT,outFlag.CSSOUT,outFlag.CPPOUT,outFlag.BINDER,outFlag.BINDERBIN,outFlag.SYNOUT,outFlag.CHCKPNT,outFlag.CHCKPNTrcvr );
 	fprintf( fout,"%d %d\n",outFlag.SPOUT,outFlag.PRESOUT );
 	fprintf( fout,"%d %d %d %d %d %d %d\n",outFlag.HISTVELOUT,outFlag.HISTSPEEDOUT,outFlag.HISTVORTOUT,outFlag.HISTENSTROUT,outFlag.HISTDIROUT,outFlag.HISTSOUT,outFlag.HISTNOUT );
-	fprintf( fout,"%d %d %d\n",outFlag.ENERGYSPECTOUT,outFlag.ENSTROPHYSPECTOUT,outFlag.DEFECTOUT );
+	fprintf( fout,"%d %d %d %d %d\n",outFlag.ENERGYSPECTOUT,outFlag.ENSTROPHYSPECTOUT,outFlag.TOPOOUT,outFlag.DEFECTOUT,outFlag.DISCLINOUT );
 	fprintf( fout,"%d %d %d\n",outFlag.SWOUT,outFlag.SWORIOUT,outFlag.RTOUT );
 
 	//Species of MPCD particles
@@ -1832,8 +1992,9 @@ void outputResults( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],sim
 		}
 	}
 	if( outFlag.CPPOUT>=OUT && runtime%outFlag.CPPOUT==0 ) {
-		if( in.RTECH==MULTIPHASE ) {
+		if( in.MULTIPHASE!=MPHOFF ) {
 			// phiphiCorr( CL,maxXYZ,XYZ,corr,DIM );
+			printf("Warning: phiphiCorr() needs to be checked.\n");
 			corrout( outFiles.fcorrPP,corr,time_now );
 		}
 	}
@@ -1882,6 +2043,7 @@ void outputResults( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],sim
 	if( outFlag.COAROUT>=OUT && runtime%outFlag.COAROUT==0 ) coarseout( outFiles.fcoarse,time_now,CL );
 	if(in.LC!=ISOF) if( outFlag.ORDEROUT>=OUT && runtime%outFlag.ORDEROUT==0 ) orderout( outFiles.forder,time_now,CL,in.LC );
 	if(in.LC!=ISOF) if( outFlag.QTENSOUT>=OUT && runtime%outFlag.QTENSOUT==0 ) orderQout( outFiles.forderQ,time_now,CL,in.LC );
+	if(in.LC!=ISOF) if( outFlag.DISCLINOUT>=OUT && runtime%outFlag.DISCLINOUT==0 ) disclinationTensorOut( outFiles.fdisclination,time_now,CL,in.LC );
 	if( outFlag.SPOUT>=OUT && runtime%outFlag.SPOUT==0 ) multiphaseout( outFiles.fmultiphase,time_now,CL );
 	if( outFlag.PRESOUT>=OUT && runtime%outFlag.PRESOUT==0 ) pressureout( outFiles.fpressure,time_now,CL );
 	if(in.LC!=ISOF) if( outFlag.QKOUT>=OUT && runtime%outFlag.QKOUT==0 ) {
@@ -1893,7 +2055,7 @@ void outputResults( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],sim
 	/* ****************************************** */
 	/* ************** TRACK DEFECTS ************* */
 	/* ****************************************** */
-	if (outFlag.DEFECTOUT>=OUT && runtime%outFlag.DEFECTOUT==0 && DIM==_2D) topochargeout( outFiles.fdefects, time_now, CL);
+	if(in.LC!=ISOF && DIM==_2D) if((outFlag.TOPOOUT>=OUT && runtime%outFlag.TOPOOUT==0)||(outFlag.DEFECTOUT>=OUT && runtime%outFlag.DEFECTOUT==0)) topoChargeAndDefectsOut( outFiles.ftopo, outFlag.TOPOOUT, outFiles.fdefects, outFlag.DEFECTOUT, time_now, CL, in.tolD);
 }
 
 void outputHist( cell ***CL,int runtime, inputList in,outputFlagsList outFlag,outputFilesList outFiles ) {
@@ -2084,7 +2246,9 @@ void closeOutputFiles( spec *SP,bc WALL[],outputFlagsList outFlag,outputFilesLis
 	if( outFlag.HISTDIROUT>=OUT ) fclose( outFiles.fhistDir );
 	if( outFlag.HISTSOUT>=OUT ) fclose( outFiles.fhistS );
 	if( outFlag.HISTNOUT>=OUT ) fclose( outFiles.fhistDens );
+	if( outFlag.TOPOOUT>=OUT ) fclose( outFiles.ftopo );
 	if( outFlag.DEFECTOUT>=OUT ) fclose( outFiles.fdefects );
+	if( outFlag.DISCLINOUT>=OUT ) fclose( outFiles.fdisclination );
 	if( outFlag.SPOUT>=OUT ) fclose( outFiles.fmultiphase );
 	if( outFlag.PRESOUT>=OUT ) fclose( outFiles.fpressure );
 	if( outFlag.SWOUT>=OUT ) fclose( outFiles.fswimmers );
@@ -2098,7 +2262,7 @@ int writeOutput( int t,outputFlagsList f,int RFRAME,int zeroNetMom ) {
 		return 1;
 	}
 	//Fields
-	else if( ( f.FLOWOUT>=OUT && t%f.FLOWOUT==0 ) || ( f.COAROUT>=OUT && t%f.COAROUT==0 ) || ( f.ENFIELDOUT>=OUT && t%f.ENFIELDOUT==0 ) || ( f.ORDEROUT && t%f.ORDEROUT==0 ) || ( f.QTENSOUT && t%f.QTENSOUT==0 ) || ( f.SPOUT && t%f.SPOUT==0 ) || ( f.PRESOUT && t%f.PRESOUT==0 ) ) {
+	else if( ( f.FLOWOUT>=OUT && t%f.FLOWOUT==0 ) || ( f.COAROUT>=OUT && t%f.COAROUT==0 ) || ( f.ENFIELDOUT>=OUT && t%f.ENFIELDOUT==0 ) || ( f.ORDEROUT && t%f.ORDEROUT==0 ) || ( f.QTENSOUT && t%f.QTENSOUT==0 ) || ( f.TOPOOUT && t%f.TOPOOUT==0 ) || ( f.DEFECTOUT && t%f.DEFECTOUT==0 ) || ( f.DISCLINOUT && t%f.DISCLINOUT==0 ) || ( f.SPOUT && t%f.SPOUT==0 ) || ( f.PRESOUT && t%f.PRESOUT==0 ) ) {
 		return 1;
 	}
 	//Correlation functions

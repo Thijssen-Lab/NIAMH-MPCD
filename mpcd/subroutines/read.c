@@ -292,8 +292,14 @@ void readpc( char fpath[],outputFlagsList *out ) {
 	read=fscanf( finput,"%d %s",&(out->SOLOUT),STR );
 	checkRead( read,"solid trajectory",inSTR);
 	//Read how often the topological charge field data is outputted
-	read=fscanf( finput,"%d %s",&(out->DEFECTOUT),STR );
+	read=fscanf( finput,"%d %s",&(out->TOPOOUT),STR );
 	checkRead( read,"topological charge field",inSTR);
+	//Read how often the defects positional data is outputted
+	read=fscanf( finput,"%d %s",&(out->DEFECTOUT),STR );
+	checkRead( read,"defect positions",inSTR);
+	//Read how often the disclination tensor field data is outputted
+	read=fscanf( finput,"%d %s",&(out->DISCLINOUT),STR );
+	checkRead( read,"disclination tensor field",inSTR);
 	//Read how often the energy data is outputted
 	read=fscanf( finput,"%d %s",&(out->ENOUT),STR );
 	checkRead( read,"energy",inSTR);
@@ -625,10 +631,13 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 	else printf("Warning: Failed to Galilean transform, rest frame, thermostat mode, collision mode or liquid crystal mode.\n");
 	if(fscanf( finput,"%lf %lf %lf %lf",&(in->TAU),&(in->RA),&(in->FRICCO),&(in->MFPOT) ));		//Read the thermal relaxation time scale
 	else printf("Warning: Failed to read relaxation time, rotation angle, friction coefficient or mean-field potential.\n");
+	if(fscanf( finput,"%d %d %d",&(in->noHI),&(in->inCOMP),&(in->MULTIPHASE) ));		//Read no hydrodynamics, incompressibility and multi-phase
+	else printf("Warning: Failed to read no hydrodynamics or incompressibility.\n");
 	if(fscanf( finput,"%lf %lf %lf",&(in->GRAV[0]),&(in->GRAV[1]),&(in->GRAV[2]) ));	//Read the constant external acceleration
 	else printf("Warning: Failed to read acceleration.\n");
 	if(fscanf( finput,"%lf %lf %lf",&(in->MAG[0]),&(in->MAG[1]),&(in->MAG[2]) ));	//Read the constant external magnetic field
 	else printf("Warning: Failed to read magnetic field.\n");
+
 
 	if(fscanf( finput,"%d %d",MDmode,&(in->stepsMD) ));	//Read the MD coupling mode
 	else printf("Warning: Failed to read MD coupling.\n");
@@ -649,7 +658,7 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 	else printf("Warning: Failed to read output.\n");
 	if(fscanf( finput,"%d %d %d %d %d %d %d",&(out->HISTVELOUT), &(out->HISTSPEEDOUT), &(out->HISTVORTOUT), &(out->HISTENSTROUT), &(out->HISTDIROUT), &(out->HISTSOUT), &(out->HISTNOUT) ));
 	else printf("Warning: Failed to read histogram output.\n");
-	if(fscanf( finput,"%d %d %d",&(out->ENERGYSPECTOUT), &(out->ENSTROPHYSPECTOUT), &(out->DEFECTOUT) ));
+	if(fscanf( finput,"%d %d %d %d %d",&(out->ENERGYSPECTOUT), &(out->ENSTROPHYSPECTOUT), &(out->TOPOOUT), &(out->DEFECTOUT), &(out->DISCLINOUT) ));
 	else printf("Warning: Failed to read histogram output.\n");
 	if(fscanf( finput,"%d %d %d",&(out->SWOUT), &(out->SWORIOUT), &(out->RTOUT) ));
 	else printf("Warning: Failed to read histogram output.\n");
@@ -928,13 +937,17 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	in->zeroNetMom = getJObjInt(jObj, "zeroNetMom", 0, jsonTagList); // zeroNetMom
 	in->GALINV = getJObjInt(jObj, "galInv", 1, jsonTagList); // GALINV
 	in->TSTECH = getJObjInt(jObj, "tsTech", 0, jsonTagList); // TSTECH
-    const char* collOpTags[2] = {"rTech", "collOp"}; // possible tags for collision operator
+  const char* collOpTags[2] = {"rTech", "collOp"}; // possible tags for collision operator
 	in->RTECH = getJObjIntMultiple(jObj, collOpTags, 2, 2, jsonTagList); // RTECH
 	in->LC = getJObjInt(jObj, "lc", 0, jsonTagList); // LC
 	in->TAU = getJObjDou(jObj, "tau", 0.5, jsonTagList); // TAU
 	in->RA = getJObjDou(jObj, "rotAng", 1.570796, jsonTagList); // rotAng
 	in->FRICCO = getJObjDou(jObj, "fricCoef", 1.0, jsonTagList); // fricCo
 	in->MFPOT = getJObjDou(jObj, "mfpot", 10.0, jsonTagList); // mfpPot
+	in->tolD = getJObjDou(jObj, "tolD", 0.01, jsonTagList); //defect tolerance
+	in->noHI = getJObjInt(jObj, "noHI", 0, jsonTagList); // noHI
+	in->inCOMP = getJObjInt(jObj, "incomp", 0, jsonTagList); // inCOMP
+	in->MULTIPHASE = getJObjInt(jObj, "multiphase", 0, jsonTagList); // multiPhase
 
 	// grav array
 	cJSON *arrGrav = NULL;
@@ -1120,7 +1133,9 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	out->HISTSOUT = getJObjInt(jObj, "histSOut", 0, jsonTagList); // histSOut
 	out->HISTNOUT = getJObjInt(jObj, "histNOut", 0, jsonTagList); // histNOut
 	out->SOLOUT = getJObjInt(jObj, "solidTrajOut", 0, jsonTagList); // solOut
-	out->DEFECTOUT = getJObjInt(jObj, "topoFieldOut", 0, jsonTagList); // defectOut
+	out->TOPOOUT = getJObjInt(jObj, "topoFieldOut", 0, jsonTagList); // topoOut
+	out->DEFECTOUT = getJObjInt(jObj, "defectsOut", 0, jsonTagList); // defectOut
+	out->DISCLINOUT = getJObjInt(jObj, "disclinOut", 0, jsonTagList); // disclinationTensorFieldOut
 	out->ENOUT = getJObjInt(jObj, "energyOut", 0, jsonTagList); // enOut
 	out->CVVOUT = getJObjInt(jObj, "velCorrOut", 0, jsonTagList); // cvvOut
 	out->CNNOUT = getJObjInt(jObj, "dirCorrOut", 0, jsonTagList); // cnnOut

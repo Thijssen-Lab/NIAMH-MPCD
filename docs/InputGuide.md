@@ -63,6 +63,9 @@ Tag             | Type          | Default Value | Description
 `rotAng`        | double        | 1.570796      | This is the angle used in the original SRD collision operator
 `fricCoef`      | double        | 1.0           | Friction coefficient for langevin thermostat
 `mfpot`         | double        | 10            | Liquid crystal mean field potential in units of thermal energy
+`noHI`          | int           | 0             | Enable no HI mode. 1 = on, 0 = off
+`incomp`        | int           | 0             | Enable incompressibility correction. 1 = on, 0 = off
+`multiphase`    | int           | 0             | Enable multiphase mode, applying multiphase interactions. 1 = on, 0 = off
 `grav`          | array(double) | [0,0,0]       | Constant acceleration due to external force. **Must** be 3D
 `mag`           | array(double) | [0,0,0]       | Constant external magnetic field. **Must** be 3D
 `seed`          | int           | 0             | Seed for random number generator. 0 for pseudorandom seed. Set to -1 to load a checkpoint
@@ -96,6 +99,8 @@ Tag             | Type          | Default Value | Description
 `histNOut`      | int           | 0             | Number per cell distribution
 `solidTrajOut`  | int           | 0             | Solid BC trajectories
 `topoFieldOut`  | int           | 0             | Topological charge field
+`defectsOut`    | int           | 0             | Defect positions and orientations
+`disclinOut`    | int           | 0             | Disclination tensor field
 `energyOut`     | int           | 0             | System energy field
 `velCorrOut`    | int           | 0             | Velocity autocorrelation (radial function)
 `dirCorrOut`    | int           | 0             | Director autocorrelation (radial function)
@@ -284,6 +289,8 @@ As a reminder, if you wish to use the default value for a tag, you can leave it 
     "histNOut":         0,
     "solidTrajOut":     0,
     "topoFieldOut":     0,
+    "defectsOut":       0,
+    "disclinOut":       0,
     "energyOut":        0,
     "velCorrOut":       0,
     "dirCorrOut":       0,

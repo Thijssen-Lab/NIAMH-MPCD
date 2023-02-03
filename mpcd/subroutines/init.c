@@ -204,10 +204,19 @@ void openenstrophyspect( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	enstrophyspectheader( *f );
 }
-void opendefect( FILE **f,char dir[],char fname[],char ext[] ) {
+void opentopo( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	if(DIM==_3D) printf("Warning: Topological charge field is only outputted for 2D!\n");
+	else topoheader( *f );
+}
+void opendefect( FILE **f,char dir[],char fname[],char ext[] ) {
+	openBasic( f,dir,fname,ext );
+	if(DIM==_3D) printf("Warning: Defects are only outputted for 2D!\n");
 	else defectheader( *f );
+}
+void opendisclin( FILE **f,char dir[],char fname[],char ext[] ) {
+	openBasic( f,dir,fname,ext );
+	disclinTensorheader( *f );
 }
 void openmultiphase( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
@@ -271,12 +280,12 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 		if(DIM==_2D) B=1.0-cos(2.0*RA);
 		else B=(2.0/5.0)*(2.0-cos(RA)-cos(2.0*RA));
 	}
-	else if(RTECH==ARBAXIS || RTECH==NOHI_ARBAXIS){
+	else if(RTECH==ARBAXIS ){
 		A=2.0*inv_DIM*(1.0-sin(RA)/RA);
 		if(DIM==_2D) B=1.0-0.5*sin(2.0*RA)/RA;
 		else B=(2.0/5.0)*(2.0-sin(RA)/RA-0.5*sin(RA)/RA);
 	}
-	else if(RTECH==MPCAT || RTECH==RAT || RTECH==NOHI_MPCAT) {
+	else if(RTECH==MPCAT || RTECH==RAT ) {
 		A=1.0;
 		B=1.0;
 	}
@@ -311,7 +320,7 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 	}
 
 	//Collisional part of viscosity
-	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==NOHI_ARBAXIS || RTECH==MPCAT || RTECH==NOHI_MPCAT || RTECH==LANG) {
+	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==MPCAT || RTECH==LANG) {
 		//All of the versions without angular-momentum conservation have the same form
 		VISCCOL=(A*nDNST/M)*avMASS/(12.0*dt*smrtPow(a,DIM-2));
 	}
@@ -327,7 +336,7 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 	*VISC=VISCKIN+VISCCOL;
 
 	//Calculate the self diffusion coefficient
-	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==NOHI_ARBAXIS || RTECH==MPCAT || RTECH==NOHI_MPCAT || RTECH==LANG) {
+	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==MPCAT || RTECH==LANG) {
 		//All of the versions without angular-momentum conservation have the same form
 		SM=A/M;
 		*SDIFF = (KBT*dt/avMASS)*(SM-0.5);
@@ -344,7 +353,7 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 		*SDIFF = (KBT*dt/avMASS);
 	}
 
-	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==NOHI_ARBAXIS) {
+	if(RTECH==ORTHAXIS || RTECH==ARBAXIS ) {
 		//Calculate the thermal diffusion coefficient
 		if( DIM ==  _2D ) {
 			THERMDKIN = 2. / (1.-cos(RA));
@@ -981,6 +990,21 @@ void checkSim( FILE *fsynopsis,int SYNOUT,inputList in,spec *SP,bc *WALL,specSwi
 		printf( "Warning: Using global S (LC=%d) but initiated in isotropic phase. Simulation may not reach nematic phase.\n",in.LC );
 		if(SYNOUT == OUT) fprintf( fsynopsis,"Warning: Using global S (LC=%d) but initiated in isotropic phase. Simulation may not reach nematic phase.\n",in.LC );
 	}
+	if( !( in.noHI==HION || in.noHI==HIOFF) ){
+		printf( "Error: Unrecognized value of noHI=%d.\n",in.noHI );
+		exit( 1 );
+	}
+	if( !( in.inCOMP==INCOMPON || in.inCOMP==INCOMPOFF) ){
+		printf( "Error: Unrecognized value of inCOMP=%d.\n",in.inCOMP );
+		exit( 1 );
+	}
+	if( !( in.MULTIPHASE==MPHOFF || in.MULTIPHASE==MPHPOINT || in.MULTIPHASE==MPHSURF ) ){
+		printf( "Error: Unrecognized value of MULTIPHASE=%d.\n",in.MULTIPHASE );
+		exit( 1 );
+	}
+	if( ( in.MULTIPHASE==MPHOFF && NSPECI>1 ) ){
+		printf( "Warning: MULTIPHASE=%d (off) but more than one species present (NSPECI=%d).\n",in.MULTIPHASE,NSPECI );
+	}
 	//Check that nematogens have non-zero friction
 	if( in.LC>ISOF ) for( i=0; i<NSPECI; i++ ) if( feq(SP[i].RFC,0.0) ) {
 		printf( "Warning:\tSpecies %d has zero rotational friction coefficient\n",i );
@@ -1055,7 +1079,9 @@ void initOutput( char op[],outputFlagsList *outFlag,outputFilesList *outFile,inp
 	char fileenstrophy[]="avEnstrophy";
 	char fileflow[]="flowfield";
 	char filesolids[]="solidtraj";
-	char filedefect[]="topochargefield";
+	char filetopo[]="topochargefield";
+	char filedefect[]="defects";
+	char filedisclin[]="disclinTensorfield";
 	char fileprefix[]="detailedSP";
 	char filehistVel[]="distVel";
 	char filehistVort[]="distVort";
@@ -1152,8 +1178,12 @@ void initOutput( char op[],outputFlagsList *outFlag,outputFilesList *outFile,inp
 	if( (outFlag->SYNOUT)>=OUT ) opensynopsis( &(outFile->fsynopsis),op,1 );
 	//Initialize the solids' trajectories (or BC motion) output files
 	if( (outFlag->SOLOUT)>=OUT ) for ( i=0; i<NBC; i++ ) if ( WALL[i].DSPLC ) opentraj(i,outFile->fsolids,op,filesolids,filesuffix,fileextension);
+	//Initialize the topological charge output file
+	if( (outFlag->TOPOOUT)>=OUT ) opentopo( &(outFile->ftopo),op,filetopo,fileextension );
 	//Initialize the defect trajectories output file
 	if( (outFlag->DEFECTOUT)>=OUT ) opendefect( &(outFile->fdefects),op,filedefect,fileextension );
+	//Initialize the disclination tensor output file
+	if( (outFlag->DISCLINOUT)>=OUT ) opendisclin( &(outFile->fdisclination),op,filedisclin,fileextension );
 	//Initialize the phi/color/species-type field output file
 	if( (outFlag->SPOUT)>=OUT ) openmultiphase( &(outFile->fmultiphase),op,filemultiphase,fileextension );
 	//Initialize the pressure field output file
@@ -1176,8 +1206,15 @@ void initOutput( char op[],outputFlagsList *outFlag,outputFilesList *outFile,inp
 		fprintf(outFile->fsynopsis,"\tEnergy:\t\t%d\n",outFlag->ENOUT);
 		fprintf(outFile->fsynopsis,"\tEnergy field:\t\t%d\n",outFlag->ENFIELDOUT);
 		fprintf(outFile->fsynopsis,"\tEnergy neighbours:\t\t%d\n",outFlag->ENNEIGHBOURS);
-		if(DIM==_3D) fprintf(outFile->fsynopsis,"\tTopological charge field:\t\t%d\tNot outputted in 3D!\n",outFlag->DEFECTOUT);
-		else fprintf(outFile->fsynopsis,"\tTopological charge field:\t\t%d\n",outFlag->DEFECTOUT);
+		if(DIM==_3D) {
+			fprintf(outFile->fsynopsis,"\tTopological charge field:\t\t%d\tNot outputted in 3D!\n",outFlag->TOPOOUT);
+			fprintf(outFile->fsynopsis,"\tDefect positions:\t\t%d\tNot outputted in 3D!\n",outFlag->DEFECTOUT);
+		}
+		else {
+			fprintf(outFile->fsynopsis,"\tTopological charge field:\t\t%d\n",outFlag->TOPOOUT);
+			fprintf(outFile->fsynopsis,"\tDefect positions:\t\t%d\n",outFlag->DEFECTOUT);
+		}
+		fprintf(outFile->fsynopsis,"\tDisclination tensor field:\t\t%d\n",outFlag->DISCLINOUT);
 		fprintf(outFile->fsynopsis,"\tPhi/colour/species-type field:\t\t%d\n",outFlag->SPOUT);
 		fprintf(outFile->fsynopsis,"\tPressure field:\t\t%d\n",outFlag->PRESOUT);
 		fprintf(outFile->fsynopsis,"\tVelocity-velocity correlation:\t\t%d\n",outFlag->CVVOUT);
