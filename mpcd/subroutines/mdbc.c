@@ -32,7 +32,7 @@
 /* ****************************************** */
 
 ///
-/// @brief		Updates the position of the MD particles with respect to the BCs
+/// @brief		Applies the BCS to the MD particle, in case it is required
 ///
 /// It checks if the particle is inside the boundaries. If it's inside the boundaries it does not
 /// do anything. But if it is not, it rewinds it to its old position through
@@ -126,7 +126,7 @@ void MD_BCcollision( particleMD *atom,bc WALL[],double KBT,double t_step ) {
 
 ///
 /// @brief		Checks if the MD particle is inside all the boundaries, if not it finds the relevan   
-/// boundary
+/// 			boundary
 ///
 /// It checks the particle's position with respect to the BCs. If it is outside any of them 
 /// it calculates the crosstime through crosstime_MD(). If the crosstime does not match the streaming 
@@ -183,6 +183,7 @@ void chooseBC_MD( bc WALL[],particleMD *atom,double *t_min,double *chosenW,int *
 		shiftbackBC( shift,&WALL[i] );
 	}
 }
+
 ///
 /// @brief	Determines if the BC must be shifted due to the periodicity of the control volume
 ///   
@@ -211,8 +212,9 @@ void shiftBC_MD( double *shift,bc *WALL,particleMD *atom ) {
 	//Shift BCs
 	for( k=0; k<_3D; k++ ) WALL->Q[k] += shift[k];
 }
+
 ///
-/// @brief		Rotates the BC if it has some orientation
+/// @brief		Rotates the BC, if it has some orientation
 ///
 /// To do this, it rotates the particle's pos, vel, orientation about the BC surface instead. This 
 /// routine does the rotation and rotation back by having a sign passed to it
@@ -248,6 +250,7 @@ void MD_BCrotation( bc *WALL,particleMD *atom, double sign ) {
 	atom->vy=V[1];
 	atom->vz=V[2];
 }
+
 ///
 /// @brief		Checks if the BC has some orientation, if so it must be rotated
 ///
@@ -273,12 +276,19 @@ void rotateBC_MD( bc *WALL,particleMD *atom ) {
 void rotatebackBC_MD( bc *WALL,particleMD *atom ) {
 	if(WALL->REORIENT) MD_BCrotation( WALL,atom,1.0 );
 }
+
+///
+/// @brief			Checks if the Boundary condition should be applied to the MD particle 
+///	
+/// Calculates the distance of the particle from the center of the BC, and based on the shape of the 
+/// control volume determines if the particle is outside or inside of it
+///
+/// @param WALL 	One of the walls of the BCs
+/// @param atom 	The MD particle
+/// @return			W, that detemines if the particle is inside or outside the control volume defined
+///					by the `WALL`
+///
 double calcW_MD( bc WALL,particleMD *atom ){
-/*
-   This function calculates W which is used to
-   determine if boundary conditions should be
-   applied to a particleMPC.
-*/
 	double terms, W=0.0;
 	double Q[_3D];
 	int i;
@@ -306,29 +316,49 @@ double calcW_MD( bc WALL,particleMD *atom ){
 
 	return W;
 }
+
+///
+/// @brief		The streaming step of the algorithm
+///
+/// Using trans() routine translates the MD particle's position
+///
+/// @param atom		The MD particle
+/// @param t		The time for which particle must stream
+/// @note			No acceleration during time `t`
+///
 void stream_MD( particleMD *atom,double t ) {
-/*
-    The streaming step of the algorithm translates
-    position and accelerates the velocity
-*/
 	atom->rx = trans( t,atom->vx,atom->rx );
 	atom->ry = trans( t,atom->vy,atom->ry );
 	atom->rz = trans( t,atom->vz,atom->rz );
 }
+
+///
+/// @brief		Rewinds particle back to its old position
+///
+/// Using rewind_trans() brings back the particle to its position in the previous timestep
+///
+/// @param atom		The MD particle
+/// @param time		The time for which particle streams backward
+///
 void rewind_MD( particleMD *atom,double time ) {
-/*
-     Bring the particleMPC back in time step.
-*/
 	atom->rx = rewind_trans(time,atom->vx,atom->rx);
 	atom->ry = rewind_trans(time,atom->vy,atom->ry);
 	atom->rz = rewind_trans(time,atom->vz,atom->rz);
 }
-void crosstime_MD( particleMD *atom,bc WALL,double *tc_pos, double *tc_neg,double t_step ) {
-/*
-    Calculate when the particleMPC crosses the bc
-    by solving the trajectory equation
 
-*/
+///
+/// @brief		Calculates when the MD particle crosses the BC
+///
+/// It Calculates the time takes for the particle to cross the boundary either by solving the trajectory 
+///	equation. It can also use the <a href="https://en.wikipedia.org/wiki/Secant_method">secan method</a>
+///  
+/// @param atom		The MD particle
+/// @param WALL		One of the walls of the BCs
+/// @param tc_pos	One of the roots of the quadratic trajectory equation, one of the crosstimes  
+/// @param tc_neg	One of the roots of the quadratic trajectory equation, one of the crosstimes
+/// @param t_step	The maximum streaming time
+///	@see			secant_time_MD()
+void crosstime_MD( particleMD *atom,bc WALL,double *tc_pos, double *tc_neg,double t_step ) {
 	double a=0.0,b=0.0,c=0.0;
 
 	// Planar Wall
@@ -374,10 +404,21 @@ void crosstime_MD( particleMD *atom,bc WALL,double *tc_pos, double *tc_neg,doubl
 		*tc_neg = *tc_pos;
 	}
 }
+
+///
+/// @brief		Numerically determines the crossing times
+///
+/// It uses the <a href="https://en.wikipedia.org/wiki/Secant_method">secan method</a> to calculate the 
+/// the cross time. The secant method is a root-finding algorithm that uses a succession of roots of 
+/// secant lines to better approximate a root of a function f, which in this case is the trajectory of
+/// the particle
+///
+/// @param atom		The MD particle
+/// @param WALL		One of the walls of the BCs
+/// @param t_step	The maximum streaming time
+/// @return 		The crosstime
+///
 double secant_time_MD( particleMD *atom,bc WALL,double t_step ) {
-/*
-     Numerically determine the crossing times (tc_pos and tc_neg);
-*/
 	double Qi[DIM],QiM1[DIM];
 	double ti,tiM1,root;
 	double fi,fiM1;
@@ -422,15 +463,21 @@ double secant_time_MD( particleMD *atom,bc WALL,double t_step ) {
 	} while( fabs(ti-tiM1) > TOL && (fabs(fi-fiM1) > TOL) );
 	return root;
 }
+
+///
+/// @brief		Finds the normal to the surface at the position of the particle that is
+///				presently ON the surface
+///
+/// It takes the gradient of \f$( a(x-h) )^p + (b(y-k))^p + (c(z-l))^p - r = 0\f$, since the gradient 
+/// is equal to the normal. For powers of 1 and 2 it takes the shortcuts and uses the specific
+/// solution programmed in. For higher powers it uses a more general solution 
+/// 
+/// @param	n			The normal vector to the surface
+/// @param WALL 		One of the walls of the BCs
+/// @param atom 		The MD particle
+/// @param dimension	The dimenson of the control volume
+/// @return				The normal vector to the surface, `n` 
 double *normal_MD( double *n,bc WALL,particleMD *atom,int dimension ) {
-/*
-   Find the normal to the surface at this point (particleMPC is
-   presently ON surface). We take the gradient of
-   ( a(x-h) )^p + (b(y-k))^p + (c(z-l))^p - r =0
-   since the gradient is equal to the normal. For powers of
-   1 and 2 we take shortcuts and have programmed in the specific
-   solution, for higher powers we use a more general solution
-*/
 	int i;
 
 	if( WALL.PLANAR || ( feq(WALL.P[0],1.0) && feq(WALL.P[1],1.0) && feq(WALL.P[2],1.0) && feq(WALL.P[3],1.0))) {
@@ -450,10 +497,23 @@ double *normal_MD( double *n,bc WALL,particleMD *atom,int dimension ) {
 
 	return n;
 }
+
+///
+/// @brief		This subroutine applies the BC transformation to the velocity of the MD particle
+///
+///	It transforms the velocity (the normal and tangential components) of the MD particle considering the 
+/// conditions at the surface of the boundary. For instance, it can \b conserve the \b energy/momentum/
+/// \b angular \b momentum using impulse method or it can apply the rule method such as \b bounceback or 
+/// \b reflection or \b periodic which does NOT necesarily conserve momentum.  
+/// The BCs global variables defined in the definition.h set how particle velosity will 
+/// be updated  
+///
+/// @param atom		The MD particle
+/// @param WALL 	One of the walls of the BCS
+/// @param n 		The normal vector to the surface of the wall
+/// @param KBT 		Thermal energy
+///
 void velBC_MD( particleMD *atom,bc *WALL,double n[_3D],double KBT ) {
-/*
-    This subroutine applies the BC transformation to velocity.
-*/
 	double V[_3D],VN[_3D],VT[_3D],VR[_3D],R[_3D],zip[_3D];
 	double atom_POS[_3D],atom_VEL[_3D];
 	double IIpart[_3D][_3D],IIwall[_3D][_3D];
