@@ -150,70 +150,241 @@ void openorder( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	orderheader( *f );
 }
+
+///
+/// @brief Function that initializes the tensor order parameter output file.
+///
+///This function initializes the tensor order parameter output file.
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the tensor order parameter output file being opened.
+/// @param dir Path to the directory of the tensor order parameter output file.
+/// @param fname Name of the tensor order parameter output file.
+/// @param ext Extension of the tensor order parameter output file.
 void openorderQ( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	orderQheader( *f );
 }
+
+///
+/// @brief Function that initializes the tensor order parameter (in reciprocal space) output file.
+///
+///This function initializes the tensor order parameter (in reciprocal space) output file.
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the tensor order parameter (in reciprocal space) output file being opened.
+/// @param dir Path to the directory of the tensor order parameter (in reciprocal space) output file.
+/// @param fname Name of the tensor order parameter (in reciprocal space) output file.
+/// @param ext Extension of the tensor order parameter (in reciprocal space) output file.
 void openorderQK( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	orderQKheader( *f );
 }
+
+///
+/// @brief Function that initializes the mean scalar order parameter output file.
+///
+///This function initializes the mean scalar order parameter output file.
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the mean scalar order parameter output file being opened.
+/// @param dir Path to the directory of the mean scalar order parameter output file.
+/// @param fname Name of the mean scalar order parameter output file.
+/// @param ext Extension of the mean scalar order parameter output file.
 void openavs( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	avsheader( *f );
 }
+
+///
+/// @brief Function that initializes the density variations output file.
+///
+///This function initializes the density variations output file.
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the density variations output file being opened.
+/// @param dir Path to the directory of the density variations output file.
+/// @param fname Name of the density variations output file.
+/// @param ext Extension of the density variations output file.
 void opendensSTD( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	densheader( *f );
 }
+
+///
+/// @brief Function that initializes the velocity distribution output file.
+///
+///This function initializes the velocity distribution output file.
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the velocity distribution output file being opened.
+/// @param dir Path to the directory of the velocity distribution output file.
+/// @param fname Name of the velocity distribution output file.
+/// @param ext Extension of the velocity distribution output file.
 void openhistVel( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	histVelheader( *f );
 }
+
+///
+/// @brief Function that initializes the speed distribution output file.
+///
+///This function initializes the speed distribution output file.
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the speed distribution output file being opened.
+/// @param dir Path to the directory of the speed distribution output file.
+/// @param fname Name of the speed distribution output file.
+/// @param ext Extension of the speed distribution output file.
 void openhistSpeed( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	histSpeedheader( *f );
 }
+
+///
+/// @brief Function that initializes the vorticity distribution output file.
+///
+///This function initializes the vorticity distribution output file.
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the vorticity distribution output file being opened.
+/// @param dir Path to the directory of the vorticity distribution output file.
+/// @param fname Name of the vorticity distribution output file.
+/// @param ext Extension of the vorticity distribution output file.
 void openhistVort( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	histVortheader( *f );
 }
+
+///
+/// @brief Function that initializes the enstrophy distribution output file.
+///
+///This function initializes the enstrophy distribution output file.
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the enstrophy distribution output file being opened.
+/// @param dir Path to the directory of the enstrophy distribution output file.
+/// @param fname Name of the enstrophy distribution output file.
+/// @param ext Extension of the enstrophy distribution output file.
 void openhistEnstrophy( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	histEnstrheader( *f );
 }
+
+///
+/// @brief Function that initializes the director distribution output file.
+///
+///This function initializes the director distribution output file.
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the director distribution output file being opened.
+/// @param dir Path to the directory of the director distribution output file.
+/// @param fname Name of the director distribution output file.
+/// @param ext Extension of the director distribution output file.
 void openhistDir( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	histDirheader( *f );
 }
+
+///
+/// @brief Function that initializes the scalar order parameter distribution output file.
+///
+///This function initializes the scalar order parameter distribution output file.
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the scalar order parameter distribution output file being opened.
+/// @param dir Path to the directory of the scalar order parameter distribution output file.
+/// @param fname Name of the scalar order parameter distribution output file.
+/// @param ext Extension of the scalar order parameter distribution output file.
 void openhistS( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	histSheader( *f );
 }
+
+///
+/// @brief Function that initializes the density distribution output file.
+///
+///This function initializes the density distribution output file.
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the density distribution output file being opened.
+/// @param dir Path to the directory of the density distribution output file.
+/// @param fname Name of the density distribution output file.
+/// @param ext Extension of the density distribution output file.
 void openhistDens( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	histNheader( *f );
 }
+
+///
+/// @brief Function that initializes the mean enstrophy output file.
+///
+///This function initializes the mean enstrophy output file.
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the mean enstrophy output file being opened.
+/// @param dir Path to the directory of the mean enstrophy output file.
+/// @param fname Name of the mean enstrophy output file.
+/// @param ext Extension of the mean enstrophy output file.
 void openavenstrophy( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	avenstrophyheader( *f );
 }
+
+///
+/// @brief Function that initializes the flow field output file.
+///
+///This function initializes the flow field output file.
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the flow field output file being opened.
+/// @param dir Path to the directory of the flow field output file.
+/// @param fname Name of the flow field output file.
+/// @param ext Extension of the flow field output file.
 void openflow( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	flowheader( *f );
 }
+
+///
+/// @brief Function that initializes the energy output file.
+///
+///This function initializes the energy output file.
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the energy output file being opened.
+/// @param dir Path to the directory of the energy output file.
+/// @param fname Name of the energy output file.
+/// @param ext Extension of the energy output file.
 void openenergy( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	energyheader( *f );
 }
+
+///
+/// @brief Function that initializes the energy field output file.
+///
+///This function initializes the energy field output file.
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the energy field output file being opened.
+/// @param dir Path to the directory of the energy field output file.
+/// @param fname Name of the energy field output file.
+/// @param ext Extension of the energy field output file.
 void openenergyfield( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	energyfieldheader( *f );
 }
+
+///
+/// @brief Function that initializes the energy from neighbours output file.
+///
+///This function initializes the energy from neighbours output file.
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the energy from neighbours output file being opened.
+/// @param dir Path to the directory of the energy from neighbours output file.
+/// @param fname Name of the energy from neighbours output file.
+/// @param ext Extension of the energy from neighbours output file.
 void openenergyneighbours( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	energyneighboursheader( *f );
 }
+
+///
+/// @brief Function that initializes the synopsis output file.
+///
+///This function initializes the synopsis output file.
+///It opens it up for writing and reading while formatting it with its header.
+///when called for the first time, as specified by the firsttime parameter, it truncates the file to
+///zero length. When called for the second time, it is opened in apending mode.
+/// @param fsynopsis Return pointer to the synopsis output file being opened.
+/// @param dir Path to the directory of the synopsis output file.
+/// @param firsttime Integer specifying if it is the first time opening the synopsis file.
 void opensynopsis( FILE **fsynopsis,char dir[],int firsttime ) {
 	char filename[200];
 	char filesynopsis[]="synopsis";
@@ -230,6 +401,18 @@ void opensynopsis( FILE **fsynopsis,char dir[],int firsttime ) {
 	}
 	if( firsttime ) outheader( *fsynopsis,0 );
 }
+
+///
+/// @brief Function that initializes the solids' trajectories (or boundary condition (BC) motion) output files.
+/// 
+/// This function initializes the solids' trajectories (or boundary condition (BC) motion) output files.
+/// (one file for each BC). 
+/// @param bc Integer specifying the boundary condition whose motion is being outputed.
+/// @param fsolids Array of return pointers to the list of files associated to all BCs.
+/// @param dir Path to the directory of the BC motion output file.
+/// @param filesolids Name of the BC motion output file.
+/// @param filesuffix Suffix specifying the BC associated to the file being opened, updated to "bc" within the function.
+/// @param fileextension Extension of the BC motion output file.
 void opentraj( int bc,FILE *fsolids[],char dir[],char filesolids[],char filesuffix[],char fileextension[] ){
 	char filename[200];
 
@@ -246,6 +429,17 @@ void opentraj( int bc,FILE *fsolids[],char dir[],char filesolids[],char filesuff
 	outheader( fsolids[bc],bc );
 	solidsheader( fsolids[bc] );
 }
+
+///
+/// @brief Function thet opens the MPCD particles positions file for reading.
+///
+/// This function opens the MPCD particles positions files for reading. The files (one for each species) must exist.
+/// @param i Index of the relevant species
+/// @param fin Array of return pointers to the list of files associated to all species.
+/// @param dir Path to the directory of the MPCD particles positions file.
+/// @param fileprefix Name of the directory of the MPCD particles positions file.
+/// @param filesuffix Suffix specifying the species associated to the file being opened, updated to "i" within the function.
+/// @param fileextension Extension of the MPCD particles position file.
 void openplace( int i,FILE *fin[],char dir[],char fileprefix[],char filesuffix[16],char fileextension[] ){
 	char filename[200];
 
@@ -260,52 +454,181 @@ void openplace( int i,FILE *fin[],char dir[],char fileprefix[],char filesuffix[1
 		exit( 1 );
 	}
 }
+
+///
+/// @brief Function that initializes a correlation output file.
+///
+///This function initializes a correlation output file.
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the correlation output file being opened.
+/// @param dir Path to the directory of the correlation output file.
+/// @param fname Name of the correlation output file.
+/// @param ext Extension of the correlation output file.
 void opencorr( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	corrheader( *f );
 }
+
+///
+/// @brief Function that initializes the energy spectrum output file.
+///
+///This function initializes the energy spectrum output file.
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the energy spectrum output file being opened.
+/// @param dir Path to the directory of the energy spectrum output file.
+/// @param fname Name of the energy spectrum output file.
+/// @param ext Extension of the energy spectrum output file.
 void openenergyspect( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	energyspectheader( *f );
 }
+
+///
+/// @brief Function that initializes the enstrophy spectrum output file.
+///
+///This function initializes the enstrophy spectrum output file.
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the enstrophy spectrum output file being opened.
+/// @param dir Path to the directory of the enstrophy spectrum output file.
+/// @param fname Name of the enstrophy spectrum output file.
+/// @param ext Extension of the enstrophy spectrum output file.
 void openenstrophyspect( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	enstrophyspectheader( *f );
 }
+
+///
+/// @brief Function that initializes the topological charge field output file.
+///
+///This function initializes the topological charge field output file (only for 2D systems).
+///It opens it up for writing and reading while formatting it with its header.
+///
+/// @param f Return pointer to the topological charge field output file being opened.
+/// @param dir Path to the directory of the topological charge field output file.
+/// @param fname Name of the topological charge field output file.
+/// @param ext Extension of the topological charge field output file.
 void opentopo( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	if(DIM==_3D) printf("Warning: Topological charge field is only outputted for 2D!\n");
 	else topoheader( *f );
 }
+
+///
+/// @brief Function that initializes the defect tracker output file.
+///
+///This function initializes the defect tracker output file (only for 2D systems).
+///It opens it up for writing and reading while formatting it with its header.
+///
+/// @param f Return pointer to the defect tracker output file being opened.
+/// @param dir Path to the directory of the defect tracker output file.
+/// @param fname Name of the defect tracker output file.
+/// @param ext Extension of the defect tracker output file.
 void opendefect( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	if(DIM==_3D) printf("Warning: Defects are only outputted for 2D!\n");
 	else defectheader( *f );
 }
+
+///
+/// @brief Function that initializes the disclination tensor output file.
+///
+///This function initializes the disclination tensor output file.
+///It opens it up for writing and reading while formatting it with its header.
+///
+/// @param f Return pointer to the disclination tensor output file being opened.
+/// @param dir Path to the directory of the disclination tensor output file.
+/// @param fname Name of the disclination tensor output file.
+/// @param ext Extension of the disclination tensor output file.
 void opendisclin( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	disclinTensorheader( *f );
 }
+
+///
+/// @brief Function that initializes the phi/color/species-type field output file.
+///
+///This function initializes the  phi/color/species-type field output file.
+///It opens it up for writing and reading while formatting it with its header.
+///
+/// @param f Return pointer to the  phi/color/species-type field output file being opened.
+/// @param dir Path to the directory of the  phi/color/species-type field output file.
+/// @param fname Name of the  phi/color/species-type field output file.
+/// @param ext Extension of the  phi/color/species-type field output file.
 void openmultiphase( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	multiphaseheader( *f );
 }
+
+///
+/// @brief Function that initializes the pressure field output file.
+///
+///This function initializes the pressure field output file.
+///It opens it up for writing and reading while formatting it with its header.
+///
+/// @param f Return pointer to the pressure field output file being opened.
+/// @param dir Path to the directory of the pressure field output file.
+/// @param fname Name of the pressure field output file.
+/// @param ext Extension of the pressure field output file.
 void openpressure( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	pressureheader( *f );
 }
+
+///
+/// @brief Function that initializes the Binder cumulant output file.
+///
+///This function initializes the Binder cumulant output file.
+///It opens it up for writing and reading while formatting it with its header.
+///
+/// @param f Return pointer to the Binder cumulant output file being opened.
+/// @param dir Path to the directory of the Binder cumulant output file.
+/// @param fname Name of the Binder cumulant output file.
+/// @param ext Extension of the Binder cumulant output file.
 void openbinder( FILE **f,char dir[],char fname[],char ext[],int binSize ) {
 	openBasic( f,dir,fname,ext );
 	binderheader( *f,binSize );
 }
+
+///
+/// @brief Function that initializes the swimmer output file.
+///
+///This function initializes the swimmer output file.
+///It opens it up for writing and reading while formatting it with its header.
+///
+/// @param f Return pointer to the swimmer output file being opened.
+/// @param dir Path to the directory of the swimmer output file.
+/// @param fname Name of the swimmer output file.
+/// @param ext Extension of the swimmer output file.
 void openswimmer( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	swimmerheader( *f );
 }
+
+///
+/// @brief Function that initializes the swimmer orientation output file.
+///
+///This function initializes the swimmer orientation output file.
+///It opens it up for writing and reading while formatting it with its header.
+///
+/// @param f Return pointer to the swimmer orientation output file being opened.
+/// @param dir Path to the directory of the swimmer orientation output file.
+/// @param fname Name of the swimmer orientation output file.
+/// @param ext Extension of the swimmer orientation output file.
 void openswimmerOri( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	swimmeroriheader( *f );
 }
+
+///
+/// @brief Function that initializes the swimmer run and tumble output file.
+///
+///This function initializes the swimmer run and tumble output file.
+///It opens it up for writing and reading while formatting it with its header.
+///
+/// @param f Return pointer to the swimmer run and tumble output file being opened.
+/// @param dir Path to the directory of the swimmer run and tumble output file.
+/// @param fname Name of the swimmer run and tumble output file.
+/// @param ext Extension of the swimmer run and tumble output file.
 void openruntumble( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	runtumbleheader( *f );
