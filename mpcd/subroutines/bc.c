@@ -1,6 +1,5 @@
 ///
 /// @file
-
 ///
 /// @brief This file applies boundary conditions (bc) to mpcd particles.
 ///
@@ -191,8 +190,8 @@ double calcW_BC( bc movingWall,bc stillWall,int flagCentre ) {
 ///
 /// @param p The individual mpcd particle.
 /// @param WALL The boundary.
-/// @param *tc_pos TODO.
-/// @param *tc_neg TODO.
+/// @param tc_pos TODO.
+/// @param tc_neg TODO.
 /// @param t_step The time step interval.
 /// @see secant_time()
 ///
@@ -248,8 +247,8 @@ void crosstime( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,double t_st
 ///
 /// @param p The individual mpcd particle.
 /// @param WALL The boundary.
-/// @param *tc_pos TODO.
-/// @param *tc_neg TODO.
+/// @param tc_pos TODO.
+/// @param tc_neg TODO.
 /// @param t_step The time step interval.
 /// @see chooseBC()
 /// @see secant_time()
@@ -378,6 +377,21 @@ double secant_time( particleMPC p,bc WALL,double t_step ) {
 	return root;
 }
 
+///
+/// @brief Shifts the boundary according to periodic boundary conditions.
+///
+/// Shift the position of boundary according to periodic boundary conditions (PBC).
+/// This follows the steps:
+/// - Finds whether to shift (if the particle - wall separation is closer after a full PBC shift).
+/// - Calculates the shift as the relevant length of the system (x,y or z direction).
+/// - Applies the shift and updates the wall position.
+/// @param shift The amount that the wall shifted.
+/// @param WALL The boundary.
+/// @param pp The individual particle.
+/// @see shiftbackBC()
+/// @note The shift value is returned through the `shift` variable so that the original
+/// boundary position can be restored later using the shiftbackBC() method.
+///
 void shiftBC( double *shift,bc *WALL,particleMPC *pp ) {
 /*
      Determines if the BC must be shifted due to the
@@ -400,6 +414,16 @@ void shiftBC( double *shift,bc *WALL,particleMPC *pp ) {
 		}
 	}
 }
+
+///
+/// @brief Returns the boundary back to original position.
+///
+/// The boundary has been shifted by the periodic boundary conditions previously in shiftBC().
+/// This routine uses the shift value applied previously to return the wall back to the original position.
+/// @param shift The amount that the wall shifted.
+/// @param WALL The boundary.
+/// @see shiftBC()
+///
 void shiftbackBC( double *shift,bc *WALL ) {
 /*
      Shifts the BC back.
