@@ -576,7 +576,7 @@ float genrand_rayleigh( float std ) {
 /// Pivots off the `dimension` to uniformly generate a unit vector within a sphere:
 /// - 3D: Generate the z component randomly between -1 and 1, and then generate a random angle in [0, pi). Use the angle
 /// to find the x and y components.
-/// - 2D: CURRENTLY BUGGED. Simply generate a random angle and use that to find the x and y components.
+/// - 2D: Simply generate a random angle and use that to find the x and y components.
 /// - 1D: Wrapes around genrand_pmOne() which is equivelant.
 ///
 /// @param vec The vector to return the random normalised vector in. Must have dimension of `dimension`.
@@ -602,7 +602,7 @@ void genrand_sphere( double vec[],int dimension ) {
 		vec[2] = u;
 	}
 	else if( dimension==_2D ) {
-		theta=genrand_real()*pi;
+		theta=2*genrand_real()*pi;
 		vec[0]=cos(theta);
 		vec[1]=sin(theta);
 	}
