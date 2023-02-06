@@ -3426,6 +3426,7 @@ void localMPCVCM( double vcm[_3D],cell CL,spec *SP ) {
 /// 
 /// Lorem Ipsum It includes MPCD, MD and swimmer particles. 
 /// @param X Lorem Ipsum
+/// @return M The local mass of a cell (including MPCD, MD and swimmer particles).
 ///
 double localMASS( cell CL,spec *SP,specSwimmer specS ) {
 	int id;
@@ -3471,6 +3472,7 @@ double localMASS( cell CL,spec *SP,specSwimmer specS ) {
 /// 
 /// Lorem Ipsum  It includes MPCD, MD and swimmer particles. 
 /// @param X Lorem Ipsum
+/// @return KBT The local thermal energy of a cell (via equipartition theorem). 
 ///
 double localTEMP( cell CL,spec *SP,specSwimmer specS ) {
 /*
@@ -3539,6 +3541,7 @@ double localTEMP( cell CL,spec *SP,specSwimmer specS ) {
 /// Lorem Ipsum /// from the particleMPCs listed in the linked list (i.e. assuming localPROP hasn't been called).
 /// It includes MPCD, MD and swimmer
 /// @param X Lorem Ipsum
+/// @return i Total number of particles in this cell.
 ///
 int localPOP( cell CL ) {
 	int i = 0;
@@ -3809,10 +3812,10 @@ void localMomInertiaTensor( cell *CL,spec *SP,specSwimmer specS ) {
 
 /// 
 /// @brief This routine calculates the moment of inertia value of the MPCD particles (here called SRD) for a given cell. 
-///
 /// 
 //  This routine calculates the moment of inertia value about a given position r0 and axis n (assumed normalized)
 /// @param X Lorem Ipsum
+/// @return momI Magnitude of the moment of inertia about the given position and axis. 
 ///
 double localMomInertia_SRD( cell CL,spec *SP,double r0[],double n[] ) {
 	int id,d;
