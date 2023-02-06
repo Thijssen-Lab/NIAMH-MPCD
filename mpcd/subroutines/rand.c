@@ -584,9 +584,6 @@ float genrand_rayleigh( float std ) {
 /// @see genrand_real()
 /// @see genrand_pmOne()
 void genrand_sphere( double vec[],int dimension ) {
-	/*
-	 Generate a random, normalized vector uniformly distributed on a sphere
-	*/
 // 	int i;
 // 	for( i=0; i<dimension; i++ ) vec[i]=genrand_gauss();
 // 	norm( vec,dimension );
@@ -615,13 +612,17 @@ void genrand_sphere( double vec[],int dimension ) {
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
+
+/// @brief Generate a non-normalised vector where the components are randomly uniformly distributed in the range [0,1).
+///
+/// Generates a random vector based off `dimension`. Each component is generated using genrand_real().
+///
+/// @param v The vector to return the random vector in. Must have dimension of `dimension`.
+/// @param doShift Integer flag on whether to do the randomness operation. Set to 0 to disable and return a vector of 0s.
+/// @param dimension The dimension to be calculated on. Must match dimension of `v`.
+/// @see genrand_real()
+/// @return The randomly generated vector, identical to `v`.
 double *ranshift( double *v,int doShift,int dimension ) {
-/*
-   Produces a vectors with uniformly distributed
-   random orientations, where no component is
-   greater than unity.
-	 Each component of the random shift is [0,1)
-*/
 	double x,y,z;
 	if( doShift ) {
 		if( dimension >= _3D ) z = genrand_real();
@@ -640,12 +641,16 @@ double *ranshift( double *v,int doShift,int dimension ) {
 	}
 	return v;
 }
+
+/// @brief Generate a normalised vector in 3D the components are randomly uniformly distributed in the range [-1,1).
+///
+/// Generates pairs of random numbers in the range [0,1) until they have a magnitude of less than 1. Uses this to create
+/// the third vector component, re-normalising the x and y components before returning.
+///
+/// @param v The randomly generated vector to be returned.
+/// @see genrand_real()
+/// @return The randomly generated vector. Identical to `v`.
 double *ranvec3D( double *v ) {
-/*
-   Produces unit vectors in 3 dimensions with
-   uniformly distributed random orientations, using
-   a standard rejection method [rap95].
-*/
 	double x,y,s,r;
 	do{
 		r = genrand_real();
@@ -660,13 +665,17 @@ double *ranvec3D( double *v ) {
 	v[1] = s * y;
 	return v;
 }
+
+/// @brief Generate a normalised vector in 2D the components are randomly uniformly distributed in the range [-1,1).
+///
+/// Generates a random number in the range [0,1), then uses this to create the second vector component. Similar to
+/// ranvec3D()
+///
+/// @param v The randomly generated vector to be returned.
+/// @see genrand_real()
+/// @see ranvec3D()
+/// @return The randomly generated vector. Identical to `v`.
 double *ranvec2D( double *v ) {
-/*
-   Produces unit vectors in 2 dimensions with
-   uniformly distributed random orientations, by
-   randomly generating x and solving for y by
-   the Pythagorean theorem
-*/
 	double x,y;
 	x = genrand_real();
 	y = sqrt( 1.-x*x );
@@ -674,6 +683,16 @@ double *ranvec2D( double *v ) {
 	v[1] = y;
 	return v;
 }
+
+/// @brief Generates a random normalised vector in 2D or 3D. Uses ranvec2D() or ranvec3D() respectively.
+///
+/// Generates a random normalised vector in 2D or 3D. Uses ranvec2D() or ranvec3D() respectively.
+///
+/// @param v The randomly generated vector to be returned. Must have dimension of `dimension`.
+/// @param dimension The dimension to be calculated on. Must match dimension of `v`, and should be either 2 or 3.
+/// @see ranvec2D()
+/// @see ranvec3D()
+/// @return The randomly generated vector. Identical to `v`.
 double *ranvec( double *v,int dimension ) {
 /*
    Produces a random vector in 2 or 3D
@@ -682,6 +701,14 @@ double *ranvec( double *v,int dimension ) {
 	if( dimension==_2D ) ranvec2D( v );
 	return v;
 }
+
+/// @brief Randomly picks an integer corresponding to one of all MPC particles.
+///
+/// Randomly picks an integer corresponding to one of all MPC particles.
+///
+/// @param POP Total population of MPC particles.
+/// @see genrand_real()
+/// @return The randomly generated integer corresponding to one of all MPC particles.
 int rand_particle( int POP ) {
 /*
    Randomly picks one of the MPC particles
