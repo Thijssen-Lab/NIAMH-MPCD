@@ -4,7 +4,7 @@
 /// @brief This file contains the core of the MPCD algorithm.
 ///
 /// The file does the majority of MPCD functions. 
-/// This includes `timestep()`, which is iterated over repeatedly in `main()`, as well as the streaming and collision operators. 
+/// This includes timestep(), which is iterated over repeatedly in main(), as well as the streaming and collision operators. 
 /// It also includes the binning and the calculation of all local (cell-level) fluid properties.
 ///
 /// @see main()
@@ -52,12 +52,13 @@
 /// - centre of mass velocity
 /// - moment of inertia tensor
 /// - nematic order parameter tensor
-/// - velocity gradient tensor
-/// @param CL All of the MPCD cells (including the linked list of particles in each cell)
-/// @param SP The species-wide information about MPCD particles
-/// @param specS The species-wide information about swimmers
-/// @param RTECH The MPCD collision operator
-/// @param LC Whether or not the nematic liquid crystal is turned on
+/// - velocity gradient tensor.
+/// @param CL All of the MPCD cells (including the linked list of particles in each cell).
+/// @param SP The species-wide information about MPCD particles.
+/// @param specS The species-wide information about swimmers.
+/// @param RTECH The MPCD collision operator.
+/// @param LC Whether or not the nematic liquid crystal is turned on.
+/// @note localPROP() calculates <b>all</b> local parameters. For single properties, other routines exist. See localMASS() for example
 ///
 void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 	int a,b,c,d,id;
@@ -208,25 +209,42 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 	// Find the velocity gradient tensor
 	if( LC!=ISOF ) localVelGrad( CL );
 }
+
+/// 
+/// @brief This routine calculates the local <b>instantaneous</b> flow in each cell.
+///
+/// The function simply loops over all cells and calculates the center of mass velocity through the routine localMPCVCM().
+/// @see localMPCVCM().
+/// @param CL All of the MPCD cells (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+///
 void localFLOW( cell ***CL,spec *SP ) {
-/*
-   This routine calculates the local flow in each cell
-*/
 	int a,b,c;
 	for( a=0; a<XYZ_P1[0]; a++ ) for( b=0; b<XYZ_P1[1]; b++ ) for( c=0; c<XYZ_P1[2]; c++ ) {
 		localMPCVCM( CL[a][b][c].VCM,CL[a][b][c],SP ) ;
 	}
 }
+
+/// 
+/// @brief This routine calculates the rolling-average local flow in each cell. 
+///
+/// The function loops over all cells and adds the current (pre-calculated) local velocity of each cell to a running sum, which will become a time-window flowout(). 
+/// @param CL All of the MPCD cells (including the linked list of particles in each cell).
+///
 void sumFLOW( cell ***CL ) {
-/*
-   This routine sums the local flow in each cell --- to be turned into an average in flowout()
-*/
 	int a,b,c,d;
 	for( a=0; a<XYZ_P1[0]; a++ ) for( b=0; b<XYZ_P1[1]; b++ ) for( c=0; c<XYZ_P1[2]; c++ ) for( d=0; d<DIM; d++ ) {
 		CL[a][b][c].FLOW[d] += CL[a][b][c].VCM[d];
 	}
 }
 
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 /*
    This routine adds the effect of phantom particleMPCs to the CM
@@ -475,6 +493,14 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 double trans( double t,double V, double QOLD ) {
 /*
    This subroutine translates the particleMPCs'
@@ -486,6 +512,14 @@ double trans( double t,double V, double QOLD ) {
 	QNEW = QOLD + t * V;
 	return QNEW;
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 double acc( double t,double GRAV,double VOLD ) {
 /*
    This subroutine accelerates the particleMPCs'
@@ -495,6 +529,14 @@ double acc( double t,double GRAV,double VOLD ) {
 	VNEW = VOLD + t * GRAV;
 	return VNEW;
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void stream_BC( bc *WALL,double t ) {
 /*
     The streaming step of the algorithm translates
@@ -503,6 +545,14 @@ void stream_BC( bc *WALL,double t ) {
 	int i;
 	for( i=0; i<DIM; i++ ) WALL->Q[i] = trans( t,WALL->V[i],WALL->Q[i] );
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void spin_BC( bc *WALL,double t ) {
 /*
     The streaming rotational step of the algorithm rotates
@@ -511,6 +561,14 @@ void spin_BC( bc *WALL,double t ) {
 	int i;
 	for( i=0; i<_3D	; i++ ) WALL->O[i] += t * WALL->L[i];
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void stream_P( particleMPC *p,double t ) {
 /*
     The streaming step of the algorithm translates position
@@ -518,6 +576,14 @@ void stream_P( particleMPC *p,double t ) {
 	int i;
 	for( i=0; i<DIM; i++ ) p->Q[i] = trans( t,p->V[i],p->Q[i] );
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void acc_BC( bc *WALL,double t,double GRAV[] ) {
 /*
     The streaming step of the algorithm translates
@@ -526,6 +592,14 @@ void acc_BC( bc *WALL,double t,double GRAV[] ) {
 	int i;
 	for( i=0; i<DIM; i++ ) WALL->V[i] = acc( t,GRAV[i],WALL->V[i] );
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void acc_P( particleMPC *p,double t,double GRAV[] ) {
 /*
     The streaming step of the algorithm translates
@@ -534,6 +608,14 @@ void acc_P( particleMPC *p,double t,double GRAV[] ) {
 	int i;
 	for( i=0; i<DIM; i++ ) p->V[i] = acc( t,GRAV[i],p->V[i] );
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void stream_all( particleMPC *pp,double t ) {
 /*
     The streaming step of the algorithm translates the
@@ -546,6 +628,14 @@ void stream_all( particleMPC *pp,double t ) {
 		else (pp+i)->S_flag = STREAM;
 	}
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void acc_all( particleMPC *pp,double t,double GRAV[] ) {
 /*
     The streaming step of the algorithm translates the
@@ -554,6 +644,14 @@ void acc_all( particleMPC *pp,double t,double GRAV[] ) {
 	int i;
 	for( i=0; i<GPOP; i++ ) acc_P( (pp+i),t,GRAV );
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void gridShift_all( double SHIFT[],int shiftBack,particleMPC *SRDparticles,bc WALL[],simptr simMD,swimmer swimmers[],int MDmode ) {
 	/*
 	    Shifts the entire system by the vector SHIFT
@@ -606,6 +704,14 @@ void gridShift_all( double SHIFT[],int shiftBack,particleMPC *SRDparticles,bc WA
 	//Shift each boundary
 	for( i=0; i<NBC; i++) for( j=0; j<DIM; j++ ) WALL[i].Q[j] += signedSHIFT[j];
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void rotate_CL( cell CL,spec *SP,double r0[],double n0[],double dw ) {
 /*
    This routine applies a solid body rotation to the cell i.e.
@@ -675,6 +781,14 @@ void rotate_CL( cell CL,spec *SP,double r0[],double n0[],double dw ) {
 		}
 	#endif
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 double rewind_trans( double t,double V,double P ) {
 /*
      Rewinds a translation
@@ -684,6 +798,14 @@ double rewind_trans( double t,double V,double P ) {
 	QOLD = P - t*V;
 	return QOLD;
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 double rewind_acc(double t,double G,double V){
 /*
      Rewinds the acceleration
@@ -692,6 +814,14 @@ double rewind_acc(double t,double G,double V){
 	VOLD = V - t*G;
 	return VOLD;
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void rewind_P( particleMPC *p,double time ) {
 /*
      Bring the particleMPC back in time step.
@@ -699,6 +829,14 @@ void rewind_P( particleMPC *p,double time ) {
 	int i;
 	for( i=0; i<DIM; i++ ) p->Q[i] = rewind_trans(time,p->V[i],p->Q[i]);
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void rewind_BC( bc *WALL,double time ) {
 /*
      Bring the BC back in time step.
@@ -706,6 +844,7 @@ void rewind_BC( bc *WALL,double time ) {
 	int i;
 	for( i=0; i<DIM; i++ ) WALL->Q[i] = rewind_trans(time,WALL->V[i],WALL->Q[i]);
 }
+
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
@@ -713,6 +852,14 @@ void rewind_BC( bc *WALL,double time ) {
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void binin( particleMPC p[],cell ***CL ) {
 /*
    This function does the initial binning of the
@@ -731,6 +878,14 @@ void binin( particleMPC p[],cell ***CL ) {
 		addlink( &CL[a][b][c],&p[i] );
 	}
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void bin( cell ***CL,spec *SP,bc WALL[],double KBT,int LC,int shifted ) {
 /*
    This function bins the particleMPCs i.e. it places
@@ -787,6 +942,14 @@ void bin( cell ***CL,spec *SP,bc WALL[],double KBT,int LC,int shifted ) {
 		}
 	}
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void bininMD( simptr sim,cell ***CL ) {
 /*
    This function bins the MD particles for use in the collision steps
@@ -807,6 +970,14 @@ void bininMD( simptr sim,cell ***CL ) {
 		addlinkMD( &CL[a][b][c],p );
 	}
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void binMD( cell ***CL ) {
 /*
    This function bins the particleMDs i.e. it places
@@ -843,6 +1014,14 @@ void binMD( cell ***CL ) {
 		}
 	}
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void addlink( cell *CL,particleMPC *p ) {
 /*
 	This routine adds a link to the end of the list
@@ -865,6 +1044,14 @@ void addlink( cell *CL,particleMPC *p ) {
 	//Particle is now at the end of the list so set next to null
 	p->next = NULL;
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void removelink( particleMPC *current,cell *CL ) {
 /*
 	This routine removes a link from
@@ -882,6 +1069,14 @@ void removelink( particleMPC *current,cell *CL ) {
 	current->previous = NULL;
 	current->next = NULL;
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void addlinkMD( cell *CL,particleMD *p ) {
 /*
 	This routine adds a link to the end of the list
@@ -904,6 +1099,14 @@ void addlinkMD( cell *CL,particleMD *p ) {
 	//Particle is now at the end of the list so set next to null
 	p->nextSRD = NULL;
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void removelinkMD( particleMD *current,cell *CL ) {
 /*
 	This routine removes a link from
@@ -929,6 +1132,14 @@ void removelinkMD( particleMD *current,cell *CL ) {
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void rotate( int RT,double Cos,double Sin,double V[_3D],double L[_3D],long SIGN,int RAND ) {
 /*
    Takes in a vector V and rotates it about
@@ -1013,6 +1224,14 @@ void rotate( int RT,double Cos,double Sin,double V[_3D],double L[_3D],long SIGN,
 	//Save the newly rotated value
 	for( i=0; i<DIM; i++ ) V[i] = TEMP[i];
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void stochrotMPC( cell *CL,int RTECH,double C,double S,double *CLQ,int outP ) {
 /*
     Does the stochastic rotation collision, and returns the
@@ -1075,6 +1294,14 @@ void stochrotMPC( cell *CL,int RTECH,double C,double S,double *CLQ,int outP ) {
 		tsm = tsm->next;
 	}
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int outP ) {
 /*
     Does the Andersen thermostat collision, and returns the
@@ -1167,6 +1394,14 @@ void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 		i++;
 	}
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void andersenROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int outP ) {
 /*
     MPC collision that conserves angular momentum (uses andersen thermostat), and returns the
@@ -1379,6 +1614,14 @@ void andersenROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 		i++;
 	}
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void langevinMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,double Step,double *CLQ,int outP ) {
 /*
     Does the Langevin thermostat collision, and returns the
@@ -1484,6 +1727,14 @@ void langevinMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 		i++;
 	}
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void langevinROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,double Step,double *CLQ,int outP ) {
 /*
 	Langevin MPC collision that conserves angular momentum (uses andersen thermostat), and returns the
@@ -1719,6 +1970,14 @@ void langevinROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 		i++;
 	}
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void activeSRD( cell *CL,spec *SP,int RTECH,double C,double S,double *CLQ,int outP ) {
 	/*
 	 Does the stochastic rotation collision but then rotates the
@@ -1769,6 +2028,14 @@ void activeSRD( cell *CL,spec *SP,int RTECH,double C,double S,double *CLQ,int ou
 	}
 	//MD particles do not participate in the active impulse
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void vicsek( cell *CL,spec *SP,double *CLQ,int outP ) {
 	/*
 	This is meant to be the Vicsek algorithm BUT instead of an
@@ -1807,6 +2074,14 @@ void vicsek( cell *CL,spec *SP,double *CLQ,int outP ) {
 		i++;
 	}
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void chate( cell *CL,spec *SP,double *CLQ,int outP ) {
 	/*
 	This is meant to be the Vicsek algorithm BUT instead of an
@@ -1845,6 +2120,14 @@ void chate( cell *CL,spec *SP,double *CLQ,int outP ) {
 		i++;
 	}
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void vicsekAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,int outP ) {
 	/*
 	 Just like the andersen version of MPCD but it relaxes to the speed ACT
@@ -1924,6 +2207,14 @@ void vicsekAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 		i++;
 	}
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void chateAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,int outP ) {
 	/*
 	 Just like the andersen version of MPCD but the noise is about the director (time activity)
@@ -2016,6 +2307,14 @@ void chateAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,int
 		i++;
 	}
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void vicsekLangevinMPC( cell *CL,spec *SP,double KBT,double FRICCO,double Step,double RELAX,double *CLQ,int outP ) {
 	/*
 	 Does the Langevin thermostat collision, and returns the
@@ -2101,6 +2400,14 @@ void vicsekLangevinMPC( cell *CL,spec *SP,double KBT,double FRICCO,double Step,d
 		i++;
 	}
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void chateLangevinMPC( cell *CL,spec *SP,double KBT,double FRICCO,double Step,double RELAX,double *CLQ,int outP ) {
 	/*
 	 Does the Langevin thermostat collision, and returns the
@@ -2189,6 +2496,14 @@ void chateLangevinMPC( cell *CL,spec *SP,double KBT,double FRICCO,double Step,do
 		i++;
 	}
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void dipoleAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,int outP ) {
 /*
     Does the Andersen thermostat collision, and returns the
@@ -2309,6 +2624,14 @@ void dipoleAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 		i++;
 	}
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void MPCcollision( cell *CL,spec *SP,specSwimmer SS,double KBT,int RTECH,double C,double S,double FRICCO,double TimeStep,int MDmode,int LC,double RELAX,double *CLQ,int outP ) {
 /*
     Does the MPC collision, and returns the
@@ -2351,6 +2674,14 @@ void MPCcollision( cell *CL,spec *SP,specSwimmer SS,double KBT,int RTECH,double 
 	if( outP ) normPressureColl( CL,TimeStep );
 	if (MDmode==MPCinMD) CL->MDpp=tmd;
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void multiphaseColl( cell *CL,spec *SP,specSwimmer SS,int multiphaseMode, double KBT,int MDmode,double *CLQ,int outP ) {
 /*
     Modifies the collision operation to allow fluid particles of different species to interact
@@ -2366,6 +2697,14 @@ void multiphaseColl( cell *CL,spec *SP,specSwimmer SS,int multiphaseMode, double
 		exit( 1 );
 	}
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void multiphaseCollPoint( cell *CL,spec *SP,specSwimmer SS, double KBT,int MDmode,double *CLQ,int outP ) {
 	int i,j,k,id;
 	int mixedCell=0;
@@ -2578,298 +2917,14 @@ void multiphaseCollPoint( cell *CL,spec *SP,specSwimmer SS, double KBT,int MDmod
 		i++;
 	}
 }
-// KEEP COMMENTED OUT FOR NOW, UNTIL KIRA'S DONE
-// void multiphaseCollPoint( cell *CL,spec *SP,specSwimmer SS, double KBT,int MDmode,double *CLQ,int outP ) {
-// 	int i,j,k,id;
-// 	int mixedCell=0;
-// 	double MASS,MASSsum;
-// 	double RV[CL->POP][DIM];        //Random velocities
-// 	double N,NSP[NSPECI];          //Number of each type
-// 	double RVSPsum[NSPECI][DIM]; //Sum of random velocities of each type
-// 	double RVsum[DIM];              //Sum of random velocities that aren't A or B-type (monomers/swimmers)
 
-// 	double DV[CL->POP][DIM];        //Damping velocity
-// 	particleMPC *tmpc;              //Temporary particleMPC
-// 	particleMD *tmd;                //Temporary particleMD
-// 	smono *tsm;                     //Temporary swimmer monomer
-
-// 	double relQ[DIM];               //Relative position
-// 	double VMUtot[DIM];             //Relative position
-// 	double gradSP[NSPECI][DIM];     //Directional gradient of each species
-// 	double thisGrad;								//A temporary gradient contribution component
-// 	double VMU[CL->POP][DIM];       //Grad. chemical potential  velocity of type A (B is negative this)
-
-//   // Zero arrays
-//   for( i=0; i<DIM; i++ ) {
-//     RVsum[i] = 0.0;
-//     relQ[i] = 0.0;
-// 		for( j=0; j<NSPECI; j++ ) {
-// 			RVSPsum[j][i] = 0.0;
-// 	    gradSP[j][i] = 0.0;
-// 		}
-//   }
-//   for( i=0;i<CL->POP;i++ ) for( j=0;j<DIM;j++ ) {
-//     RV[i][j] = 0.0;
-//     VMU[i][j] = 0.0;
-//     VMUtot[j] = 0.;             //Relative position
-//     DV[i][j] = 0.0;
-//   }
-// 	for( j=0; j<NSPECI; j++ ) NSP[j]=0.0;
-// 	MASSsum=0.0;
-
-//   //Calculate the number of each type
-//   //MPCD particles
-//   tmpc = CL->pp;
-//   while( tmpc!=NULL ) {
-//     id = tmpc->SPID;
-// 		NSP[id] += 1.0;
-// 		//Increment link in list
-//     tmpc = tmpc->next;
-//   }
-//   //Swimmer monomers
-//   tsm = CL->sp;
-//   while( tsm!=NULL ) {
-//     if( tsm->HorM ) id = SS.MSPid;
-//     else id = SS.HSPid;
-// 		NSP[id] += 1.0;
-// 		//Increment link in list
-//     tsm = tsm->next;
-//   }
-// 	//MD particles --- ALWAYS type 0
-// 	id=0;
-// 	tmd = CL->MDpp;
-// 	while( tmd!=NULL ) {
-// 		NSP[id] += 1.0;
-// 		//Increment link in list
-// 		tmd = tmd->nextSRD;
-// 	}
-//   N=0.0;
-// 	for( j=0; j<NSPECI; j++ ) N += NSP[j];
-
-//   //Generate separation velocities
-// 	mixedCell=0;
-// 	for( j=0; j<NSPECI; j++ ) if( NSP[j]>0.0 ) mixedCell+=1;
-//   if( mixedCell>1 ) {
-//     // Calculate the gradient of the different species
-// 		// MPC particles
-//     tmpc = CL->pp;
-//     while( tmpc!=NULL ) {
-//       id = tmpc->SPID;
-//       //Particle-based gradient of this species
-//       for( j=0; j<DIM; j++ ) relQ[j] = tmpc->Q[j] - CLQ[j];
-// 			for( j=0; j<DIM; j++ ) {
-// 				thisGrad = 8.0*relQ[j]*relQ[j]-3.0;
-// 				for( k=0; k<DIM; k++ ) thisGrad += 6.0*relQ[k]*relQ[k];
-// 				thisGrad *= 30.0*relQ[j];
-//         gradSP[id][j] += thisGrad;
-//       }
-// 			//Increment link in list
-//       tmpc = tmpc->next;
-//     }
-// 		//Swimmer monomers
-// 		tsm = CL->sp;
-// 		while( tsm!=NULL ) {
-// 			if( tsm->HorM ) id = SS.MSPid;
-// 			else id = SS.HSPid;
-// 			//Particle-based gradient of this species
-//       for( j=0; j<DIM; j++ ) relQ[j] = tsm->Q[j] - CLQ[j];
-// 			for( j=0; j<DIM; j++ ) {
-// 				thisGrad = 8.0*relQ[j]*relQ[j]-3.0;
-// 				for( k=0; k<DIM; k++ ) thisGrad += 6.0*relQ[k]*relQ[k];
-// 				thisGrad *= 30.0*relQ[j];
-//         gradSP[id][j] += thisGrad;
-//       }
-// 			//Increment link in list
-// 			tsm = tsm->next;
-// 		}
-// 		//MD particles --- ALWAYS type 0
-// 		id=0;
-// 	  tmd = CL->MDpp;
-// 	  while( tmd!=NULL ) {
-// 			if( DIM>=_1D ) relQ[0] = tmd->rx - CLQ[0];
-// 			if( DIM>=_2D ) relQ[1] = tmd->ry - CLQ[1];
-// 			if( DIM>=_3D ) relQ[2] = tmd->rz - CLQ[2];
-// 			for( j=0; j<DIM; j++ ) {
-// 				thisGrad = 8.0*relQ[j]*relQ[j]-3.0;
-// 				for( k=0; k<DIM; k++ ) thisGrad += 6.0*relQ[k]*relQ[k];
-// 				thisGrad *= 30.0*relQ[j];
-//         gradSP[id][j] += thisGrad;
-//       }
-// 	    //Increment link in list
-// 	    tmd = tmd->nextSRD;
-// 	  }
-
-//     //Calculate the velocities due to the cell's chemical potential
-//     i=0;
-//     //MPCD particles
-//     tmpc = CL->pp;
-//     while( tmpc!=NULL ) {
-//       id = tmpc->SPID;
-//       // MASS = (double) (SP+id)->MASS;
-// 			for( j=0; j<DIM; j++ ) {
-// 				for( k=0; k<NSPECI; k++ ) VMU[i][j] += gradSP[k][j]*((SP+id)->M[k]) / NSP[id];
-// 	      VMUtot[j] += VMU[i][j];
-// 			}
-// 			//Increment link in list
-//       tmpc = tmpc->next;
-//       i++;
-//     }
-//     //Swimmer monomers
-//     tsm = CL->sp;
-//     while( tsm!=NULL ) {
-// 			if( tsm->HorM ) {
-// 				id = SS.MSPid;
-// 				// MASS = (double) SS.middM;
-// 			}
-// 			else {
-// 				id = SS.HSPid;
-// 				// MASS = (double) SS.headM;
-// 			}
-// 			for( j=0; j<DIM; j++ ) {
-// 				for( k=0; k<NSPECI; k++ ) VMU[i][j] += gradSP[k][j]*((SP+id)->M[k]) / NSP[id];
-// 	      VMUtot[j] += VMU[i][j];
-// 			}
-// 			//Increment link in list
-//       tsm = tsm->next;
-// 			i++;
-//     }
-//   }
-// 	//MD particles --- ALWAYS type 0
-// 	id=0;
-// 	tmd = CL->MDpp;
-// 	while( tmd!=NULL ) {
-// 		// MASS = (double) tmd->mass;
-// 		for( j=0; j<DIM; j++ ) {
-// 			for( k=0; k<NSPECI; k++ ) VMU[i][j] += gradSP[k][j]*((SP+id)->M[k]) / NSP[id];
-// 			VMUtot[j] += VMU[i][j];
-// 		}
-// 		//Increment link in list
-// 		tmd = tmd->nextSRD;
-// 		i++;
-// 	}
-
-//   //Generate random velocities
-//   i=0;
-//   //MPC particles
-//   tmpc = CL->pp;
-//   while( tmpc!=NULL ) {
-//     id = tmpc->SPID;
-//     MASS = (double) (SP+id)->MASS;
-// 		MASSsum+=MASS;
-//     for( j=0; j<DIM; j++ ) {
-//       RV[i][j] = genrand_gaussMB( KBT,MASS );
-//       // RVsum[j] += MASS*RV[i][j];
-// 			RVsum[j] += RV[i][j];
-// 			for( k=0; k<NSPECI; k++ ) RVSPsum[k][j] += RV[i][j];
-//       DV[i][j] = ((SP+id)->DAMP)*(CL->VCM[j])/((double)CL->POP);
-//     }
-// 		//Increment link in list
-//     tmpc = tmpc->next;
-//     i++;
-//   }
-//   //Swimmer monomers
-// 	tsm = CL->sp;
-// 	while( tsm!=NULL ) {
-// 		if( tsm->HorM ) {
-// 			id = SS.MSPid;
-// 			MASS = (double) SS.middM;
-// 		}
-// 		else {
-// 			id = SS.HSPid;
-// 			MASS = (double) SS.headM;
-// 		}
-// 		MASSsum+=MASS;
-// 		for( j=0; j<DIM; j++ ) {
-//       RV[i][j] = genrand_gaussMB( KBT,MASS );
-//       // RVsum[j] += MASS*RV[i][j];
-// 			RVsum[j] += RV[i][j];
-// 			for( k=0; k<NSPECI; k++ ) RVSPsum[k][j] += RV[i][j];
-// 			//No dampening on the swimmer itself
-//       DV[i][j] = 0.0;
-//     }
-// 		//Increment link in list
-// 		tsm = tsm->next;
-// 		i++;
-// 	}
-//   //MD particles --- ALWAYS type 0
-// 	id=0;
-//   tmd = CL->MDpp;
-//   while( tmd!=NULL ) {
-//     MASS = tmd->mass;
-//     MASSsum+=MASS;
-// 		for( j=0; j<DIM; j++ ) {
-// 			RV[i][j] = genrand_gaussMB( KBT,MASS );
-// 			// RVsum[j] += MASS*RV[i][j];
-// 			RVsum[j] += RV[i][j];
-// 			for( k=0; k<NSPECI; k++ ) RVSPsum[k][j] += RV[i][j];
-// 			//No dampening on the swimmer itself
-// 			DV[i][j] = 0.0;
-// 		}
-// 		//Increment link in list
-//     tmd = tmd->nextSRD;
-//     i++;
-//   }
-//   //Turn sums into averages
-//   // if( MASSsum>0.0 ) for( j=0; j<DIM; j++ ) RVsum[j] /= MASSsum;
-// 	if( MASSsum>0.0 ) for( j=0; j<DIM; j++ ) RVsum[j] /= N;
-// 	for( k=0; k<NSPECI; k++ ) if( NSP[k]>0.0 ) for( j=0; j<DIM; j++ ) RVSPsum[k][j] /= NSP[k];
-// 	for( j=0; j<DIM; j++ ) VMUtot[j] /= N;
-
-//   //Collision
-//   i=0;
-//   // MPC particles
-//   tmpc = CL->pp;
-//   while( tmpc!=NULL ) {
-//     id = tmpc->SPID;
-//     // MASS = (double)(SP+id)->MASS;
-//     // for( j=0; j<DIM; j++ ) tmpc->V[j] = CL->VCM[j] + RV[i][j] - RVsum[j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
-// 		for( j=0; j<DIM; j++ ) tmpc->V[j] = CL->VCM[j] + RV[i][j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
-//     //Increment link in list
-//     tmpc = tmpc->next;
-//     i++;
-//   }
-//   // Swimmer monomers
-//   tsm = CL->sp;
-//   while( tsm!=NULL ) {
-// 		if( tsm->HorM ) {
-// 			id = SS.MSPid;
-// 			// MASS = (double) SS.middM;
-// 		}
-// 		else {
-// 			id = SS.HSPid;
-// 			// MASS = (double) SS.headM;
-// 		}
-// 		// for( j=0; j<DIM; j++ ) tsm->V[j] = CL->VCM[j] + RV[i][j] - RVsum[j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
-// 		for( j=0; j<DIM; j++ ) tsm->V[j] = CL->VCM[j] + RV[i][j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
-//     //Increment link in list
-//     tsm = tsm->next;
-//     i++;
-//   }
-//   //MD particles --- ALWAYS type 0
-// 	id=0;
-//   tmd = CL->MDpp;
-//   while( tmd!=NULL ) {
-// 		// MASS = tmd->mass;
-// 		if( DIM>=_1D ) {
-// 			j=0;
-// 			// tmd->vx = CL->VCM[j] + RV[i][j] - RVsum[j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
-// 			tmd->vx = CL->VCM[j] + RV[i][j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
-// 		}
-// 		if( DIM>=_2D ) {
-// 			j=1;
-// 			// tmd->vy = CL->VCM[j] + RV[i][j] - RVsum[j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
-// 			tmd->vy = CL->VCM[j] + RV[i][j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
-// 		}
-// 		if( DIM>=_3D ) {
-// 			j=2;
-// 			// tmd->vz = CL->VCM[j] + RV[i][j] - RVsum[j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
-// 			tmd->vz = CL->VCM[j] + RV[i][j] - DV[i][j] - RVSPsum[id][j] + VMU[i][j] - VMUtot[j];
-// 		}
-//     //Increment link in list
-//     tmd = tmd->nextSRD;
-//     i++;
-//   }
-// }
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void incompColl( cell *CL,spec *SP,specSwimmer SS,int INCOMPmode,int MDmode,double *CLQ,int outP ) {
 /*
     Applies a correction to the collision operation to give the fluid a non-ideal equation of state
@@ -2885,6 +2940,14 @@ void incompColl( cell *CL,spec *SP,specSwimmer SS,int INCOMPmode,int MDmode,doub
 	}
 
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void incompAddVirial( cell *CL,double virialCoB, double virialCoC, double virialCoD, spec *SP,specSwimmer SS ) {
 /*
     MPC collision that applies a correction radial kicks to try to keep the density constant
@@ -2982,6 +3045,14 @@ void incompAddVirial( cell *CL,double virialCoB, double virialCoC, double virial
 		}
 	}
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 /*
     MPC collision that applies a correction to constrain the divergence of momentum density to be zero by swapping velocities
@@ -3234,6 +3305,14 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 		}
 	#endif
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void incompSubtractDivergence( cell *CL,spec *SP,specSwimmer SS ) {
 /*
     MPC collision that applies a correction to constrain the divergence of momentum density to be zero
@@ -3428,6 +3507,14 @@ void incompSubtractDivergence( cell *CL,spec *SP,specSwimmer SS ) {
 		}
 	#endif
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void localVCM( double vcm[_3D],cell CL,spec *SP,specSwimmer specS ) {
 /*
    This routine calculates the centre of mass
@@ -3481,10 +3568,19 @@ void localVCM( double vcm[_3D],cell CL,spec *SP,specSwimmer specS ) {
 	}
 	for( i=0; i<DIM; i++ ) vcm[i] /= (summ ? summ : 1.);
 }
+
+/// 
+/// @brief This routine calculates the centre of mass velocity of the MPCD particles in a single cell or bin.
+///
+/// The function loops over all MPCD particles within a given cell and calculates the center of mass velocity.
+/// @see localFLOW().
+/// @param vcm The centre of mass velocity vector. Velocity is returned through this variable.
+/// @param CL One specific MPCD cell.
+/// @param SP The species-wide information about MPCD particles.
+///
 void localMPCVCM( double vcm[_3D],cell CL,spec *SP ) {
 /*
-   This routine calculates the centre of mass
-   velocity of the MPCD particles in a single cell or bin.
+   
 */
 	int id,i;
 	double summ = 0.0;
@@ -3507,6 +3603,14 @@ void localMPCVCM( double vcm[_3D],cell CL,spec *SP ) {
 	}
 	for( i=0; i<DIM; i++ ) vcm[i] /= (summ ? summ : 1.);
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 double localMASS( cell CL,spec *SP,specSwimmer specS ) {
 /*
    This routine calculates the local
@@ -3551,6 +3655,14 @@ double localMASS( cell CL,spec *SP,specSwimmer specS ) {
 	}
 	return M;
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 double localTEMP( cell CL,spec *SP,specSwimmer specS ) {
 /*
    This routine calculates the local
@@ -3611,6 +3723,14 @@ double localTEMP( cell CL,spec *SP,specSwimmer specS ) {
 	KBT /= (double)(DIM*p);
 	return KBT;
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 int localPOP( cell CL ) {
 /*
    This routine calculates the local
@@ -3652,6 +3772,14 @@ int localPOP( cell CL ) {
 	}
 	return i;
 }
+
+/// 
+/// @brief Lorem Ipsum
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void scramble( particleMPC *p ) {
 /*
    This routine randomly scrambles the velocities.
@@ -3674,11 +3802,15 @@ void scramble( particleMPC *p ) {
 		}
 	}
 }
+
+/// 
+/// @brief This routine just calculates the centre of mass position for a given cell
+///
+/// 
+/// This is now a legacy method after being refactored into localPROP.
+/// @param X Lorem Ipsum
+///
 void localCM( cell *CL,spec *SP,specSwimmer specS ) {
-/*
-	This is now a legacy method after being refactored into localPROP.
-   This routine just calculates the centre of mass position for a given cell
-*/
 	int id,d;
 	double mass,cellMass,Q[_3D];
 	particleMPC *pMPC;	//Temporary pointer to MPC particles
@@ -3737,10 +3869,15 @@ void localCM( cell *CL,spec *SP,specSwimmer specS ) {
 		for( d=0; d<DIM; d++ ) CL->CM[d] /= cellMass;
 	}
 }
+
+/// 
+/// @brief This routine just calculates the centre of mass position for a given cell's MPCD (SRD) particles. 
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void localCM_SRD( cell CL,spec *SP,double r_cm[] ) {
-/*
-   This routine just calculates the centre of mass position for a given cell's SRD particles
-*/
 	int id,d;
 	double mass,cellMass;
 	particleMPC *pMPC;	//Temporary pointer to MPC particles
@@ -3763,6 +3900,15 @@ void localCM_SRD( cell CL,spec *SP,double r_cm[] ) {
 	// Make sums into averages
 	for( d=0; d<DIM; d++ ) r_cm[d] /= cellMass;
 }
+
+/// 
+/// @brief This routine calculates the moment of inertia tensor for a given cell. 
+///
+/// 
+/// Calculates the moment of inertia tensor for a given cell, including MPCD, MD and swimmer particles. 
+/// Need to have already calculated the centre of mass position. 
+/// @param X Lorem Ipsum
+///
 void localMomInertiaTensor( cell *CL,spec *SP,specSwimmer specS ) {
 /*
    This routine calculates the moment of inertia tensor for a given cell
@@ -3858,10 +4004,15 @@ void localMomInertiaTensor( cell *CL,spec *SP,specSwimmer specS ) {
 	CL->I[2][0] = CL->I[0][2];
 	CL->I[2][1] = CL->I[1][2];
 }
+
+/// 
+/// @brief This routine calculates the moment of inertia value of the MPCD particles (here called SRD) for a given cell. 
+///
+/// 
+//  This routine calculates the moment of inertia value about a given position r0 and axis n (assumed normalized)
+/// @param X Lorem Ipsum
+///
 double localMomInertia_SRD( cell CL,spec *SP,double r0[],double n[] ) {
-/*
-   This routine calculates the moment of inertia value about a given position r0 and axis n (assumed normalized)
-*/
 	int id,d;
 	double mass,momI,d2,r[DIM],r_perp[DIM];
 	particleMPC *pMPC;	//Temporary pointer to MPC particles
@@ -3888,11 +4039,15 @@ double localMomInertia_SRD( cell CL,spec *SP,double r0[],double n[] ) {
 	}
 	return momI;
 }
+
+/// 
+/// @brief This is a very coarse check to make sure that none of the MPCD particles have escaped the control volume
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void checkEscape_all( particleMPC *pp ) {
-/*
-    This is a very coarse check to make sure that none of the
-    MPCD particles have escaped the control volume
-*/
 	int i,d;
 	double Q[_3D];
 	for( i=0; i<GPOP; i++ ){
@@ -3905,11 +4060,15 @@ void checkEscape_all( particleMPC *pp ) {
 		}
 	}
 }
+
+/// 
+/// @brief Applies a change in velocity to every MPCD particle in a cell. 
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void cellVelForce( cell *CL,double addVel[3] ) {
-/*
-    Does the Andersen thermostat collision, and returns the
-    CM velocity and the local temperature of the cell.
-*/
 	int i,j;
 	particleMPC *tmpc;	//Temporary particleMPC
 	particleMD *tmd;		//Temporary particleMD
@@ -3944,11 +4103,15 @@ void cellVelForce( cell *CL,double addVel[3] ) {
 		i++;
 	}
 }
+
+/// 
+/// @brief Overrides the velocity of every MPCD particle in a cell. 
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void cellVelSet( cell *CL,double vel[3] ) {
-/*
-    Does the Andersen thermostat collision, and returns the
-    CM velocity and the local temperature of the cell.
-*/
 	int i,j;
 	particleMPC *tmpc;	//Temporary particleMPC
 	particleMD *tmd;		//Temporary particleMD
@@ -3984,6 +4147,13 @@ void cellVelSet( cell *CL,double vel[3] ) {
 	}
 }
 
+/// 
+/// @brief The timestep routine contains all the routines that happen in each time iteration. 
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr simMD,specSwimmer *SS,swimmer swimmers[],double AVNOW[_3D],double AVV[_3D],double avDIR[_3D],inputList in,double *KBTNOW, double *AVS,int runtime,int MDmode,outputFlagsList outFlags,outputFilesList outFiles ) {
 
 	int i,j,k;						//Counting variables
@@ -4383,11 +4553,18 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 		sumFLOW( CL );
 	}
 }
+
+/// 
+/// @brief This function calculates the pre-collisional part (ballistic/streaming part) of the pressure tensor.
+///
+/// 
+/// The routine only calculates the contribution due to the MPCD fluid --- not MD or swimmers
+/// The volume of the MPCD cell is 1
+/// @param X Lorem Ipsum
+///
 void calcPressureStreaming( cell ***CL,spec *SP ) {
 /*
-   This function calculates the pre-collisional part (ballistic/streaming part) of the pressure tensor
-	 It only calculates the contribution due to the MPCD fluid --- not MD or swimmers
-	 The volume of the MPCD cell is 1
+	 
 */
 	int a,b,c,i,j,id;
 	double V[DIM];
@@ -4415,17 +4592,28 @@ void calcPressureStreaming( cell ***CL,spec *SP ) {
 		}
 	}
 }
+
+/// 
+/// @brief Zero collisional pressure term --- also divided by volume but cell volume=1.
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void normPressureColl( cell *CL,double dt ) {
-/*
-    Zero collisional pressure term --- also divided by volume but cell volume=1
 */
 	int i,j;
 	for( i=0; i<DIM; i++ ) for( j=0; j<DIM; j++ ) CL->Pc[i][j] /= (-dt);
 }
+
+/// 
+/// @brief The <b>pre</b>-collision calculations needed to calculate the collisional pressure term.
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void calcPressureColl_preColl( double *relQ,double *dp,particleMPC *p,double *CLQ ) {
-/*
-    The pre-collision calculations needed to calculate the collisional pressure term
-*/
 	int d;
 	for( d=0; d<DIM; d++ ) {
 		//Calculate the relative position from the cell centre
@@ -4434,10 +4622,15 @@ void calcPressureColl_preColl( double *relQ,double *dp,particleMPC *p,double *CL
 		dp[d] = p->V[d];
 	}
 }
+
+/// 
+/// @brief The <b>post</b>-collision calculations needed to calculate the collisional pressure term.
+///
+/// 
+/// Lorem Ipsum
+/// @param X Lorem Ipsum
+///
 void calcPressureColl_postColl( double *relQ,double *dp,double M,double *vel,cell *CL ) {
-/*
-    The post-collision calculations needed to calculate the collisional pressure term
-*/
 	int i,j;
 	//Finish calculating the change in momentum
 	for( i=0; i<DIM; i++ ) {
