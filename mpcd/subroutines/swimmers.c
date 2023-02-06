@@ -489,7 +489,7 @@ double swimmerSpring6( double r,double k ) {
 ///
 /// @param SS Swimmer properties.
 /// @param s List of swimmers as pointers. Their positions, velocities, and accelerations will be updated.
-/// @param dt Current timestep in the simulation.
+/// @param dt Length of time interval used for integration.
 /// @param springType Tag for the type of spring used. Refer to definition.h for spring list.
 /// @param WALL Boundary conditions, used for a check halfway through the function.
 /// @param i Swimmer index.
@@ -544,7 +544,7 @@ void swimmerVerlet_nonInteracting( specSwimmer SS,swimmer *s,double dt,int sprin
 ///
 /// @param SS Swimmer properties.
 /// @param s List of swimmers. Their positions, velocities, and accelerations will be updated.
-/// @param dt Current timestep in the simulation.
+/// @param dt Length of time interval used for integration.
 /// @param springType Tag for the type of spring used. Refer to definition.h for spring list.
 /// @param WALL Boundary conditions, used for a check halfway through the function.
 void swimmerVerlet_all( specSwimmer SS,swimmer swimmers[],double dt,int springType,bc WALL[]) {
@@ -718,15 +718,16 @@ void smonoForce_differentSwimmers( double a[],specSwimmer SS,smono s1,smono s2 )
 ///
 /// @brief 
 ///
-/// Integrate the motion of the swimmers.
+/// Integrate the motion of the swimmers, using velocity Verlet integration. Applies a magnetic field to magnetotactic swimmers if this
+/// option is turned on. If the swimmer type is 'near wall', path becomes two-dimensionnal.
 ///
-/// @param SS 
-/// @param swimmers 
+/// @param SS Swimmer properties.
+/// @param swimmers List of swimmers.
 /// @param WALL Boundary conditions.
-/// @param stepsMD 
-/// @param timeStep 
-/// @param MAG 
-/// @param springType 
+/// @param stepsMD Number of molecular dynamics steps per MPCD timestep.
+/// @param timeStep The time in MPCD units of one iteration of the MPCD algorithm.
+/// @param MAG Magnetic field.
+/// @param springType Tag for the type of spring used. Refer to definition.h for spring list.
 void integrateSwimmers( specSwimmer SS,swimmer swimmers[],bc WALL[],int stepsMD,double timeStep,double MAG[],int springType ) {
 	int t,i;
 	double dt = timeStep/(double)stepsMD;
@@ -741,8 +742,6 @@ void integrateSwimmers( specSwimmer SS,swimmer swimmers[],bc WALL[],int stepsMD,
 				}
 			}
 		#endif
-		//Dumbbell swimmer
-		//Currently swimmers DO NOT have steric interactions BETWEEN swimmers
 		for( t=0; t<stepsMD; t++ ) {
 			#ifdef DBG
 				if( DBUG == DBGSWIMMERDEETS ) {
@@ -752,8 +751,7 @@ void integrateSwimmers( specSwimmer SS,swimmer swimmers[],bc WALL[],int stepsMD,
 						swcoord(swimmers[i]);
 					}
 				}
-			#endif
-			//Apply magnetic field to magnetotaxic swimmer
+			#endif	
 			#ifdef DBG
 				if( DBUG == DBGMAG || DBUG == DBGSWIMMERDEETS ) printf( "\tApply magnetic field.\n" );
 			#endif
@@ -820,28 +818,26 @@ void integrateSwimmers( specSwimmer SS,swimmer swimmers[],bc WALL[],int stepsMD,
 }
 ///
 /// @brief 
-/// @param SS 
-/// @param sw 
-/// @param dt 
-/// @param MAG 
+///
+/// Apply the magnetic torque to one swimmer. First calculates a normalized orientation vector, then compute its cross product with
+/// the magnetic field. Multiply by the magnetic moment to find the torque, which is then applied to the swimmer's head. An opposite torque is 
+/// applied to its body.
+///
+/// @param SS Swimmer properties.
+/// @param sw Swimmers.
+/// @param dt The time in MPCD units of one iteration of the MPCD algorithm divided by the number of MD timesteps per MPCD timesteps.
+/// @param MAG Magnetic field.
 void swimmerMagTorque( specSwimmer SS,swimmer *sw,double dt,double MAG[] ) {
-	/*
-	    Apply the magnetic torque to all the swimmers
-	*/
 	int d;
 	double magT,R;
 	double force[DIM],r[DIM],u[_3D],n[_3D],mT[_3D];
 
 	for( d=0; d<_3D; d++) u[d]=0.0;
 
-	//Vector from middle to head
 	for( d=0; d<DIM; d++ ) r[d] = sw->H.Q[d]-sw->M.Q[d];
 	swimmerPBC_dr( r );
-	//Normalize to get the direction of the magnetic moment of the magnetotaxic swimmer
 	normCopy( r,u,DIM );
-	//Calculate the cross product of u (proportional to the magnetic moment) and magnetic field (which is then in the direction of the torque)
 	crossprod( u,MAG,mT );
-	//Find the torque by multiplying by the strength of the magnetic moment
 	for( d=0; d<_3D; d++ ) mT[d] *= SS.MAGMOM;
 	#ifdef DBG
 		if( DBUG == DBGMAG || DBUG == DBGSWIMMERDEETS ) {
@@ -853,20 +849,16 @@ void swimmerMagTorque( specSwimmer SS,swimmer *sw,double dt,double MAG[] ) {
 			pvec( mT,_3D );
 		}
 	#endif
-	//Calculate the direction of the force on the head
 	crossprod( mT,u,n );
 	magT=length( n,_3D );
 	for( d=0; d<_3D; d++) n[d]/=magT;
-	//Calculate the distance from the CM to the head (assuming same mass)
 	R=0.5*length( r,DIM );
-	//Magnitude of the torque
 	magT=length( mT,_3D );
 	#ifdef DBG
 		if( DBUG == DBGMAG || DBUG == DBGSWIMMERDEETS ) {
 			printf( "Mag torque: %lf\n",magT );
 		}
 	#endif
-	//Calculate the force on the head and the body needed to produce the torque
 	if(magT>0.0) for( d=0; d<DIM; d++ ) force[d] = 0.5*magT*n[d]/R;
 	else for( d=0; d<DIM; d++ ) force[d] = 0.0;
 	#ifdef DBG
@@ -881,22 +873,22 @@ void swimmerMagTorque( specSwimmer SS,swimmer *sw,double dt,double MAG[] ) {
 			else if(DIM==_2D) printf( " (%lf, %lf)\n", 100*force[0]*SS.imiddM*dt/sw->M.V[0], 100*force[1]*SS.imiddM*dt/sw->M.V[1] );
 		}
 	#endif
-	//Apply force/impulse to swimmer's head
 	for( d=0; d<DIM; d++ ) sw->H.V[d] += force[d]*SS.iheadM*dt;
-	//Apply equal but opposite force/impulse to swimmer's body
 	for( d=0; d<DIM; d++ ) sw->M.V[d] -= force[d]*SS.imiddM*dt;
 }
 ///
 /// @brief 
-/// @param SS 
-/// @param swimmers 
-/// @param timeStep 
-/// @param stepsMD 
-/// @param MAG 
+///
+/// Apply the magnetic torque to all swimmers. First calculates a normalized orientation vector, then compute its cross product with
+/// the magnetic field. Multiply by the magnetic moment to find the torque, which is then applied to the swimmer's head. An opposite torque is 
+/// applied to its body.
+///
+/// @param SS Swimmers properties.
+/// @param swimmers List of swimmers.
+/// @param timeStep The time in MPCD units of one iteration of the MPCD algorithm.
+/// @param stepsMD Number of molecular dynamics steps per MPCD timestep.
+/// @param MAG Magnetic field.
 void allSwimmersMagTorque( specSwimmer SS,swimmer swimmers[],double timeStep,int stepsMD,double MAG[] ) {
-	/*
-	    Apply the magnetic torque to all the swimmers
-	*/
 	int i,t,d;
 	double magT,R,dt;
 	double force[DIM],r[DIM],u[_3D],n[_3D],mT[_3D];
@@ -905,14 +897,10 @@ void allSwimmersMagTorque( specSwimmer SS,swimmer swimmers[],double timeStep,int
 	dt=timeStep/(double)stepsMD;
 
 	for( i=0; i<NS; i++ ) for( t=0; t<stepsMD; t++ ) {
-		//Vector from middle to head
 		for( d=0; d<DIM; d++ ) r[d] = (swimmers+i)->H.Q[d]-(swimmers+i)->M.Q[d];
 		swimmerPBC_dr( r );
-		//Normalize to get the direction of the magnetic moment of the magnetotaxic swimmer
 		normCopy( r,u,DIM );
-		//Calculate the cross product of u and magnetic field (which is in the direction of the torque)
 		crossprod( u,MAG,mT );
-		//Find the torque by multiplying by the strength of the magnetic moment
 		for( d=0; d<_3D; d++ ) mT[d] *= SS.MAGMOM;
 		#ifdef DBG
 			if( DBUG == DBGMAG ) {
@@ -924,15 +912,11 @@ void allSwimmersMagTorque( specSwimmer SS,swimmer swimmers[],double timeStep,int
 				pvec( mT,_3D );
 			}
 		#endif
-		//Calculate the direction of the force on the head
 		crossprod( mT,u,n );
 		magT=length( n,_3D );
 		for( d=0; d<_3D; d++) n[d]/=magT;
-		//Calculate the distance from the CM to the head
 		R=0.5*length( r,DIM );
-		//Magnitude of the torque
 		magT=length( mT,_3D );
-		//Calculate the force on the head and the body needed to produce the torque
 		if(magT>0.0) for( d=0; d<DIM; d++ ) force[d] = 0.5*magT*n[d]/R;
 		else for( d=0; d<DIM; d++ ) force[d] = 0.0;
 		#ifdef DBG
@@ -941,26 +925,24 @@ void allSwimmersMagTorque( specSwimmer SS,swimmer swimmers[],double timeStep,int
 				pvec( force,DIM );
 			}
 		#endif
-		//Apply force/impulse to swimmer's head
 		for( d=0; d<DIM; d++ ) (swimmers+i)->H.V[d] += force[d]*SS.iheadM*dt;
-		//Apply equal but opposite force/impulse to swimmer's body
 		for( d=0; d<DIM; d++ ) (swimmers+i)->M.V[d] -= force[d]*SS.imiddM*dt;
 	}
 }
 ///
 /// @brief 
-/// @param SS 
-/// @param swimmers 
-/// @param CL 
-/// @param SP 
-/// @param timeStep 
-/// @param SRDparticles 
-/// @param WALL 
-/// @param simMD 
+///
+/// Apply both the force dipole and the rotlet-torque dipole to each swimmer
+///
+/// @param SS Swimmer properties.
+/// @param swimmers List of swimmers.
+/// @param CL List of all the MPCD cells, with the chains they contain.
+/// @param SP Fluid particle properties.
+/// @param timeStep The time in MPCD units of one iteration of the MPCD algorithm.
+/// @param SRDparticles List of all fluid particles.
+/// @param WALL Boundary conditions.
+/// @param simMD MD side of the simulation, for polymers.
 void swimmerDipole( specSwimmer SS,swimmer swimmers[],cell ***CL,spec SP[],double timeStep,particleMPC *SRDparticles,bc WALL[],simptr simMD ) {
-/*
-    Apply both the force dipole and the rotlet-torque dipole to each swimmer
-*/
 	int i,d;
 	int aH,bH,cH,aT,bT,cT;
 	double r[DIM],QT[_3D];	// Position of tail
@@ -1502,17 +1484,14 @@ void runTumbleDynamics( specSwimmer *SS,swimmer swimmers[],bc WALL[],int stepsMD
 }
 ///
 /// @brief 
-/// @param SS 
-/// @param swimmers 
-/// @param CL 
+///
+/// This function does the initial binning of the swimmers after they have been first initialized.
+/// It is different from bin in that it uses the actual array of particleMPCs rather than the array of pointers to particleMPCs.
+///
+/// @param SS Swimmer properties.
+/// @param swimmers List of swimmers.
+/// @param CL List of all the MPCD cells, with the chains they contain.
 void bininSwimmers( specSwimmer SS,swimmer swimmers[],cell ***CL ) {
-/*
-   This function does the initial binning of the
-   swimmers after they have been first initialized.
-   It is different from bin in that it uses the
-   actual array of particleMPCs rather than the array
-   of pointers to particleMPCs.
-*/
 	int i,a,b,c;
 	//Bin Particles
 	for( i=0; i<NS; i++ ){
@@ -1530,14 +1509,12 @@ void bininSwimmers( specSwimmer SS,swimmer swimmers[],cell ***CL ) {
 }
 ///
 /// @brief 
-/// @param CL 
-/// @param shifted 
+/// This function bins the swimmers, i.e. it places a pointer to the particleMPC in the appropriate new
+/// list and removes it from its old list.
+///
+/// @param CL List of all the MPCD cells, with the chains they contain.
+/// @param shifted Tag 
 void binSwimmers( cell ***CL,int shifted ) {
-/*
-   This function bins the swimmers i.e. it places
-   a pointer to the particleMPC in the appropriate new
-   list and removes it from it's old list
-*/
 	int i,j,k,a,b,c;
 	smono *cp;	//Pointer to current item in list
 	smono *tp;	//Temporary pointer
@@ -1575,12 +1552,10 @@ void binSwimmers( cell ***CL,int shifted ) {
 }
 ///
 /// @brief 
-/// @param CL 
-/// @param s 
+/// @param CL List of all the MPCD cells, with the chains they contain.
+/// @param s Monomer.
 void addlinkSwimmer( cell *CL,smono *s ) {
-/*
-	This routine adds a link to the end of the list
-*/
+
 	smono *tp;	//Temporary pointer to swimmer monomer
 
 	if( CL->sp == NULL ) {
@@ -1601,13 +1576,12 @@ void addlinkSwimmer( cell *CL,smono *s ) {
 }
 ///
 /// @brief 
-/// @param current 
-/// @param CL 
+///
+/// This routine removes a link from a list and relinks the list.
+///
+/// @param current Monomer to be removed fromn list.
+/// @param CL List of all the MPCD cells, with the chains they contain.
 void removelinkSwimmer( smono *current,cell *CL ) {
-/*
-	This routine removes a link from
-	a list and relinks the list
-*/
 	//Point the next link back at the previous link (unless last link)
 	if( current->next != NULL ) current->next->previous = current->previous;
 	//Point the previous link at the next link (unless first link)
