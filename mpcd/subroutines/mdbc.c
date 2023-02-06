@@ -1,3 +1,8 @@
+///
+/// @file
+/// @brief Boundary conditions(BC) on molecular dynamics(MD) particles
+///
+
 # include<stdio.h>
 # include<math.h>
 # include<time.h>
@@ -25,6 +30,22 @@
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
+
+///
+/// @brief		Updates the position of the MD particles with respect to the BCs
+///
+/// It checks if the particle is inside the boundaries. If it's inside the boundaries it does not
+/// do anything. But if it is not, it rewinds it to its old position through
+/// rewind_MD(), then it calculates the time takes for the particle to collide with the boundary 
+/// through chooseBC_MD(). it streams that time, collides with the boundary, then it streams inward the 
+/// boundary for the rest of the streaming timestep. If the function fails to bring it inside, 
+/// it is simply brought it back to its position in the previous timestep with no velocity
+/// 
+/// @param atom		The MD particle
+/// @param WALL		The walls of the BCs
+/// @param KBT		Thermal energy
+/// @param t_step	The MD timestep increment
+/// 
 void MD_BCcollision( particleMD *atom,bc WALL[],double KBT,double t_step ) {
 	double t_delta;			//time passed so far
 	double time;			//time left to move for
@@ -102,11 +123,25 @@ void MD_BCcollision( particleMD *atom,bc WALL[],double KBT,double t_step ) {
 		}
 	}
 }
+
+///
+/// @brief		Checks if the MD particle is inside all the boundaries, if not it finds the relevan   
+/// boundary
+///
+/// It checks the particle's position with respect to the BCs. If it is outside any of them 
+/// it calculates the crosstime through crosstime_MD(). If the crosstime does not match the streaming 
+/// timesteps it rises a warning, but later in MD_BCcollision routine the issue is solved
+///
+/// @param WALL		The walls of the Bcs
+/// @param atom		The MD particle
+/// @param t_min	The rest of the `time` remains for particle to stream after reducing the collision 
+/// 				time 
+/// @param chosenW 	It is used to determine if boundary conditions should be applied to the MD particle
+/// @param chosenBC The wall out of which the MD particle is
+/// @param time 	The total remaining time that the particle has to move
+/// @param t_step 	The MD timestep increment
+///
 void chooseBC_MD( bc WALL[],particleMD *atom,double *t_min,double *chosenW,int *chosenBC,double time,double t_step ) {
-/*
-   We must check if the particle is inside any of the BCs
-   This subroutine finds the BC and the time of collision
-*/
 	int i,flag;
 	double t1,t2,tc;
 	double tempW,shift[DIM];
@@ -148,12 +183,16 @@ void chooseBC_MD( bc WALL[],particleMD *atom,double *t_min,double *chosenW,int *
 		shiftbackBC( shift,&WALL[i] );
 	}
 }
+///
+/// @brief	Determines if the BC must be shifted due to the periodicity of the control volume
+///   
+/// It checks if the BC is periodic, then it calculates the shift and shifts the BC
+/// 
+/// @param shift	this is how much the boundary must be shifted, gets calculated inside the routine
+/// @param WALL		One of the walls of the BCs
+/// @param atom 	The MD particle
+///
 void shiftBC_MD( double *shift,bc *WALL,particleMD *atom ) {
-/*
-     Determines if the BC must be shifted due to the
-     periodicity of the control volume, calculates
-     the shift and shifts the BC.
-*/
 	int k;
 
 	for( k=0; k<_3D; k++ ) shift[k] =0.;
@@ -172,13 +211,18 @@ void shiftBC_MD( double *shift,bc *WALL,particleMD *atom ) {
 	//Shift BCs
 	for( k=0; k<_3D; k++ ) WALL->Q[k] += shift[k];
 }
+///
+/// @brief		Rotates the BC if it has some orientation
+///
+/// To do this, it rotates the particle's pos, vel, orientation about the BC surface instead. This 
+/// routine does the rotation and rotation back by having a sign passed to it
+///
+/// @param WALL		One of the walls of the BCs
+/// @param atom		The MD particles
+/// @param sign 	The sign by which the orientation will be
+/// @sa rotateBC(), rotatebackBC()
+///
 void MD_BCrotation( bc *WALL,particleMD *atom, double sign ) {
-/*
-     If the BC has some orientation then it must be rotated.
-		 To do this, we rotate the particle's pos, vel, orientation aout the BC surface instead.
-		 This routine does the rotation and rotation back by having a sign passed to it.
-		 See rotateBC() and rotatebackBC()
-*/
 	int i;
 	double rotM[_3D][_3D];		//The rotation matrix
 	double ax[_3D] = {1.0,0.0,0.0};	//x-axis
@@ -204,21 +248,29 @@ void MD_BCrotation( bc *WALL,particleMD *atom, double sign ) {
 	atom->vy=V[1];
 	atom->vz=V[2];
 }
+///
+/// @brief		Checks if the BC has some orientation, if so it must be rotated
+///
+/// MD_BCrotation() is used to do this in which the particle's pos, vel, orientation are rotated about 
+/// the BC surface instead. Uses NEGATIVE the angles since the particle is being rotated instead of the
+///	BC
+/// 
+/// @param WALL		One of the walls of the BCs
+/// @param atom 	The MD particle
+///	@note			The current implementation is very wasteful. Every ***particle***
+///					is rotated about the centre of each BC. While this is simplest, there are very many 
+///					particles		
+///
 void rotateBC_MD( bc *WALL,particleMD *atom ) {
-/*
-	If the BC has some orientation then it must be rotated.
-	To do this, we rotate the particle's pos, vel, orientation aout the BC surface instead
-	Uses NEGATIVE the angles since the particle is being rotated instead of the BC
-	NOTICE: The current implementation is very wasteful. Every ***particle***
-	is rotated about the centre of each BC.
-	While this is simplest, there are very many particles.
-*/
 	if(WALL->REORIENT) MD_BCrotation( WALL,atom,-1.0 );
 }
+///
+/// @brief 			Undoes the rotateBC()
+/// 
+/// @param WALL		One of the walls of the BCs
+/// @param atom		The MD particle
+/// 
 void rotatebackBC_MD( bc *WALL,particleMD *atom ) {
-/*
-	Undo a rotateBC()
-*/
 	if(WALL->REORIENT) MD_BCrotation( WALL,atom,1.0 );
 }
 double calcW_MD( bc WALL,particleMD *atom ){
