@@ -393,11 +393,7 @@ double secant_time( particleMPC p,bc WALL,double t_step ) {
 /// boundary position can be restored later using the shiftbackBC() method.
 ///
 void shiftBC( double *shift,bc *WALL,particleMPC *pp ) {
-/*
-     Determines if the BC must be shifted due to the
-     periodicity of the control volume, calculates
-     the shift and shifts the BC.
-*/
+
 	int k;
 
 	// Zero
@@ -431,13 +427,25 @@ void shiftbackBC( double *shift,bc *WALL ) {
 	int i;
 	for( i=0; i<DIM; i++ ) WALL->Q[i] -= shift[i];
 }
+
+///
+/// @brief Rotating the boundary by it's orientation.
+///
+/// If the boundary has a listed non-zero orientation, then it must be rotated to match that orientation.
+/// This is performed by rotating the surrounding fluid particles (including
+/// positions, velocities and orientations) about the boundary itself.
+/// This routine does the rotation and rotation back by having a sign passed to it.
+/// @param WALL The boundary.
+/// @param pp The individual particle.
+/// @param sign The sign multiplier for rotation foward and backwards.
+/// @param LC The flag for the fluid being liquid crystalline.
+/// @see rotateBC()
+/// @see rotatebackBC()
+/// @note The `sign` is negative (so the rotation angle will be negative) for the
+/// forward particle rotation, since it's the particles rather than the boundary being rotated.
+/// Correspondingly the `sign` is positive for the rotation back.
+///
 void MPC_BCrotation( bc *WALL,particleMPC *pp, double sign, int LC ) {
-/*
-     If the BC has some orientation then it must be rotated.
-		 To do this, we rotate the particle's pos, vel, orientation aout the BC surface instead.
-		 This routine does the rotation and rotation back by having a sign passed to it.
-		 See rotateBC() and rotatebackBC()
-*/
 
 	int i;
 	double rotM[_3D][_3D];		//The rotation matrix
@@ -477,23 +485,44 @@ void MPC_BCrotation( bc *WALL,particleMPC *pp, double sign, int LC ) {
 		}
 	}
 }
+
+///
+/// @brief Applies the boundary rotation.
+///
+/// Applies the forward boundary rotation by instead rotating the particles about the boundary (in the reverse direction).
+/// @param WALL The boundary.
+/// @param pp The individual particle.
+/// @param LC The flag for the fluid being liquid crystalline.
+/// @see MPC_BCrotation()
+/// @see rotatebackBC()
+///
 void rotateBC( bc *WALL,particleMPC *pp, int LC ) {
-/*
-	If the BC has some orientation then it must be rotated.
-	To do this, we rotate the particle's pos, vel, orientation aout the BC surface instead
-	Uses NEGATIVE the angles since the particle is being rotated instead of the BC
-	NOTICE: The current implementation is very wasteful. Every ***particle***
-	is rotated about the centre of each BC.
-	While this is simplest, there are very many particles.
-*/
+
+	// NOTICE: The current implementation is very wasteful. Every ***particle***
+	// is rotated about the centre of each BC.
+	// While this is simplest, there are very many particles.
+
 	if(WALL->REORIENT) MPC_BCrotation( WALL,pp,-1.0,LC );
 }
+
+///
+/// @brief Rotates back the boundary to original alignment.
+///
+/// Applies the backwards boundary rotation (or undoes rotations from rotateBC())
+/// by rotating the particles back to original position, velocities and orientations.
+/// @param WALL The boundary.
+/// @param pp The individual particle.
+/// @param LC The flag for the fluid being liquid crystalline.
+/// @see MPC_BCrotation()
+/// @see rotateBC()
+///
 void rotatebackBC( bc *WALL,particleMPC *pp, int LC ) {
 /*
 	Undo a rotateBC()
 */
 	if(WALL->REORIENT) MPC_BCrotation( WALL,pp,1.0,LC );
 }
+
 double impulse( double n[],double V[],double U[],double Pv[], double Pu[],double Wv[],double Wu[],double invMv,double invMu,double Iv[][_3D],double Iu[][_3D],double r[],double E ) {
 /*  Determines the magnitude of the impulse
 
