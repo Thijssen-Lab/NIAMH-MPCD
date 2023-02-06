@@ -502,7 +502,6 @@ void openenstrophyspect( FILE **f,char dir[],char fname[],char ext[] ) {
 ///
 ///This function initializes the topological charge field output file (only for 2D systems).
 ///It opens it up for writing and reading while formatting it with its header.
-///
 /// @param f Return pointer to the topological charge field output file being opened.
 /// @param dir Path to the directory of the topological charge field output file.
 /// @param fname Name of the topological charge field output file.
@@ -518,7 +517,6 @@ void opentopo( FILE **f,char dir[],char fname[],char ext[] ) {
 ///
 ///This function initializes the defect tracker output file (only for 2D systems).
 ///It opens it up for writing and reading while formatting it with its header.
-///
 /// @param f Return pointer to the defect tracker output file being opened.
 /// @param dir Path to the directory of the defect tracker output file.
 /// @param fname Name of the defect tracker output file.
@@ -534,7 +532,6 @@ void opendefect( FILE **f,char dir[],char fname[],char ext[] ) {
 ///
 ///This function initializes the disclination tensor output file.
 ///It opens it up for writing and reading while formatting it with its header.
-///
 /// @param f Return pointer to the disclination tensor output file being opened.
 /// @param dir Path to the directory of the disclination tensor output file.
 /// @param fname Name of the disclination tensor output file.
@@ -549,7 +546,6 @@ void opendisclin( FILE **f,char dir[],char fname[],char ext[] ) {
 ///
 ///This function initializes the  phi/color/species-type field output file.
 ///It opens it up for writing and reading while formatting it with its header.
-///
 /// @param f Return pointer to the  phi/color/species-type field output file being opened.
 /// @param dir Path to the directory of the  phi/color/species-type field output file.
 /// @param fname Name of the  phi/color/species-type field output file.
@@ -564,7 +560,6 @@ void openmultiphase( FILE **f,char dir[],char fname[],char ext[] ) {
 ///
 ///This function initializes the pressure field output file.
 ///It opens it up for writing and reading while formatting it with its header.
-///
 /// @param f Return pointer to the pressure field output file being opened.
 /// @param dir Path to the directory of the pressure field output file.
 /// @param fname Name of the pressure field output file.
@@ -579,7 +574,6 @@ void openpressure( FILE **f,char dir[],char fname[],char ext[] ) {
 ///
 ///This function initializes the Binder cumulant output file.
 ///It opens it up for writing and reading while formatting it with its header.
-///
 /// @param f Return pointer to the Binder cumulant output file being opened.
 /// @param dir Path to the directory of the Binder cumulant output file.
 /// @param fname Name of the Binder cumulant output file.
@@ -594,7 +588,6 @@ void openbinder( FILE **f,char dir[],char fname[],char ext[],int binSize ) {
 ///
 ///This function initializes the swimmer output file.
 ///It opens it up for writing and reading while formatting it with its header.
-///
 /// @param f Return pointer to the swimmer output file being opened.
 /// @param dir Path to the directory of the swimmer output file.
 /// @param fname Name of the swimmer output file.
@@ -609,7 +602,6 @@ void openswimmer( FILE **f,char dir[],char fname[],char ext[] ) {
 ///
 ///This function initializes the swimmer orientation output file.
 ///It opens it up for writing and reading while formatting it with its header.
-///
 /// @param f Return pointer to the swimmer orientation output file being opened.
 /// @param dir Path to the directory of the swimmer orientation output file.
 /// @param fname Name of the swimmer orientation output file.
@@ -624,7 +616,6 @@ void openswimmerOri( FILE **f,char dir[],char fname[],char ext[] ) {
 ///
 ///This function initializes the swimmer run and tumble output file.
 ///It opens it up for writing and reading while formatting it with its header.
-///
 /// @param f Return pointer to the swimmer run and tumble output file being opened.
 /// @param dir Path to the directory of the swimmer run and tumble output file.
 /// @param fname Name of the swimmer run and tumble output file.
@@ -641,13 +632,28 @@ void openruntumble( FILE **f,char dir[],char fname[],char ext[] ) {
 /* ****************************************** */
 /* ****************************************** */
 
+///
+/// @brief Function that calculates several coefficients characterizing the system.
+///
+/// This function calculates: the mean free path, the speed of sound, the dynamic viscocity, 
+/// the thermal diffusion coefficient and the self-diffusion coefficient.
+/// It assumes that the cell size is a=1. The calculation follows Noguchi & Gompper,
+/// Transport coefficients of off-lattice mesoscale-hydrodynamics simulation techniques, PRE 78, 016706 (2008).
+/// If a synopsis file is requested, this function also prints the above information to the file.
+/// @param MFP Return pointer to the mean free path.
+/// @param VISC Return pointer to the viscocity.
+/// @param THERMD Return pointer to the thermal diffusion coefficient.
+/// @param SDIFF Return pointer to the self-diffusion coefficient.
+/// @param SPEEDOFSOUND Return pointer to the speed of sound.
+/// @param RA Rotation anfle for SRD.
+/// @param FRICCO Friction coefficient for Langevin thermostat.
+/// @param KBT Temperature (a third of thermal energy).
+/// @param dt MPCD time-step value.
+/// @param sumM Sum of all masses.
+/// @param RTECH Rotation technique.
+/// @param SYNOUT Integer specifying if the synopsis file should be outputted (1 for yes, 0 for no).
+/// @param fsynopsis Pointer to the synopsis file.
 void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double *SPEEDOFSOUND,double RA,double FRICCO,double KBT,double dt,double sumM,int RTECH,int SYNOUT,FILE *fsynopsis ) {
-/*
-	Calculates dynamic viscosity, thermal diffusion coefficient
-	and the self-diffusion coefficient. Cell size a =1 is assumed
-	This follows:
-	Noguchi & Gompper, Transport coefficients of off-lattice mesoscale-hydrodynamics simulation techniques, PRE 78, 016706 (2008)
-*/
 	double a=1.0;							//MPCD cell size
 	double A,B,CM,SM;								//Correlation factors from Table 1 of Nguchi & Gompper
 	double VISCKIN,VISCCOL;		//Kinetic and collisional parts of DYNAMIC viscosity
@@ -789,6 +795,13 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 	}
 }
 
+///
+/// @brief Function that calculates the fluid number density.
+///
+/// This function calculates the number density of the fluid, either per unit area (2D) or volume (3D).
+/// The volume occupied by boundary conditions, such as colloids, is excluded from the calculation.
+/// @param WALL Array of the system's boundary conditions.
+/// @return The fluid number density.
 double ndensity( bc WALL[] ) {
 /*
    Calculates the number density of the fluid.
@@ -802,6 +815,15 @@ double ndensity( bc WALL[] ) {
 	D = GPOP / V;
 	return D;
 }
+
+///
+/// @brief Function that calculates the fluid number density.
+///
+/// This function calculates the number density of the fluid, either per unit area (2D) or volume (3D).
+/// The volume occupied by boundary conditions, such as colloids, is excluded from the calculation.
+/// @param WALL Array of the system's boundary conditions.
+/// @param MASS The system total mass.
+/// @return The fluid mass density.
 double mdensity( bc WALL[],double MASS ) {
 /*
    Calculates the mass density of the fluid.
@@ -815,6 +837,7 @@ double mdensity( bc WALL[],double MASS ) {
 	D = MASS / V;
 	return D;
 }
+
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
@@ -822,17 +845,24 @@ double mdensity( bc WALL[],double MASS ) {
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
+
+///
+/// @brief Function that zeros any vector
+///
+/// This function sets the component of the receiving vector to 0.
+/// @param VEC The vector whose components will be zeroed.
+/// @param dimension The dimension of VEC.
 void zerovec( double VEC[],int dimension ) {
-/*
-    Zeros any vector
-*/
 	int i;
 	for( i=0; i<dimension; i++ ) VEC[i]=0.0;
 }
+
+///
+/// @brief Function that zeros everything in all the particles
+///
+/// This functios zeros all parameters for all MPCD particles
+/// @param pp Return pointer to the first MPCD particle in the array
 void zeroparticles( particleMPC *pp ) {
-/*
-    Zero everything in all the particles
-*/
 	int i,d;
 
 	for( i=0; i<GPOP; i++ ) {
@@ -844,35 +874,52 @@ void zeroparticles( particleMPC *pp ) {
 		}
 	}
 }
-void zero_bc_var( double *tfrac,double *tdiff,int *g ) {
-/*
-   This function zeros some of the variables used by BCs
-*/
-	*tfrac = 0.;
-	*tdiff = 0.;
-	*g = 0;
-}
+
+///
+/// @brief Function that zeros counters
+///
+/// This function zeros the current un-thermostated temperature, the current average flow velocity
+/// and the average of the scalar order parameter.
+/// @param KBTNOW Return pointer to the current un-thermostated temperature.
+/// @param AVNOW Return pointer to the current average flow velocity.
+/// @param AVS Return pointer to the average scalar order parameter.
 void zerocnt( double *KBTNOW,double AVNOW[],double *AVS ) {
 	int i;
-	//Zero counters
 	*KBTNOW = 0.;
 	*AVS = 0.;
 	for( i=0; i<_3D; i++ ) AVNOW[i] = 0.;
 }
+
+///
+/// @brief Function that zeros a vector histogram.
+///
+/// This function zeros a vector histogram.
+/// @param HIST Vector histogram being zeroed.
 void zeroHISTVEC( int HIST[_3D][BINS] ) {
 	int i,j;
-	//Zero counters
 	for( j=0; j<BINS; j++ ) for( i=0; i<_3D; i++ ) HIST[i][j] = 0;
 }
+
+///
+/// @brief Function that zeros a scalar histogram.
+///
+/// This function zeros a scalar histogram.
+/// @param HIST Scalar histogram being zeroed.
 void zeroHISTSCALAR( int HIST[BINS] ) {
 	int j;
-	//Zero counters
 	for( j=0; j<BINS; j++ ) HIST[j] = 0;
 }
+
+///
+/// @brief Function that zeros all the contents of a cell list
+///
+/// This functions zeros the entire content of the receiving cell list.
+/// This includes: population, mass, scalar order parameter, center of mass, velocity of center
+/// of mass, flow velocity, director, velocity gradient tensor, moment of inertia, streaming and
+/// collisional parts of the stress tensor. 
+/// Pointers to the first SRD, MD and swimmer particles are set to NULL.
+/// @param CL Return pointer to the cell list being zeroed
 void zerocell( cell ***CL ) {
-/*
-    Zero everything in the cell lists
-*/
 	int i,j,k,l,m;
 	for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) {
 		CL[i][j][k].POP = 0;
@@ -896,10 +943,14 @@ void zerocell( cell ***CL ) {
 		CL[i][j][k].sp = NULL;
 	}
 }
+
+///
+/// @brief Function that zeros the collisional pressure term
+///
+/// This function zeros the collisional pressure term
+/// @param CL Return pointer to the cell list whose collisional pressure term is being zeroed
 void zeroPressureColl( cell *CL ) {
-/*
-    Zero collisional pressure term
-*/
+
 	int l,m;
 	for( l=0; l<DIM; l++ ) for( m=0; m<DIM; m++ ) CL->Pc[l][m] = 0.0;
 }
