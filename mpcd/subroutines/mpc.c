@@ -239,15 +239,13 @@ void sumFLOW( cell ***CL ) {
 }
 
 /// 
-/// @brief Lorem Ipsum
-///
+/// @brief This routine adds the effect of phantom MPCD particles to the centre of mass. 
 /// 
 /// Lorem Ipsum
 /// @param X Lorem Ipsum
 ///
 void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 /*
-   This routine adds the effect of phantom particleMPCs to the CM
    This would be oodles better if each BC object had a list of cells
    to worry about and so I wouldn't have to go over every cell all
    the time
@@ -475,17 +473,6 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 	}
 }
 
-					// // Same as above but doing EACH phantom particle separately
-					// for( d=0; d<DIM; d++ ) CL[a][b][c].VCM[d] *= (double)CL[a][b][c].POP;
-					// for( j=0; j<(int)(nDNST-(double)CL[a][b][c].POP); j++ ) {
-					// 	for( d=0; d<DIM; d++ ) {
-					// 		//Generate random ghost velocity
-					// 		R[d] = genrand_gaussMB( KBT,1.0 );
-					// 		CL[a][b][c].VCM[d] += R[d];
-					// 	}
-					// }
-					// for( d=0; d<DIM; d++ ) CL[a][b][c].VCM[d] /= nDNST;
-
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
@@ -495,18 +482,14 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 /* ****************************************** */
 
 /// 
-/// @brief Lorem Ipsum
-///
+/// @brief This subroutine translates one component of a generic position vector.
 /// 
 /// Lorem Ipsum
 /// @param X Lorem Ipsum
+/// @return QNEW The newly translated component of the position. 
+/// @note No acceleration during the time step, which is the philosophy behind the streaming step of MPCD algorithms.
 ///
 double trans( double t,double V, double QOLD ) {
-/*
-   This subroutine translates the particleMPCs'
-   positions
-   NO ACCELERATION DURING TIME STEP! See papers on SRD
-*/
 	double QNEW;
 // 	QNEW = QOLD + t * V + 0.5*t*t*G;
 	QNEW = QOLD + t * V;
@@ -514,113 +497,82 @@ double trans( double t,double V, double QOLD ) {
 }
 
 /// 
-/// @brief Lorem Ipsum
+/// @brief This subroutine accelerates one component of a generic velocity vector. 
 ///
-/// 
 /// Lorem Ipsum
 /// @param X Lorem Ipsum
+/// @return VNEW The newly accelerated component of the velocity. 
 ///
 double acc( double t,double GRAV,double VOLD ) {
-/*
-   This subroutine accelerates the particleMPCs'
-   velocity
-*/
 	double VNEW;
 	VNEW = VOLD + t * GRAV;
 	return VNEW;
 }
 
 /// 
-/// @brief Lorem Ipsum
-///
+/// @brief The streaming step of the algorithm translates position of a single boundary condition. 
 /// 
 /// Lorem Ipsum
 /// @param X Lorem Ipsum
 ///
 void stream_BC( bc *WALL,double t ) {
-/*
-    The streaming step of the algorithm translates
-    position
-*/
 	int i;
 	for( i=0; i<DIM; i++ ) WALL->Q[i] = trans( t,WALL->V[i],WALL->Q[i] );
 }
 
 /// 
-/// @brief Lorem Ipsum
-///
+/// @brief The streaming rotational step of the algorithm rotates the orienation of a single boundary condition. 
 /// 
 /// Lorem Ipsum
 /// @param X Lorem Ipsum
 ///
 void spin_BC( bc *WALL,double t ) {
-/*
-    The streaming rotational step of the algorithm rotates
-    orienation and accelerates the velocity
-*/
 	int i;
 	for( i=0; i<_3D	; i++ ) WALL->O[i] += t * WALL->L[i];
 }
 
 /// 
-/// @brief Lorem Ipsum
-///
+/// @brief The streaming step of the algorithm translates the position of a single MPCD particle. 
 /// 
 /// Lorem Ipsum
 /// @param X Lorem Ipsum
 ///
 void stream_P( particleMPC *p,double t ) {
-/*
-    The streaming step of the algorithm translates position
-*/
 	int i;
 	for( i=0; i<DIM; i++ ) p->Q[i] = trans( t,p->V[i],p->Q[i] );
 }
 
 /// 
-/// @brief Lorem Ipsum
-///
+/// @brief Accelerating the velocity of a single boundary condition. 
 /// 
 /// Lorem Ipsum
 /// @param X Lorem Ipsum
 ///
 void acc_BC( bc *WALL,double t,double GRAV[] ) {
-/*
-    The streaming step of the algorithm translates
-    position and accelerates the velocity
-*/
 	int i;
 	for( i=0; i<DIM; i++ ) WALL->V[i] = acc( t,GRAV[i],WALL->V[i] );
 }
 
 /// 
-/// @brief Lorem Ipsum
-///
+/// @brief Accelerating the velocity of a single MPCD particle. 
 /// 
 /// Lorem Ipsum
 /// @param X Lorem Ipsum
 ///
 void acc_P( particleMPC *p,double t,double GRAV[] ) {
-/*
-    The streaming step of the algorithm translates
-    position and accelerates the velocity
-*/
+
 	int i;
 	for( i=0; i<DIM; i++ ) p->V[i] = acc( t,GRAV[i],p->V[i] );
 }
 
 /// 
-/// @brief Lorem Ipsum
+/// @brief The streaming step of the algorithm that translates the positions of all MPCD particles
 ///
 /// 
 /// Lorem Ipsum
 /// @param X Lorem Ipsum
 ///
 void stream_all( particleMPC *pp,double t ) {
-/*
-    The streaming step of the algorithm translates the
-    positions and accelerates the velocities
-*/
 	int i;
 	for( i=0; i<GPOP; i++ ){
 		//Update coordinates --- check if it already streamed
@@ -630,32 +582,28 @@ void stream_all( particleMPC *pp,double t ) {
 }
 
 /// 
-/// @brief Lorem Ipsum
-///
+/// @brief The accelerating all the MPCD particle velocities
 /// 
 /// Lorem Ipsum
 /// @param X Lorem Ipsum
 ///
 void acc_all( particleMPC *pp,double t,double GRAV[] ) {
-/*
-    The streaming step of the algorithm translates the
-    positions and accelerates the velocities
-*/
 	int i;
 	for( i=0; i<GPOP; i++ ) acc_P( (pp+i),t,GRAV );
 }
 
 /// 
-/// @brief Lorem Ipsum
+/// @brief Shifts the entire system. 
 ///
-/// 
-/// Lorem Ipsum
+/// Shifts the entire system by the vector SHIFT. 
+/// If shiftBack then multiply shift by -1 and shift. Else do the normal shift
+/// This is to maintain Gallilean invariance. 
+/// Proposed by Ihle and Kroll (https://journals.aps.org/pre/abstract/10.1103/PhysRevE.67.066705).
 /// @param X Lorem Ipsum
 ///
 void gridShift_all( double SHIFT[],int shiftBack,particleMPC *SRDparticles,bc WALL[],simptr simMD,swimmer swimmers[],int MDmode ) {
 	/*
-	    Shifts the entire system by the vector SHIFT
-			If shiftBack then multiply shift by -1 and shift. Else do the normal shift
+	    
 	*/
 	int i,j;							//Counting variables
 	double signedSHIFT[_3D];		//
@@ -706,18 +654,13 @@ void gridShift_all( double SHIFT[],int shiftBack,particleMPC *SRDparticles,bc WA
 }
 
 /// 
-/// @brief Lorem Ipsum
+/// @brief This routine applies a solid body rotation to the particles in a cell. 
 ///
-/// 
-/// Lorem Ipsum
+/// Applies a solid body rotation to the particles in a given cell. 
+/// This applies a change in angular speed dw to all the MPCD particles in a cell about a given point r0 (likely the CM but allowed to be anything) and direction n0
 /// @param X Lorem Ipsum
 ///
 void rotate_CL( cell CL,spec *SP,double r0[],double n0[],double dw ) {
-/*
-   This routine applies a solid body rotation to the cell i.e.
-	 change in angular speed dw to all the SRD particles in a cell
-	 about a given point r0 (likely the CM but allowed to be anything) and direction n0
-*/
 	int d=0;
 	double r[DIM],r_perp[DIM],n_perp[DIM]; 		//Vectors betweem cm and mpcd particles and axis
 	double n_v[DIM];													//Direction of velocity change
@@ -783,64 +726,49 @@ void rotate_CL( cell CL,spec *SP,double r0[],double n0[],double dw ) {
 }
 
 /// 
-/// @brief Lorem Ipsum
-///
+/// @brief Rewinds a translation
 /// 
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @return QOLD The position at the previous time step.
+/// @note No acceleration during the time step, which is the philosophy behind the streaming step of MPCD algorithms.
 ///
 double rewind_trans( double t,double V,double P ) {
-/*
-     Rewinds a translation
-     NO ACCELERATION DURING TIME STEP! See papers on SRD
-*/
 	double QOLD;
 	QOLD = P - t*V;
 	return QOLD;
 }
 
 /// 
-/// @brief Lorem Ipsum
-///
+/// @brief Rewind an acceleration vector.
 /// 
 /// Lorem Ipsum
 /// @param X Lorem Ipsum
+/// @return VOLD The velocity at the previous time step.
 ///
 double rewind_acc(double t,double G,double V){
-/*
-     Rewinds the acceleration
-*/
 	double VOLD;
 	VOLD = V - t*G;
 	return VOLD;
 }
 
 /// 
-/// @brief Lorem Ipsum
-///
+/// @brief Bring a given MPCD particle back a time step.
 /// 
 /// Lorem Ipsum
 /// @param X Lorem Ipsum
 ///
 void rewind_P( particleMPC *p,double time ) {
-/*
-     Bring the particleMPC back in time step.
-*/
 	int i;
 	for( i=0; i<DIM; i++ ) p->Q[i] = rewind_trans(time,p->V[i],p->Q[i]);
 }
 
 /// 
-/// @brief Lorem Ipsum
-///
+/// @brief Bring a given boundary back a time step.
 /// 
 /// Lorem Ipsum
 /// @param X Lorem Ipsum
 ///
 void rewind_BC( bc *WALL,double time ) {
-/*
-     Bring the BC back in time step.
-*/
 	int i;
 	for( i=0; i<DIM; i++ ) WALL->Q[i] = rewind_trans(time,WALL->V[i],WALL->Q[i]);
 }
@@ -854,8 +782,7 @@ void rewind_BC( bc *WALL,double time ) {
 /* ****************************************** */
 
 /// 
-/// @brief Lorem Ipsum
-///
+/// @brief This function bins the MPCD particles for the first time for use in the collision steps.
 /// 
 /// Lorem Ipsum
 /// @param X Lorem Ipsum
@@ -880,8 +807,7 @@ void binin( particleMPC p[],cell ***CL ) {
 }
 
 /// 
-/// @brief Lorem Ipsum
-///
+/// @brief This function bins the MPCD particles.
 /// 
 /// Lorem Ipsum
 /// @param X Lorem Ipsum
@@ -944,8 +870,7 @@ void bin( cell ***CL,spec *SP,bc WALL[],double KBT,int LC,int shifted ) {
 }
 
 /// 
-/// @brief This function bins the MD particles for use in the collision steps.
-///
+/// @brief This function bins the MD particles for the first time for use in the collision steps.
 /// 
 /// Lorem Ipsum
 /// @param X Lorem Ipsum
