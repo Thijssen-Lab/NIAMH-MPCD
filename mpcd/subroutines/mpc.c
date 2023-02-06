@@ -57,8 +57,8 @@
 /// @param CL All of the MPCD cells (including the linked list of particles in each cell).
 /// @param SP The species-wide information about MPCD particles.
 /// @param specS The species-wide information about swimmers.
-/// @param RTECH The MPCD collision operator.
-/// @param LC Whether or not the nematic liquid crystal is turned on.
+/// @param RTECH The MPCD collision operator. See `definitions.h` for all options.
+/// @param LC Flags whether or not the nematic liquid crystal is turned on.
 /// @note localPROP() calculates <b>all</b> local parameters. For single properties, other routines exist. See localMASS() for example
 ///
 void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
@@ -243,7 +243,11 @@ void sumFLOW( cell ***CL ) {
 /// @brief This routine adds the effect of phantom MPCD particles to the centre of mass. 
 /// 
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param CL All of the MPCD cells (including the linked list of particles in each cell). 
+/// @param WALL All of the walls (boundary conditions) that particles might interact with. 
+/// @param KBT The thermal energy. 
+/// @param LC Flags whether or not the nematic liquid crystal is turned on.
+/// @param SP The species-wide information about MPCD particles.
 ///
 void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 /*
@@ -486,7 +490,9 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 /// @brief This subroutine translates one component of a generic position vector.
 /// 
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param t The time interval for which the particle translates.
+/// @param V The speed with which the particle translates.
+/// @param QOLD The initial position of the particle.
 /// @return QNEW The newly translated component of the position. 
 /// @note No acceleration during the time step, which is the philosophy behind the streaming step of MPCD algorithms.
 ///
@@ -501,7 +507,9 @@ double trans( double t,double V, double QOLD ) {
 /// @brief This subroutine accelerates one component of a generic velocity vector. 
 ///
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param t The time interval for which the particle accelerates.
+/// @param GRAV The acceleration with which the particle speed increases.
+/// @param VOLD The initial speed of the particle.
 /// @return VNEW The newly accelerated component of the velocity. 
 ///
 double acc( double t,double GRAV,double VOLD ) {
@@ -511,10 +519,11 @@ double acc( double t,double GRAV,double VOLD ) {
 }
 
 /// 
-/// @brief The streaming step of the algorithm translates position of a single boundary condition. 
+/// @brief The streaming step of the algorithm translates position of a single wall (boundary condition). 
 /// 
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param WALL All of the walls (boundary conditions) that particles might interact with. 
+/// @param t The time interval for which the wall translates.
 ///
 void stream_BC( bc *WALL,double t ) {
 	int i;
@@ -522,10 +531,11 @@ void stream_BC( bc *WALL,double t ) {
 }
 
 /// 
-/// @brief The streaming rotational step of the algorithm rotates the orienation of a single boundary condition. 
+/// @brief The streaming rotational step of the algorithm rotates the orienation of a single wall (boundary condition). 
 /// 
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param WALL All of the walls (boundary conditions) that particles might interact with. 
+/// @param t The time interval for which the wall rotates.
 ///
 void spin_BC( bc *WALL,double t ) {
 	int i;
@@ -536,7 +546,8 @@ void spin_BC( bc *WALL,double t ) {
 /// @brief The streaming step of the algorithm translates the position of a single MPCD particle. 
 /// 
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param t The time interval for which the MPCD particle translates.
+/// @param p An MPCD particle. 
 ///
 void stream_P( particleMPC *p,double t ) {
 	int i;
@@ -544,10 +555,12 @@ void stream_P( particleMPC *p,double t ) {
 }
 
 /// 
-/// @brief Accelerating the velocity of a single boundary condition. 
+/// @brief Accelerating the velocity of a single wall (boundary condition). 
 /// 
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param WALL One of the walls (boundary conditions). 
+/// @param t The time interval for which the wall (boundary condition) accelerates.
+/// @param GRAV The acceleration with which the WALL's speed increases.
 ///
 void acc_BC( bc *WALL,double t,double GRAV[] ) {
 	int i;
@@ -558,7 +571,9 @@ void acc_BC( bc *WALL,double t,double GRAV[] ) {
 /// @brief Accelerating the velocity of a single MPCD particle. 
 /// 
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param p An MPCD particle. 
+/// @param t The time interval for which the MPCD particle accelerates.
+/// @param GRAV The acceleration with which the particle speed increases.
 ///
 void acc_P( particleMPC *p,double t,double GRAV[] ) {
 
@@ -569,9 +584,9 @@ void acc_P( particleMPC *p,double t,double GRAV[] ) {
 /// 
 /// @brief The streaming step of the algorithm that translates the positions of all MPCD particles
 ///
-/// 
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param p An MPCD particle. 
+/// @param t The time interval for which the MPCD particles translate.
 ///
 void stream_all( particleMPC *pp,double t ) {
 	int i;
@@ -586,7 +601,9 @@ void stream_all( particleMPC *pp,double t ) {
 /// @brief The accelerating all the MPCD particle velocities
 /// 
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param pp An MPCD particle. 
+/// @param t The time interval for which the MPCD particles accelerate.
+/// @param GRAV The acceleration with which the particle speeds increase.
 ///
 void acc_all( particleMPC *pp,double t,double GRAV[] ) {
 	int i;
@@ -596,11 +613,13 @@ void acc_all( particleMPC *pp,double t,double GRAV[] ) {
 /// 
 /// @brief Shifts the entire system. 
 ///
+/// Lorem Ipsum
 /// Shifts the entire system by the vector SHIFT. 
 /// If shiftBack then multiply shift by -1 and shift. Else do the normal shift
 /// This is to maintain Gallilean invariance. 
 /// Proposed by Ihle and Kroll (https://journals.aps.org/pre/abstract/10.1103/PhysRevE.67.066705).
-/// @param X Lorem Ipsum
+/// @param SRDparticles All the MPCD particles. 
+/// @param WALL All of the walls (boundary conditions) that particles might interact with. 
 ///
 void gridShift_all( double SHIFT[],int shiftBack,particleMPC *SRDparticles,bc WALL[],simptr simMD,swimmer swimmers[],int MDmode ) {
 	/*
@@ -660,7 +679,8 @@ void gridShift_all( double SHIFT[],int shiftBack,particleMPC *SRDparticles,bc WA
 /// Applies a solid body rotation to the particles in a given cell. 
 /// This applies a change in angular speed dw to all the MPCD particles in a cell about a given point r0 (likely the CM but allowed to be anything) and direction n0
 /// It updates the particles by looping through the linked list. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
 ///
 void rotate_CL( cell CL,spec *SP,double r0[],double n0[],double dw ) {
 	int d=0;
@@ -757,7 +777,8 @@ double rewind_acc(double t,double G,double V){
 /// @brief Bring a given MPCD particle back a time step.
 /// 
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param p An MPCD particle. 
+/// @param time The time interval for which the MPCD particle is rewound.
 ///
 void rewind_P( particleMPC *p,double time ) {
 	int i;
@@ -768,7 +789,8 @@ void rewind_P( particleMPC *p,double time ) {
 /// @brief Bring a given boundary back a time step.
 /// 
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param WALL All of the walls (boundary conditions) that particles might interact with. 
+/// @param time The time interval for which the MPCD particle is rewound.
 ///
 void rewind_BC( bc *WALL,double time ) {
 	int i;
@@ -787,7 +809,11 @@ void rewind_BC( bc *WALL,double time ) {
 /// @brief This function bins the MPCD particles for the first time for use in the collision steps.
 /// 
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// Initial binning loops over all particles using the global population. 
+/// Particles are placed in MPCD cells by truncating their positions into integers, which give the cell array place. 
+/// This works because the MPCD cells <b>must</b> have an cell size of `a=1`.
+/// @param p All of the MPCD particles. 
+/// @param CL All of the MPCD cells (including the linked list of particles in each cell). 
 ///
 void binin( particleMPC p[],cell ***CL ) {
 /*
@@ -812,7 +838,11 @@ void binin( particleMPC p[],cell ***CL ) {
 /// @brief This function bins the MPCD particles.
 /// 
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param CL All of the MPCD cells (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param WALL All of the walls (boundary conditions) that particles might interact with. 
+/// @param KBT The thermal energy. 
+/// @param LC Flags whether or not the nematic liquid crystal is turned on.
 ///
 void bin( cell ***CL,spec *SP,bc WALL[],double KBT,int LC,int shifted ) {
 /*
@@ -875,7 +905,7 @@ void bin( cell ***CL,spec *SP,bc WALL[],double KBT,int LC,int shifted ) {
 /// @brief This function bins the MD particles for the first time for use in the collision steps.
 /// 
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param CL All of the MPCD cells (including the linked list of particles in each cell). 
 ///
 void bininMD( simptr sim,cell ***CL ) {
 	int i,a,b,c;
@@ -898,8 +928,9 @@ void bininMD( simptr sim,cell ***CL ) {
 /// 
 /// @brief This function bins the MD particles.
 ///
+/// Lorem Ipsum
 /// The routine  bins the MD particles by placing a pointer to the MD particle in the appropriate new list and removes it from it's old list.
-/// @param X Lorem Ipsum
+/// @param CL All of the MPCD cells (including the linked list of particles in each cell). 
 ///
 void binMD( cell ***CL ) {
 	int i,j,k,a,b,c;
@@ -937,7 +968,8 @@ void binMD( cell ***CL ) {
 /// @brief This routine adds a link to an MPCD particle to the end of the list. 
 /// 
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param CL All of the MPCD cells (including the linked list of particles in each cell). 
+/// @param p The current MPCD particle in the linked list. 
 ///
 void addlink( cell *CL,particleMPC *p ) {
 	particleMPC *tp;	//Temporary pointer to particleMPC
@@ -963,7 +995,8 @@ void addlink( cell *CL,particleMPC *p ) {
 /// @brief This routine removes a link to an MPCD particle from a list and relinks the list.
 /// 
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param current The current MPCD particle being removed from the list. 
+/// @param CL The MPCD cell that the particle is in. 
 ///
 void removelink( particleMPC *current,cell *CL ) {
 	//Point the next link back at the previous link (unless last link)
@@ -983,7 +1016,8 @@ void removelink( particleMPC *current,cell *CL ) {
 /// @brief This routine adds a link to the end of the list for MD particles.
 ///
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param p The MPCD particle being added to the list. 
+/// @param CL The MPCD cell that the particle is being added to. 
 ///
 void addlinkMD( cell *CL,particleMD *p ) {
 	particleMD *tp;		//Temporary pointer to particleMPC
@@ -1009,7 +1043,8 @@ void addlinkMD( cell *CL,particleMD *p ) {
 /// @brief This routine removes a link pointing to an MD particle from a list and relinks the list. 
 ///
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param current The current MD particle being removed from the list. 
+/// @param CL The MPCD cell that the particle is in. 
 ///
 void removelinkMD( particleMD *current,cell *CL ) {
 	//Point the next link back at the previous link (unless last link)
@@ -1036,6 +1071,7 @@ void removelinkMD( particleMD *current,cell *CL ) {
 /// 
 /// @brief Rotates a vector about a random axis. 
 ///
+/// Lorem Ipsum
 /// Takes in a vector V and rotates it about a random cartesian axis (if RT=ORTHAXIS) or about a random axis L (if RT=ARBAXIS).
 /// The arbitary axis is chosen randomly for every collision cell and each time step
 /// @param X Lorem Ipsum
@@ -1124,9 +1160,11 @@ void rotate( int RT,double Cos,double Sin,double V[_3D],double L[_3D],long SIGN,
 /// 
 /// @brief Does the stochastic rotation dynamics collision. 
 /// 
+/// Lorem Ipsum
 /// Invented by Malevanets and Kapral (https://doi.org/10.1063/1.478857).
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param RTECH The MPCD collision operator. See `definitions.h` for all options.
 ///
 void stochrotMPC( cell *CL,int RTECH,double C,double S,double *CLQ,int outP ) {
 /*
@@ -1194,9 +1232,13 @@ void stochrotMPC( cell *CL,int RTECH,double C,double S,double *CLQ,int outP ) {
 /// 
 /// @brief Does the Anderson thermostatted collision that conserves angular momentum. 
 /// 
+/// Lorem Ipsum
 /// Invented by Noguchi, Kikuchi and Gompper (https://iopscience.iop.org/article/10.1209/0295-5075/78/10005).
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param SS The species-wide information about swimmers.
+/// @param KBT The thermal energy. 
 ///
 void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int outP ) {
 	int i,j,id;
@@ -1290,9 +1332,13 @@ void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 /// 
 /// @brief Does the Anderson thermostatted collision that conserves angular momentum. 
 /// 
+/// Lorem Ipsum
 /// Invented by Noguchi, Kikuchi and Gompper (https://iopscience.iop.org/article/10.1209/0295-5075/78/10005).
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param SS The species-wide information about swimmers.
+/// @param KBT The thermal energy. 
 ///
 void andersenROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int outP ) {
 	int i,j,id;
@@ -1508,7 +1554,10 @@ void andersenROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 /// 
 /// Invented by Noguchi, Kikuchi and Gompper (https://iopscience.iop.org/article/10.1209/0295-5075/78/10005).
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param SS The species-wide information about swimmers.
+/// @param KBT The thermal energy. 
 ///
 void langevinMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,double Step,double *CLQ,int outP ) {
 	int i,j,id;
@@ -1615,9 +1664,13 @@ void langevinMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 /// 
 /// @brief Langevin MPC collision that conserves angular momentum (uses Langevin thermostat). 
 /// 
+/// Lorem Ipsum
 /// Invented by Noguchi, Kikuchi and Gompper (https://iopscience.iop.org/article/10.1209/0295-5075/78/10005).
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param SS The species-wide information about swimmers.
+/// @param KBT The thermal energy. 
 ///
 void langevinROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,double Step,double *CLQ,int outP ) {
 	int i,j,id;
@@ -1854,9 +1907,12 @@ void langevinROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 /// 
 /// @brief An active stochastic rotation dynamics (SRD) algorithm. 
 ///
+/// Lorem Ipsum
 /// Does the stochastic rotation collision but then rotates the resulting velocities towards the centre of mass velocity injecting momentum but keeping the energy constant.
 /// It updates the particles by looping through the linked list. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param RTECH The MPCD collision operator. See `definitions.h` for all options.
 ///
 void activeSRD( cell *CL,spec *SP,int RTECH,double C,double S,double *CLQ,int outP ) {
 	int i;
@@ -1907,10 +1963,12 @@ void activeSRD( cell *CL,spec *SP,int RTECH,double C,double S,double *CLQ,int ou
 /// 
 /// @brief Active dry polar collision operator based on Vicsek algorithm. 
 ///
+/// Lorem Ipsum
 /// This is meant to be the Vicsek algorithm <b>but<b/> instead of an interaction radius the alignment occurs within an MPCD cell. 
 ///	Here ACT serves as the NOISE range (typically, eta in Vicsek algorithms).
 /// It updates the particles by looping through the linked list. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
 ///
 void vicsek( cell *CL,spec *SP,double *CLQ,int outP ) {
 	int i,j,id;
@@ -1949,11 +2007,13 @@ void vicsek( cell *CL,spec *SP,double *CLQ,int outP ) {
 /// 
 /// @brief Active dry nematic collision operator based on Chate algorithm. 
 /// 
+/// Lorem Ipsum
 /// This is meant to be Chate's nematic version of the Vicsek algorithm <b>but</b> instead of an interaction radius the alignment occurs within an MPCD cell. 
 /// - https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.96.180602
 /// Here ACT serves as the NOISE range (typically, eta in the Vicsek algorithm). 
 /// It updates the particles by looping through the linked list. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
 ///
 void chate( cell *CL,spec *SP,double *CLQ,int outP ) {
 	int i,j,id;
@@ -1992,9 +2052,12 @@ void chate( cell *CL,spec *SP,double *CLQ,int outP ) {
 /// 
 /// @brief Active dry polar collision operator based on Andersen thermostatted collision. 
 /// 
+/// Lorem Ipsum
 /// Just like the andersen version of MPCD but it relaxes to the speed ACT in the direction of the centre of mass velocity instead of the center of mass velocity (with magnitude).
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param KBT The thermal energy. 
 ///
 void vicsekAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,int outP ) {
 	int i,j,id;
@@ -2075,9 +2138,12 @@ void vicsekAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 /// 
 /// @brief Active dry nematic collision operator based on Andersen thermostatted collision. 
 /// 
+/// Lorem Ipsum
 /// Just like the Andersen version of MPCD but the noise is about the director instead of the centre of mass velocity.
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param KBT The thermal energy. 
 ///
 void chateAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,int outP ) {
 	int i,j,id;
@@ -2173,7 +2239,9 @@ void chateAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,int
 /// 
 /// Lorem Ipsum
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param KBT The thermal energy. 
 ///
 void vicsekLangevinMPC( cell *CL,spec *SP,double KBT,double FRICCO,double Step,double RELAX,double *CLQ,int outP ) {
 	int i,j,id;
@@ -2262,7 +2330,9 @@ void vicsekLangevinMPC( cell *CL,spec *SP,double KBT,double FRICCO,double Step,d
 /// 
 /// Lorem Ipsum
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param KBT The thermal energy. 
 ///
 void chateLangevinMPC( cell *CL,spec *SP,double KBT,double FRICCO,double Step,double RELAX,double *CLQ,int outP ) {
 	int i,j,id;
@@ -2352,12 +2422,15 @@ void chateLangevinMPC( cell *CL,spec *SP,double KBT,double FRICCO,double Step,do
 /// 
 /// @brief Active wet nematic collision operator, based on Andersen thermostatted collision. 
 ///
+/// Lorem Ipsum
 /// Does the Andersen thermostat collision, and returns the CM velocity and the local temperature of the cell. 
 /// But also applies a force dipole on the cell by applying a kick along the direction of centre of mass velocity VCM(or director DIR) to all particles. 
 /// Those above the plane defined by this direction and the cnetre of mass point CM get a positive kick, while those below get a negative kick.
 /// Invented by Kozhukhov and Shendruk (https://www.science.org/doi/full/10.1126/sciadv.abo5788). 
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param KBT The thermal energy. 
 ///
 void dipoleAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,int outP ) {
 /*
@@ -2478,7 +2551,12 @@ void dipoleAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 /// @brief Does the MPC collision operation. 
 ///
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param SS The species-wide information about swimmers.
+/// @param KBT The thermal energy. 
+/// @param RTECH The MPCD collision operator. See `definitions.h` for all options.
+/// @param LC Flags whether or not the nematic liquid crystal is turned on.
 ///
 void MPCcollision( cell *CL,spec *SP,specSwimmer SS,double KBT,int RTECH,double C,double S,double FRICCO,double TimeStep,int MDmode,int LC,double RELAX,double *CLQ,int outP ) {
 	particleMD *tmd;	//Temporary particleMD
@@ -2524,7 +2602,10 @@ void MPCcollision( cell *CL,spec *SP,specSwimmer SS,double KBT,int RTECH,double 
 /// 
 /// Lorem Ipsum
 /// @see multiphaseCollPoint()
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param SS The species-wide information about swimmers.
+/// @param KBT The thermal energy. 
 ///
 void multiphaseColl( cell *CL,spec *SP,specSwimmer SS,int multiphaseMode, double KBT,int MDmode,double *CLQ,int outP ) {
 /*
@@ -2547,7 +2628,10 @@ void multiphaseColl( cell *CL,spec *SP,specSwimmer SS,int multiphaseMode, double
 /// 
 /// Lorem Ipsum
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param SS The species-wide information about swimmers.
+/// @param KBT The thermal energy. 
 ///
 void multiphaseCollPoint( cell *CL,spec *SP,specSwimmer SS, double KBT,int MDmode,double *CLQ,int outP ) {
 	int i,j,k,id;
@@ -2765,13 +2849,16 @@ void multiphaseCollPoint( cell *CL,spec *SP,specSwimmer SS, double KBT,int MDmod
 /// 
 /// @brief Applies a correction to the collision operation to give the fluid a non-ideal equation of state
 ///
+/// Lorem Ipsum
 /// Makes the fluid less compressible. 
 /// Inspired by J. Chem. Phys. 154, 024105 (2021); https://doi.org/10.1063/5.0037934
 /// Just calls the possible ways to make non-ideal.
 /// @see incompSwap()
 /// @see incompAddVirial()
 /// @see incompSubtractDivergence()
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param SS The species-wide information about swimmers.
 /// @note Experimental. None of these are confirmed to work yet. 
 ///
 void incompColl( cell *CL,spec *SP,specSwimmer SS,int INCOMPmode,int MDmode,double *CLQ,int outP ) {
@@ -2791,9 +2878,12 @@ void incompColl( cell *CL,spec *SP,specSwimmer SS,int INCOMPmode,int MDmode,doub
 /// 
 /// @brief MPCD operation to attempt to produce a non-ideal equation of state. 
 ///
+/// Lorem Ipsum
 /// MPC collision that applies a correction radial kicks to try to keep the density constant. If this works, virialCoB,C,D will need to be an input parameters. 
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param SS The species-wide information about swimmers.
 /// @note Experimental and might not work.
 ///
 void incompAddVirial( cell *CL,double virialCoB, double virialCoC, double virialCoD, spec *SP,specSwimmer SS ) {
@@ -2893,10 +2983,13 @@ void incompAddVirial( cell *CL,double virialCoB, double virialCoC, double virial
 /// 
 /// @brief MPCD operation to attempt to constrain the divergence of momentum density to be zero. 
 ///
+/// Lorem Ipsum
 /// MPC collision that applies a correction to constrain the divergence of momentum density to be zero by swapping velocities. 
 /// Only swaps velocities of MPCD fluid particles (not swimmers or MD particles).
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param SS The species-wide information about swimmers.
 /// @note Experimental and might not work.
 ///
 void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
@@ -3151,9 +3244,12 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 /// 
 /// @brief MPCD operation to attempt to constrain the divergence of momentum density to be zero. 
 ///
+/// Lorem Ipsum
 /// Collision that applies a correction to constrain
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param SS The species-wide information about swimmers.
 /// @note Experimental and might not work.
 ///
 void incompSubtractDivergence( cell *CL,spec *SP,specSwimmer SS ) {
@@ -3351,9 +3447,12 @@ void incompSubtractDivergence( cell *CL,spec *SP,specSwimmer SS ) {
 /// 
 /// @brief This routine calculates the centre of mass velocity of a single cell.
 /// 
-/// Lorem Ipsum It includes MPCD, MD and swimmer particles. 
+/// Lorem Ipsum 
+/// It includes MPCD, MD and swimmer particles. 
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param specS The species-wide information about swimmers.
 ///
 void localVCM( double vcm[_3D],cell CL,spec *SP,specSwimmer specS ) {
 	int id,i;
@@ -3408,6 +3507,7 @@ void localVCM( double vcm[_3D],cell CL,spec *SP,specSwimmer specS ) {
 /// 
 /// @brief This routine calculates the centre of mass velocity of the MPCD particles in a single cell or bin.
 ///
+/// Lorem Ipsum
 /// The function loops over all MPCD particles within a given cell and calculates the center of mass velocity.
 /// @see localFLOW().
 /// It updates the particles by looping through the linked list. 
@@ -3444,9 +3544,12 @@ void localMPCVCM( double vcm[_3D],cell CL,spec *SP ) {
 /// 
 /// @brief This routine calculates the local mass of a cell.
 /// 
-/// Lorem Ipsum It includes MPCD, MD and swimmer particles. 
+/// Lorem Ipsum 
+/// It includes MPCD, MD and swimmer particles. 
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param specS The species-wide information about swimmers.
 /// @return M The local mass of a cell (including MPCD, MD and swimmer particles).
 ///
 double localMASS( cell CL,spec *SP,specSwimmer specS ) {
@@ -3491,9 +3594,12 @@ double localMASS( cell CL,spec *SP,specSwimmer specS ) {
 /// 
 /// @brief This routine calculates the local temperature in the cell, via the equipartition function.
 /// 
-/// Lorem Ipsum  It includes MPCD, MD and swimmer particles. 
+/// Lorem Ipsum  
+/// It includes MPCD, MD and swimmer particles. 
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param specS The species-wide information about swimmers.
 /// @return KBT The local thermal energy of a cell (via equipartition theorem). 
 ///
 double localTEMP( cell CL,spec *SP,specSwimmer specS ) {
@@ -3560,10 +3666,11 @@ double localTEMP( cell CL,spec *SP,specSwimmer specS ) {
 /// 
 /// @brief This routine calculates the local population (number of particles in the cell). swimmer particles. 
 /// 
-/// Lorem Ipsum /// from the particleMPCs listed in the linked list (i.e. assuming localPROP hasn't been called).
+/// Lorem Ipsum 
+/// from the particleMPCs listed in the linked list (i.e. assuming localPROP hasn't been called).
 /// It includes MPCD, MD and swimmer
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
 /// @return i Total number of particles in this cell.
 ///
 int localPOP( cell CL ) {
@@ -3607,7 +3714,7 @@ int localPOP( cell CL ) {
 ///
 /// Lorem Ipsum
 /// It updates all the particles by looping through the global populations. 
-/// @param X Lorem Ipsum
+/// @param p All the MPCD particles. 
 ///
 void scramble( particleMPC *p ) {
 /*
@@ -3634,10 +3741,13 @@ void scramble( particleMPC *p ) {
 /// 
 /// @brief This routine just calculates the centre of mass position for a given cell. 
 ///
+/// Lorem Ipsum
 /// It includes MPCD, MD and swimmer particles. 
 /// This is now a legacy method after being refactored into localPROP.
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param specS The species-wide information about swimmers.
 ///
 void localCM( cell *CL,spec *SP,specSwimmer specS ) {
 	int id,d;
@@ -3704,7 +3814,8 @@ void localCM( cell *CL,spec *SP,specSwimmer specS ) {
 ///
 /// Lorem Ipsum
 /// It updates the particles by looping through the linked list. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
 ///
 void localCM_SRD( cell CL,spec *SP,double r_cm[] ) {
 	int id,d;
@@ -3733,10 +3844,13 @@ void localCM_SRD( cell CL,spec *SP,double r_cm[] ) {
 /// 
 /// @brief This routine calculates the moment of inertia tensor for a given cell. 
 ///
+/// Lorem Ipsum
 /// Calculates the moment of inertia tensor for a given cell, including MPCD, MD and swimmer particles. 
 /// Need to have already calculated the centre of mass position. 
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
+/// @param specS The species-wide information about swimmers.
 ///
 void localMomInertiaTensor( cell *CL,spec *SP,specSwimmer specS ) {
 /*
@@ -3837,9 +3951,11 @@ void localMomInertiaTensor( cell *CL,spec *SP,specSwimmer specS ) {
 /// 
 /// @brief This routine calculates the moment of inertia value of the MPCD particles (here called SRD) for a given cell. 
 /// 
+/// Lorem Ipsum
 //  This routine calculates the moment of inertia value about a given position r0 and axis n (assumed normalized)
 /// It updates the particles by looping through the linked list. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
 /// @return momI Magnitude of the moment of inertia about the given position and axis. 
 ///
 double localMomInertia_SRD( cell CL,spec *SP,double r0[],double n[] ) {
@@ -3875,7 +3991,7 @@ double localMomInertia_SRD( cell CL,spec *SP,double r0[],double n[] ) {
 /// 
 /// Lorem Ipsum
 /// It updates the particles by looping through the global population of all MPCD particles. 
-/// @param X Lorem Ipsum
+/// @param pp All the MPCD particles. 
 ///
 void checkEscape_all( particleMPC *pp ) {
 	int i,d;
@@ -3896,7 +4012,7 @@ void checkEscape_all( particleMPC *pp ) {
 ///
 /// Lorem Ipsum
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
 ///
 void cellVelForce( cell *CL,double addVel[3] ) {
 	int i,j;
@@ -3939,7 +4055,7 @@ void cellVelForce( cell *CL,double addVel[3] ) {
 /// 
 /// Lorem Ipsum
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
 ///
 void cellVelSet( cell *CL,double vel[3] ) {
 	int i,j;
@@ -3981,7 +4097,11 @@ void cellVelSet( cell *CL,double vel[3] ) {
 /// @brief The timestep routine contains all the routines that happen in each time iteration. 
 ///
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param CL All of the MPCD cells (including the linked list of particles in each cell). 
+/// @param SRDparticles All the MPCD particles. 
+/// @param SP The species-wide information about MPCD particles.
+/// @param WALL All of the walls (boundary conditions) that particles might interact with. 
+/// @param specS The species-wide information about swimmers.
 ///
 void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr simMD,specSwimmer *SS,swimmer swimmers[],double AVNOW[_3D],double AVV[_3D],double avDIR[_3D],inputList in,double *KBTNOW, double *AVS,int runtime,int MDmode,outputFlagsList outFlags,outputFilesList outFiles ) {
 
@@ -4389,7 +4509,8 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 /// The routine only calculates the contribution due to the MPCD fluid --- not MD or swimmers
 /// The volume of the MPCD cell is 1 (in MPCD units).
 /// It updates the particles by looping through the linked lists. 
-/// @param X Lorem Ipsum
+/// @param CL All of the MPCD cells (including the linked list of particles in each cell). 
+/// @param SP The species-wide information about MPCD particles.
 ///
 void calcPressureStreaming( cell ***CL,spec *SP ) {
 	int a,b,c,i,j,id;
@@ -4423,7 +4544,8 @@ void calcPressureStreaming( cell ***CL,spec *SP ) {
 /// @brief Zero collisional pressure term --- also divided by volume but cell volume=1.
 ///
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param dt The MPCD time step.
 ///
 void normPressureColl( cell *CL,double dt ) {
 */
@@ -4435,7 +4557,7 @@ void normPressureColl( cell *CL,double dt ) {
 /// @brief The <b>pre</b>-collision calculations needed to calculate the collisional pressure term.
 ///
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param p An MPCD particle. 
 ///
 void calcPressureColl_preColl( double *relQ,double *dp,particleMPC *p,double *CLQ ) {
 	int d;
@@ -4451,7 +4573,7 @@ void calcPressureColl_preColl( double *relQ,double *dp,particleMPC *p,double *CL
 /// @brief The <b>post</b>-collision calculations needed to calculate the collisional pressure term.
 ///
 /// Lorem Ipsum
-/// @param X Lorem Ipsum
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
 ///
 void calcPressureColl_postColl( double *relQ,double *dp,double M,double *vel,cell *CL ) {
 	int i,j;
