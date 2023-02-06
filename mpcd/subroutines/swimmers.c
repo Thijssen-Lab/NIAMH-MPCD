@@ -416,9 +416,10 @@ void swimmerOri( double n[],swimmer *sw ) {
 ///
 /// Calculate the Weeks-Chandler-Andersen force from the monomer separation r, which has to be scaled by the monomer size ahead of time.
 /// The force only acts at radii smaller than rcut (1.122462048309373), its strength depends on eps, and its magnitude is capped at fcap (1E3).
-/// To get the force vector this must be multiplied by vec(r).
+/// To get the force vector this must be multiplied by vec(r). For more details,
+/// see @link[https://doi.org/10.1002/elps.200800673].
 ///
-/// @param r Distance between two monomers, scaled by their size sigma.
+/// @param r Distance between two monomers, scaled by their size sigma (default value 4, can be changed in the input file). 
 /// @param eps Interaction energy. Default value of 1.
 /// @return Magnitude of the WCA force.
 double swimmerWCA( double r,double eps ) {
@@ -438,18 +439,18 @@ double swimmerWCA( double r,double eps ) {
 ///
 /// @brief 
 ///
-/// Calculate the FENE force from the separation r scaled by an equilibrium distance ro, default value 4.
+/// Calculate the FENE force from the separation r scaled by an equilibrium distance ro, default value 4. The value of ro can be changed in the input file.
 ///	To get the force vector this must be multiplied by vec(r).
-///	If the FENE chain is passed then there is a large "backup" force to pull them together.
+///	If the FENE chain is passed then there is a large "backup" force to pull the monomers together. For more details, see @link[https://doi.org/10.1002/elps.200800673].
 ///
-/// @param r Distance between two halves of a swimmer.
+/// @param r Scaled distance between two halves of a swimmer.
 /// @param k Spring strength
-/// @return 
-//COMMENTS INCONSISTANT W CODE
+/// @return Magnitude of FENE spring force.
+
 double swimmerFENE( double r,double k ) {
 
 	#ifdef DBG
-			if( DBUG == DBGSWIMMER || DBUG == DBGSWIMMERDEETS ) if( r>=1.0 ) printf("Warning: dr=%e>1: FENE spring overstretched. Will use strong harmonic spring with 50k\n",r);
+			if( DBUG == DBGSWIMMER || DBUG == DBGSWIMMERDEETS ) if( r>=1.0 ) printf("Warning: dr=%e>1: FENE spring overstretched. Will use non-linear spring to put things back into place.\n",r);
 	#endif
 	if( r<1.0 ) return k/(r*r-1.0);								//FENE
 	// else return swimmerHookean( r,50.0*k );		//Linear hookean force
@@ -457,51 +458,51 @@ double swimmerFENE( double r,double k ) {
 }
 ///
 /// @brief 
-/// @param r 
-/// @param k 
-/// @return 
-double swimmerHookean( double r,double k ) {
-/*
-	Calculate the Hookean spring force from the separation r SCALED by ro=size
-	To get the force vector this must be multiplied by vec(r)
-*/
-	return -k*r;
-}
+///
+/// Calculate the Hookean force for a separation r, scaled by ro (default value 4, can be changed in the input file).
+/// To get the force vector this must be multiplied by vec(r).
+///
+/// @param r Scaled distance between two halves of a swimmer.
+/// @param k Spring strength.
+/// @return Magnitude of hookean force.
+double swimmerHookean( double r,double k ) {return -k*r;}
 ///
 /// @brief 
-/// @param r 
-/// @param k 
-/// @return 
+///
+/// Calculate the non-linear spring force from the separation r, scaled by ro (default value 4, can be changed in the input file).
+/// To get the force vector this must be multiplied by vec(r).
+///
+/// @param r Scaled distance between two halves of a swimmer.
+/// @param k Spring strength.
+/// @return Magnitude of non-linear spring force.
 double swimmerSpring6( double r,double k ) {
-/*
-	Calculate the non-linear spring force from the separation r SCALED by ro=size
-	To get the force vector this must be multiplied by vec(r)
-*/
 	double r2=r*r;
 	return -k*r*r2*r2;
 }
 ///
 /// @brief 
-/// @param SS 
-/// @param s 
-/// @param dt 
-/// @param springType 
-/// @param WALL 
-/// @param i 
+///
+/// Verlet velocity algorithm, for non-interacting swimmers. The velocity is first updated to its value at the half timestep. The position is updated using this
+/// velocity, then the boundary conditions are used to check that the swimmer is still in bounds. The forces (between the monomer couples) are updated at the new position,
+/// the acceleration is calculated from there, and the velocity is updated again, now to its value at the end of the timestep. For more details,
+/// see @link[https://en.wikipedia.org/wiki/Verlet_integration].
+///
+/// @param SS Swimmer properties.
+/// @param s List of swimmers as pointers. Their positions, velocities, and accelerations will be updated.
+/// @param dt Current timestep in the simulation.
+/// @param springType Tag for the type of spring used. Refer to definition.h for spring list.
+/// @param WALL Boundary conditions, used for a check halfway through the function.
+/// @param i Swimmer index.
 void swimmerVerlet_nonInteracting( specSwimmer SS,swimmer *s,double dt,int springType,bc WALL[],int i) {
-/*
-	The leapfrog/Verlet-Velocity algorithm
-*/
+
 	int d;
 	double a[DIM];
 
 	//Verlet step 1
-	//Update velocity using last time step's acceleration
 	for( d=0; d<DIM; d++ ) s->H.V[d] += 0.5*dt*s->H.A[d];
 	for( d=0; d<DIM; d++ ) s->M.V[d] += 0.5*dt*s->M.A[d];
 
 	//Verlet step 2
-	//Update position using the half-step velocity
 	for( d=0; d<DIM; d++ ) s->H.Q[d] += dt*s->H.V[d];
 	for( d=0; d<DIM; d++ ) s->M.Q[d] += dt*s->M.V[d];
 	
@@ -523,41 +524,40 @@ void swimmerVerlet_nonInteracting( specSwimmer SS,swimmer *s,double dt,int sprin
 	#endif
 
 	//Verlet step 3
-	//Update the forces using the new positions
-	//Calculate force on the head (and know force on middle is equal but opposite)
 	smonoForce_sameSwimmer( a,SS,s,springType );
 	//Save the acceleration
 	for( d=0; d<DIM; d++ ) s->H.A[d] = a[d]*SS.iheadM;
 	for( d=0; d<DIM; d++ ) s->M.A[d] = -1.0*a[d]*SS.imiddM;
 
 	//Verlet step 4
-	//Update velocity
 	for( d=0; d<DIM; d++ ) s->H.V[d] += 0.5*dt*s->H.A[d];
 	for( d=0; d<DIM; d++ ) s->M.V[d] += 0.5*dt*s->M.A[d];
 }
 ///
 /// @brief 
-/// @param SS 
-/// @param swimmers 
-/// @param dt 
-/// @param springType 
-/// @param WALL 
+///
+/// Verlet velocity algorithm, for interacting swimmers. The velocity is first updated to its value at the half timestep. The position is updated using this
+/// velocity, then the boundary conditions are used to check that the swimmer is still in bounds. The forces (between the monomer couples and between each monomers) 
+/// are updated at the new position,
+/// the acceleration is calculated from there, and the velocity is updated again, now to its value at the end of the timestep. For more details,
+/// see @link[https://en.wikipedia.org/wiki/Verlet_integration].
+///
+/// @param SS Swimmer properties.
+/// @param s List of swimmers. Their positions, velocities, and accelerations will be updated.
+/// @param dt Current timestep in the simulation.
+/// @param springType Tag for the type of spring used. Refer to definition.h for spring list.
+/// @param WALL Boundary conditions, used for a check halfway through the function.
 void swimmerVerlet_all( specSwimmer SS,swimmer swimmers[],double dt,int springType,bc WALL[]) {
-/*
-	The leapfrog/Verlet-Velocity algorithm
-*/
 	int i,j,d;
 	double a[DIM];
 
 	//Verlet step 1
-	//Update velocity using last time step's acceleration
 	for( i=0; i<NS; i++ ) for( d=0; d<DIM; d++ ) {
 		(swimmers+i)->H.V[d] += 0.5*dt*(swimmers+i)->H.A[d];
 		(swimmers+i)->M.V[d] += 0.5*dt*(swimmers+i)->M.A[d];
 	}
 
 	//Verlet step 2
-	//Update position using the half-step velocity (zero the acceleration so can update it in step 3)
 	for( i=0; i<NS; i++ ) for( d=0; d<DIM; d++ ) {
 		(swimmers+i)->H.Q[d] += dt*(swimmers+i)->H.V[d];
 		(swimmers+i)->M.Q[d] += dt*(swimmers+i)->M.V[d];
@@ -587,7 +587,6 @@ void swimmerVerlet_all( specSwimmer SS,swimmer swimmers[],double dt,int springTy
 			#endif
 	}
 	//Verlet step 3
-	//Update the forces using the new positions
 	for( i=0; i<NS; i++ ) {
 		//Same swimmer
 		smonoForce_sameSwimmer( a,SS,(swimmers+i),springType );
@@ -615,7 +614,6 @@ void swimmerVerlet_all( specSwimmer SS,swimmer swimmers[],double dt,int springTy
 	}
 
 	//Verlet step 4
-	//Update velocity
 	for( i=0; i<NS; i++ ) for( d=0; d<DIM; d++ ) {
 		(swimmers+i)->H.V[d] += 0.5*dt*(swimmers+i)->H.A[d];
 		(swimmers+i)->M.V[d] += 0.5*dt*(swimmers+i)->M.A[d];
@@ -623,34 +621,35 @@ void swimmerVerlet_all( specSwimmer SS,swimmer swimmers[],double dt,int springTy
 }
 ///
 /// @brief 
-/// @param r 
-/// @param dr 
-/// @param m1 
-/// @param m2 
+///
+/// Calculate the distance between two swimmer monomers, unwrapping the coordinates if periodic boundary conditions require it.
+///
+/// @param r Vector difference between the position of each monomers, returned at the end.
+/// @param dr Pointer that returns the length of vector r. 
+/// @param m1 First monomer, whose position we extract.
+/// @param m2 Second monomer, whose position we extract.
 void smonoDist( double r[],double *dr,smono m1, smono m2 ) {
-	//Calculate the distance between two swimmer monomers
 	int d;
 	for( d=0; d<DIM; d++ ) r[d] = m1.Q[d]-m2.Q[d];
-	//Apply any necessary periodic BCs
 	swimmerPBC_dr( r );
 	*dr = length( r,DIM );
 }
 ///
 /// @brief 
-/// @param dr 
-/// @param SS 
-/// @param s 
-/// @param springType 
-/// @return 
+///
+/// Calculate the magnitude of the force between two monomers in the same swimmer, using a spring coupling and a WCA repulsion.
+/// See @link[ https://doi.org/10.1002/elps.200800673] for more details, and Definitions.h for the spring types.
+///
+/// @param dr Distance between the monomers. Scaled by sigma for the WCA interaction, and by ro for the spring coupling.
+/// @param SS Swimmer properties.
+/// @param s Pointer to the swimmer.
+/// @param springType Tag for the type of spring used. Refer to definition.h for spring list.
+/// @return Magnitude of the force between the two monomers.
 double smonoForceMag_sameSwimmer( double dr,specSwimmer SS,swimmer *s,int springType ) {
-	//Calculate the forces between two monomers in the same swimmer
-	//Use the instantaneous
 	double fWCA,fSPRING;
-	//WCA
-	dr *= (s->isig);		//scale dr for WCA
+	dr *= (s->isig);		
 	fWCA = swimmerWCA( dr,SS.eps );
-	//FENE
-	dr *= (s->sig)*(s->iro);		//scale dr for FENE
+	dr *= (s->sig)*(s->iro);		
 	if(springType==FENESPRING) fSPRING = swimmerFENE( dr,SS.k );
 	else if(springType==HOOKESPRING) fSPRING = swimmerHookean( dr,SS.k );
 	else fSPRING=0.0;
@@ -658,17 +657,18 @@ double smonoForceMag_sameSwimmer( double dr,specSwimmer SS,swimmer *s,int spring
 }
 ///
 /// @brief 
-/// @param a 
-/// @param SS 
-/// @param s 
-/// @param springType 
+///
+/// Calculate the force between two monomers in the same swimmer. First calculates the distance between the monomers, then the magnitude of 
+/// the force sum. The acceleration due to the force is then returned, as a vectorial quantity.
+///
+/// @param a Vector built for the acceleration due to the force calculated in this function.
+/// @param SS Swimmer type.
+/// @param s Pointer to a swimmer.
+/// @param springType Tag for the type of spring used. Refer to definition.h for spring list.
 void smonoForce_sameSwimmer( double a[],specSwimmer SS,swimmer *s,int springType ) {
-	//Calculate the forces between two monomers in the same swimmer
 	double dr,f,r[DIM];
 	int d;
-	//Separation
 	smonoDist( r,&dr,s->H,s->M );
-	//Forces
 	f=smonoForceMag_sameSwimmer( dr,SS,s,springType );
 	#ifdef DBG
 			if( DBUG == DBGSWIMMER || DBUG == DBGSWIMMERDEETS ) if( fabs(f)*SS.iheadM > 1000.0 || fabs(f)*SS.imiddM > 1000.0) {
@@ -676,34 +676,35 @@ void smonoForce_sameSwimmer( double a[],specSwimmer SS,swimmer *s,int springType
 				pvec(r,DIM);
 			}
 	#endif
-	//a=acceleration time mass (still a force)
 	for( d=0; d<DIM; d++ ) a[d] = f*r[d];
 }
 ///
 /// @brief 
-/// @param dr 
-/// @param SS 
-/// @return 
+///
+/// Calculate the magnitude of the WCA force between two monomers in different swimmers.
+///	If tumbling is activated, swimmers still see each other's true size, without shrinking.
+///
+/// @param dr Distance between the swimmer, scaled by sigma (default value 4, can be changed in the input file).
+/// @param SS Swimmer properties, used here to obtaine sigma and epsilon.
+/// @return Magnitude of the WCA force.
 double smonoForceMag_differentSwimmers( double dr,specSwimmer SS ) {
-	//Calculate the forces between two monomers in different swimmers (no FENE)
-	//Other swimmers always see the "true" size --- never the shrunk size of tumbling
-	//WCA
-	dr *= SS.isig;		//scale dr for WCA
+	dr *= SS.isig;		
 	return swimmerWCA( dr,SS.eps );
 }
 ///
 /// @brief 
-/// @param a 
-/// @param SS 
-/// @param s1 
-/// @param s2 
+///
+/// Calculate the WCA force between two monomers in different swimmer. First calculates the distance between the monomers, then the magnitude of 
+/// the WCA. The acceleration due to the force is then returned, as a vectorial quantity.
+///
+/// @param a Vector built for the acceleration due to the force calculated in this function.
+/// @param SS Swimmer type.
+/// @param s1 First monomer.
+/// @param s2 Second monomer.
 void smonoForce_differentSwimmers( double a[],specSwimmer SS,smono s1,smono s2 ) {
-	//Calculate the forces between two monomers in the same swimmer
 	double dr,f,r[DIM];
 	int d;
-	//Separation
 	smonoDist( r,&dr,s1,s2 );
-	//Forces
 	f=smonoForceMag_differentSwimmers( dr,SS );
 	#ifdef DBG
 			if( DBUG == DBGSWIMMER || DBUG == DBGSWIMMERDEETS ) if( fabs(f)*SS.iheadM > 1000.0 || fabs(f)*SS.imiddM > 1000.0) {
@@ -711,23 +712,22 @@ void smonoForce_differentSwimmers( double a[],specSwimmer SS,smono s1,smono s2 )
 				pvec(r,DIM);
 			}
 	#endif
-	//a=acceleration time mass (still a force)
 	for( d=0; d<DIM; d++ ) a[d] = f*r[d];
 }
 
 ///
 /// @brief 
+///
+/// Integrate the motion of the swimmers.
+///
 /// @param SS 
 /// @param swimmers 
-/// @param WALL 
+/// @param WALL Boundary conditions.
 /// @param stepsMD 
 /// @param timeStep 
 /// @param MAG 
 /// @param springType 
 void integrateSwimmers( specSwimmer SS,swimmer swimmers[],bc WALL[],int stepsMD,double timeStep,double MAG[],int springType ) {
-/*
-    Integrate the motion of the swimmer
-*/
 	int t,i;
 	double dt = timeStep/(double)stepsMD;
 
