@@ -1,3 +1,10 @@
+///
+/// @file
+/// @brief Prints data output files.
+///
+/// A collection of functions for constructing and printing different raw data outputs to .dat files. The types of files produced must be specified in input.json.
+///
+
 # include <stdio.h>
 # include <stdlib.h>
 # include <math.h>
@@ -20,6 +27,11 @@
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
+
+///
+/// @brief This function prints out a version history summary.
+///
+
 void printVersionSummary( ) {
 	printf( "Version 153\n\tComputeNemForces() was causing the simulation to crash --- rewrite\n" );
 	printf( "\t\tAlso added another check in ComputeBendForces() and use sinc() in bendHarmonic() as it should be more stable\n" );
@@ -453,6 +465,16 @@ void printVersionSummary( ) {
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
+
+///
+/// @brief This function prints a descriptive header for all data output files.
+///
+/// The header is printed to all data output files, crediting the creator.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param SP This is the subpopulation of species.
+/// @return Header printed in output file
+///
 void outheader( FILE *fout,int SP ) {
 /* Simple header output for output files */
 	fprintf( fout," **********************************************\n" );
@@ -465,10 +487,36 @@ void outheader( FILE *fout,int SP ) {
 	fprintf( fout," ************ Code begun Oct. 2008 ************\n" );
 	fprintf( fout," **********************************************\n\n" );
 }
+
+///
+/// @brief Prints column headers for data output files.
+///
+/// Column headers are produced for the relevant .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// QX, QY, and QZ are indices of spatial positions in Cartesian co-ordinates.
+/// VX, VY, VZ, and UX, UY, UZ are velocity values.
+/// |V| is the speed.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void coordheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\t QX\t\t QY\t\t QZ\t\tVX\t\tVY\t\tVZ\t\t|V|\t\tUX\t\tUY\t\tUZ\n" );
 }
+
+///
+/// @brief Prints column headers for flow field data output files.
+///
+/// Column headers are produced for flow field .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// QX, QY, and QZ are indices of spatial positions in Cartesian co-ordinates.
+/// VcmX, VcmY, and VcmZ are centre of mass velocity values in the Cartesian directions.
+/// POP is the cell population
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void coarseheader( FILE *fout ) {
 /* Simple header for output columns */
 	int n;
@@ -476,50 +524,196 @@ void coarseheader( FILE *fout ) {
 	for( n=0; n<NSPECI; n++ ) fprintf( fout,"\t\tSP%d",n );
 	fprintf( fout,"\n" );
 }
+
+///
+/// @brief Prints column headers for director field data output files.
+///
+/// Column headers are produced for director field .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// QX, QY, and QZ are indices of spatial positions in Cartesian co-ordinates.
+/// NX, NY, and NZ are director values in the Cartesian directions.
+/// S is the scalar order parameter.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void orderheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\t\tQX\t\tQY\t\tQZ\t\tNX\t\tNY\t\tNZ\t\tS\n" );
 }
+
+///
+/// @brief Prints column headers for tensor order parameter data output files.
+///
+/// Column headers are produced for tensor order parameter .dat files to display raw data in a table format.
+/// X, Y, and Z are indices of spatial positions in Cartesian co-ordinates.
+/// QXX, QXY, QXZ, QYX, QYZ, QZX, QZY, and QZZ are components of the order parameter tensor.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void orderQheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"X\tY\tZ\tQXX\tQXY\tQXZ\tQYX\tQYY\tQYZ\tQZX\tQZY\tQZZ\n" );
 }
+
+///
+/// @brief Prints column headers for tensor order parameter data output files.
+///
+/// Column headers are produced for reciprocal space of tenor order parameter .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// K123_X, K123_Y, and K123_Z are the Fourier transformed wave vectors in Cartesian space.
+/// |QXX|2 to |QZZ|2 are squared components of the order parameter tensor as they may be complex nubers.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void orderQKheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\tK123_X\ttK123_Y\ttK123_Z\t|QXX|2\t|QXY|2\t|QXZ|2\t|QYX|2\t|QYY|2\t|QYZ|2\t|QZX|2\t|QZY|2\t|QZZ|2\n" );
 }
+
+///
+/// @brief Prints column headers for average cell velocity data output files.
+///
+/// Column headers are produced for average velocity .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// VcmX, VcmY, and VcmZ are centre of mass velocities in Cartesian co-ordinates.
+/// KBT is thermal energy.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void avvelheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\t VcmX\t\tVcmY\t\tVcmZ\t\tKBT\n" );
 }
+
+///
+/// @brief Prints column headers for average cell velocity and velocity gradient tensor data output files.
+///
+/// Column headers are produced for average velocity and velocity gradient .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// VcmX, VcmY, and VcmZ are centre of mass velocities in Cartesian co-ordinates.
+/// KBT is
+/// dVXX to dVVZZ are average cell velocities in Cartesian co-ordinates.
+/// dVXX - x dir of vx
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void avvelWithGradVelheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\t VcmX\t\tVcmY\t\tVcmZ\t\tKBT\t\tdVXX\t\tdVXY\t\tdVXZ\t\tdVYX\t\tdVYY\t\tdVYZ\t\tdVZX\t\tdVZY\t\tdVZZ\t\n" );
 }
+
+///
+/// @brief Prints column headers for radial correlation data output files.
+///
+/// Column headers are produced for radial correlation .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// dr is the radial separation that the correlation function is taken over.
+/// C is the value of the correlation function at separation dr.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void corrheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\tdr\t C\n" );
 }
+
+///
+/// @brief Prints column headers for energy spectra data output files.
+///
+/// Column headers are produced for energy spectra .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// k is the wave number.
+/// E is the corresponding energy value.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void energyspectheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\t k\t\t E\n" );
 }
+
+///
+/// @brief Prints column headers for enstrophy spectra data output files.
+///
+/// Column headers are produced for enstrophy spectra .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// k is the wave number.
+/// Omega is the corresponding enstropy value.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void enstrophyspectheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\t k\t\t Omega\n" );
 }
+
+///
+/// @brief Prints column headers for topological charge data output files.
+///
+/// Column headers are produced for topological charge .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// QX, QY, and QZ are indices of spatial positions in Cartesian co-ordinates.
+/// Charge is the resultant topological charge.
+/// angle is the orientational angle of a topological defect.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void topoheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\t QX\t\t QY\t\t QZ\t\t charge\t\t angle\n" );
 }
+
+///
+/// @brief Prints column headers for 2D defect data output files.
+///
+/// Column headers are produced for 2D defect tracking .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// numDefects relates to the number of defects on a line at time t.
+/// QX, QY, and QZ are indices of spatial positions in Cartesian co-ordinates.
+/// Charge is the resultant topological charge.
+/// angle is the orientational angle of a topological defect.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void defectheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\t numDefects\t \n QX\t\t QY\t\t charge\t\t angle\n" );
 }
+
+///
+/// @brief Prints column headers for 3D defect disclination data output files.
+///
+/// Column headers are produced for 3D defect tracking .dat files to display raw data in a table format.
+/// X, Y, and Z are indices of spatial positions in Cartesian co-ordinates.
+/// DXX to DZZ are disclination tensor components.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void disclinTensorheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"X\tY\tZ\tDXX\tDXY\tDXZ\tDYX\tDYY\tDYZ\tDZX\tDZY\tDZZ\n" );
 }
+
+///
+/// @brief Prints column headers for multiphase data output files.
+///
+/// Column headers are produced for multiphase .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// QX, QY, and QZ are indices of spatial positions in Cartesian co-ordinates.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void multiphaseheader( FILE *fout ) {
 /* Simple header for output columns */
 	int i;
@@ -527,87 +721,349 @@ void multiphaseheader( FILE *fout ) {
 	for( i=0; i<NSPECI; i++ ) fprintf( fout,"\t\tN_%d",i );
 	fprintf( fout,"\n" );
 }
+
+///
+/// @brief Prints column headers for multiphase data output files.
+///
+/// Column headers are produced for multiphase .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// QX, QY, and QZ are indices of spatial positions in Cartesian co-ordinates.
+/// Pxx to Pzz are components of the pressure tensor P.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void pressureheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\t\tQX\t\tQY\t\tQZ\tPxx\tPxy\tPxz\tPyx\tPyy\tPyz\tPzx\tPzy\tPzz\n" );
 }
+
+///
+/// @brief Prints column headers for binning data output files for histogram use.
+///
+/// Column headers are produced for histogram bins in .dat files in order to display raw data in a table format.
+/// Bin size is the size of each histogram bin.
+/// Time, t, is the first column header.
+/// BinderCumulant is the number of counts for the given bin.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void binderheader( FILE *fout,int binSize ) {
 /* Simple header for output columns */
 	fprintf( fout,"Bin Size:\t%d\n",binSize );
 	fprintf( fout,"t\tBinderCumulant\n" );
 }
+
+///
+/// @brief Prints column headers for average scalar order parameter data output files.
+///
+/// Column headers are produced for average scalar order parameter .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// S and S4 are the scalar order parameter and average scalar order paremeter respectively.
+/// nX, nY, and nZ are the director values in each of the Cartesian directions.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void avsheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\t\t S\t\t S4\t\t nX\t\t nY\t\t nZ\n" );
 }
+
+///
+/// @brief Prints column headers for density data output files.
+///
+/// Column headers are produced for density .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// densSTD is the standard deviation of the density.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void densheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\t\t densSTD\n" );
 }
+
+///
+/// @brief Prints column headers for average enstrophy data output files.
+///
+/// Column headers are produced for average enstrophy .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// Enstrophy is the average enstrophy.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void avenstrophyheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\t\t enstrophy\n" );
 }
+
+///
+/// @brief Prints column headers for velocity data output files.
+///
+/// Column headers are produced for velocity .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// QX, QY, and QZ are indices of spatial positions in Cartesian co-ordinates.
+/// VcmX, VcmY, and VcmZ are centre of mass velocities in Cartesian co-ordinates.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void flowheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"   t\t   QX\t   QY\t   QZ\tVcmX\t\tVcmY\t\tVcmZ\n" );
 }
+
+///
+/// @brief Prints column headers for angular velocity and orientation data output files.
+///
+/// Column headers are produced for angular velocity .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// QX, QY, and QZ are indices of spatial positions in Cartesian co-ordinates.
+/// VX, VY, and VZ are velocities in Cartesian co-ordinates.
+/// OX, OY, and OZ are orientation values in Cartesian co-ordinates.
+/// LX, LY, and LZ are angular velocities in Cartesian co-ordinates.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void solidsheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t \tQX\t\tQY\t\tQZ\t\tVX\t\tVY\t\tVZ\t\tOX\t\tOY\t\tOZ\t\tLX\t\tLY\t\tLZ\n" );
 }
+
+///
+/// @brief Prints column headers for velocity probability distribution histogram data output files.
+///
+/// Column headers are produced for velocity probability distribution histogram .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// V is the speed.
+/// PX, PY, and PZ are the probability distributions in Cartesian co-ordinates.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void histVelheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\t V\t\t\tPX\t\tPY\t\tPZ\n" );
 }
+
+///
+/// @brief Prints column headers for vorticity probability distribution histogram data output files.
+///
+/// Column headers are produced for vorticity probability distribution histogram .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// W is the vorticity.
+/// PX, PY, and PZ are the probability distributions in Cartesian co-ordinates.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void histVortheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\t w\t\t\tPX\t\tPY\t\tPZ\n" );
 }
+
+///
+/// @brief Prints column headers for director probability distribution histogram data output files.
+///
+/// Column headers are produced for director probability distribution histogram .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// N is the director value.
+/// PX, PY, and PZ are the probability distributions in Cartesian co-ordinates.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void histDirheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\t n\t\t\tPX\t\tPY\t\tPZ\n" );
 }
+
+///
+/// @brief Prints column headers for speed probability distribution histogram data output files.
+///
+/// Column headers are produced for speed probability distribution histogram .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// |V| is the speed.
+/// P is the probability distribution.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void histSpeedheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\t |V|\t\tP\n" );
 }
+
+///
+/// @brief Prints column headers for enstrophy probability distribution histogram data output files.
+///
+/// Column headers are produced for enstrophy probability distribution histogram .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// |W| is the enstrophy.
+/// P is the probability distribution.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void histEnstrheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\t |w|\t\tP\n" );
 }
+
+///
+/// @brief Prints column headers for director probability distribution histogram data output files.
+///
+/// Column headers are produced for director probability distribution histogram .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// stdN is the standard deviation of the director orientation.
+/// P is the probability distribution.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void histNheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\t stdN\t\tP\n" );
 }
+
+///
+/// @brief Prints column headers for scalar order parameter probability distribution histogram data output files.
+///
+/// Column headers are produced for scalar order parameter probability distribution histogram .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// S is the scalar order parameter.
+/// P is the probability distribution.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void histSheader( FILE *fout ) {
 /* Simple header for output columns */
 	fprintf( fout,"t\t S\t\tP\n" );
 }
+
+///
+/// @brief Prints column headers for energy contribution data output files.
+///
+/// Column headers are produced for energy .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// MPC_kin is the kinetic contributions to the energy, with BC_kin the kinetic contribution at the boundary.
+/// MPC_nem is the nematic contributions to the energy.
+/// BC_rot the rotational energy contribution at the boundary.
+/// Total is the total energy.
+/// KBT is the thermal energy contribution.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void energyheader( FILE *fout ) {
 	/* Simple header for output columns */
 	fprintf( fout,"t\t\tMPC_kin\t\tMPC_nem\t\tBC_kin\t\tBC_rot\t\tTotal\t\tKBT\n" );
 }
+
+///
+/// @brief Prints column headers for energy field data output files.
+///
+/// Column headers are produced for energy field .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// QX, QY, and QZ are indices of spatial positions in Cartesian co-ordinates.
+/// MPC_kin is the kinetic contributions to the energy.
+/// MPC_nem is the nematic contributions to the energy.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void energyfieldheader( FILE *fout ) {
 	/* Simple header for output columns */
 	fprintf( fout,"QX\tQY\tQZ\tMPC_kin\ttMPC_nem\n" );
 }
+
+///
+/// @brief Prints column headers for swimmer data output files.
+///
+/// Column headers are produced for swimmer .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// Swimmer consist of a head (H) and a middle (M).
+/// HX to HZ and MX to MZ are head and middle positions in Cartesian co-ordinates respectively.
+/// HVX, HVY, and HVZ are head velocities in Cartesian co-ordinates.
+/// MVX, MVY, and MVZ are middle velocities in Cartesian co-ordinates.
+/// RTphase is the run-tumble phase of the swimmer.
+///
+/// @param FILE This is the file name of the output file.
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void swimmerheader( FILE *fout ) {
 	/* Simple header for output columns */
 	fprintf( fout,"t\t\tHX\tHY\tHZ\tHVX\tHVY\tHVZ\tMX\tMY\tMZ\tMVX\tMVY\tMVZ\tRTphase\n" );
 }
+
+///
+/// @brief Prints column headers for swimmer orientation data output files.
+///
+/// Column headers are produced for swimmer orientation .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// nX, nY, and nZ are the swimmer orientation in Cartesian co-ordinates.
+/// RTphase is the run-tumble phase of the swimmer.
+///
+
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void swimmeroriheader( FILE *fout ) {
 	/* Simple header for output columns */
 	fprintf( fout,"t\t\tnX\tnY\tnZ\tRTphase\n" );
 }
+
+///
+/// @brief Prints column headers for run-tumble data output files.
+///
+/// Column headers are produced for run-tumble .dat files to display raw data in a table format.
+/// The first column, RTphase, is the run-tumble phase of the swimmer.
+/// dt_cnt is the timestep count.
+/// dAng is the change in angle of the swimmer.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void runtumbleheader( FILE *fout ) {
 	/* Simple header for output columns */
 	fprintf( fout,"RTphase\t\tdt_cnt\tdAng\n" );
 }
+
+///
+/// @brief Prints column headers for neighbouring nematic energy data output files.
+///
+/// Column headers are produced for neighbouring nematic energy .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// MPC_nem is the nematic contributions to the energy.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @return Column headers printed in output files.
+///
 void energyneighboursheader( FILE *fout ) {
 	/* Simple header for output columns */
 	fprintf( fout,"t\ttMPC_nem\n" );
 }
+
+///
+/// @brief Prints Cartesian co-ordinates to data output files.
+///
+/// This function prints the Cartesian co-ordinates to output files that require it and are requested by input.json.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced, covering all species specified.
+/// @param pr This is an index value for the subpopulation SP.
+/// @param T Timestep, the output rate of which is specified in input.json.
+/// @param p List of MPC particle index numbers.
+/// @param SP Subpopulation of species.
+///
+/// @return Co-ordinates printed in output files.
+///
 void coordout( FILE *fout[MAXSPECI],int pr,double T,particleMPC p[],spec SP[] ) {
 /* Prints particleMPC coordinate data to output file */
 	int i,j;
@@ -631,6 +1087,19 @@ void coordout( FILE *fout[MAXSPECI],int pr,double T,particleMPC p[],spec SP[] ) 
 		}
 	}
 }
+
+///
+/// @brief Prints coarse data to data output files.
+///
+/// This function prints the coarse grained data to output files that require it and are requested by input.json.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param t Timestep, the output rate of which is specified in input.json.
+/// @param CL This is a pointer to the co-ordinates and cell of each particle in the MPC list.
+/// @see cellout()
+///
+/// @return Coarse grained data printed in output files.
+///
 void coarseout( FILE *fout,double t,cell ***CL ) {
 	/*
 	 Print coarse data to file
@@ -654,6 +1123,16 @@ void coarseout( FILE *fout,double t,cell ***CL ) {
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Produces co-ordinates of MPC particles.
+///
+/// This function produces the co-ordinates, resident cell, and resident cell population of particles in the list of MPC and MD particles, as well as swimmers.
+///
+/// @param CL This is a pointer to the co-ordinates and cell of each particle.
+///
+/// @return Cell data and Position for each particle.
+///
 void cellout( cell ***CL ) {
 /*
    This function states the coordinates of each
@@ -702,6 +1181,20 @@ void cellout( cell ***CL ) {
 		printf( "\tP=%d\n",CL[i][j][k].POP );
 	}
 }
+
+///
+/// @brief Outputs entire list of MPC particles, MD partciles, and swimmers.
+///
+/// This function outputs the list of all particle and swimmer co-ordinates and cell information as an array of lists.
+/// It outputs the local properties of each such as the position and velocity.
+///
+/// @param CL This is a pointer to the co-ordinates and cell of each particle.
+/// @param XYZ_P1 This is three-dimensional list of particle positions.
+///
+/// @see cellout()
+///
+/// @return List of all MPC particles, MD particles, and swimmers.
+///
 void listout( cell ***CL,int XYZ_P1[_3D] ) {
 /*
     Output entire list
@@ -755,6 +1248,16 @@ void listout( cell ***CL,int XYZ_P1[_3D] ) {
 		}
 	}
 }
+
+///
+/// @brief Outputs position and velocity of MPC particles to the terminal.
+///
+/// This function prints MPC particle respective positions and velocities to terminal.
+///
+/// @param p This is an index for each MPC particle.
+///
+/// @return MPC particle positions and velocities printed to terminal.
+///
 void pcoord( particleMPC p ) {
 /*
     Prints the particleMPC's coordinates (position
@@ -764,6 +1267,16 @@ void pcoord( particleMPC p ) {
 	printf( "\tV=(%6.12e,%6.12e,%6.12e)\n",p.V[0],p.V[1],p.V[2] );
 	printf( "\tU=(%6.12e,%6.12e,%6.12e)\n",p.U[0],p.U[1],p.U[2] );
 }
+
+///
+/// @brief Outputs boundary information to the terminal.
+///
+/// This function prints boundary positions, velocity, and angular velocity to terminal.
+///
+/// @param WALL This is a pointer obtaining information on boundary conditions.
+///
+/// @return Boundary positions and velocities printed to terminal.
+///
 void bccoord( bc WALL ) {
 /*
     Prints the BC's coordinates (position, velocity
@@ -774,6 +1287,16 @@ void bccoord( bc WALL ) {
 	printf( "\tO=(%6.12e,%6.12e,%6.12e)\n",WALL.O[0],WALL.O[1],WALL.O[2] );
 	printf( "\tL=(%e,%e,%e)\n",WALL.L[0],WALL.L[1],WALL.L[2] );
 }
+
+///
+/// @brief Outputs position and velocity of MD partciles to the terminal.
+///
+/// This function prints MD particle respective positions and velocities to terminal.
+///
+/// @param p This is an index for each MD particle.
+///
+/// @return MD particle positions and velocities printed to terminal.
+///
 void mdcoord( particleMD p ) {
 /*
     Prints the particleMPC's coordinates (position
@@ -782,6 +1305,16 @@ void mdcoord( particleMD p ) {
 	printf( "\tQ=(%lf,%lf,%lf)\n",p.rx,p.ry,p.rz );
 	printf( "\tV=(%lf,%lf,%lf)\n",p.vx,p.vy,p.vz );
 }
+
+///
+/// @brief Outputs position and velocity of swimmers to the terminal.
+///
+/// This function prints swimmers respective positions and velocities to terminal.
+///
+/// @param sw This is an index for each swimmer.
+///
+/// @return Swimmer positions and velocities printed to terminal.
+///
 void swcoord( swimmer sw ) {
 /*
     Prints the swimmers's coordinates (position
@@ -792,6 +1325,17 @@ void swcoord( swimmer sw ) {
 	printf( "\tM Q=(%lf,%lf,%lf) ",sw.M.Q[0],sw.M.Q[1],sw.M.Q[2] );
 	printf( "\tV=(%lf,%lf,%lf)\n",sw.M.V[0],sw.M.V[1],sw.M.V[2] );
 }
+
+///
+/// @brief Generic function to print vectors.
+///
+/// This is a generic function that prints vectors.
+///
+/// @param VEC This is the vector that will be printed.
+/// @param dimension This is the dimensionality of the vector that will be printed.
+///
+/// @return Prints the requested vector.
+///
 void pvec( double VEC[],int dimension ) {
 /*
     Prints any vector
@@ -801,6 +1345,16 @@ void pvec( double VEC[],int dimension ) {
 	for( i=0; i<(dimension-1); i++ ) printf( "%lf,",VEC[i] );
 	printf( "%lf)\n",VEC[dimension-1] );
 }
+
+///
+/// @brief Generic function to print 3D tensors.
+///
+/// This is a generic function that prints three-dimensional tensors.
+///
+/// @param TENS This is the 3D tensor that will be printed.
+///
+/// @return Prints the requested 3D tensor.
+///
 void ptens3D( double TENS[][_3D] ) {
 /*
     Prints any vector
@@ -815,6 +1369,16 @@ void ptens3D( double TENS[][_3D] ) {
 	}
 	printf( " ]\n" );
 }
+
+///
+/// @brief Generic function to print 2D tensors.
+///
+/// This is a generic function that prints two-dimensional tensors.
+///
+/// @param TENS This is the 2D tensor that will be printed.
+///
+/// @return Prints the requested 2D tensor.
+///
 void ptens2D( double TENS[][_2D] ) {
 /*
     Prints any vector
@@ -829,6 +1393,16 @@ void ptens2D( double TENS[][_2D] ) {
 	}
 	printf( " ]\n" );
 }
+
+///
+/// @brief Generic function to print 2D or 3D tensors.
+///
+/// This is a generic function that prints two-dimensional and three-dimensional tensors.
+///
+/// @param TENS This is pointer to the 2D or 3D tensor that will be printed.
+///
+/// @return Prints the requested tensor.
+///
 void ptens( double **TENS,int dimension ) {
 	int i,j;
 	double T2[_2D][_2D],T3[_3D][_3D];
@@ -842,6 +1416,19 @@ void ptens( double **TENS,int dimension ) {
 	}
 	else printf( "Warning: can only print tensors of order 2 or 3\n" );
 }
+
+///
+/// @brief Outputs position and velocity of MPC particles to the terminal.
+///
+/// This function prints MPC particle respective positions and velocities to terminal.
+///
+/// @param POS This is the three-dimensional co-ordinates of MPC particles.
+/// @param VEL This is the three-dimensional velocities of MPC particles.
+/// @param ANG This is the three-dimensional angular velocities of MPC particles.
+/// @param dimension This is the dimensionality.
+///
+/// @return MPC particle positions, velocities, and angular velocities printed to terminal.
+///
 void pvcoord( double POS[_3D],double VEL[_3D],double ANG[_3D],int dimension ) {
 /*
     Prints the particleMPC's coordinates (position
@@ -855,6 +1442,16 @@ void pvcoord( double POS[_3D],double VEL[_3D],double ANG[_3D],int dimension ) {
 	pvec( ANG,dimension );
 
 }
+
+///
+/// @brief Outputs all MPC particles information to the terminal.
+///
+/// This function prints all MPC particle information to terminal.
+///
+/// @param p This is an index for each MPC particle.
+///
+/// @return MPC particle information printed to terminal.
+///
 void pall( particleMPC p[] ) {
 	/* Prints all particleMPC coordinate data to terminal */
 	int i;
@@ -863,6 +1460,19 @@ void pall( particleMPC p[] ) {
 		pcoord( p[i] );
 	}
 }
+
+///
+/// @brief Outputs input data and parameters.
+///
+/// This function prints relevent input information to the terminal.
+///
+/// @param in This is a pointer that fetches information from input.json.
+/// @param AVVEL This is the average speed in any direction.
+/// @param SP This is a pointer that fetches species information such as population.
+/// @param theory This is a pointer that fetches theoretical information calculated from input.json.
+///
+/// @return Input paramters printed.
+///
 void listinput( inputList in,double AVVEL,spec SP[],kinTheory theory ) {
 /*
     Lists the input data
@@ -920,6 +1530,22 @@ void listinput( inputList in,double AVVEL,spec SP[],kinTheory theory ) {
 		exit( 1 );
 	}
 }
+
+///
+/// @brief Parameters and input data ouput to synopsis data file.
+///
+/// This function prints relevent information to the synopsis data file.
+///
+/// @param in This is a pointer that fetches information from input.json.
+/// @param SP This is a pointer that fetches species information such as population.
+/// @param WALL This is a pointer obtaining information on boundary conditions.
+/// @param SS This is a pointer that fetches swimmer specifications such as initial conditions, type, and run-tumble conditions.
+/// @param out This is a flag that determines if data should be output or not.
+/// @param theory This is a pointer that fetches theoretical information.
+/// @param fsynopsis This is a pointer to the synopsis.dat output file.
+///
+/// @return Relevant information printed to synopsis.dat.
+///
 void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList out,kinTheory theory,FILE *fsynopsis ) {
 /*
     Lists input data
@@ -1059,6 +1685,20 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 		fprintf( fsynopsis,"Synopsis of Simulation: %i\n",out.SYNOUT );
 	}
 }
+
+///
+/// @brief Outputs data for velocity probability distributions.
+///
+/// This function prints velocity probability distributions for a given number of bins to produce a histogram.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param vel This is the velocity in three dimensions for the corresponding bin it resides in.
+/// @param minRange This is the minimum velocity.
+/// @param maxRange This is the maximum velocity.
+/// @param t This is the time.
+///
+/// @return Velocity histogram values and bins printed to file.
+///
 void histVelout( FILE *fout,int vel[_3D][BINS],double minRange,double maxRange,double t ) {
 /*
     Print velocity distribution data to file
@@ -1074,6 +1714,20 @@ void histVelout( FILE *fout,int vel[_3D][BINS],double minRange,double maxRange,d
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs data for speed probability distributions.
+///
+/// This function prints speed probability distributions for a given number of bins to produce a histogram.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param vel This is the speed for the corresponding bin it resides in.
+/// @param minRange This is the minimum speed.
+/// @param maxRange This is the maximum speed.
+/// @param t This is the time.
+///
+/// @return Speed histogram values and bins printed to file.
+///
 void histSpeedout( FILE *fout,int speed[BINS],double minRange,double maxRange,double t ) {
 /*
     Print speed distribution data to file
@@ -1089,6 +1743,20 @@ void histSpeedout( FILE *fout,int speed[BINS],double minRange,double maxRange,do
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs data for vorticity probability distributions.
+///
+/// This function prints vorticity probability distributions for a given number of bins to produce a histogram.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param vort This is the vorticity in three dimensions for the corresponding bin it resides in.
+/// @param minRange This is the minimum vorticity.
+/// @param maxRange This is the maximum vorticity.
+/// @param t This is the time.
+///
+/// @return Vorticity histogram values and bins printed to file.
+///
 void histVortout( FILE *fout,int vort[_3D][BINS],double minRange,double maxRange,double t ) {
 /*
     Print vorticity distribution data to file
@@ -1104,6 +1772,20 @@ void histVortout( FILE *fout,int vort[_3D][BINS],double minRange,double maxRange
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs data for enstrophy probability distributions.
+///
+/// This function prints enstrophy probability distributions for a given number of bins to produce a histogram.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param enstrophy This is the enstrophy for the corresponding bin it resides in.
+/// @param minRange This is the minimum enstrophy.
+/// @param maxRange This is the maximum enstrophy.
+/// @param t This is the time.
+///
+/// @return Enstrophy histogram values and bins printed to file.
+///
 void histEnstrout( FILE *fout,int enstrophy[BINS],double minRange,double maxRange,double t ) {
 /*
     Print enstrophy distribution data to file
@@ -1119,6 +1801,20 @@ void histEnstrout( FILE *fout,int enstrophy[BINS],double minRange,double maxRang
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs data for director orientation probability distributions.
+///
+/// This function prints director orientation probability distributions for a given number of bins to produce a histogram.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param dir This is the director orientation in three dimensions for the corresponding bin it resides in.
+/// @param minRange This is the minimum enstrophy.
+/// @param maxRange This is the maximum enstrophy.
+/// @param t This is the time.
+///
+/// @return Director orientation histogram values and bins printed to file.
+///
 void histDirout( FILE *fout,int dir[_3D][BINS],double minRange,double maxRange,double t ) {
 /*
     Print vorticity distribution data to file
@@ -1134,6 +1830,20 @@ void histDirout( FILE *fout,int dir[_3D][BINS],double minRange,double maxRange,d
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs data for scalar order parameter probability distributions.
+///
+/// This function prints scalar order parameter probability distributions for a given number of bins to produce a histogram.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param S This is the scalar order parameter for the corresponding bin it resides in.
+/// @param minRange This is the minimum scalar order parameter.
+/// @param maxRange This is the maximum scalar order parameter.
+/// @param t This is the time.
+///
+/// @return Scalar order parameter histogram values and bins printed to file.
+///
 void histSout( FILE *fout,int S[BINS],double minRange,double maxRange,double t ) {
 /*
     Print enstrophy distribution data to file
@@ -1149,6 +1859,20 @@ void histSout( FILE *fout,int S[BINS],double minRange,double maxRange,double t )
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs data for particle density probability distributions.
+///
+/// This function prints particle density probability distributions for a given number of bins to produce a histogram.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param dens This is the particle density for the corresponding bin it resides in.
+/// @param minRange This is the minimum particle density.
+/// @param maxRange This is the maximum particle density.
+/// @param t This is the time.
+///
+/// @return Particle density histogram values and bins printed to file.
+///
 void histNout( FILE *fout,int dens[BINS],double minRange,double maxRange,double t ) {
 /*
     Print enstrophy distribution data to file
@@ -1164,6 +1888,20 @@ void histNout( FILE *fout,int dens[BINS],double minRange,double maxRange,double 
 		fflush(fout);
 	#endif
 }
+
+/// @brief Outputs energy data.
+///
+/// This function collates and prints nematic, kinetic and boundary energy contributions.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param pp This is a pointer to MPC particle indices.
+/// @param pSP This is a pointer to sub population indices.
+/// @param WALL This is a pointer to boundary position information.
+/// @param t This is the time.
+/// @param WALL This is a pointer that fetches thermal energy KBT.
+///
+/// @return Total energy and energy information outputted.
+///
 void enout( FILE *fout,particleMPC *pp,spec *pSP,bc WALL[],double t,double KBT,double wmf ) {
 /*
     Print distribution data to file
@@ -1387,7 +2125,7 @@ void topoChargeAndDefectsOut( FILE *ftopo,int TOPOOUT,FILE *fdefect,int DEFECTOU
 	 Print topological charge data to file
 	 Only designed to work for 2D since topological charge is only defined in 2D
 	 */
-	//FIXME: 
+	//FIXME:
 	int i,j,k,cntD;
 	double m,cmx,cmy,avC,avAx,avAy,avA;
 
@@ -1397,13 +2135,13 @@ void topoChargeAndDefectsOut( FILE *ftopo,int TOPOOUT,FILE *fdefect,int DEFECTOU
 	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) topoAngle[i][j] = 0.0;
 
 	//loop through non-CB boundary cells and calculate topo charge
-	for( i=1; i<XYZ[0]-1; i++ ) for( j=1; j<XYZ[1]-1; j++ ) topoC[i][j] = topoChargeLocal(CL, i, j, 0); 
+	for( i=1; i<XYZ[0]-1; i++ ) for( j=1; j<XYZ[1]-1; j++ ) topoC[i][j] = topoChargeLocal(CL, i, j, 0);
 	//loop through non-CB boundary cells and calculate topo angle
 	for( i=2; i<XYZ[0]-2; i++ ) for( j=2; j<XYZ[1]-2; j++ ){
-		///FIXME: Too lazy to handle derivatives properly at the boundaries, so we just ignoring another layer there instead. Oopsies. Same goes for the loop above. 
+		///FIXME: Too lazy to handle derivatives properly at the boundaries, so we just ignoring another layer there instead. Oopsies. Same goes for the loop above.
 		//Tyler: I think this is reasonable since we don't want to assume PBCs
-		if( fabs(topoC[i][j])>TOL ) topoAngle[i][j] = topoAngleLocal(CL, i, j, 0, topoC[i][j]); 
-	} 
+		if( fabs(topoC[i][j])>TOL ) topoAngle[i][j] = topoAngleLocal(CL, i, j, 0, topoC[i][j]);
+	}
 	if( TOPOOUT ) {
 		//Output
 		for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) for( k=0; k<XYZ[2]; k++ ) {
@@ -1831,7 +2569,7 @@ void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,b
 		fprintf( fout,"%d %d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n",pSRD[i].S_flag, pSRD[i].SPID, pSRD[i].q, pSRD[i].Q[0], pSRD[i].Q[1], pSRD[i].Q[2], pSRD[i].V[0], pSRD[i].V[1], pSRD[i].V[2], pSRD[i].U[0], pSRD[i].U[1], pSRD[i].U[2], pSRD[i].T[0], pSRD[i].T[1], pSRD[i].T[2] );
 	}
 
-	//Swimmers 
+	//Swimmers
 	fprintf( fout,"%d %d %d %d %d %d %lf %lf %d %d\n", NS,specS.TYPE, specS.QDIST, specS.ODIST, specS.headM, specS.middM, specS.iheadM, specS.imiddM, specS.HSPid, specS.MSPid );
 	fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %d %lf\n", specS.FS, specS.TS, specS.DS, specS.sizeShrink, specS.springShrink, specS.fixDist, specS.k, specS.ro, specS.iro, specS.sig, specS.isig, specS.eps, specS.runTime, specS.tumbleTime, specS.shrinkTime, specS.MAGMOM );
 
