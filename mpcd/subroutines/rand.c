@@ -1,3 +1,19 @@
+///
+/// @file
+/// @brief Methods for handling random number generation.
+///
+/// Methods for handling random number generation in MPCD. Most methods are interfaces that call one of the two
+/// underlying random number generators:
+/// - The Mersenne Twister, taken from http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/CODES/mt19937ar.c
+/// - The xoshiro128++ algorithm, taken from https://prng.di.unimi.it/xoshiro128plusplus.c
+///
+/// The choice of random number generator is controlled by whether `RNG_MERSENNE` is defined or not. If not (the
+/// default), then xoroshiro is used. Xoroshiro is faster, but has a much shorter period than the Mersenne Twister,
+/// albeit still sufficient for the purposes of MPCD.
+///
+/// Base methods using the Mersenne Twister are prefixed with `MT_`, while those using xoroshiro are prefixed with `X_`.
+/// Methods with no prefix are those freely available to the user, and will call the appropriate underlying method.
+
 # include <math.h>
 # include <sys/time.h>
 # include <stdio.h>
@@ -19,13 +35,20 @@
 static unsigned long mt[NN];	//Mersenne twister variable: the array for the state vector
 static int mti=NN+1;		//Mersenne twister variable: mti==NN+1 means mt[NN] is not initialized
 
+/// @brief Generate a random seed, if necessary, and initialize the Mersenne Twister random number generator.
+///
+/// Generates a random seed (if necessary), then uses this to initialise the state of the Mersenne Twister random number
+/// generator. Initialisation is near identical to the method `MT_init_genrand()`, but for legacy reasons does not call
+/// it explicitly.
+///
+/// @param seed Input seed. If zero, a random seed is generated using the time in microseconds add the process id.
+/// @see MT_init_genrand()
+/// @return The seed used to initialise the random number generator. Primarily to allow the user to check what seed was generated.
 unsigned long MT_RandomSeedSRD (unsigned long seed)
 {
 // STOLEN FROM FRED!
 
-    // Get a seed from time*pid if seed=0
-    // 	if (!seed) seed = time(0)*getpid();
-    // if (!seed) seed = time(0);
+    // Get a seed from time+pid if seed=0
     struct timeval tv;
     gettimeofday(&tv, NULL); // Get the time to use the microseconds as an "random" seed
     if (!seed) seed = tv.tv_usec+getpid();
@@ -40,6 +63,13 @@ unsigned long MT_RandomSeedSRD (unsigned long seed)
     return (seed);
 }
 
+/// @brief Initialize the Mersenne Twister random number generator with a given seed.
+///
+/// Initialize the state of the Mersenne Twister random number generator with a given seed. Note that this explicitly
+/// uses the given seed, unlike `MT_RandomSeedSRD()` which will generate a random seed if the input is zero.
+///
+/// @param s The seed to use to initialise the random number generator.
+/// @see MT_RandomSeedSRD()
 void MT_init_genrand(unsigned long s){
 /*
    Mersenne twister
@@ -58,41 +88,14 @@ void MT_init_genrand(unsigned long s){
         /* for >32 bit machines */
     }
 }
-void MT_init_by_array(unsigned long init_key[], int key_length){
-/*
-   Mersenne twister
-   http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/CODES/mt19937ar.c
-   Iinitialize by an array with array-length
-   init_key is the array for initializing keys
-   key_length is its length
-*/
-    int i, j, k;
 
-    struct timeval tv;
-    gettimeofday(&tv, NULL); // Get the time to use the microseconds as an "random" seed
-    MT_init_genrand(tv.tv_usec);
-    //init_genrand(19650218UL);
-
-    i=1; j=0;
-    k = (NN>key_length ? NN : key_length);
-    for (; k; k--) {
-        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1664525UL))
-                + init_key[j] + j; /* non linear */
-        mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
-        i++; j++;
-        if (i>=NN) { mt[0] = mt[NN-1]; i=1; }
-        if (j>=key_length) j=0;
-    }
-    for (k=NN-1; k; k--) {
-        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1566083941UL))
-                - i; /* non linear */
-        mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
-        i++;
-        if (i>=NN) { mt[0] = mt[NN-1]; i=1; }
-    }
-
-    mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */
-}
+/// @brief Generates a random int32 number on the [0,0xffffffff]-interval using Mersenne Twister.
+///
+/// This performs a twist transformation to the state vector to generate a new random number. It first performs a sanity
+/// check to see if the seed has not been properly set (indicated by the state variable `mti`), before performing the
+/// twist. It finally uses the state vector to generate a random number.
+///
+/// \return The pseudo-randomly generated number.
 unsigned long MT_genrand_int32(void){
 /*
    Mersenne twister
@@ -156,18 +159,28 @@ unsigned long MT_genrand_int32(void){
 static unsigned long X_state[4]; // RNG state
 int X_seeded = 0; // flag to show whether this has been seeded or not.
 
+/// @brief Rotates a 64-bit integer left by a given number of bits.
+///
+/// This is a helper function for the xoshiro128++ RNG. It rotates a 64-bit integer left by a given number of bits,
+/// which is used several times in the generation method.
+///
+/// @param x The 64-bit integer to rotate.
+/// @param k The number of bits to rotate by.
+/// @return The rotated 64-bit integer.
 static inline unsigned long X_rotl(const long int x, int k) {
-    /* Rotate x left by k bits */
     return (x << k) | (x >> (32 - k));
 }
 
+/// @brief Initialise the xoshiro128++ RNG with a given seed using SplitMix64.
+///
+/// Initialises the xoroshiro RNG. In order to do this, an instance of the SplitMix64 algorithm is initialised with the
+/// given seed. 4 usages of SplitMix64 are then applied to generate the initial state of xoroshiro from the seed.
+///
+/// This additional step is necessary because xoroshiro requires 4 pseudo-random 64-bit integers to initialise the
+/// state, rather than a single state variable (as in Mersenne Twister).
+///
+/// @param s The seed to initialise with.
 void X_init_genrand(unsigned long s) {
-    /*
-     * Initialize the RNG state with the seed using SplitMix64
-     *
-     * Note that unlike MT: We need to prepare 4 pseudo-random values to initialise the RNG state
-     * Hence, we initialise a temporary instance of SplitMix64, using the existing seed, to generate the initial state
-    */
     int i; // counting variable
 
     /* SplitMix64 code taken from: https://github.com/svaarala/duktape/blob/master/misc/splitmix64.c
@@ -191,6 +204,15 @@ void X_init_genrand(unsigned long s) {
     X_seeded = 1; // mark as seeded
 }
 
+/// @brief Performs a pre-processing step to initialise the Xoroshiro RNG.
+///
+/// If the seed is set as 0 then a new seed is generated using the current time and process id. A safety check is then
+/// performed to ensure that xoroshiro has not been properly seeded in `X_init_genrand`, and if it has not then it
+/// is initialised with the new seed.
+///
+/// @param seed A single 64-bit integer to use as the seed. If set as zero, a new seed is generated.
+/// @see X_init_genrand()
+/// @return The seed used to initialise the random number generator. Primarily to allow the user to check what seed was generated.
 unsigned long X_RandomSeedSRD (unsigned long seed) {
     /*
      * Perform the same seeding as in the MT
@@ -206,10 +228,15 @@ unsigned long X_RandomSeedSRD (unsigned long seed) {
     return seed;
 }
 
+/// @brief Generates a random 64-bit integer using the xoshiro128++ RNG.
+///
+/// Generates a random 64-bit integer using the xoshiro128++ RNG. This is a 64-bit RNG with a period of 2^128-1. First,
+/// it ensures the RNG has been properly initialised, and if it has not then it is initialised with a new seed. It
+/// proceeds to perform a rotation using the state, giving the next random number. The state is then updated per the
+/// algorithm, doing a bitwise <b>XO</b>R, a <b>ro</b>tation, a <b>sh</b>ift, and a <b>ro</b>tation - Hence the name Xoroshiro.
+///
+/// @return A random 64-bit integer.
 unsigned long X_genrand_int32(void) {
-    /*
-     * Performs the next() step from the xoshiro128++ algorithm, generating a random integer
-    */
     if (X_seeded == 0) { // ensure seed is properly set, if not then seed with a random value
         X_RandomSeedSRD(0);
     }
