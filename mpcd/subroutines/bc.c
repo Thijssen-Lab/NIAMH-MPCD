@@ -751,7 +751,7 @@ void velBC( particleMPC *pp,bc *WALL,double n[_3D],spec *SP,double KBT ) {
 ///
 /// @brief Applies boundary conditions to particle position.
 ///
-/// Applies boundary conditions (specific to `WALL`) to particle position. TODO brief description how.
+/// Applies boundary conditions (specific to `WALL`) to particle position.
 /// @param pp The individual particle.
 /// @param WALL The boundary.
 /// @param n Normal vector to the boundary.
@@ -933,17 +933,28 @@ void BCBCpos( bc *WALL1 ,bc *WALL2,double n[] ) {
 // 	}
 // }
 
-
-
+///
+/// @brief Transforms the particle's normal and tangential velocity components.
+///
+/// Applies boundary conditions to the particle's normal velocity component and tangential component.
+/// These normal and tangential components were identified in velBC().
+/// The applied boundary conditions include transformations to the magnitude of the velocity,
+/// and flips to the orientation of the velocity at the boundary.
+/// @param WALL The boundary.
+/// @param VN Normal component of the velocity.
+/// @param VT Tangential component of the velocity.
+/// @param norm Normal vector (e.g. to the boundary).
+/// @see velBC()
+///
 void vel_trans( bc *WALL,double VN[],double VT[],double norm[] ) {
-/*
-    Transform the normal and tangential components of velocity
-*/
+
 	int i;
 	for( i=0; i<DIM; i++ ) {
 		VN[i] *= WALL->MVN;
+		// Adding a velocity component (magnitude is DVN) in the normal direction to the boundary
 		VN[i] += WALL->DVN*norm[i];
 		VT[i] *= WALL->MVT;
+		// Since VT has no component normal to the boundary, we add (magnitude of DVT) to all remaining components.
 		VT[i] += WALL->DVT;
 	}
 }
