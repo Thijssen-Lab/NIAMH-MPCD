@@ -429,7 +429,7 @@ void shiftbackBC( double *shift,bc *WALL ) {
 }
 
 ///
-/// @brief Rotating the boundary by it's orientation.
+/// @brief Rotates the boundary.
 ///
 /// If the boundary has a listed non-zero orientation, then it must be rotated to match that orientation.
 /// This is performed by rotating the surrounding fluid particles (including
@@ -487,7 +487,7 @@ void MPC_BCrotation( bc *WALL,particleMPC *pp, double sign, int LC ) {
 }
 
 ///
-/// @brief Applies the boundary rotation.
+/// @brief Rotates the boundary according to the boundary orientation.
 ///
 /// Applies the forward boundary rotation by instead rotating the particles about the boundary (in the reverse direction).
 /// @param WALL The boundary.
@@ -506,7 +506,7 @@ void rotateBC( bc *WALL,particleMPC *pp, int LC ) {
 }
 
 ///
-/// @brief Rotates back the boundary to original alignment.
+/// @brief Returns the boundary back to original alignment.
 ///
 /// Applies the backwards boundary rotation (or undoes rotations from rotateBC())
 /// by rotating the particles back to original position, velocities and orientations.
@@ -517,25 +517,29 @@ void rotateBC( bc *WALL,particleMPC *pp, int LC ) {
 /// @see rotateBC()
 ///
 void rotatebackBC( bc *WALL,particleMPC *pp, int LC ) {
-/*
-	Undo a rotateBC()
-*/
 	if(WALL->REORIENT) MPC_BCrotation( WALL,pp,1.0,LC );
 }
 
+///
+/// @brief Calculates the magnitude of the impulse
+///
+/// Calculates the impulse magnitude for the collision of body1 and body2.
+/// @param n Unit vector direction of impulse.
+/// @param V Velocity for body1.
+/// @param U Velocity for body2.
+/// @param Pv Centre of mass of body1.
+/// @param Pu Centre of mass of body2.
+/// @param Wv Angular velocity of body1.
+/// @param Wu Angular velocity of body2.
+/// @param invMv Total inverse mass of body1.
+/// @param invMu Total inverse mass of body2.
+/// @param Iv Inverse moment of inertia tensor of body1.
+/// @param Iu Inverse moment of inertia tensor of body2.
+/// @param r Point of contact.
+/// @param E Coefficient of restitution. E=0 for inelastic, E=1 for elastic.
+/// @return Impulse magnitude
+///
 double impulse( double n[],double V[],double U[],double Pv[], double Pu[],double Wv[],double Wu[],double invMv,double invMu,double Iv[][_3D],double Iu[][_3D],double r[],double E ) {
-/*  Determines the magnitude of the impulse
-
-    n=unit vector direction of impulse
-    V=velocity, U = other velocity
-    Pv = centre of mass of v
-    Wv = angular velocity of v
-    invMv = total INVERSE mass of v
-    Iv =  INVERSE moment of inertia tensor of v (particle about r)
-		Iu =  INVERSE moment of inertia tensor of u (BC about r)
-    r = point of contact
-    E = coefficient of restitution E=0->inelastic E=1->elastic
-*/
 
 	double J, denom;		//The conservation constant and its denominator
 	double Rv[_3D],Ru[_3D];		//Centre wrt point of contact
@@ -575,6 +579,19 @@ double impulse( double n[],double V[],double U[],double Pv[], double Pu[],double
 	J *= -1.*(1. + E)/denom;
 	return J;
 }
+
+///
+/// @brief Applies boundary conditions to particle velocity.
+///
+/// Applies boundary conditions (specific to `WALL`) to particle velocity. TODO brief description how.
+/// @param pp The individual particle.
+/// @param WALL The boundary.
+/// @param n The normal vector to the boundary
+/// @param SP TODO
+/// @param KBT TODO
+/// @see MPC_BCcollision()
+/// @note TODO give examples of this routine
+///
 void velBC( particleMPC *pp,bc *WALL,double n[_3D],spec *SP,double KBT ) {
 /*
     This subroutine applies the BC transformation to velocity.
@@ -731,6 +748,16 @@ void velBC( particleMPC *pp,bc *WALL,double n[_3D],spec *SP,double KBT ) {
 		else for( i=0; i<_3D; i++) WALL->dL[i] = 0.0; // fallback for 1D
 	}
 }
+///
+/// @brief Applies boundary conditions to particle position.
+///
+/// Applies boundary conditions (specific to `WALL`) to particle position. TODO brief description how.
+/// @param pp The individual particle.
+/// @param WALL The boundary.
+/// @param n Normal vector to the boundary.
+/// @see MPC_BCcollision()
+/// @note This routine is called for the application of periodic boundary conditions.
+///
 void posBC( particleMPC *pp,bc WALL,double n[] ) {
 /*
     This subroutine applies the BC transformation to position.
@@ -750,10 +777,17 @@ void posBC( particleMPC *pp,bc WALL,double n[] ) {
 	//Combine normal and tangential components
 	for( i=0; i<DIM; i++ ) pp->Q[i] = PN[i] + PT[i];
 }
+///
+/// @brief Applies boundary conditions to the position of another boundary.
+///
+/// In the case of a collision between two boundaries, this routine applies
+/// the boundary condition transformation (specific to `WALL1`) to a second boundary's (`WALL2`) position.
+/// @param WALL1 The first boundary.
+/// @param WALL2 The second boundary (that has position updated from interaction with `WALL1`).
+/// @param n Normal vector to the boundary (of `WALL1`).
+/// @see BC_BCcollision()
+///
 void BCBCpos( bc *WALL1 ,bc *WALL2,double n[] ) {
-/*
-    This subroutine applies the BC transformation to position of another BC.
-*/
 	double PN[DIM],PT[DIM];
 	int i;
 
@@ -898,6 +932,9 @@ void BCBCpos( bc *WALL1 ,bc *WALL2,double n[] ) {
 // 		for( i=0; i<_3D; i++) W2->L[i] -= VN[i] * J;
 // 	}
 // }
+
+
+
 void vel_trans( bc *WALL,double VN[],double VT[],double norm[] ) {
 /*
     Transform the normal and tangential components of velocity
