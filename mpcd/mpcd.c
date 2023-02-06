@@ -246,7 +246,7 @@ int main(int argc, char* argv[]) {
 	/* ************** TEMPERAL LOOP ************* */
 	/* ****************************************** */
 	#ifdef DBG
-		if( DBUG > DBGRUN ) printf( "\nBegin temperal loop\n" );
+		if( DBUG > DBGRUN ) printf( "Begin temperal loop\n" );
 	#endif
 	if(outFlags.SYNOUT == OUT) fprintf( outFiles.fsynopsis,"\nBegin temperal loop.\n" );
 	// This is the main loop of the SRD program. The temporal loop.

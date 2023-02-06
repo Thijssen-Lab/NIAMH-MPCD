@@ -700,7 +700,7 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 	VISCKIN = 0.0;
 	VISCCOL = 0.0;
 	//Kinetic part of viscosity
-	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==NOHI_ARBAXIS || RTECH==MPCAT || RTECH==NOHI_MPCAT || RTECH==LANG) {
+	if(RTECH==ORTHAXIS || RTECH==ARBAXIS || RTECH==MPCAT || RTECH==LANG) {
 		//All of the versions without angular-momentum conservation have the same form 
 		CM=B/M;
 		VISCKIN=nDNST*KBT*dt*smrtPow(a,-DIM)*( 1.0/CM-0.5 );
@@ -1569,7 +1569,7 @@ void checkSim( FILE *fsynopsis,int SYNOUT,inputList in,spec *SP,bc *WALL,specSwi
 		printf( "Error: Unrecognized value of noHI=%d.\n",in.noHI );
 		exit( 1 );
 	}
-	if( !( in.inCOMP==INCOMPON || in.inCOMP==INCOMPOFF) ){
+	if( !( in.inCOMP==INCOMPOFF || in.inCOMP==INCOMPSWAP || in.inCOMP==INCOMPVIRIAL || in.inCOMP==INCOMPSUB) ){
 		printf( "Error: Unrecognized value of inCOMP=%d.\n",in.inCOMP );
 		exit( 1 );
 	}

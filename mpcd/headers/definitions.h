@@ -141,20 +141,40 @@
 //Upper cutoff for MC method to generate new orientations from Maier-Saupe
 // # define BUSMAX 30.0
 # define BUSMAX 5.0
+
+/* ****************************************** */
+/* *************** NEMATIC LC *************** */
+/* ****************************************** */
 //Isotropic fluid - not a liquid crystal
 # define ISOF 0
 //Nematic LC using the local S value
 # define LCL 1
 //Nematic LC using the global S value
 # define LCG 2
+
+/* ****************************************** */
+/* ******** HYDRODYNAMIC INTERACTIONS ******* */
+/* ****************************************** */
 //Hydrodynamic interactions turned off
 # define HIOFF 1
 //Hydrodynamic interactions left on
 # define HION 0
-//Incompressibility correction turned on
-# define INCOMPON 1
-//Incompressibility correction left off
+
+/* ****************************************** */
+/* ************** NON-IDEAL EOS ************* */
+/* ****************************************** */
+//Ideal gas equation of state
 # define INCOMPOFF 0
+//Incompressibility by swapping velocities
+# define INCOMPSWAP 1
+//Incompressibility by virial coefficients on the local density
+# define INCOMPVIRIAL 2
+//Incompressibility by subtracting the calculated divergence
+# define INCOMPSUB 3
+
+/* ****************************************** */
+/* ********* MULTIPHASE INTERACTIONS ********* */
+/* ****************************************** */
 //Multiphase interactions left off
 # define MPHOFF 0
 //Kira Koch's Surface fitter-version of multiphase interactions
@@ -195,7 +215,8 @@
 // The Langevin version of MPC
 # define LANG 4
 // Killed the two specific no HI collision rules and the multiphase collision rule. 
-// Now made these general for any collision rule. 5, 6 and 18 are now available to be re-used as new collisions
+// Now made these general for any collision rule. They can now be used overlayed on ANY collision operator. 
+// 5, 6 and 18 are now available to be re-used as new collision operators
 // # define NOHI_ARBAXIS 5
 // # define NOHI_MPCAT 6
 // # define XXXX_MULTIPHASE_XXXX 18
@@ -308,4 +329,5 @@
 # define DBGESCAPE 20
 # define DBGSWIMMERDEETS 21
 # define DBGSWIMMERTORQUE 22
+# define DBGINCOMP 23
 #endif

@@ -4669,7 +4669,6 @@ void calcPressureStreaming( cell ***CL,spec *SP ) {
 /// @param dt The MPCD time step.
 ///
 void normPressureColl( cell *CL,double dt ) {
-*/
 	int i,j;
 	for( i=0; i<DIM; i++ ) for( j=0; j<DIM; j++ ) CL->Pc[i][j] /= (-dt);
 }
