@@ -1,3 +1,18 @@
+///
+/// @file
+/// 
+/// @brief This file contains the core of the MPCD algorithm.
+///
+/// The file does the majority of MPCD functions. 
+/// This includes `timestep()`, which is iterated over repeatedly in `main()`, as well as the streaming and collision operators. 
+/// It also includes the binning and the calculation of all local (cell-level) fluid properties.
+///
+/// @see main()
+/// @see timestep()
+/// @see MPCcollision()
+/// @see binin()
+///
+
 # include<math.h>
 # include<stdio.h>
 # include<stdlib.h>
@@ -25,11 +40,26 @@
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
+
+/// 
+/// @brief This function calculates the properties of all the cells.
+///
+/// The function calculates properties of all the cell. 
+/// This includes the cell
+/// - population (number of particles) 
+/// - mass 
+/// - centre of mass position
+/// - centre of mass velocity
+/// - moment of inertia tensor
+/// - nematic order parameter tensor
+/// - velocity gradient tensor
+/// @param CL All of the MPCD cells (including the linked list of particles in each cell)
+/// @param SP The species-wide information about MPCD particles
+/// @param specS The species-wide information about swimmers
+/// @param RTECH The MPCD collision operator
+/// @param LC Whether or not the nematic liquid crystal is turned on
+///
 void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
-/*
-   This routine finds the local
-   properties of all the cells.
-*/
 	int a,b,c,d,id;
 	int i;
 	double V[_3D],Q[_3D];
@@ -1229,93 +1259,87 @@ void andersenROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 		II[2][2] = 1./CL->I[2][2];
 		// The rest don't matter and can remain zero
 	}
-	else if( DIM == 1 ) {
-		//Angular momentum conservation in 1D is nonsequitur. Leave as zero
-		II[2][2] = 0.0;
-	}
 	else {
-		printf( "Error: Dimension higher than 3. Change dimension.\n" );
+		printf( "Error: Angular momentum conservation in 1D is nonsequitur. Higher dimensions not done. Change collision technique or dimension.\n" );
 		exit( 1 );
 	}
 
 	/* ****************************************** */
 	/* ******* Find angular velocity term ******* */
 	/* ****************************************** */
-	if(DIM>1) {
-		for( i=0; i<_3D; i++ ) L[i] = 0.;
-		i=0;
-		//MPC particles
-		tmpc = CL->pp;
-		while( tmpc!=NULL ) {
-			id = tmpc->SPID;
-			MASS = (SP+id)->MASS;
-			//Position relative to centre of mass
-			for( j=0; j<DIM; j++ ) relQ[i][j] = tmpc->Q[j] - CL->CM[j];
-			//Difference in velocity
-			for( j=0; j<DIM; j++ ) diffV[j] = MASS * (tmpc->V[j] - RV[i][j]);
-			if( DIM < _3D ) {
-				relQ[i][2] = 0.;
-				diffV[2] = 0.;
-			}
-			if( DIM < _2D ) {
-				relQ[i][1] = 0.;
-				diffV[1] = 0.;
-			}
-			crossprod( relQ[i],diffV,angmom );
-			for( j=0; j<_3D; j++ ) L[j] += angmom[j];
+	for( i=0; i<_3D; i++ ) L[i] = 0.;
+	i=0;
+	//MPC particles
+	tmpc = CL->pp;
+	while( tmpc!=NULL ) {
+		id = tmpc->SPID;
+		MASS = (SP+id)->MASS;
+		//Position relative to centre of mass
+		for( j=0; j<DIM; j++ ) relQ[i][j] = tmpc->Q[j] - CL->CM[j];
+		//Difference in velocity
+		for( j=0; j<DIM; j++ ) diffV[j] = MASS * (tmpc->V[j] - RV[i][j]);
+		if( DIM < _3D ) {
+			relQ[i][2] = 0.;
+			diffV[2] = 0.;
+		}
+		if( DIM < _2D ) {
+			relQ[i][1] = 0.;
+			diffV[1] = 0.;
+		}
+		crossprod( relQ[i],diffV,angmom );
+		for( j=0; j<_3D; j++ ) L[j] += angmom[j];
 
-			tmpc = tmpc->next;
-			i++;
-		}
-		//MD particles
-		tmd = CL->MDpp;
-		while( tmd!=NULL ) {
-			MASS = tmd->mass;
-			//Position relative to centre of mass
-			relQ[i][0] = tmd->rx - CL->CM[0];
-			relQ[i][1] = tmd->ry - CL->CM[1];
-			relQ[i][2] = tmd->rz - CL->CM[2];
-			diffV[0] = MASS * (tmd->vx - RV[i][0]);
-			diffV[1] = MASS * (tmd->vy - RV[i][1]);
-			diffV[2] = MASS * (tmd->vz - RV[i][2]);
-			if( DIM < _3D ) {
-				relQ[i][2] = 0.;
-				diffV[2] = 0.;
-			}
-			if( DIM < _2D ) {
-				relQ[i][1] = 0.;
-				diffV[1] = 0.;
-			}
-			crossprod( relQ[i],diffV,angmom );
-			for( j=0; j<_3D; j++ ) L[j] += angmom[j];
-
-			tmd = tmd->nextSRD;
-			i++;
-		}
-		//Swimmer particles
-		tsm = CL->sp;
-		while( tsm!=NULL ) {
-			if( tsm->HorM ) MASS = (double) SS.middM;
-			else MASS = (double) SS.headM;
-			//Position relative to centre of mass
-			for( j=0; j<DIM; j++ ) relQ[i][j] = tsm->Q[j] - CL->CM[j];
-			for( j=0; j<DIM; j++ ) diffV[j] = MASS * (tsm->V[j] - RV[i][j]);
-			if( DIM < _3D ) {
-				relQ[i][2] = 0.;
-				diffV[2] = 0.;
-			}
-			if( DIM < _2D ) {
-				relQ[i][1] = 0.;
-				diffV[1] = 0.;
-			}
-			crossprod( relQ[i],diffV,angmom );
-			for( j=0; j<_3D; j++ ) L[j] += angmom[j];
-			tsm = tsm->next;
-			i++;
-		}
-		dotprodMatVec( II,L,W,_3D );
+		tmpc = tmpc->next;
+		i++;
 	}
-	else for( j=0; j<DIM; j++ ) W[j]=0.0; // fallback for 1D
+	//MD particles
+	tmd = CL->MDpp;
+	while( tmd!=NULL ) {
+		MASS = tmd->mass;
+		//Position relative to centre of mass
+		relQ[i][0] = tmd->rx - CL->CM[0];
+		relQ[i][1] = tmd->ry - CL->CM[1];
+		relQ[i][2] = tmd->rz - CL->CM[2];
+		diffV[0] = MASS * (tmd->vx - RV[i][0]);
+		diffV[1] = MASS * (tmd->vy - RV[i][1]);
+		diffV[2] = MASS * (tmd->vz - RV[i][2]);
+		if( DIM < _3D ) {
+			relQ[i][2] = 0.;
+			diffV[2] = 0.;
+		}
+		if( DIM < _2D ) {
+			relQ[i][1] = 0.;
+			diffV[1] = 0.;
+		}
+		crossprod( relQ[i],diffV,angmom );
+		for( j=0; j<_3D; j++ ) L[j] += angmom[j];
+
+		tmd = tmd->nextSRD;
+		i++;
+	}
+	//Swimmer particles
+	tsm = CL->sp;
+	while( tsm!=NULL ) {
+		if( tsm->HorM ) MASS = (double) SS.middM;
+		else MASS = (double) SS.headM;
+		//Position relative to centre of mass
+		for( j=0; j<DIM; j++ ) relQ[i][j] = tsm->Q[j] - CL->CM[j];
+		for( j=0; j<DIM; j++ ) diffV[j] = MASS * (tsm->V[j] - RV[i][j]);
+		if( DIM < _3D ) {
+			relQ[i][2] = 0.;
+			diffV[2] = 0.;
+		}
+		if( DIM < _2D ) {
+			relQ[i][1] = 0.;
+			diffV[1] = 0.;
+		}
+		crossprod( relQ[i],diffV,angmom );
+		for( j=0; j<_3D; j++ ) L[j] += angmom[j];
+		tsm = tsm->next;
+		i++;
+	}
+// 	dotprodmat( L,II,W,_3D );
+	dotprodMatVec( II,L,W,_3D );
 
 	/* ****************************************** */
 	/* *************** Collision **************** */
@@ -2846,14 +2870,563 @@ void multiphaseCollPoint( cell *CL,spec *SP,specSwimmer SS, double KBT,int MDmod
 //     i++;
 //   }
 // }
-void incompColl( cell *CL,spec *SP,specSwimmer SS,double TimeStep,int MDmode,double *CLQ,int outP ) {
+void incompColl( cell *CL,spec *SP,specSwimmer SS,int INCOMPmode,int MDmode,double *CLQ,int outP ) {
 /*
     Applies a correction to the collision operation to give the fluid a non-ideal equation of state
 	i.e. make the fluid less compressible
     Inspired by J. Chem. Phys. 154, 024105 (2021); https://doi.org/10.1063/5.0037934
 */
-	printf("Incompressibility correction not yet implemented.\n");
-	exit( 1 );
+	if(INCOMPmode==INCOMPSWAP) incompSwap( CL,SP,SS );
+	else if(INCOMPmode==INCOMPVIRIAL) incompAddVirial( CL,7.0,49.0,343.0,SP,SS );
+	else if(INCOMPmode==INCOMPSUB) incompSubtractDivergence( CL,SP,SS );
+	else{
+		printf("Incompressibility correction not yet implemented.\n");
+		exit( 1 );
+	}
+
+}
+void incompAddVirial( cell *CL,double virialCoB, double virialCoC, double virialCoD, spec *SP,specSwimmer SS ) {
+/*
+    MPC collision that applies a correction radial kicks to try to keep the density constant
+	If this works, virialCoB,C,D will need to be an input parameters
+*/
+	int i,j,id;
+	double MASS;
+	double RV[CL->POP][DIM];	//Radial velocities
+	double RS[DIM];		//Sum of radial velocities
+	double relQ[DIM];	//Relative position
+	double dN;			//Relative density
+	particleMPC *tmpc;	//Temporary particleMPC
+	particleMD *tmd;	//Temporary particleMD
+	smono *tsm;			//Temporary swimmer monomer
+
+	if( CL->POP > (int)nDNST ) {
+		dN = ((double)CL->POP)/nDNST - 1.0;
+		// Zero arrays
+		for( i=0;i<CL->POP;i++ ) for( j=0;j<DIM;j++ ) RV[i][j] = 0.0;
+		for( i=0; i<DIM; i++ ) {
+			RS[i] = 0.;
+			relQ[i] = 0.;
+		}
+
+		//Generate radial velocities
+		i=0;
+		// MPC particles
+		tmpc = CL->pp;
+		while( tmpc!=NULL ) {
+			id = tmpc->SPID;
+			MASS = (SP+id)->MASS;
+			for( j=0; j<DIM; j++ ) relQ[j] = tmpc->Q[j] - CL->CM[j];
+			norm( relQ,DIM );
+			for( j=0; j<DIM; j++ ) RV[i][j] = (virialCoB+virialCoC*dN+virialCoD*dN*dN)*dN*relQ[j];
+			for( j=0; j<DIM; j++ ) RS[j] += MASS*RV[i][j];
+			tmpc = tmpc->next;
+			i++;
+		}
+		// MD particles
+		tmd = CL->MDpp;
+		while( tmd!=NULL ) {
+			MASS = tmd->mass;
+			relQ[0] = tmd->rx - CL->CM[0];
+			if(DIM>=_2D) relQ[1] = tmd->ry - CL->CM[1];
+			if(DIM>=_3D) relQ[2] = tmd->rz - CL->CM[2];
+			norm( relQ,DIM );
+			for( j=0; j<DIM; j++ ) RV[i][j] = (virialCoB+virialCoC*dN+virialCoD*dN*dN)*dN*relQ[j];
+			for( j=0; j<DIM; j++ ) RS[j] += MASS*RV[i][j];
+			tmd = tmd->nextSRD;
+			i++;
+		}
+		// Swimmer monomers
+		tsm = CL->sp;
+		while( tsm!=NULL ) {
+			if( tsm->HorM ) MASS = (double) SS.middM;
+			else MASS = (double) SS.headM;
+			for( j=0; j<DIM; j++ ) relQ[j] = tsm->Q[j] - CL->CM[j];
+			norm( relQ,DIM );
+			for( j=0; j<DIM; j++ ) RV[i][j] = (virialCoB+virialCoC*dN+virialCoD*dN*dN)*dN*relQ[j];
+			for( j=0; j<DIM; j++ ) RS[j] += MASS*RV[i][j];
+			tsm = tsm->next;
+			i++;
+		}
+		// Normalize
+		for( j=0; j<DIM; j++ ) RS[j] /= CL->MASS;
+
+		//Collision
+		i=0;
+		// MPC particles
+		tmpc = CL->pp;
+		while( tmpc!=NULL ) {
+			id = tmpc->SPID;
+			for( j=0; j<DIM; j++ ) tmpc->V[j] += RV[i][j] - RS[j];
+			//Increment link in list
+			tmpc = tmpc->next;
+			i++;
+		}
+		//MD particles
+		tmd = CL->MDpp;
+		while( tmd!=NULL ) {
+			tmd->vx += RV[i][0] - RS[0];
+			if(DIM>=_2D) tmd->vy += RV[i][1] - RS[1];
+			if(DIM>=_3D) tmd->vz += RV[i][2] - RS[2];
+			//Increment link in list
+			tmd = tmd->nextSRD;
+			i++;
+		}
+		// Swimmer monomers
+		tsm = CL->sp;
+		while( tsm!=NULL ) {
+			for( j=0; j<DIM; j++ ) tsm->V[j] += RV[i][j] - RS[j];
+			//Increment link in list
+			tsm = tsm->next;
+			i++;
+		}
+	}
+}
+void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
+/*
+    MPC collision that applies a correction to constrain the divergence of momentum density to be zero by swapping velocities
+	Only swaps velocities of MPCD fluid particles (not swimmers or MD particles)
+*/
+	int i,j,k,id,id2,POP;
+	double M,M2,MCM,MC;		//Masses
+	double relQ[CL->POP][_3D];	//Relative position
+	double DIV[CL->POP];		//Divergence contribution from each particle
+	double V[_3D],V2[_3D];		//Velocities
+	double VCM[_3D],RCM[_3D],PCM[_3D];
+	double DIV1,DIV2,DIVC,DIVC_swapped;
+	//Checks for debugging
+	double DIVCI,DIVCF,EI,EF,diffP,PMI,PMF;	//Divergence before and after (I=initial; F=final). Energy before and after
+	double PI[_3D],PF[_3D];	//Momentum before and after
+	//Linked list variables
+	particleMPC *tmpc,*tmpc2;	//Temporary particleMPC
+	particleMD *tmd;	//Temporary particleMD
+	smono *tsm;			//Temporary swimmer monomer
+
+	for( i=0;i<CL->POP;i++ ) {
+		DIV[i] = 0.;
+		for( j=0;j<_3D;j++ ) relQ[i][j] = 0.;
+	}
+	for( j=0;j<_3D;j++ ) {
+		V[j]=0.;
+		V2[j]=0.;
+		VCM[j] = 0.;
+		RCM[j] = 0.;
+		PCM[j] = 0.;
+	}
+	DIVC = 0.;
+	POP=CL->POP;
+	MCM=CL->MASS;
+	MC=MCM/(double)POP;
+	for( j=0;j<DIM;j++ ) {
+		VCM[j] = CL->VCM[j];
+		RCM[j] = CL->CM[j];
+		PCM[j] = MC*VCM[j];
+	}
+
+	// Debug checks
+	#ifdef DBG
+		if ( DBUG == DBGINCOMP ) {
+			for( j=0;j<_3D;j++ ) {
+				PI[j] = 0.;
+				PF[j] = 0.;
+			}
+			DIVCI=0.;
+			DIVCF=0.;
+			EI=0.;
+			EF=0.;
+		}
+	#endif
+
+	/* ****************************************** */
+	/* ********** Calculate divergence ********** */
+	/* ****************************************** */
+	i=0;
+	//MPC particles
+	tmpc = CL->pp;
+	while( tmpc!=NULL ) {
+		id = tmpc->SPID;
+		M = (SP+id)->MASS;
+		for( j=0; j<DIM; j++ ) V[j] = tmpc->V[j];
+		//Position relative to centre of mass
+		for( j=0; j<DIM; j++ ) relQ[i][j] = tmpc->Q[j] - RCM[j];
+		//Initial divergence
+		for( j=0; j<DIM; j++ ) DIV[i] += (PCM[j]-M*V[j])/relQ[i][j];
+		tmpc = tmpc->next;
+		i++;
+	}
+	//MD particles
+	tmd = CL->MDpp;
+	while( tmd!=NULL ) {
+		M = tmd->mass;
+		V[0] = tmd->vx;
+		V[1] = tmd->vy;
+		V[2] = tmd->vz;
+		//Position relative to centre of mass
+		relQ[i][0] = tmd->rx - CL->CM[0];
+		relQ[i][1] = tmd->ry - CL->CM[1];
+		relQ[i][2] = tmd->rz - CL->CM[2];
+		//Initial divergence
+		for( j=0; j<DIM; j++ ) DIV[i] += (PCM[j]-M*V[j])/relQ[i][j];
+		tmd = tmd->nextSRD;
+		i++;
+	}
+	//Swimmer particles
+	tsm = CL->sp;
+	while( tsm!=NULL ) {
+		if( tsm->HorM ) M = (double) SS.middM;
+		else M = (double) SS.headM;
+		for( j=0; j<DIM; j++ ) V[j] = tsm->V[j];
+		//Position relative to centre of mass
+		for( j=0; j<DIM; j++ ) relQ[i][j] = tsm->Q[j] - CL->CM[j];
+		//Initial divergence
+		for( j=0; j<DIM; j++ ) DIV[i] += (PCM[j]-M*V[j])/relQ[i][j];
+		tsm = tsm->next;
+		i++;
+	}
+	for( i=0; i<POP; i++ ) DIVC += DIV[i];
+	DIVC/=(double)POP;
+	
+	// Debug checks
+	#ifdef DBG
+		if ( DBUG == DBGINCOMP ) {
+			i=0;
+			//MPC particles
+			tmpc = CL->pp;
+			while( tmpc!=NULL ) {
+				id = tmpc->SPID;
+				M = (SP+id)->MASS;
+				for( j=0; j<DIM; j++ ) V[j] = tmpc->V[j];
+				for( j=0; j<DIM; j++ ) EI += M*V[j]*V[j];
+				for( j=0; j<DIM; j++ ) PI[j] += M*V[j];
+				tmpc = tmpc->next;
+				i++;
+			}
+			//MD particles
+			tmd = CL->MDpp;
+			while( tmd!=NULL ) {
+				M = tmd->mass;
+				V[0] = tmd->vx;
+				V[1] = tmd->vy;
+				V[2] = tmd->vz;
+				for( j=0; j<DIM; j++ ) EI += M*V[j]*V[j];
+				for( j=0; j<DIM; j++ ) PI[j] += M*V[j];
+				tmd = tmd->nextSRD;
+				i++;
+			}
+			//Swimmer particles
+			tsm = CL->sp;
+			while( tsm!=NULL ) {
+				if( tsm->HorM ) M = (double) SS.middM;
+				else M = (double) SS.headM;
+				for( j=0; j<DIM; j++ ) V[j] = tsm->V[j];
+				for( j=0; j<DIM; j++ ) EI += M*tsm->V[j]*V[j];
+				for( j=0; j<DIM; j++ ) PI[j] += M*V[j];
+				tsm = tsm->next;
+				i++;
+			}
+			EI*=0.5;
+			DIVCI=DIVC;
+		}
+	#endif
+	/* ****************************************** */
+	/* ********** Swapping Collision ************ */
+	/* ****************************************** */
+	i=0;
+	//MPC particles --- only allow swapping of MPC particles (not MD or swimmers)
+	tmpc = CL->pp;
+	while( tmpc!=NULL ) {
+		id = tmpc->SPID;
+		M = (SP+id)->MASS;
+
+		//Loop through all other particles
+		tmpc2 = tmpc->next;
+		k=i+1;
+		while( tmpc2!=NULL ) {
+			id2 = tmpc2->SPID;
+			M2 = (SP+id2)->MASS;
+			//Swap velocities
+			for( j=0; j<DIM; j++ ) {
+				V[j] = (M2/M)*tmpc2->V[j];
+				V2[j] = (M/M2)*tmpc->V[j];
+			}
+			// Calculate divergence if swap is kept
+			DIV1=0.0;
+			DIV2=0.0;
+			for( j=0; j<DIM; j++ ) {
+				DIV1 += (PCM[j]-M*V[j])/relQ[i][j];
+				DIV2 += (PCM[j]-M2*V2[j])/relQ[k][j];
+			}
+			DIVC_swapped = DIVC - DIV[i] + DIV1 - DIV[k] + DIV2;
+			//If divergence is smaller then save the swap. Otherwise, don't do anything
+			if( fabs(DIVC_swapped)<fabs(DIVC) ) {
+				DIVC=DIVC_swapped;
+				DIV[i] = DIV1;
+				DIV[k] = DIV2;
+				for( j=0; j<DIM; j++ ) {
+					tmpc->V[j] = V[j];
+					tmpc2->V[j] = V2[j];
+				}
+			}
+			//Increment link in list
+			tmpc2 = tmpc2->next;
+			k++;
+		}
+		//Increment link in list
+		tmpc = tmpc->next;
+		i++;
+	}
+
+	// Debug checks
+	#ifdef DBG
+		if ( DBUG == DBGINCOMP ) {
+			i=0;
+			//MPC particles
+			tmpc = CL->pp;
+			while( tmpc!=NULL ) {
+				id = tmpc->SPID;
+				M = (SP+id)->MASS;
+				for( j=0; j<DIM; j++ ) V[j] = tmpc->V[j];
+				for( j=0; j<DIM; j++ ) EF += M*V[j]*V[j];
+				for( j=0; j<DIM; j++ ) PF[j] += M*V[j];
+				tmpc = tmpc->next;
+				i++;
+			}
+			//MD particles
+			tmd = CL->MDpp;
+			while( tmd!=NULL ) {
+				M = tmd->mass;
+				V[0] = tmd->vx;
+				V[1] = tmd->vy;
+				V[2] = tmd->vz;
+				for( j=0; j<DIM; j++ ) EF += M*V[j]*V[j];
+				for( j=0; j<DIM; j++ ) PF[j] += M*V[j];
+				tmd = tmd->nextSRD;
+				i++;
+			}
+			//Swimmer particles
+			tsm = CL->sp;
+			while( tsm!=NULL ) {
+				if( tsm->HorM ) M = (double) SS.middM;
+				else M = (double) SS.headM;
+				for( j=0; j<DIM; j++ ) V[j] = tsm->V[j];
+				for( j=0; j<DIM; j++ ) EF += M*tsm->V[j]*V[j];
+				for( j=0; j<DIM; j++ ) PF[j] += M*V[j];
+				tsm = tsm->next;
+				i++;
+			}
+			EF*=0.5;
+			DIVCF=DIVC;
+			diffP=0.;
+			PMI=0.;
+			PMF=0.;
+			for( j=0; j<DIM; j++ ) {
+				PMI += PI[j]*PI[j];
+				PMF += PF[j]*PF[j];
+				diffP += (PI[j]-PF[j])*(PI[j]-PF[j]);
+			}
+			PMI=sqrt(PMI);
+			PMF=sqrt(PMF);
+			diffP=sqrt(diffP);
+			// printf( "Divergence:\tInit=%e\tFin=%e\tperFracDiff=%f%%\n",DIVCI,DIVCF,100.0*DIVCF/DIVCI );
+			// printf( "Energy:\t\tInit=%e\tFin=%e\tperDiff=%e%%\n",EI,EF,100.0*(EI-EF)/EI );
+			// printf( "Momentum:\tInit=%e\tFin=%e\tperDiff=%e%%\n\n",PMI,PMF,100.0*diffP/PMI );
+			printf( "%e\n",100.0*DIVCF/DIVCI );
+		}
+	#endif
+}
+void incompSubtractDivergence( cell *CL,spec *SP,specSwimmer SS ) {
+/*
+    MPC collision that applies a correction to constrain the divergence of momentum density to be zero
+*/
+	int i,j,id;
+	double MASS,MCM,MC;
+	double CV[CL->POP][_3D];	//Correction velocities
+	double CS[_3D];		//Sum of correction velocities
+	double relQ[CL->POP][_3D];	//Relative position
+	double V[_3D],L[_3D];		//Velocity and angular momentum
+	double VCM[_3D],RCM[_3D],PCM[_3D];
+	//Checks for debugging
+	double DIV0,DIV1,E0,E1,diffP,PM0,PM1;	//Divergence before and after. Energy before and after
+	double DIVAV[_3D];		//The average of the divergence term applied to each particle in the cells
+	double P0[_3D],P1[_3D];	//Momentum before and after
+	//Linked list variables
+	particleMPC *tmpc;	//Temporary particleMPC
+	particleMD *tmd;	//Temporary particleMD
+	smono *tsm;			//Temporary swimmer monomer
+
+	for( i=0;i<CL->POP;i++ ) for( j=0;j<_3D;j++ ) {
+		CV[i][j] = 0.;
+		relQ[i][j] = 0.;
+	}
+	for( j=0;j<_3D;j++ ) {
+		CS[j]=0.;
+		L[j]=0.;
+		V[j]=0.;
+		VCM[j] = 0.;
+		PCM[j] = 0.;
+		RCM[j] = 0.;
+		DIVAV[j] = 0.;
+		P0[j] = 0.;
+		P1[j] = 0.;
+	}
+	DIV0=0.;
+	DIV1=0.;
+	E0=0.;
+	E1=0.;
+
+	MCM=CL->MASS;
+	MC=MCM/(double)CL->POP;
+	for( j=0;j<DIM;j++ ) {
+		VCM[j] = CL->VCM[j];
+		RCM[j] = CL->CM[j];
+		PCM[j] = MC*VCM[j];
+	}
+
+	/* ****************************************** */
+	/* ********** Calculate divergence ********** */
+	/* ****************************************** */
+	i=0;
+	//MPC particles
+	tmpc = CL->pp;
+	while( tmpc!=NULL ) {
+		id = tmpc->SPID;
+		MASS = (SP+id)->MASS;
+		for( j=0; j<DIM; j++ ) V[j] = tmpc->V[j];
+		//Position relative to centre of mass
+		for( j=0; j<DIM; j++ ) relQ[i][j] = tmpc->Q[j] - RCM[j];
+		//Initial divergence, kinetic energy and momentum
+		for( j=0; j<DIM; j++ ) DIV0 += (PCM[j]-MASS*V[j])/relQ[i][j];
+		for( j=0; j<DIM; j++ ) DIVAV[j] += relQ[i][j]/MASS;
+		for( j=0; j<DIM; j++ ) E0 += MASS*V[j]*V[j];
+		for( j=0; j<DIM; j++ ) P0[j] += MASS*V[j];
+		tmpc = tmpc->next;
+		i++;
+	}
+	//MD particles
+	tmd = CL->MDpp;
+	while( tmd!=NULL ) {
+		MASS = tmd->mass;
+		V[0] = tmd->vx;
+		V[1] = tmd->vy;
+		V[2] = tmd->vz;
+		//Position relative to centre of mass
+		relQ[i][0] = tmd->rx - CL->CM[0];
+		relQ[i][1] = tmd->ry - CL->CM[1];
+		relQ[i][2] = tmd->rz - CL->CM[2];
+		//Initial divergence, kinetic energy and momentum
+		for( j=0; j<DIM; j++ ) DIV0 += (PCM[j]-MASS*V[j])/relQ[i][j];
+		for( j=0; j<DIM; j++ ) DIVAV[j] += relQ[i][j]/MASS;
+		for( j=0; j<DIM; j++ ) E0 += MASS*V[j]*V[j];
+		for( j=0; j<DIM; j++ ) P0[j] += MASS*V[j];
+		tmd = tmd->nextSRD;
+		i++;
+	}
+	//Swimmer particles
+	tsm = CL->sp;
+	while( tsm!=NULL ) {
+		if( tsm->HorM ) MASS = (double) SS.middM;
+		else MASS = (double) SS.headM;
+		for( j=0; j<DIM; j++ ) V[j] = tsm->V[j];
+		//Position relative to centre of mass
+		for( j=0; j<DIM; j++ ) relQ[i][j] = tsm->Q[j] - CL->CM[j];
+		//Initial divergence, kinetic energy and momentum
+		for( j=0; j<DIM; j++ ) DIV0 += (PCM[j]-MASS*V[j])/relQ[i][j];
+		for( j=0; j<DIM; j++ ) DIVAV[j] += relQ[i][j]/MASS;
+		for( j=0; j<DIM; j++ ) E0 += MASS*tsm->V[j]*V[j];
+		for( j=0; j<DIM; j++ ) P0[j] += MASS*V[j];
+		tsm = tsm->next;
+		i++;
+	}
+	DIV0/=(double)(DIM*(CL->POP));			//DIM always appears in denominator so just include it
+	for( j=0; j<DIM; j++ ) DIVAV[j]*=(DIV0/((double)CL->POP));
+	E0*=0.5;
+	/* ****************************************** */
+	/* *************** Collision **************** */
+	/* ****************************************** */
+	i=0;
+	//MPC particles
+	tmpc = CL->pp;
+	while( tmpc!=NULL ) {
+		id = tmpc->SPID;
+		MASS = (SP+id)->MASS;
+		//Perfectly remove divergence but doesn't conserve momentum
+		// for( j=0; j<DIM; j++ ) tmpc->V[j] = tmpc->V[j] + relQ[i][j]*DIV0/MASS;
+		// //Perfectly conserver momentum at cost of removing divergence
+		for( j=0; j<DIM; j++ ) tmpc->V[j] = tmpc->V[j] + relQ[i][j]*DIV0/MASS - DIVAV[j];
+		//Switched sign
+		// for( j=0; j<DIM; j++ ) tmpc->V[j] = tmpc->V[j] - relQ[i][j]*DIV0/MASS + DIVAV[j];
+		//Just average
+		// for( j=0; j<DIM; j++ ) tmpc->V[j] = tmpc->V[j] + DIVAV[j];
+		//Final divergence, kinetic energy and momentum
+		for( j=0; j<DIM; j++ ) V[j] = tmpc->V[j];
+		for( j=0; j<DIM; j++ ) DIV1 += (PCM[j]-MASS*V[j])/relQ[i][j];
+		for( j=0; j<DIM; j++ ) E1 += MASS*V[j]*V[j];
+		for( j=0; j<DIM; j++ ) P1[j] += MASS*V[j];
+		//Increment link in list
+		tmpc = tmpc->next;
+		i++;
+	}
+	//MD particles
+	tmd = CL->MDpp;
+	while( tmd!=NULL ) {
+		MASS = tmd->mass;
+		// tmd->vx = tmd->vx + relQ[i][0]*DIV0/MASS;
+		// tmd->vy = tmd->vy + relQ[i][1]*DIV0/MASS;
+		// tmd->vz = tmd->vz + relQ[i][2]*DIV0/MASS;
+		tmd->vx = tmd->vx + relQ[i][0]*DIV0/MASS - DIVAV[0];
+		tmd->vy = tmd->vy + relQ[i][1]*DIV0/MASS - DIVAV[1];
+		tmd->vz = tmd->vz + relQ[i][2]*DIV0/MASS - DIVAV[2];
+		// tmd->vx = tmd->vx - relQ[i][0]*DIV0/MASS + DIVAV[0];
+		// tmd->vy = tmd->vy - relQ[i][1]*DIV0/MASS + DIVAV[1];
+		// tmd->vz = tmd->vz - relQ[i][2]*DIV0/MASS + DIVAV[2];
+		//Final divergence, kinetic energy and momentum
+		V[0] = tmd->vx;
+		V[1] = tmd->vy;
+		V[2] = tmd->vz;
+		for( j=0; j<DIM; j++ ) DIV1 += (PCM[j]-MASS*V[j])/relQ[i][j];
+		for( j=0; j<DIM; j++ ) E1 += MASS*V[j]*V[j];
+		for( j=0; j<DIM; j++ ) P1[j] += MASS*V[j];
+		//Increment link in list
+		tmd = tmd->nextSRD;
+		i++;
+	}
+	//Swimmer particles
+	tsm = CL->sp;
+	while( tsm!=NULL ) {
+		if( tsm->HorM ) MASS = (double) SS.middM;
+		else MASS = (double) SS.headM;
+		// for( j=0; j<DIM; j++ ) tsm->V[j] = tsm->V[j] + relQ[i][j]*DIV0/MASS;
+		for( j=0; j<DIM; j++ ) tsm->V[j] = tsm->V[j] + relQ[i][j]*DIV0/MASS - DIVAV[j];
+		// for( j=0; j<DIM; j++ ) tsm->V[j] = tsm->V[j] - relQ[i][j]*DIV0/MASS + DIVAV[j];
+		//Final divergence, kinetic energy and momentum
+		for( j=0; j<DIM; j++ ) V[j] = tsm->V[j];
+		for( j=0; j<DIM; j++ ) DIV1 += (PCM[j]-MASS*V[j])/relQ[i][j];
+		for( j=0; j<DIM; j++ ) E1 += MASS*V[j]*V[j];
+		for( j=0; j<DIM; j++ ) P1[j] += MASS*V[j];
+		//Increment link in list
+		tsm = tsm->next;
+		i++;
+	}
+	DIV1/=(double)CL->POP;
+	E1*=0.5;
+	#ifdef DBG
+		if ( DBUG == DBGINCOMP ) {
+			printf( "Divergence:\tInit=%e\tFin=%e\tperFracDiff=%e%%\n",DIV0,DIV1,100.0*DIV1/DIV0 );
+			printf( "Energy:\t\tInit=%e\tFin=%e\tperDiff=%e%%\n",E0,E1,100.0*(E0-E1)/E0 );
+			diffP=0.;
+			PM0=0.;
+			PM1=0.;
+			for( j=0; j<DIM; j++ ) {
+				PM0 += P0[j]*P0[j];
+				PM1 += P1[j]*P1[j];
+				diffP += (P0[j]-P1[j])*(P0[j]-P1[j]);
+			}
+			PM0=sqrt(PM0);
+			PM1=sqrt(PM1);
+			diffP=sqrt(diffP);
+			printf( "Momentum:\tInit=%e\tFin=%e\tperDiff=%e%%\n\n",PM0,PM1,100.0*diffP/PM0 );
+		}
+	#endif
 }
 void localVCM( double vcm[_3D],cell CL,spec *SP,specSwimmer specS ) {
 /*
@@ -3592,8 +4165,8 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 		for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) if( CL[i][j][k].POP > 1 ) multiphaseColl( &CL[i][j][k],SP,*SS,in.MULTIPHASE,in.KBT,MDmode,CLQ,outPressure );
 	}
 	// Apply the incompressibility correction
-	if( in.inCOMP == INCOMPON ) {
-		for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) if( CL[i][j][k].POP > 1 ) incompColl( &CL[i][j][k],SP,*SS,in.dt,MDmode,CLQ,outPressure );
+	if( in.inCOMP != INCOMPOFF ) {
+		for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) if( CL[i][j][k].POP > 1 ) incompColl( &CL[i][j][k],SP,*SS,in.inCOMP,MDmode,CLQ,outPressure );
 	}
 	// Brownian thermostat (no hydrodynamic interactions -scramble velocities)
 	if( in.noHI == HIOFF ) scramble( SRDparticles );
