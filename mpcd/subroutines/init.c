@@ -1,3 +1,9 @@
+///
+///@file
+///@brief Set of tools to initialize the system
+///
+/// Set of tools to initialize the system
+
 # include<math.h>
 # include<time.h>
 # include<string.h>
@@ -26,6 +32,19 @@
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
+
+///
+ ///@brief Function to open a file for reading and writing.
+ ///
+ ///This function is the basic tool to open files for reading and writing.
+ ///If the file exists, its content is deleted.
+ ///It is employed by many other methods, for example opencoarse.
+ ///@param fout Return pointer to the file being opened.
+ ///@param dir Path to the directory of the file being opened.
+ ///@param filestring Name of the file being opened without its extension.
+ ///@param fileextension Extension of the file being opened. 
+ ///@see opencoarse
+ ///
 void openBasic( FILE **fout,char dir[],char filestring[],char fileextension[] ) {
 	char filename[200];
 
@@ -39,6 +58,13 @@ void openBasic( FILE **fout,char dir[],char filestring[],char fileextension[] ) 
 	}
 	outheader( *fout,0 );
 }
+
+///
+/// @brief Function to open the checkpoint file for writing.
+///
+///This function opens the checkpoint.dat file for writing.
+/// @param fout Return pointer to the file being opened.
+/// @param dir Path to the directory of the checkpoint.dat file.
 void openCheckpoint( FILE **fout,char dir[] ) {
 	char filename[200];
 	char filechckpoint[]="checkpoint";
@@ -53,6 +79,18 @@ void openCheckpoint( FILE **fout,char dir[] ) {
 		exit( 1 );
 	}
 }
+
+///
+/// @brief Function that opens the output file for the i-th species for reading and writing.
+///
+///This functions opens up the output file for the i-th species for reading and writing. 
+///In addition, it sets up the header for the file and formarts it.
+/// @param i Index specifying the species associated to the file being opened.
+/// @param fdetail Array of return pointers to the list of files associated to all species.
+/// @param dir Path to the directory of the checkpoint.dat file.
+/// @param fileprefix Name of the file being opened.
+/// @param filesuffix Suffix specifying the species associated to the file being opened, updated to "i" within the function.
+/// @param fileextension Extension of the file being opened.
 void opendetails( int i,FILE *fdetail[],char dir[],char fileprefix[],char filesuffix[],char fileextension[] ) {
 	char filename[200];
 	strcpy( filename,dir );
@@ -69,15 +107,45 @@ void opendetails( int i,FILE *fdetail[],char dir[],char fileprefix[],char filesu
 	fprintf( fdetail[i],"SPECIES: %i\n",i );
 	coordheader( fdetail[i] );
 }
+
+///
+/// @brief Function that initializes the coarse grained output file.
+///
+///This function initializes the coarse grained output file. 
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the coarse grained output file being opened.
+/// @param dir Path to the directory of the coarse grained output file.
+/// @param fname Name of the coarse grained output file.
+/// @param ext Extension of the coarse grained output file.
 void opencoarse( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	coarseheader( *f );
 }
+
+///
+/// @brief Function that initializes the global average velocity MPCD output file.
+///
+///This function initializes the global average velocity MPCD output file.
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the global average velocity MPCD output file being opened.
+/// @param dir Path to the directory of the global average velocity MPCD output file.
+/// @param fname Name of the coarse grained output file.
+/// @param ext Extension of the coarse grained output file.
 void openavvel( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 // 	avvelheader( *favvel );
 	avvelWithGradVelheader( *f );
 }
+
+///
+/// @brief Function that initializes the director output file.
+///
+///This function initializes the director output file.
+///It opens it up for writing and reading while formatting it with its header.
+/// @param f Return pointer to the director output file being opened.
+/// @param dir Path to the directory of the director output file.
+/// @param fname Name of the director output file.
+/// @param ext Extension of the director output file.
 void openorder( FILE **f,char dir[],char fname[],char ext[] ) {
 	openBasic( f,dir,fname,ext );
 	orderheader( *f );
@@ -1127,7 +1195,7 @@ void initOutput( char op[],outputFlagsList *outFlag,outputFilesList *outFile,inp
 	if( (outFlag->TRAJOUT)>=OUT ) for(i=0;i<NSPECI;i++) if(SP[i].POP>=1) opendetails( i,outFile->fdetail,op,fileprefix,filesuffix,fileextension );
 	//Initialize the course grained output file
 	if( (outFlag->COAROUT)>=OUT ) opencoarse( &(outFile->fcoarse),op,filecoarse,fileextension );
-	//Initialize the global average velocity MPCD output file
+	//d
 	if( (outFlag->AVVELOUT)>=OUT ) openavvel( &(outFile->favvel),op,fileavvel,fileextension );
 	//Initialize the director output file
 	if( (outFlag->ORDEROUT)>=OUT ) openorder( &(outFile->forder),op,fileorder,fileextension );
