@@ -694,9 +694,6 @@ double *ranvec2D( double *v ) {
 /// @see ranvec3D()
 /// @return The randomly generated vector. Identical to `v`.
 double *ranvec( double *v,int dimension ) {
-/*
-   Produces a random vector in 2 or 3D
-*/
 	if( dimension==_3D ) ranvec3D( v );
 	if( dimension==_2D ) ranvec2D( v );
 	return v;
@@ -710,8 +707,5 @@ double *ranvec( double *v,int dimension ) {
 /// @see genrand_real()
 /// @return The randomly generated integer corresponding to one of all MPC particles.
 int rand_particle( int POP ) {
-/*
-   Randomly picks one of the MPC particles
-*/
 	return (int)( genrand_real()*(double)POP );
 }

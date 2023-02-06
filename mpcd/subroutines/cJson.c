@@ -286,10 +286,6 @@ double getJObjDou(cJSON *cJSONRoot, const char* jsonTag, double d, linkedList *h
 /// @param val The value to be copied to the string.
 /// @param toReturn The string object to be allocated to. Expects an object of form `&myStr`.
 void dynAllocStr(const char *val, char **toReturn){
-   /* 
-      A helper function to dynamically allocate a string w value val to toReturn. You should be 
-         passing it an object of form &myStr in the second arg.
-   */
    int len = strlen(val) + 1; // length of memory to allocate
    *toReturn = malloc( len);
    if (*toReturn == NULL){ // stupid error checking
@@ -312,12 +308,6 @@ void dynAllocStr(const char *val, char **toReturn){
 /// @param head The head of the linked list containing all JSON tags/ names recognised by MPCD.
 /// @return The parsed value of the string object corresponding to `jsonTag`.
 void getJObjStr(cJSON *cJSONRoot, const char* jsonTag, const char* d, char **toReturn, linkedList *head){
-   /*
-      NOTE: UNLIKE THE OTHER METHODS THIS IS NOT LEAK SAFE. ANYTHING YOU GET FROM THIS METHOD MUST 
-         BE FREE'D TO BE LEAK FREE.
-      Returns a string object from the given cJSON file searching for a particular jsonTag.
-      If no appropriate json tag is found then it will return default value d
-   */
    pushLL(head, jsonTag); // add jsonTag to head
 
    // cJson bits
@@ -346,10 +336,6 @@ void getJObjStr(cJSON *cJSONRoot, const char* jsonTag, const char* d, char **toR
 /// `&myStr`.
 /// @return Returns 0 if successful, otherwise returns a pseudo-error code.
 int getFileStr(char* inFile, char** fileStr){
-   /*
-      Get a full string of the contents of file at path inFile.
-      Need to pass this &str for the second argument due to dynamic memory realloc
-   */
    printf("Reading file %s \n", inFile);
    
    FILE *fptr;
