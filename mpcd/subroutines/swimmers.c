@@ -4,7 +4,7 @@
 ///
 ///The number, type, size, and other properties of the swimmers are read from the input file. They are initialised, then forces are taken into account.
 ///
-///The swimmers repulse each other via a Weeks-Chandler-Anderson potential. The monomers are coupled two-by-two with either FENE, Hookean interaction,
+///The swimmers repulse each other via a Weeks-Chandler-Andersen potential. The monomers are coupled two-by-two with either FENE, Hookean interaction,
 ///or a 6th order potential.
 ///
 ///These forces are used to integrate the swimmers' motions between timesteps. The swimmers interact with the fluid with dipole
@@ -319,7 +319,7 @@ void setswimmers( specSwimmer *SS,swimmer *swimmers,bc WALL[],int stepsMD,double
 ///
 /// @param fout File where the data will be written.
 /// @param swimmers List of all the swimmers.
-/// @param t ????????
+/// @param t Current timestep of simulation.
 void swimout( FILE *fout,swimmer swimmers[],double t ) {
 
 	int i;
@@ -337,7 +337,7 @@ void swimout( FILE *fout,swimmer swimmers[],double t ) {
 ///
 /// @param fout File where the data will be written.
 /// @param swimmers List of all the swimmers.
-/// @param t  ????
+/// @param t  Current timestep of simulation.
 /// @see[swimmerOri()]
 void swimoriout( FILE *fout,swimmer swimmers[],double t ) {
 
@@ -360,7 +360,6 @@ void swimoriout( FILE *fout,swimmer swimmers[],double t ) {
 /// Print swimmers position, the signed angle their current orientations makes with their initial orientations, 
 /// whether they are in the run, tumble, shrink, or extension phase, and the time counter between run/tumble events.
 ///
-///
 /// @param fout File where the data will be written.
 /// @param sw List of all the swimmers.
 void runtumbleout( FILE *fout,swimmer *sw ) {
@@ -381,11 +380,12 @@ void runtumbleout( FILE *fout,swimmer *sw ) {
 }
 ///
 /// @brief 
-/// @param dr 
+///
+/// Apply period boundary conditions to swimmer monomer interactions. If the distance in any dimension between two monomers is greater 
+/// than half of the box that they're in, this means that the periodic BC have been crossed and so the coordinates are unwrapped.
+///
+/// @param dr Distance between the monomers.
 void swimmerPBC_dr(double *dr ) {
-/*
-    Apply period boundary conditions to swimmer monomer interactions
-*/
   int d;
 	double boxHalf[DIM];
 
@@ -397,30 +397,32 @@ void swimmerPBC_dr(double *dr ) {
 }
 ///
 /// @brief 
-/// @param n 
-/// @param sw 
+///
+/// Calculates the orientation vector of each swimmer, by substracting the position of the swimmer's body from its head's position.
+/// Takes into account the periodic boundary conditions, and normalizes the orientation it returns.
+///
+/// @param n Orientation vector, enters the function empty and leaves it with the normalized orientation. 
+/// @param sw List of swimmers.
+/// @see[swimmerPBC_dr()]
 void swimmerOri( double n[],swimmer *sw ) {
-/*
-   Orientation vector of a swimmer
-*/
+
 	int d;
-	//Vector from middle to head
 	for( d=0; d<DIM; d++ ) n[d] = sw->H.Q[d] - sw->M.Q[d];
-	//Apply potential PBCs
 	swimmerPBC_dr( n );
-	//Normalize
 	norm( n,DIM );
 }
 ///
 /// @brief 
-/// @param r 
-/// @param eps 
-/// @return 
+///
+/// Calculate the Weeks-Chandler-Andersen force from the monomer separation r, which has to be scaled by the monomer size ahead of time.
+/// The force only acts at radii smaller than rcut (1.122462048309373), its strength depends on eps, and its magnitude is capped at fcap (1E3).
+/// To get the force vector this must be multiplied by vec(r).
+///
+/// @param r Distance between two monomers, scaled by their size sigma.
+/// @param eps Interaction energy. Default value of 1.
+/// @return Magnitude of the WCA force.
 double swimmerWCA( double r,double eps ) {
-/*
-	Calculate the WCA force from the separation r SCALED by sigma=size
-	To get the force vector this must be multiplied by vec(r)
-*/
+
 	double r2,r6,f;
 	double rcut=1.122462048309373, fcap=1E3;
 
@@ -435,15 +437,17 @@ double swimmerWCA( double r,double eps ) {
 }
 ///
 /// @brief 
-/// @param r 
-/// @param k 
+///
+/// Calculate the FENE force from the separation r scaled by an equilibrium distance ro, default value 4.
+///	To get the force vector this must be multiplied by vec(r).
+///	If the FENE chain is passed then there is a large "backup" force to pull them together.
+///
+/// @param r Distance between two halves of a swimmer.
+/// @param k Spring strength
 /// @return 
+//COMMENTS INCONSISTANT W CODE
 double swimmerFENE( double r,double k ) {
-/*
-	Calculate the FENE force from the separation r SCALED by ro=size
-	To get the force vector this must be multiplied by vec(r)
-	If the FENE chain is passed then there is a large Hookean "backup" force to pull them together
-*/
+
 	#ifdef DBG
 			if( DBUG == DBGSWIMMER || DBUG == DBGSWIMMERDEETS ) if( r>=1.0 ) printf("Warning: dr=%e>1: FENE spring overstretched. Will use strong harmonic spring with 50k\n",r);
 	#endif
