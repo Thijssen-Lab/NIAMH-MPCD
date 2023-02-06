@@ -954,6 +954,7 @@ void zeroPressureColl( cell *CL ) {
 	int l,m;
 	for( l=0; l<DIM; l++ ) for( m=0; m<DIM; m++ ) CL->Pc[l][m] = 0.0;
 }
+
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
@@ -961,6 +962,34 @@ void zeroPressureColl( cell *CL ) {
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
+
+///
+/// @brief Function that initializes program variables and physical parameters
+///
+/// This functions initializes many program variables and some physical parameters. These include setting
+/// the seed for the random engine, time clock, sum of all masses, average speed (assuming an isotropic distribution),
+/// coise and sine of the rotation angle for SRD, external magnetic field, number density and mass density.
+/// It also sets the physical parameters of the boundary conditions: their volume and moment of inertia
+/// In addition, it zeros the runtimes, warmtimes, average director, active velocities,
+/// everythin ing the cell lists and in the particles 
+/// @param seed Return pointer to seed.
+/// @param to CPU time.
+/// @param co Clock time.
+/// @param runtime Return pointer to runtime.
+/// @param warmtime Return pointer to warmtime.
+/// @param sumM Return pointer to sum of all masses.
+/// @param AV Return pointer to average velocity.
+/// @param avDIR Return pointer to average director.
+/// @param SP Array of all species.
+/// @param C Return pointer to the cosine of the rotation angle for SRD.
+/// @param S Return pointer to the sine of the rotation angle for SRD.
+/// @param RA Rotation angle for SRD.
+/// @param AVVEL Return pointer to the average speed.
+/// @param KBT Temperature (a third of thermal energy).
+/// @param WALL Return pointer to array of boundary conditions.
+/// @param MAG Return pointer to constant external magnetic field
+/// @param CL Return pointer to the array of all cell lists.
+/// @param pp Return pointer to the array of all MPCD particles.
 void initvar( unsigned long *seed,time_t *to,clock_t *co,int *runtime,int *warmtime,double *sumM,double AV[_3D],double avDIR[_3D],spec SP[],double *C,double *S,double RA,double *AVVEL,double KBT,bc WALL[],double MAG[_3D],cell ***CL,particleMPC *pp ) {
 /*
    Initializes many program variables and some
@@ -997,12 +1026,15 @@ void initvar( unsigned long *seed,time_t *to,clock_t *co,int *runtime,int *warmt
 	zeroparticles( pp );
 }
 
+///
+/// @brief Function that initiates the position of a MPCD particle.
+///
+/// This function initiates the position for a MPCD particle, either randomly
+/// or reding it from a file.
+/// @param Q Return pointer to the position of the MPCD particle.
+/// @param PL Integer that is 0 if position is determined randomly, 1 if read from a file
+/// @param fin File from which to read the particle position.
 void place( double Q[],int PL,FILE *fin ) {
-/*
-   This subroutine does the initial placing of the
-   particleMPCs. Currently is places them randomly but
-   in the future it will have multiple options
-*/
 	int d;
 
 	if( PL == PRF ) for( d=0; d<DIM; d++ ) Q[d] = genrand_real( ) * XYZ[d];
@@ -1015,19 +1047,33 @@ void place( double Q[],int PL,FILE *fin ) {
 		exit( 1 );
 	}
 }
+
+///
+/// @brief Function thath randomly places an MPCD particle.
+///
+/// This function randomly places an MPCD particle within one SRD cell of its current position.
+/// @param p Return pointer to MPCD particle whose position is being altered.
 void replace( particleMPC *p ) {
-/*
-     Randomly place the particleMPC within one SRD cell of its current position
-*/
 	int i;
 	for( i=0; i<DIM; i++ ) p->Q[i] = (double)XYZ[i] * genrand_real( );
 }
+
+///
+/// @brief Function that sets the initial velocity of an MPCD particle.
+///
+/// This subroutines sets the initial velocity of an MPCD particle. 
+/// It can do so either: i) randomly with a uniform distribution, ii) randomly with a gaussian
+/// distribution, iii) randomly with a spherically symmetric and separable gaussian distribution,
+/// iv) with all particles having the average speed (but travelling along each axis in either direction)
+/// or v)reading it from a file.  For all random methods, the average speed is fixed at sqrt(DIM*KBT/M). 
+///
+/// @param V Return pointer to an MPCD particle's velocity.
+/// @param KBT Temperature (a third of thermal energy).
+/// @param PL Integer indicating assignment method: 0 if uniformly random, 1 if read from file, 2 for spherically symmetric gaussian,
+///           3 for average speed in each axis (random direction) and 4 for Gaussian distribution.
+/// @param MASS Mass of the particle.
+/// @param fin file from which the velocity is read.
 void push( double V[],double KBT,int PL,double MASS,FILE *fin ) {
-/*
-   This subroutine does the initial setting of the
-   particleMPCs' velocity. Currently is places them
-   randomly but in the future it will have multiple options
-*/
 	int d;
 	double normalize;
 	if( PL == RANDVEL ) for( d=0; d<DIM; d++ ) V[d] = sqrt( KBT/MASS ) * (2. * genrand_real() - 1.);
@@ -1056,6 +1102,21 @@ void push( double V[],double KBT,int PL,double MASS,FILE *fin ) {
 		exit( 1 );
 	}
 }
+
+///
+/// @brief Function that sets the initial orientation of an MPCD particle.
+///
+/// This subroutines sets the initial orientation. It can do so by:
+/// i) set it randomly, ii) aligned to one of the axes, iii) in a 45 degree configuration,
+/// iv) randomly parallel to one of the planes formef by the axes, v) pointing parallel to
+/// the ray starting at the origin and pointing toewards the top right corner ot vi) forming a
+/// defect pair (+1/2 and -1/2) configuration. 
+/// @param U Return pointer to the MPCD particle's orientation.
+/// @param Q Position of the MPCD particle.
+/// @param PL Integer determining the desired configuration. 0 for random orientation, 1, 2 and 3 for
+///           allignment parallel to the x, y and z axes, respectively, 4 for a 45 degree configuration,
+///           5,6 and 7 for random alignment in the XY, XZ, YZ axes, respectively, 8 for pointing parallel
+///           to line from origin to top right corner and 9 for the defect pair configuration. 
 void orient( double U[],double Q[],int PL ) {
 /*
    This subroutine sets the orientation. Currently is places them
@@ -1167,6 +1228,18 @@ void orient( double U[],double Q[],int PL ) {
 	}
 }
 
+///
+/// @brief Function that checks if an MPCD particle is within an BC
+///
+/// This subroutine checks if a particle is within an obstacle (or BC). 
+/// If that is the case, then the particle's position is shifted to a neighboring SRD cell.
+/// @param i Index of the particle whose position is being checked
+/// @param pp Return pointer to the first particle of the particle array.
+/// @param SP Array of all species. 
+/// @param WALL Array of all boundary conditions.
+/// @return If the position of the particle had to be shifted, the function returns i-1, so
+///         the test can be checked again. If its not being shifted it returns i, so we can progress
+///         to the next particle.  
 int checkplaceMPC( int i,particleMPC *pp,spec SP[],bc WALL[] ) {
 	//We must make sure that we check the obstacles that maybe effected by the periodic BC
 	double shift[_3D];
@@ -1190,6 +1263,15 @@ int checkplaceMPC( int i,particleMPC *pp,spec SP[],bc WALL[] ) {
 	}
 	return i;
 }
+
+///
+/// @brief Function that checks if an MPCD particle is within an BC
+///
+/// This subroutine checks if a particle is within an obstacle (or BC). 
+/// If that is the case, then the particle's position is shifted.  The process
+/// is repeated until the particle is no longer within an obstacle.
+/// @param pp Return pointer to the MPCD poarticle whose position is being checked.
+/// @param WALL Array of all boundary conditions (obstacles).
 void replacePos_WithCheck( particleMPC *pp,bc WALL[] ) {
 	//We must make sure that we check the obstacles that maybe effected by the periodic BC
 	double shift[_3D];
@@ -1213,6 +1295,25 @@ void replacePos_WithCheck( particleMPC *pp,bc WALL[] ) {
 		}
 	}
 }
+
+///
+/// @brief  Function that checks if an MPCD paticles is within an obstacle
+///
+/// This function checks if an MPCD is within an obstacle. If they are,
+/// it shifts their position until they are not. The position of the MPCD particles are checked
+/// and shifted using checkplaceMPC.  If MPC in MD mode is being run, in addition we check that 
+/// the MPCD particle is not too close (considering periodic boundary conditions) to the MD particles
+/// (as set by 1.25*rCut). If they are, the MPCD particle is shifted until its not.
+/// @param IN Index of the MPCD particle being checked.
+/// @param pp Return pointer to the first particle of the MPCD particle array.
+/// @param SP Array of all species.
+/// @param WALL Array of boundary conditions (obstacles).
+/// @param simMD A pointer to the MD simulation.
+/// @param KBT Temperature.
+/// @param MDmode Integer describing the MD simulation mode.
+/// @see checkplaceMPC
+/// @return If the particle had to beshifted, it returns IN-1, so the check can be performed again.
+///         If its not, it returns IN, so the next particle can be checked.
 int checkplace( int IN,particleMPC *pp,spec SP[],bc WALL[],simptr simMD,double KBT,int MDmode ) {
 	//We must make sure that we check the obstacles that maybe effected by the periodic BC
 	particleMD *atom;
@@ -1221,7 +1322,7 @@ int checkplace( int IN,particleMPC *pp,spec SP[],bc WALL[],simptr simMD,double K
 
 	i=checkplaceMPC( i,pp,SP,WALL );
 
-	if( MDmode!= noMD ) {
+	if( MDmode == MPCinMD ) {
 		atom = simMD->atom.items;
 		for( j=0; j<simMD->atom.n; j++ ) {
 			d[0] = (pp+i)->Q[0] - (atom+j)->rx;
@@ -1252,12 +1353,27 @@ int checkplace( int IN,particleMPC *pp,spec SP[],bc WALL[],simptr simMD,double K
 	return i;
 }
 
+///
+/// @brief Initialization of the MPCD particle's position, velocity and orientation.
+///
+/// This subroutine initializes the MPCD particle's position, velocity and orientations by calling
+/// place(), push() and orient(). Positions and velocities can be read from a file. 
+/// After having their position set, they are all checked for conflicts with obstacles using checkplace().
+/// Finally, it flags all particles as streaming.
+/// @param dir Directory of the position files.
+/// @param SP Array of all species.
+/// @param pp Return pointer of the fist MPCD particle in the MPCD particle array.
+/// @param KBT Temperature.
+/// @param AVVEL Return pointer to average velocity. 
+/// @param WALL Array of all boundary conditions (obstacles).
+/// @param simMD A pointer to the MD simulation.
+/// @param MDmode Integer describing the MD simulation mode.
+/// @param LC Integer determining if the species is isotropic (i.e., not a liquid crystal). 0 means isotropic. 
+/// @see place
+/// @see push
+/// @see return
+/// @see checkplace
 void setcoord( char dir[],spec SP[],particleMPC *pp,double KBT,double AVVEL[],bc WALL[],simptr simMD,int MDmode,int LC ) {
-/*
-    This subroutine does the initializes the particleMPCs
-    coordinates (position, velocity, and orientation. It does so by calling
-		place(), push(), and orient()
-*/
 	int i,j,k=0;
 	FILE *fin[NSPECI];
 	char fileprefix[] = "placeSP";
@@ -1305,7 +1421,7 @@ void setcoord( char dir[],spec SP[],particleMPC *pp,double KBT,double AVVEL[],bc
 
 		push( (pp+i)->V,KBT,SP[(pp+i)->SPID].VDIST, SP[(pp+i)->SPID].MASS,fin[(pp+i)->SPID] );
 		//Shift first mode of the velocity dist by the average velocity (push() centres about zero)
-		for( j=0; j<DIM; j++ ) (pp+i)->V[j] += AVVEL[j];
+		for( j=0; j<DIM; j++ ) AVVEL[j] += (pp+i)->V[j];
 
 		if( LC>ISOF ) orient( (pp+i)->U,(pp+i)->Q,SP[(pp+i)->SPID].ODIST );
 	}
@@ -1318,6 +1434,23 @@ void setcoord( char dir[],spec SP[],particleMPC *pp,double KBT,double AVVEL[],bc
 	//Close the input files
 	for( i=0; i<NSPECI; i++ ) if( SP[i].POP > 0 && SP[i].QDIST == READ ) fclose( fin[i] );
 }
+
+
+/// @brief Routine that checks for odd input.
+///
+/// This routine goes over various inputs, checking they are sound. In particular, it checks 
+/// the thermostat, the number of species, the number of boundary conditions, dimensionality, 
+/// the sensibility of the BCs, a proper values for flags setting up: i) liquid crystal (LC parameter)
+/// ii) abscence of hydrodynamic interactions (noHI parameter), iii) incompressibility (inCOMP parameter), 
+/// iv) multiple phases (MULTIPHASE).  It also checks for a non-zero value of friction for nematogens, for a
+/// non-zero mean field potential, if modelling a liquid crystal, and that the parameters for swimmers
+/// are sensible. 
+/// @param fsynopsis Return point to the synopsis file.
+/// @param SYNOUT Integer indicating if a synopsis file is needed
+/// @param in List of inputs
+/// @param SP Pointer to the first species of the array of all species.
+/// @param WALL Pointer to the first boundary condition (BC) of the array of all BCs.
+/// @param SS Species of swimmer
 void checkSim( FILE *fsynopsis,int SYNOUT,inputList in,spec *SP,bc *WALL,specSwimmer SS ) {
 /*
     This subroutine just checks for odd input
@@ -1371,7 +1504,7 @@ void checkSim( FILE *fsynopsis,int SYNOUT,inputList in,spec *SP,bc *WALL,specSwi
 		if(SYNOUT == OUT) fprintf(fsynopsis,"Error: The number of species cannot exceed %d unless definitions.h is altered to increase MAXSPECI.\n", MAXSPECI);
 		exit(1);
 	}
-	// Check number of species
+	// Check number of BC
 	if( NBC > MAXBC ) {
 		printf("Error: The number of BCs cannot exceed %d unless definitions.h is altered to increase MAXBC.\n", MAXBC);
 		if(SYNOUT == OUT) fprintf(fsynopsis,"Error: The number of BCs cannot exceed %d unless definitions.h is altered to increase MAXBC.\n", MAXBC);
@@ -1508,6 +1641,18 @@ void checkSim( FILE *fsynopsis,int SYNOUT,inputList in,spec *SP,bc *WALL,specSwi
 	}
 }
 
+///
+/// @brief Function that initializes output files as requested by the input file
+///
+/// This subroutines initializes the output files that are requested by the input file. It does so 
+/// by checking for the corresponding flags and the open methods, e.g., openflow().
+/// @param op Path to the output directory.
+/// @param outFlag Structute listing output flags with values read (obtaind) from the input file.
+/// @param outFile Structure listing outpout files.
+/// @param in Structure containing the input lists, read from the input file.
+/// @param SP Pointer of the first species in the array of all species.
+/// @param WALL Array of all boundary conditions (obstacles).
+/// @see openflow.
 void initOutput( char op[],outputFlagsList *outFlag,outputFilesList *outFile,inputList in,spec *SP, bc WALL[] ) {
 
 	int i;
@@ -1672,10 +1817,42 @@ void initOutput( char op[],outputFlagsList *outFlag,outputFilesList *outFile,inp
 	}
 }
 
+///
+/// @brief Function that initializes the simulation.
+///
+/// This subroutine initializes the simulation by calling all specific initializers, such as setcoord(), initvar(),
+/// zerocnt(), etc..
+/// @param CL Return pointer to array of all cell lists.
+/// @param SRDparticles Return pointer to array of MPCD particles.
+/// @param SP Array of all subspecies.
+/// @param WALL Array of all boundary conditions (obstacles).
+/// @param simMD A pointer to the MD simulation.
+/// @param specS A pointer to the first element in the array of all swimming species.
+/// @param swimmers A pointer to the first element in the array of all swimmers.
+/// @param argc Number of terminal arguments (i.e., path to input and output).
+/// @param argv Pointers to strings of terminal arguments (i.e., path to input and output).
+/// @param in List of inputs.
+/// @param to CPU time.
+/// @param co Wall time.
+/// @param runtime Return pointer to runtime.
+/// @param warmtime Return pointer to warmtime.
+/// @param AVVEL Return pointer to average velocity.
+/// @param theory Return pointer to structure containing theoretical system parameters.
+/// @param KBTNOW Return pointer to current temperature.
+/// @param AVS Return pointer to average scalar order parameter.
+/// @param S4 Return pointer to fourth moment of the scalar order parameter.
+/// @param stdN Return pointer to density fluctuations.
+/// @param AVNOW Return pointer to current average of flow velocity.
+/// @param AVV Return pointer to past average flow velocity.
+/// @param avDIR Return pointer to average director.
+/// @param outFlags List of output flags.
+/// @param MDmode Integer specifying MD mode.
+/// @param fsynopsis Synopsis file.
+/// @param ip Path to input directory.
+/// @see setcoord
+/// @see initvar
+/// @see zerocnt
 void initializeSIM( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr simMD,specSwimmer *specS,swimmer *swimmers,int argc, char* argv[],inputList *in,time_t *to,clock_t *co,int *runtime,int *warmtime,double *AVVEL,kinTheory *theory,double *KBTNOW,double *AVS,double *S4,double *stdN,double AVNOW[_3D],double AVV[_3D],double avDIR[_3D], outputFlagsList outFlags,int MDmode,FILE *fsynopsis,char ip[] ) {
-/*
-   Initializes simulation
-*/
 	int i,j;
 	#ifdef DBG
 		if( DBUG >= DBGINIT ) printf("\tInitialize Parameters\n");
@@ -1789,6 +1966,19 @@ void initializeSIM( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],sim
 	avVel( CL,AVNOW );
 }
 
+///
+/// @brief Function that initializes the simulation out of a checkpoint.
+///
+/// This function initializes the recovery of a simulation out of a checkpoint. An MD simulation cannot be recovered.
+/// @param CL Return pointer to array of all cells list.
+/// @param SRDparticles Return pointer to first element in array of all MPCD particles.
+/// @param SP Array of all particle subspecies.
+/// @param specS Array of all species of swimmers.
+/// @param RTECH Integer specifying rotation technique.
+/// @param LC Integer specifyin type of Liquid Crystal.
+/// @param MDmode Integer specidying type of MD simulation.
+/// @param SYNOUT Integer specifyin if a synopsis file is rquires.
+/// @param fsynopsis Synopsis file.
 void initializeRecovery( cell ***CL,particleMPC *SRDparticles,spec SP[],specSwimmer specS, int RTECH,int LC,int MDmode,int SYNOUT,FILE *fsynopsis ) {
 	//int i;
 	if(SYNOUT == OUT) fprintf(fsynopsis,"\nSimulation recovered from checkpoint.\n" );
