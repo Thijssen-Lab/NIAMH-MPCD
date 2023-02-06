@@ -1,3 +1,12 @@
+///
+/// @file
+
+///
+/// @brief This file applies boundary conditions (bc) to mpcd particles.
+///
+/// This file applies boundary conditions (bc) to mpcd particles crossing through a boundary.
+///
+
 # include<stdio.h>
 # include<math.h>
 # include<time.h>
@@ -25,6 +34,20 @@
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
+
+///
+/// @brief TODO
+///
+/// This routine calculates the W parameter which determines whether the particle
+/// has crossed through the boundary or not.
+///	TODO mention what the W values mean.
+///
+/// @param WALL The boundary.
+/// @param P The individual mpcd particle.
+/// @see calcWavyW()
+/// @see non4foldSymmCalcW()
+/// @return Returns W.
+///
 double calcW( bc WALL,particleMPC P ) {
 /*
    This function calculates W which is used to
@@ -55,6 +78,18 @@ double calcW( bc WALL,particleMPC P ) {
 	}
 	return W;
 }
+
+///
+/// @brief TODO.
+///
+/// TODO.
+///
+/// @param WALL The boundary.
+/// @param POS[] The position of the particle.
+/// @param W[] The W value.
+/// @see calcW()
+/// @return Returns TODO.
+///
 double calcWavyW( bc WALL,double POS[], double W ) {
 /*
    This function calculates additions to W for wavy
@@ -101,6 +136,18 @@ double calcWavyW( bc WALL,double POS[], double W ) {
 
 	return WALL.B[0] * cos( WALL.B[1]*W1 ) * cos( WALL.B[2]*W2 );
 }
+
+///
+/// @brief TODO.
+///
+/// TODO.
+///
+/// @param movingWall TODO.
+/// @param stillWall TODO.
+/// @param flagCentre TODO.
+/// @see BC_BCcollision()
+/// @return Returns W.
+///
 double calcW_BC( bc movingWall,bc stillWall,int flagCentre ) {
 /*
    This function calculates W which is used to
@@ -131,6 +178,24 @@ double calcW_BC( bc movingWall,bc stillWall,int flagCentre ) {
 
 	return W;
 }
+
+///
+/// @brief Calculates the particle crosstime.
+///
+/// This routine calculates the particle crosstime.
+/// Since this particle is found inside the boundary, the particle must have
+/// crossed the boundary before the end of the streaming step.
+/// This method interpolates back the path taken by the particle and finds this
+/// time when the particle crossed the boundary.
+/// TODO : the above might not be right. It might be forward interpolation, but do we even need this?
+///
+/// @param p The individual mpcd particle.
+/// @param WALL The boundary.
+/// @param *tc_pos TODO.
+/// @param *tc_neg TODO.
+/// @param t_step The time step interval.
+/// @see secant_time()
+///
 void crosstime( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,double t_step ) {
 /*
     Calculate when the particleMPC crosses the bc
@@ -171,6 +236,24 @@ void crosstime( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,double t_st
 		*tc_neg = *tc_pos;
 	}
 }
+
+///
+/// @brief Calculates the particle crosstime.
+///
+/// This routine calculates the particle crosstime.
+/// Since this particle is found inside the boundary, the particle must have
+/// crossed the boundary before the end of the streaming step.
+/// This method interpolates back the path taken by the particle and finds this
+/// time when the particle crossed the boundary.
+///
+/// @param p The individual mpcd particle.
+/// @param WALL The boundary.
+/// @param *tc_pos TODO.
+/// @param *tc_neg TODO.
+/// @param t_step The time step interval.
+/// @see chooseBC()
+/// @see secant_time()
+///
 void crosstimeReverse( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,double t_step ) {
 /*
     Calculate when the particleMPC crossed the bc
@@ -214,6 +297,16 @@ void crosstimeReverse( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,doub
 		*tc_neg = *tc_pos;
 	}
 }
+
+///
+/// @brief Calculates W for a boundary identified as a plane.
+///
+/// TODO
+///
+/// @param WALL The boundary.
+/// @param P The individual mpcd particle.
+/// @return Returns W.
+///
 double calcW_PLANE( bc WALL,particleMPC P ) {
 /*
    This function calculates W like calcW BUT assumes it is a plane
@@ -229,7 +322,17 @@ double calcW_PLANE( bc WALL,particleMPC P ) {
 	return W;
 }
 
-
+///
+/// @brief TODO
+///
+/// TODO
+///
+/// @param p The individual mpcd particle.
+/// @param WALL The boundary.
+/// @param t_step The time step interval.
+/// @see crosstimeReverse()
+/// @return TODO
+///
 double secant_time( particleMPC p,bc WALL,double t_step ) {
 	double Qi[DIM],QiM1[DIM];
 	double ti,tiM1,root;
@@ -1399,7 +1502,7 @@ double *normalWavy( double *n,bc WALL,double *point,int dimension ) {
 			if ( !feq(WALL.B[1],0.0) ) {
 				dw1[0] = WALL.A[0]*WALL.A[1]*(WALL.Q[1]-point[1])/div;
 				dw1[1] = WALL.A[0]*WALL.A[1]*(point[0]-WALL.Q[0])/div;
-				dw1[2] = 0; 
+				dw1[2] = 0;
 			}
 			if( dimension>2 && !feq(WALL.B[2],0.0) ){
 				dw2[0] = WALL.A[2]*WALL.A[0]*(point[0]-WALL.Q[0])*(point[2]-WALL.Q[2])/(sqrt(div)*(div+pow(WALL.A[2]*(point[2]-WALL.Q[2]),2)));
