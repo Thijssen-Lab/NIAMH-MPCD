@@ -1,3 +1,17 @@
+///
+///@file
+///@brief Implementation of dumbbell swimmers
+///
+///The number, type, size, and other properties of the swimmers are read from the input file. They are initialised, then forces are taken into account.
+///
+///The swimmers repulse each other via a Weeks-Chandler-Anderson potential. The monomers are coupled two-by-two with either FENE, Hookean interaction,
+///or a 6th order potential.
+///
+///These forces are used to integrate the swimmers' motions between timesteps. The swimmers interact with the fluid with dipole
+///forces and rotlets. Run/tumble dynamics and magnetic interactions can also be turned on.
+///
+///This subroutine also sets swimmers in their randomized initial position (if there is room - comment here?), bins them, and links them.
+
 # include<math.h>
 # include<stdio.h>
 # include<stdlib.h>
@@ -22,12 +36,17 @@
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
+///
+///@brief
+///
+/// This function reads the swimmer details from swimmer.inp, by reading in the adresses of the variables as pointers. It then allocates memory
+/// to each swimmer.
+///
+///@param fpath Path to the input file.
+///@param specS Pointer to which the input values for swimmer properties are sent.
+///@param sw This is used here to allocate memory to each swimmer.
 void readswimmers( char fpath[],specSwimmer *specS,swimmer **sw ) {
-/*
-   By reading in the addresses of the variables as
-   pointers this function sets the values to what
-   is in the input file swimmer.inp
-*/
+
 	FILE *finput;
 	char STR[100];
 	int MS;
@@ -118,10 +137,19 @@ void readswimmers( char fpath[],specSwimmer *specS,swimmer **sw ) {
 
 	fclose( finput );
 }
+///
+/// @brief 
+///
+/// This subroutine initializes the swimmers' coordinates. It may run into trouble if there is not enough space to fit all the swimmers.
+///
+/// @param SS Swimmer properties, read from the input file by readswimmers.
+/// @param swimmers Pointer to the swimmers.
+/// @param WALL Boundary conditions, used to check that the placement of the swimmers is acceptable.
+/// @param stepsMD NOT SURE ABOUT THAT ONE
+/// @param dt SAME HERE
+/// @see[readswimmers()]
 void setswimmers( specSwimmer *SS,swimmer *swimmers,bc WALL[],int stepsMD,double dt ) {
-/*
-    This subroutine does the initializes the swimmers' coordinates.
-*/
+
 	int i,j,d,flag;
 	double U[DIM],W;
   double shift[DIM];
@@ -284,10 +312,16 @@ void setswimmers( specSwimmer *SS,swimmer *swimmers,bc WALL[],int stepsMD,double
 		swimmerOri( (swimmers+i)->n0,(swimmers+i) );
 	}
 }
+/// 
+/// @brief 
+///
+/// Outputs the positions and speeds of the swimmers, as well as whether they are in the run, tumble, shrink, or extension phase.
+///
+/// @param fout File where the data will be written.
+/// @param swimmers List of all the swimmers.
+/// @param t ????????
 void swimout( FILE *fout,swimmer swimmers[],double t ) {
-/*
-    Print swimmer positions data to file
-*/
+
 	int i;
 
 	for( i=0; i<NS; i++ ) fprintf( fout, "%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%d\n",t,swimmers[i].H.Q[0],swimmers[i].H.Q[1],swimmers[i].H.Q[2],swimmers[i].H.V[0],swimmers[i].H.V[1],swimmers[i].H.V[2],swimmers[i].M.Q[0],swimmers[i].M.Q[1],swimmers[i].M.Q[2],swimmers[i].M.V[0],swimmers[i].M.V[1],swimmers[i].M.V[2],swimmers[i].RT );
@@ -296,10 +330,17 @@ void swimout( FILE *fout,swimmer swimmers[],double t ) {
 		fflush(fout);
 	#endif
 }
+///
+/// @brief 
+///
+/// Print swimmer orientation data to file, as well as whether they are in the run, tumble, shrink, or extension phase.
+///
+/// @param fout File where the data will be written.
+/// @param swimmers List of all the swimmers.
+/// @param t  ????
+/// @see[swimmerOri()]
 void swimoriout( FILE *fout,swimmer swimmers[],double t ) {
-/*
-    Print swimmer orientation data to file
-*/
+
 	int i,d;
 	double n[_3D];
 
@@ -313,10 +354,17 @@ void swimoriout( FILE *fout,swimmer swimmers[],double t ) {
 		fflush(fout);
 	#endif
 }
+///
+/// @brief 
+///
+/// Print swimmers position, the signed angle their current orientations makes with their initial orientations, 
+/// whether they are in the run, tumble, shrink, or extension phase, and the time counter between run/tumble events.
+///
+///
+/// @param fout File where the data will be written.
+/// @param sw List of all the swimmers.
 void runtumbleout( FILE *fout,swimmer *sw ) {
-/*
-    Print swimmer positions data to file
-*/
+
 	int i;
 	double n[_3D];				//Swimmer orientation
 	double dAng;
@@ -331,6 +379,9 @@ void runtumbleout( FILE *fout,swimmer *sw ) {
 		fflush(fout);
 	#endif
 }
+///
+/// @brief 
+/// @param dr 
 void swimmerPBC_dr(double *dr ) {
 /*
     Apply period boundary conditions to swimmer monomer interactions
@@ -344,6 +395,10 @@ void swimmerPBC_dr(double *dr ) {
 		else if( dr[d] < -boxHalf[d]) dr[d] += XYZ[d];
 	}
 }
+///
+/// @brief 
+/// @param n 
+/// @param sw 
 void swimmerOri( double n[],swimmer *sw ) {
 /*
    Orientation vector of a swimmer
@@ -356,6 +411,11 @@ void swimmerOri( double n[],swimmer *sw ) {
 	//Normalize
 	norm( n,DIM );
 }
+///
+/// @brief 
+/// @param r 
+/// @param eps 
+/// @return 
 double swimmerWCA( double r,double eps ) {
 /*
 	Calculate the WCA force from the separation r SCALED by sigma=size
@@ -373,6 +433,11 @@ double swimmerWCA( double r,double eps ) {
 	}
 	else return 0.0;
 }
+///
+/// @brief 
+/// @param r 
+/// @param k 
+/// @return 
 double swimmerFENE( double r,double k ) {
 /*
 	Calculate the FENE force from the separation r SCALED by ro=size
@@ -386,6 +451,11 @@ double swimmerFENE( double r,double k ) {
 	// else return swimmerHookean( r,50.0*k );		//Linear hookean force
 	else return swimmerSpring6( r,k );				//Non-linear spring force
 }
+///
+/// @brief 
+/// @param r 
+/// @param k 
+/// @return 
 double swimmerHookean( double r,double k ) {
 /*
 	Calculate the Hookean spring force from the separation r SCALED by ro=size
@@ -393,6 +463,11 @@ double swimmerHookean( double r,double k ) {
 */
 	return -k*r;
 }
+///
+/// @brief 
+/// @param r 
+/// @param k 
+/// @return 
 double swimmerSpring6( double r,double k ) {
 /*
 	Calculate the non-linear spring force from the separation r SCALED by ro=size
@@ -401,6 +476,14 @@ double swimmerSpring6( double r,double k ) {
 	double r2=r*r;
 	return -k*r*r2*r2;
 }
+///
+/// @brief 
+/// @param SS 
+/// @param s 
+/// @param dt 
+/// @param springType 
+/// @param WALL 
+/// @param i 
 void swimmerVerlet_nonInteracting( specSwimmer SS,swimmer *s,double dt,int springType,bc WALL[],int i) {
 /*
 	The leapfrog/Verlet-Velocity algorithm
@@ -448,6 +531,13 @@ void swimmerVerlet_nonInteracting( specSwimmer SS,swimmer *s,double dt,int sprin
 	for( d=0; d<DIM; d++ ) s->H.V[d] += 0.5*dt*s->H.A[d];
 	for( d=0; d<DIM; d++ ) s->M.V[d] += 0.5*dt*s->M.A[d];
 }
+///
+/// @brief 
+/// @param SS 
+/// @param swimmers 
+/// @param dt 
+/// @param springType 
+/// @param WALL 
 void swimmerVerlet_all( specSwimmer SS,swimmer swimmers[],double dt,int springType,bc WALL[]) {
 /*
 	The leapfrog/Verlet-Velocity algorithm
@@ -527,6 +617,12 @@ void swimmerVerlet_all( specSwimmer SS,swimmer swimmers[],double dt,int springTy
 		(swimmers+i)->M.V[d] += 0.5*dt*(swimmers+i)->M.A[d];
 	}
 }
+///
+/// @brief 
+/// @param r 
+/// @param dr 
+/// @param m1 
+/// @param m2 
 void smonoDist( double r[],double *dr,smono m1, smono m2 ) {
 	//Calculate the distance between two swimmer monomers
 	int d;
@@ -535,6 +631,13 @@ void smonoDist( double r[],double *dr,smono m1, smono m2 ) {
 	swimmerPBC_dr( r );
 	*dr = length( r,DIM );
 }
+///
+/// @brief 
+/// @param dr 
+/// @param SS 
+/// @param s 
+/// @param springType 
+/// @return 
 double smonoForceMag_sameSwimmer( double dr,specSwimmer SS,swimmer *s,int springType ) {
 	//Calculate the forces between two monomers in the same swimmer
 	//Use the instantaneous
@@ -549,6 +652,12 @@ double smonoForceMag_sameSwimmer( double dr,specSwimmer SS,swimmer *s,int spring
 	else fSPRING=0.0;
 	return fWCA+fSPRING;
 }
+///
+/// @brief 
+/// @param a 
+/// @param SS 
+/// @param s 
+/// @param springType 
 void smonoForce_sameSwimmer( double a[],specSwimmer SS,swimmer *s,int springType ) {
 	//Calculate the forces between two monomers in the same swimmer
 	double dr,f,r[DIM];
@@ -566,6 +675,11 @@ void smonoForce_sameSwimmer( double a[],specSwimmer SS,swimmer *s,int springType
 	//a=acceleration time mass (still a force)
 	for( d=0; d<DIM; d++ ) a[d] = f*r[d];
 }
+///
+/// @brief 
+/// @param dr 
+/// @param SS 
+/// @return 
 double smonoForceMag_differentSwimmers( double dr,specSwimmer SS ) {
 	//Calculate the forces between two monomers in different swimmers (no FENE)
 	//Other swimmers always see the "true" size --- never the shrunk size of tumbling
@@ -573,6 +687,12 @@ double smonoForceMag_differentSwimmers( double dr,specSwimmer SS ) {
 	dr *= SS.isig;		//scale dr for WCA
 	return swimmerWCA( dr,SS.eps );
 }
+///
+/// @brief 
+/// @param a 
+/// @param SS 
+/// @param s1 
+/// @param s2 
 void smonoForce_differentSwimmers( double a[],specSwimmer SS,smono s1,smono s2 ) {
 	//Calculate the forces between two monomers in the same swimmer
 	double dr,f,r[DIM];
@@ -591,6 +711,15 @@ void smonoForce_differentSwimmers( double a[],specSwimmer SS,smono s1,smono s2 )
 	for( d=0; d<DIM; d++ ) a[d] = f*r[d];
 }
 
+///
+/// @brief 
+/// @param SS 
+/// @param swimmers 
+/// @param WALL 
+/// @param stepsMD 
+/// @param timeStep 
+/// @param MAG 
+/// @param springType 
 void integrateSwimmers( specSwimmer SS,swimmer swimmers[],bc WALL[],int stepsMD,double timeStep,double MAG[],int springType ) {
 /*
     Integrate the motion of the swimmer
@@ -685,6 +814,12 @@ void integrateSwimmers( specSwimmer SS,swimmer swimmers[],bc WALL[],int stepsMD,
 		#endif
 	}
 }
+///
+/// @brief 
+/// @param SS 
+/// @param sw 
+/// @param dt 
+/// @param MAG 
 void swimmerMagTorque( specSwimmer SS,swimmer *sw,double dt,double MAG[] ) {
 	/*
 	    Apply the magnetic torque to all the swimmers
@@ -747,6 +882,13 @@ void swimmerMagTorque( specSwimmer SS,swimmer *sw,double dt,double MAG[] ) {
 	//Apply equal but opposite force/impulse to swimmer's body
 	for( d=0; d<DIM; d++ ) sw->M.V[d] -= force[d]*SS.imiddM*dt;
 }
+///
+/// @brief 
+/// @param SS 
+/// @param swimmers 
+/// @param timeStep 
+/// @param stepsMD 
+/// @param MAG 
 void allSwimmersMagTorque( specSwimmer SS,swimmer swimmers[],double timeStep,int stepsMD,double MAG[] ) {
 	/*
 	    Apply the magnetic torque to all the swimmers
@@ -801,6 +943,16 @@ void allSwimmersMagTorque( specSwimmer SS,swimmer swimmers[],double timeStep,int
 		for( d=0; d<DIM; d++ ) (swimmers+i)->M.V[d] -= force[d]*SS.imiddM*dt;
 	}
 }
+///
+/// @brief 
+/// @param SS 
+/// @param swimmers 
+/// @param CL 
+/// @param SP 
+/// @param timeStep 
+/// @param SRDparticles 
+/// @param WALL 
+/// @param simMD 
 void swimmerDipole( specSwimmer SS,swimmer swimmers[],cell ***CL,spec SP[],double timeStep,particleMPC *SRDparticles,bc WALL[],simptr simMD ) {
 /*
     Apply both the force dipole and the rotlet-torque dipole to each swimmer
@@ -939,6 +1091,13 @@ void swimmerDipole( specSwimmer SS,swimmer swimmers[],cell ***CL,spec SP[],doubl
 		}
 	}
 }
+///
+/// @brief 
+/// @param SS 
+/// @param sw 
+/// @param CL 
+/// @param SP 
+/// @param timeStep 
 void swimmerForceDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double timeStep ) {
 /*
     Set the swimming speed and the propulsion force on the fluid
@@ -1039,6 +1198,13 @@ void swimmerForceDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double 
 		}
 	}
 }
+///
+/// @brief 
+/// @param SS 
+/// @param sw 
+/// @param CL 
+/// @param SP 
+/// @param timeStep 
 void swimmerRotletDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double timeStep ) {
 /*
     Set the swimmer's rotations and the torque on the fluid
@@ -1136,14 +1302,24 @@ void swimmerRotletDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double
 		}
 	}
 }
+///
+/// @brief 
+/// @param SS 
+/// @param swimmers 
+/// @param WALL 
+/// @param stepsMD 
+/// @param MAG 
+/// @param dt 
+/// @param RTOUT 
+/// @param fruntumble 
 void runTumbleDynamics( specSwimmer *SS,swimmer swimmers[],bc WALL[],int stepsMD,double MAG[],double dt,int RTOUT,FILE *fruntumble ) {
 /*
     Stochastically run and tumble.
     This routine checks the number of times since last run/tumble switching event.
     If an event occurs a new random run/tumble time is generated
-    If the swimmer tumbles then it's size can shrink (or techniqually grow but this shouldn't occur)
-    If it runs then it'shrinkMDSteps size is returned to normal
-		Uses a hookean spring during shrinking so that FENE spring isn't broken
+    If the swimmer tumbles then its size can shrink (or technically grow but this shouldn't occur)
+    If it runs then its shrinkMDSteps size is returned to normal
+	Uses a hookean spring during shrinking so that FENE spring isn't broken
 */
   int i,j;
   double dr,ds,dk;			//FENE separation and LJ sigma step size for changing
@@ -1320,6 +1496,11 @@ void runTumbleDynamics( specSwimmer *SS,swimmer swimmers[],bc WALL[],int stepsMD
 		}
   }
 }
+///
+/// @brief 
+/// @param SS 
+/// @param swimmers 
+/// @param CL 
 void bininSwimmers( specSwimmer SS,swimmer swimmers[],cell ***CL ) {
 /*
    This function does the initial binning of the
@@ -1343,6 +1524,10 @@ void bininSwimmers( specSwimmer SS,swimmer swimmers[],cell ***CL ) {
 		addlinkSwimmer( &CL[a][b][c],&(swimmers[i].M) );
 	}
 }
+///
+/// @brief 
+/// @param CL 
+/// @param shifted 
 void binSwimmers( cell ***CL,int shifted ) {
 /*
    This function bins the swimmers i.e. it places
@@ -1384,6 +1569,10 @@ void binSwimmers( cell ***CL,int shifted ) {
 		}
 	}
 }
+///
+/// @brief 
+/// @param CL 
+/// @param s 
 void addlinkSwimmer( cell *CL,smono *s ) {
 /*
 	This routine adds a link to the end of the list
@@ -1406,6 +1595,10 @@ void addlinkSwimmer( cell *CL,smono *s ) {
 	//Swimmer monomer is now at the end of the list so set next to null
 	s->next = NULL;
 }
+///
+/// @brief 
+/// @param current 
+/// @param CL 
 void removelinkSwimmer( smono *current,cell *CL ) {
 /*
 	This routine removes a link from
