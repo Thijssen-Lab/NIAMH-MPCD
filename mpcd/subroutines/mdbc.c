@@ -51,6 +51,7 @@
 /// @param WALL		All of the walls (BCs) that particle might interact with. 
 /// @param KBT		Thermal energy.
 /// @param t_step	The MD timestep increment.
+/// @see 			MPC_BCcollision()
 /// 
 void MD_BCcollision( particleMD *atom,bc WALL[],double KBT,double t_step ) {
 	double t_delta;			//time passed so far
@@ -146,6 +147,7 @@ void MD_BCcollision( particleMD *atom,bc WALL[],double KBT,double t_step ) {
 /// @param chosenBC The wall out of which the MD particle is.
 /// @param time 	The total remaining time that the particle has in order to move.
 /// @param t_step 	The MD timestep increment.
+/// @see			chooseBC()
 ///
 void chooseBC_MD( bc WALL[],particleMD *atom,double *t_min,double *chosenW,int *chosenBC,double time,double t_step ) {
 	int i,flag;
@@ -198,6 +200,7 @@ void chooseBC_MD( bc WALL[],particleMD *atom,double *t_min,double *chosenW,int *
 /// @param shift	this is how much the boundary must be shifted, gets calculated inside the routine.
 /// @param WALL		One of the walls of the BCs that particle is interacting with.
 /// @param atom 	The MD particle.
+/// @see			shiftBC()
 ///
 void shiftBC_MD( double *shift,bc *WALL,particleMD *atom ) {
 	int k;
@@ -228,7 +231,7 @@ void shiftBC_MD( double *shift,bc *WALL,particleMD *atom ) {
 /// @param WALL		One of the walls of the BCs that particle is interacting with.
 /// @param atom		The MD particles.
 /// @param sign 	The sign by which the orientation will be.
-/// @sa rotateBC(), rotatebackBC().
+/// @sa 			rotateBC(), rotatebackBC(), MPC_BCrotation()
 ///
 void MD_BCrotation( bc *WALL,particleMD *atom, double sign ) {
 	int i;
@@ -268,6 +271,7 @@ void MD_BCrotation( bc *WALL,particleMD *atom, double sign ) {
 ///	@note			The current implementation is very wasteful. Every \b particle
 ///					is rotated about the centre of each BC. While this is simplest, there are very many 
 ///					particles.		
+/// @see 			rotateBC()
 ///
 void rotateBC_MD( bc *WALL,particleMD *atom ) {
 	if(WALL->REORIENT) MD_BCrotation( WALL,atom,-1.0 );
@@ -278,6 +282,7 @@ void rotateBC_MD( bc *WALL,particleMD *atom ) {
 /// 
 /// @param WALL		One of the walls of the BCs that particle is interacting with.
 /// @param atom		The MD particle.
+/// @see			rotatebackBC()
 /// 
 void rotatebackBC_MD( bc *WALL,particleMD *atom ) {
 	if(WALL->REORIENT) MD_BCrotation( WALL,atom,1.0 );
@@ -291,8 +296,9 @@ void rotatebackBC_MD( bc *WALL,particleMD *atom ) {
 ///
 /// @param WALL 	One of the walls of the BCs that particle is interacting with.
 /// @param atom 	The MD particle.
-/// @return			W, that detemines if the particle is inside or outside the control volume defined
-///					by the `WALL`.
+/// @return			The variable that detemines if the particle is inside or outside the specified
+/// 				wall of the control volume.
+/// @see			calcW()
 ///
 double calcW_MD( bc WALL,particleMD *atom ){
 	double terms, W=0.0;
@@ -334,6 +340,7 @@ double calcW_MD( bc WALL,particleMD *atom ){
 /// @param atom		The MD particle.
 /// @param t		The time for which particle must stream.
 /// @note			No acceleration during time `t`.
+/// @see			stream_P()
 ///
 void stream_MD( particleMD *atom,double t ) {
 	atom->rx = trans( t,atom->vx,atom->rx );
@@ -351,6 +358,7 @@ void stream_MD( particleMD *atom,double t ) {
 ///
 /// @param atom		The MD particle.
 /// @param time		The time for which particle streams backward.
+/// @see			rewind_P()
 ///
 void rewind_MD( particleMD *atom,double time ) {
 	atom->rx = rewind_trans(time,atom->vx,atom->rx);
@@ -372,7 +380,7 @@ void rewind_MD( particleMD *atom,double time ) {
 /// @param tc_pos	One of the crosstimes.
 /// @param tc_neg	One of the crosstimes.
 /// @param t_step	The maximum streaming time.
-///	@see			secant_time_MD()
+///	@see			secant_time_MD(), crosstime(), 
 ///
 void crosstime_MD( particleMD *atom,bc WALL,double *tc_pos, double *tc_neg,double t_step ) {
 	double a=0.0,b=0.0,c=0.0;
@@ -492,7 +500,8 @@ double secant_time_MD( particleMD *atom,bc WALL,double t_step ) {
 /// @param WALL 		One of the walls of the BCs that particle is interacting with.
 /// @param atom 		The MD particle.
 /// @param dimension	The dimenson of the control volume.
-/// @return				The normal vector to the surface, `n`.
+/// @return				The normal vector to the surface.
+/// @see 				normal()
 ///
 double *normal_MD( double *n,bc WALL,particleMD *atom,int dimension ) {
 	int i;
@@ -528,6 +537,7 @@ double *normal_MD( double *n,bc WALL,particleMD *atom,int dimension ) {
 /// @param WALL 	One of the walls of the BCs that particle is interacting with.
 /// @param n 		The normal vector to the surface of the wall.
 /// @param KBT 		Thermal energy.
+/// @see			velBC()
 ///
 void velBC_MD( particleMD *atom,bc *WALL,double n[_3D],double KBT ) {
 	double V[_3D],VN[_3D],VT[_3D],VR[_3D],R[_3D],zip[_3D];
@@ -699,6 +709,7 @@ void velBC_MD( particleMD *atom,bc *WALL,double n[_3D],double KBT ) {
 /// @param WALL 	One of the walls of the BCs that particle is interacting with.
 /// @param n 		The normal vector to the surface of the wall.
 /// @note			It does NOT stream! That is done in a seperate routine.
+/// @see			posBC()
 ///	
 void posBC_MD( particleMD *atom,bc WALL,double n[_3D] ) {
 	double PN[_3D],PT[_3D],temp[_3D];
@@ -744,6 +755,7 @@ void posBC_MD( particleMD *atom,bc WALL,double n[_3D] ) {
 /// @param WALL 	One of the walls of the BCs that particle is interacting with.
 /// @param SS 		It specifies the type (features) of the swimmer to which this monomer belong.
 /// @param t_step	The MD timestep increment.
+/// @see			MPC_BCcollision()
 ///  
 void swimmer_BCcollision( smono *atom,bc WALL[],specSwimmer SS,double t_step ) {
 	double t_delta;			//time passed so far
@@ -833,6 +845,7 @@ void swimmer_BCcollision( smono *atom,bc WALL[],specSwimmer SS,double t_step ) {
 /// @param chosenBC The wall out of which the MD particle is.
 /// @param time 	The total remaining time that the particle has to move.
 /// @param t_step 	The MD timestep increment.
+/// @see			chooseBC()
 ///
 void chooseBC_swimmer( bc WALL[],smono *atom,double *t_min,double *chosenW,int *chosenBC,double time,double t_step ) {
 	int i,flag;
@@ -908,7 +921,7 @@ void shiftBC_swimmer( double *shift,bc *WALL,smono *atom ) {
 /// @param WALL		One of the walls of the BCs that particle is interacting with.
 /// @param atom 	The MD particles, being either the head or the middle monomer of the swimmer.
 /// @param sign 	The sign by which the orientation will be.
-/// @sa rotateBC(), rotatebackBC()
+/// @sa 			rotateBC(), rotatebackBC(), MPC_BCrotation()
 ///
 void swimmer_BCrotation( bc *WALL,smono *atom, double sign ) {
 	int i;
@@ -947,6 +960,7 @@ void swimmer_BCrotation( bc *WALL,smono *atom, double sign ) {
 ///	@note			The current implementation is very wasteful. Every \b particle is rotated
 ///					about the centre of each BC. While this is simplest, there are very many 
 ///					particles.
+/// @see			rotateBC()
 ///
 void rotateBC_swimmer( bc *WALL,smono *atom ) {
 	if(WALL->REORIENT) swimmer_BCrotation( WALL,atom,-1.0 );
@@ -957,6 +971,7 @@ void rotateBC_swimmer( bc *WALL,smono *atom ) {
 /// 
 /// @param WALL		One of the walls of the BCs that particle is interacting with.
 /// @param atom		The MD particle, being either the head or the middle monomer of the swimmer.
+/// @see			rotatebackBC()
 ///
 void rotatebackBC_swimmer( bc *WALL,smono *atom ) {
 	if(WALL->REORIENT) swimmer_BCrotation( WALL,atom,1.0 );
@@ -970,8 +985,9 @@ void rotatebackBC_swimmer( bc *WALL,smono *atom ) {
 ///
 /// @param WALL 	One of the walls of the BCs that particle is interacting with.
 /// @param atom 	The MD particle, being either the head or the middle monomer of the swimmer.
-/// @return			W, that detemines if the particle is inside or outside the control volume defined
-///					by the `WALL`.
+/// @return			The variable that detemines if the particle is inside or outside the specified
+///  				wall of the control volume.
+/// @see			calcW()
 ///
 double calcW_swimmer( bc WALL,smono *atom ) {
 	double terms, W=0.0;
@@ -1007,6 +1023,7 @@ double calcW_swimmer( bc WALL,smono *atom ) {
 /// @param atom		The MD particle, being either the head or the middle monomer of the swimmer.
 /// @param t		The time for which particle must stream.
 /// @note			No acceleration during time `t`.
+/// @see			stream_P()
 ///
 void stream_swimmer( smono *atom,double t ) {
     int d;
@@ -1023,6 +1040,7 @@ void stream_swimmer( smono *atom,double t ) {
 /// 
 /// @param atom		The MD particle, being either the head or the middle monomer of the swimmer.
 /// @param time 	The time for which particle streams backward.
+/// @see			rewind_P()
 ///
 void rewind_swimmer( smono *atom,double time ) {
 	int d;
@@ -1043,7 +1061,7 @@ void rewind_swimmer( smono *atom,double time ) {
 /// @param tc_pos 	One of the crosstimes.
 /// @param tc_neg 	One of the crosstimes.
 /// @param t_step 	The maximum streaming time.
-///	@see			secant_time_swimmer()
+///	@see			secant_time_swimmer(), crosstime()
 ///
 void crosstime_swimmer( smono *atom,bc WALL,double *tc_pos, double *tc_neg,double t_step ) {
     int d;
@@ -1139,7 +1157,8 @@ double secant_time_swimmer( smono *atom,bc WALL,double t_step ) {
 /// @param WALL 		One of the walls of the BCs that particle is interacting with.
 /// @param atom 		The MD particle, being either the head or the middle monomer of the swimmer.
 /// @param dimension	The dimenson of the control volume.
-/// @return				The normal vector to the surface, `n`.
+/// @return				The normal vector to the surface.
+/// @see				normal()
 ///
 double *normal_swimmer( double *n,bc WALL,smono *atom,int dimension ) {
 	int i;
@@ -1168,6 +1187,7 @@ double *normal_swimmer( double *n,bc WALL,smono *atom,int dimension ) {
 /// @param WALL 	One of the walls of the BCs that particle is interacting with.
 /// @param SS 		It specifies the type (features) of the swimmer to which this monomer belong.
 /// @param n		The normal vector to the surface of the wall.
+/// @see			velBC()
 ///
 void velBC_swimmer( smono *atom,bc *WALL,specSwimmer SS,double n[_3D] ) {
 	double V[_3D],VN[_3D],VT[_3D],VR[_3D],R[_3D],zip[_3D];
@@ -1304,6 +1324,7 @@ void velBC_swimmer( smono *atom,bc *WALL,specSwimmer SS,double n[_3D] ) {
 /// @param WALL 	One of the walls of the BCs that particle is interacting with.
 /// @param n 		The normal vector to the surface of the wall.
 /// @note			It does NOT stream! That is done in a seperate routine.
+/// @see			posBC()
 ///
 void posBC_swimmer( smono *atom,bc WALL,double n[_3D] ) {
 	double PN[_3D],PT[_3D],temp[_3D];
