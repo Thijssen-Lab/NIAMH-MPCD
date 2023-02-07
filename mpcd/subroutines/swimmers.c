@@ -942,7 +942,7 @@ void allSwimmersMagTorque( specSwimmer SS,swimmer swimmers[],double timeStep,int
 /// @param timeStep The time in MPCD units of one iteration of the MPCD algorithm.
 /// @param SRDparticles List of all fluid particles.
 /// @param WALL Boundary conditions.
-/// @param simMD MD side of the simulation, for polymers.
+/// @param simMD Structure that contains all the details on the MD side of the simulation, for polymers.
 void swimmerDipole( specSwimmer SS,swimmer swimmers[],cell ***CL,spec SP[],double timeStep,particleMPC *SRDparticles,bc WALL[],simptr simMD ) {
 	int i,d;
 	int aH,bH,cH,aT,bT,cT;
@@ -1291,23 +1291,23 @@ void swimmerRotletDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double
 }
 ///
 /// @brief 
-/// @param SS 
-/// @param swimmers 
-/// @param WALL 
-/// @param stepsMD 
-/// @param MAG 
-/// @param dt 
-/// @param RTOUT 
-/// @param fruntumble 
+///
+/// Stochastically run and tumble. This routine checks the number of times since last run/tumble switching event.
+/// If an event occurs a new random run/tumble time is generated.
+/// If the swimmer tumbles then its size can shrink (or technically grow but this shouldn't occur).
+/// If it runs then its shrinkMDSteps size is returned to normal.
+/// Uses a hookean spring during shrinking so that FENE spring isn't broken.
+///
+/// @param SS Swimmer properties
+/// @param swimmers List of swimmers
+/// @param WALL Boundary conditions
+/// @param stepsMD Number of molecular dynamics steps per MPCD timestep.
+/// @param MAG Magnetic field.
+/// @param dt The time in MPCD units of one iteration of the MPCD algorithm.
+/// @param RTOUT Tag for output.
+/// @param fruntumble File for output, it RTOUT set to 1.
 void runTumbleDynamics( specSwimmer *SS,swimmer swimmers[],bc WALL[],int stepsMD,double MAG[],double dt,int RTOUT,FILE *fruntumble ) {
-/*
-    Stochastically run and tumble.
-    This routine checks the number of times since last run/tumble switching event.
-    If an event occurs a new random run/tumble time is generated
-    If the swimmer tumbles then its size can shrink (or technically grow but this shouldn't occur)
-    If it runs then its shrinkMDSteps size is returned to normal
-	Uses a hookean spring during shrinking so that FENE spring isn't broken
-*/
+
   int i,j;
   double dr,ds,dk;			//FENE separation and LJ sigma step size for changing
   int shrinkMDSteps=10*stepsMD;
@@ -1511,10 +1511,10 @@ void bininSwimmers( specSwimmer SS,swimmer swimmers[],cell ***CL ) {
 ///
 /// @brief 
 /// This function bins the swimmers, i.e. it places a pointer to the particleMPC in the appropriate new
-/// list and removes it from its old list.
+/// list and removes it from its old list. Takes into account periodic BC.
 ///
 /// @param CL List of all the MPCD cells, with the chains they contain.
-/// @param shifted Tag 
+/// @param shifted Tag to apply periodic boundary conditions if necessary.
 void binSwimmers( cell ***CL,int shifted ) {
 	int i,j,k,a,b,c;
 	smono *cp;	//Pointer to current item in list
@@ -1553,8 +1553,11 @@ void binSwimmers( cell ***CL,int shifted ) {
 }
 ///
 /// @brief 
+///
+/// This routine adds a swimmer to a list.
+///
 /// @param CL List of all the MPCD cells, with the chains they contain.
-/// @param s Monomer.
+/// @param s Monomer to be added to list.
 void addlinkSwimmer( cell *CL,smono *s ) {
 
 	smono *tp;	//Temporary pointer to swimmer monomer
