@@ -44,8 +44,7 @@
 /// 
 /// @brief This function calculates the properties of all the cells.
 ///
-/// The function calculates properties of all the cell. 
-/// This includes the cell
+/// The function calculates properties of all the cell. This includes the cell
 /// - population (number of particles) 
 /// - mass 
 /// - centre of mass position
@@ -214,7 +213,7 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 /// 
 /// @brief This routine calculates the local <b>instantaneous</b> flow in each cell.
 ///
-/// The function simply loops over all cells and calculates the center of mass velocity through the routine localMPCVCM().
+/// The function simply loops over all cells and calculates the instantaneous center of mass velocity through the routine localMPCVCM(). 
 /// @see localMPCVCM().
 /// @param CL All of the MPCD cells. 
 /// @param SP The species-wide information about MPCD particles.
@@ -229,7 +228,7 @@ void localFLOW( cell ***CL,spec *SP ) {
 /// 
 /// @brief This routine calculates the rolling-average local flow in each cell. 
 ///
-/// The function loops over all cells and adds the current (pre-calculated) local velocity of each cell to a running sum, which will become a time-window flowout(). 
+/// The function loops over all cells and adds the current (pre-calculated) local velocity (in `DIM` dimensions) of each cell to a running sum, which will become a time-window flowout().  
 /// @param CL All of the MPCD cells.
 ///
 void sumFLOW( cell ***CL ) {
@@ -242,7 +241,11 @@ void sumFLOW( cell ***CL ) {
 /// 
 /// @brief This routine adds the effect of phantom MPCD particles to the centre of mass. 
 /// 
-/// Lorem Ipsum
+/// Then this routine operates (to fill cell up with ghost particles, or apply strong anchoring). 
+/// In order to ensure no-slip boundary conditions, ghost particles must be added to all cells that partially overlap with impermeable boundaries. This is because the MPCD viscosity depends on the particle number density and so cells with partial excluded volume have systematically lower viscosity. 
+// To determine if a boundary cuts a cell, a temporary particle assigned to each corner and the routine checks if the corner is inside a boundary. This is an approximation --- boundaries with sharp corners may be missed. This is done every time step because boundary walls may be mobile. 
+/// To ensure no-slip, the centre of mass velocity of the cell is weighted towards zero by the Boltzmann distribution (Gaussian on the velocity components, genrand_gaussMB()). 
+// To achieve strong anchoring conditions, by setting the orientation of all the MPCD particle orientations equal to the wall normal at that particle's location. This strengthens anchoring by re-applying orientational boundary conditions (now to the whole cell).  This is so the collision operator can reassign orientations about the director (preferred by the anchoring), with less deviation (as S = 1 for planar, or close to 1 otherwise).
 /// @param CL All of the MPCD cells. 
 /// @param WALL All of the walls (boundary conditions) that particles might interact with. 
 /// @param KBT The thermal energy. 
@@ -253,25 +256,20 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 /*
    This would be oodles better if each BC object had a list of cells
    to worry about and so I wouldn't have to go over every cell all
-   the time
-	 This routine also strengthens anchoring by re-applying orientational boundary
-	 conditions (now to the whole cell).  This is so the collision operator can
-	 reassign orientations about the director (preferred by the anchoring), with
-	 less deviation (as S = 1 for planar, or close to 1 otherwise).
+   the time.
 */
-
 	int a,b,c,d,i,j,k;
 	int numCorners = (int) smrtPow(2,DIM);
 	double R[DIM];
-	double invN;									// Inverse number difference
-	particleMPC tp[numCorners];		// Temporary MPC particles for all corners of a square cell
+	double invN;							// Inverse number difference
+	particleMPC tp[numCorners];				// Temporary MPC particles for all corners of a square cell
 	double W[numCorners];					// W for each of the corners
 	double **S, eigval[_3D];
-	double n[_3D] = {0.,0.,0.};		// surface normal
+	double n[_3D] = {0.,0.,0.};				// surface normal
 	particleMPC *ptMPC;						// temporary pointer to MPC particle
 	int setGhostAnch, flagW;
-	int numBC;										// Number of walls with anchoring in a given cell
-	int wallindex;								// Index of wall with anchoring acting on a cell
+	int numBC;								// Number of walls with anchoring in a given cell
+	int wallindex;							// Index of wall with anchoring acting on a cell
 	double shift[DIM];
 	setGhostAnch = 1; 						// a manual switch to turn on=1 or off=0 the stronger anchoring
 
@@ -489,11 +487,11 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 /// 
 /// @brief This subroutine translates one component of a generic position vector.
 /// 
-/// Lorem Ipsum
+/// This function simply updates one component of a generic position vector based on a constant speed in that direction.
 /// @param t The time interval for which the particle translates.
 /// @param V The speed with which the particle translates.
 /// @param QOLD The initial position of the particle.
-/// @return QNEW The newly translated component of the position. 
+/// @return The newly translated component of the position. 
 /// @note No acceleration during the time step, which is the philosophy behind the streaming step of MPCD algorithms.
 ///
 double trans( double t,double V, double QOLD ) {
@@ -506,7 +504,7 @@ double trans( double t,double V, double QOLD ) {
 /// 
 /// @brief This subroutine accelerates one component of a generic velocity vector. 
 ///
-/// Lorem Ipsum
+/// This function simply updates one component of a generic velocity vector based on a constant acceleration in that direction.
 /// @param t The time interval for which the particle accelerates.
 /// @param GRAV The acceleration with which the particle speed increases.
 /// @param VOLD The initial speed of the particle.
@@ -521,7 +519,7 @@ double acc( double t,double GRAV,double VOLD ) {
 /// 
 /// @brief The streaming step of the algorithm translates position of a single wall (boundary condition). 
 /// 
-/// Lorem Ipsum
+/// This function simply updates the position vector (in `DIM` dimensions) of a single wall (boundary condition).
 /// @param WALL All of the walls (boundary conditions) that particles might interact with. 
 /// @param t The time interval for which the wall translates.
 ///
@@ -533,7 +531,7 @@ void stream_BC( bc *WALL,double t ) {
 /// 
 /// @brief The streaming rotational step of the algorithm rotates the orienation of a single wall (boundary condition). 
 /// 
-/// Lorem Ipsum
+/// This function simply updates the orientation vector of a single wall (boundary condition). Must be in 3D because the rotation direction in 2D is in the third dimension. 
 /// @param WALL All of the walls (boundary conditions) that particles might interact with. 
 /// @param t The time interval for which the wall rotates.
 ///
@@ -545,7 +543,7 @@ void spin_BC( bc *WALL,double t ) {
 /// 
 /// @brief The streaming step of the algorithm translates the position of a single MPCD particle. 
 /// 
-/// Lorem Ipsum
+/// This function simply updates the position vector (in `DIM` dimensions) of a single MPCD particle.
 /// @param t The time interval for which the MPCD particle translates.
 /// @param p An MPCD particle. 
 ///
@@ -557,7 +555,7 @@ void stream_P( particleMPC *p,double t ) {
 /// 
 /// @brief Accelerating the velocity of a single wall (boundary condition). 
 /// 
-/// Lorem Ipsum
+/// This function simply updates the velocity vector (in `DIM` dimensions) of a single wall (boundary condition).
 /// @param WALL One of the walls (boundary conditions). 
 /// @param t The time interval for which the wall (boundary condition) accelerates.
 /// @param GRAV The acceleration with which the WALL's speed increases.
@@ -570,7 +568,7 @@ void acc_BC( bc *WALL,double t,double GRAV[] ) {
 /// 
 /// @brief Accelerating the velocity of a single MPCD particle. 
 /// 
-/// Lorem Ipsum
+/// This function simply updates the velocity vector (in `DIM` dimensions) of a single MPCD particle.
 /// @param p An MPCD particle. 
 /// @param t The time interval for which the MPCD particle accelerates.
 /// @param GRAV The acceleration with which the particle speed increases.
@@ -584,7 +582,7 @@ void acc_P( particleMPC *p,double t,double GRAV[] ) {
 /// 
 /// @brief The streaming step of the algorithm that translates the positions of all MPCD particles
 ///
-/// Lorem Ipsum
+/// This function loops over the global population (`GPOP`) to update all MPCD particle positions.
 /// @param p An MPCD particle. 
 /// @param t The time interval for which the MPCD particles translate.
 ///
@@ -600,7 +598,7 @@ void stream_all( particleMPC *pp,double t ) {
 /// 
 /// @brief The accelerating all the MPCD particle velocities
 /// 
-/// Lorem Ipsum
+/// This function loops over the global population (`GPOP`) to update all MPCD particle velocities.
 /// @param pp An MPCD particle. 
 /// @param t The time interval for which the MPCD particles accelerate.
 /// @param GRAV The acceleration with which the particle speeds increase.
@@ -613,11 +611,10 @@ void acc_all( particleMPC *pp,double t,double GRAV[] ) {
 /// 
 /// @brief Shifts the entire system. 
 ///
-/// Lorem Ipsum
-/// Shifts the entire system by the vector SHIFT. 
-/// If shiftBack then multiply shift by -1 and shift. Else do the normal shift
-/// This is to maintain Gallilean invariance. 
-/// Proposed by Ihle and Kroll (https://journals.aps.org/pre/abstract/10.1103/PhysRevE.67.066705).
+/// Since the MPCD algorith happens on a grid, it breaks Galilean invariance. Therefore, to restore Gallilean invariance, the grid should be randomly shifted. 
+/// This was proposed by Ihle and Kroll (https://journals.aps.org/pre/abstract/10.1103/PhysRevE.67.066705). 
+/// However, since bin() sorts the particles into cells by truncating the position into cell indices, it is easier to shift <b>everything else</b> and leave the grid in place. So this routine shifts the entire system by the vector SHIFT. If shiftBack then multiply shift by -1 and shift; otherwise, do the normal shift. 
+//It shifts everything by looping over all MPCD particles (global population `GPOP`), all MD particles, all swimmers (`NS`) and all walls (`NBC`).
 /// @param SHIFT The random vector everything is shifted by
 /// @param shiftBack A flag for whether the routine does the initial shift (==0) or shifts back (==1). 
 /// @param SRDparticles All the MPCD particles. 
@@ -758,11 +755,11 @@ void rotate_CL( cell CL,spec *SP,double r0[],double n0[],double dw ) {
 /// 
 /// @brief Rewinds a translation
 /// 
-/// Lorem Ipsum
+/// This function simply <b>un</b>-updates (rewinds) one component of a generic position vector based on a constant speed in that direction by subtracting the displacement. 
 /// @param t The time interval for which the object is rewound.
 /// @param V The object's velocity component.
 /// @param P The object's present position component.
-/// @return QOLD The position at the previous time step.
+/// @return The position at the previous time step.
 /// @note No acceleration during the time step, which is the philosophy behind the streaming step of MPCD algorithms.
 ///
 double rewind_trans( double t,double V,double P ) {
@@ -774,11 +771,11 @@ double rewind_trans( double t,double V,double P ) {
 /// 
 /// @brief Rewind an acceleration vector.
 /// 
-/// Lorem Ipsum
+/// This function simply <b>un</b>-updates (rewinds) one component of a generic velocity vector based on a constant accelearation in that direction by subtracting the displacement. 
 /// @param t The time interval for which the object is rewound.
 /// @param V The object's acceleration component.
 /// @param P The object's present velocity component.
-/// @return VOLD The velocity at the previous time step.
+/// @return The velocity at the previous time step.
 ///
 double rewind_acc(double t,double G,double V){
 	double VOLD;
@@ -789,7 +786,7 @@ double rewind_acc(double t,double G,double V){
 /// 
 /// @brief Bring a given MPCD particle back a time step.
 /// 
-/// Lorem Ipsum
+/// This function simply <b>un</b>-updates (rewinds) the position vector based on a constant velocity by subtracting the displacement. 
 /// @param p An MPCD particle. 
 /// @param time The time interval for which the MPCD particle is rewound.
 ///
@@ -801,7 +798,7 @@ void rewind_P( particleMPC *p,double time ) {
 /// 
 /// @brief Bring a given boundary back a time step.
 /// 
-/// Lorem Ipsum
+/// This function simply <b>un</b>-updates (rewinds) the position vector based on a constant velocity by subtracting the displacement. 
 /// @param WALL A moving wall (boundary conditions). 
 /// @param time The time interval for which the MPCD particle is rewound.
 ///
@@ -821,20 +818,17 @@ void rewind_BC( bc *WALL,double time ) {
 /// 
 /// @brief This function bins the MPCD particles for the first time for use in the collision steps.
 /// 
-/// Lorem Ipsum
-/// Initial binning loops over all particles using the global population. 
-/// Particles are placed in MPCD cells by truncating their positions into integers, which give the cell array place. 
-/// This works because the MPCD cells <b>must</b> have an cell size of `a=1`.
+/// Initial binning loops over all MPCD particles using the global population (`GPOP`) after they have been first initialized. Particles are placed in cells by truncating their positions into integers, which give the cell array place. This works because the cells <b>must</b> have an cell size of `a=1`. 
+/// It is different from bin() in that it uses the actual array of MPCD particles rather than the array of pointers to particles.
 /// @param p All of the MPCD particles. 
 /// @param CL All of the MPCD cells (including the linked list of particles in each cell). 
+/// @see bin()
 ///
 void binin( particleMPC p[],cell ***CL ) {
 /*
    This function does the initial binning of the
    particleMPCs after they have been first initialized.
-   It is different from bin in that it uses the
-   actual array of particleMPCs rather than the array
-   of pointers to particleMPCs.
+   
 */
 	int i,a,b,c;
 	//Bin Particles
@@ -850,7 +844,8 @@ void binin( particleMPC p[],cell ***CL ) {
 /// 
 /// @brief This function bins the MPCD particles.
 /// 
-/// Lorem Ipsum
+/// This function bins the particleMPCs by placing a pointer to the MPCD particle in the appropriate new list and removing it from it's old list.
+/// This does not calculate the local properties, which must be done separately by calling localPROP().
 /// @param CL All of the MPCD cells (including the linked list of particles in each cell). 
 /// @param SP The species-wide information about MPCD particles.
 /// @param WALL All of the walls (boundary conditions) that particles might interact with. 
@@ -860,12 +855,7 @@ void binin( particleMPC p[],cell ***CL ) {
 ///
 void bin( cell ***CL,spec *SP,bc WALL[],double KBT,int LC,int shifted ) {
 /*
-   This function bins the particleMPCs i.e. it places
-   a pointer to the particleMPC in the appropriate new
-   list and removes it from it's old list.
-   This does not calculate the local
-   properties. That must be done separately
-   by calling localPROP().
+   
 */
 	int i,j,k,a,b,c,d;
 	double m;
@@ -916,9 +906,11 @@ void bin( cell ***CL,spec *SP,bc WALL[],double KBT,int LC,int shifted ) {
 /// 
 /// @brief This function bins the MD particles for the first time for use in the collision steps.
 /// 
-/// Lorem Ipsum
+/// Initial binning loops over all MD particles after they have been first initialized. Particles are placed in MPCD cells by truncating their positions into integers, which give the cell array place. This works because the MPCD cells <b>must</b> have an cell size of `a=1`. 
+/// It is different from binin() only in that it initially bins MD particles.
 /// @param simMD A pointer to the entire MD portion of the simulation.
 /// @param CL All of the MPCD cells (including the linked list of particles in each cell). 
+/// @see binin()
 ///
 void bininMD( simptr sim,cell ***CL ) {
 	int i,a,b,c;
@@ -941,9 +933,10 @@ void bininMD( simptr sim,cell ***CL ) {
 /// 
 /// @brief This function bins the MD particles.
 ///
-/// Lorem Ipsum
-/// The routine  bins the MD particles by placing a pointer to the MD particle in the appropriate new list and removes it from it's old list.
+/// This function bins the MD particles by placing a pointer to the MD particle in the appropriate new list and removing it from it's old list.
+/// This does not calculate the local properties, which must be done separately by calling localPROP().
 /// @param CL All of the MPCD cells (including the linked list of particles in each cell). 
+/// @see bin()
 ///
 void binMD( cell ***CL ) {
 	int i,j,k,a,b,c;
@@ -980,9 +973,10 @@ void binMD( cell ***CL ) {
 /// 
 /// @brief This routine adds a link to an MPCD particle to the end of the list. 
 /// 
-/// Lorem Ipsum
+/// This function finds the end of a linked list and adds a new link to a given MPCD particle `p`.
 /// @param CL All of the MPCD cells (including the linked list of particles in each cell). 
 /// @param p The current MPCD particle in the linked list. 
+/// @see bin()
 ///
 void addlink( cell *CL,particleMPC *p ) {
 	particleMPC *tp;	//Temporary pointer to particleMPC
@@ -1007,7 +1001,7 @@ void addlink( cell *CL,particleMPC *p ) {
 /// 
 /// @brief This routine removes a link to an MPCD particle from a list and relinks the list.
 /// 
-/// Lorem Ipsum
+/// This function removes the `current` MPCD particle from a linked list and re-stiches the list back together.
 /// @param current The current MPCD particle being removed from the list. 
 /// @param CL The MPCD cell that the particle is in. 
 ///
@@ -1028,7 +1022,7 @@ void removelink( particleMPC *current,cell *CL ) {
 /// 
 /// @brief This routine adds a link to the end of the list for MD particles.
 ///
-/// Lorem Ipsum
+/// This function finds the end of a linked list and adds a new link to a given MD particle `p`.
 /// @param CL The MPCD cell that the particle is being added to. 
 /// @param p The MPCD particle being added to the list. 
 ///
@@ -1055,7 +1049,7 @@ void addlinkMD( cell *CL,particleMD *p ) {
 /// 
 /// @brief This routine removes a link pointing to an MD particle from a list and relinks the list. 
 ///
-/// Lorem Ipsum
+/// This function removes the `current` MD particle from a linked list and re-stiches the list back together.
 /// @param current The current MD particle being removed from the list. 
 /// @param CL The MPCD cell that the particle is in. 
 ///
@@ -1082,11 +1076,9 @@ void removelinkMD( particleMD *current,cell *CL ) {
 /* ****************************************** */
 
 /// 
-/// @brief Rotates a vector about a random axis. 
+/// @brief Rotates a vector about a given axis. 
 ///
-/// Lorem Ipsum
-/// Takes in a vector V and rotates it about a random cartesian axis (if RT=ORTHAXIS) or about a random axis L (if RT=ARBAXIS).
-/// The arbitary axis is chosen randomly for every collision cell and each time step
+/// Takes in a vector and rotates it about a given axis. The rotation axis is either random cartesian axis (if `RT==ORTHAXIS`) or about a random axis L (if `RT==ARBAXIS`). The arbitary axis is chosen randomly for every collision cell and each time step
 /// @param RT Rotation technique (collision operator). For SRD, whether to randomly choose a cartesean axis (`ORTHAXIS`) or generate an arbitrarily random direction (`ARBAXIS`).
 /// @param Cos Cosine of the rotation angle.
 /// @param Sin Sine of the rotation angle.
@@ -1096,9 +1088,6 @@ void removelinkMD( particleMD *current,cell *CL ) {
 /// @param RAND Randomly pick one of the `DIM` cartesian axes. Used if `RT==ORTHAXIS`
 ///
 void rotate( int RT,double Cos,double Sin,double V[_3D],double L[_3D],long SIGN,int RAND ) {
-/*
-   
-*/
 	int i,j;
 	double R[_3D][_3D][_3D];	//[matrix][row][col]
 	double TEMP[_3D]={0.0};
@@ -1179,8 +1168,9 @@ void rotate( int RT,double Cos,double Sin,double V[_3D],double L[_3D],long SIGN,
 /// 
 /// @brief Does the stochastic rotation dynamics collision. 
 /// 
-/// Lorem Ipsum
-/// Invented by Malevanets and Kapral (https://doi.org/10.1063/1.478857).
+/// Invented by Malevanets and Kapral (https://doi.org/10.1063/1.478857). 
+/// Stochastic rotation dynamics (SRD) version of multi-particle collision dynamics (MPCD). 
+/// In SRD, the collision operator rotates the particles through a given rotation angle about a randomly chosen axis such that momenta are exchanged but energy and momentum are conserved within the cell. Does not conserve angular momentum. 
 /// It updates the particles by looping through the linked lists. 
 /// @param CL An MPCD cell (including the linked list of particles in each cell). 
 /// @param RTECH The MPCD collision operator. See `definitions.h` for all options.
@@ -1253,11 +1243,12 @@ void stochrotMPC( cell *CL,int RTECH,double C,double S,double *CLQ,int outP ) {
 }
 
 /// 
-/// @brief Does the Anderson thermostatted collision that conserves angular momentum. 
+/// @brief Does the Anderson-thermostatted collision that conserves angular momentum. 
 /// 
-/// Lorem Ipsum
 /// Invented by Noguchi, Kikuchi and Gompper (https://iopscience.iop.org/article/10.1209/0295-5075/78/10005).
-/// It updates the particles by looping through the linked lists. 
+/// Andersen-thermostatted version of multiparticle collision dynamics (MPCD-AT) is one particular example of a multi-particle collision dynamics (MPCD). 
+/// In MPCD-AT, the collision operator generates random velocity vectors for all the MPCD particles in the cell. The random velocitities are drawn from Gaussian distribtions (genrand_gaussMB()) and so obey Maxwell-Boltzmann statistics. The average of the random velocities is then subtracted from all to conserve momentum.
+/// Energy is not conserved; rather the system is thermostatted to `KBT`. Also, does not conserve angular momentum. 
 /// @param CL An MPCD cell (including the linked list of particles in each cell). 
 /// @param SP The species-wide information about MPCD particles.
 /// @param SS The species-wide information about swimmers.
@@ -1357,15 +1348,17 @@ void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 /// 
 /// @brief Does the Anderson thermostatted collision that conserves angular momentum. 
 /// 
-/// Lorem Ipsum
 /// Invented by Noguchi, Kikuchi and Gompper (https://iopscience.iop.org/article/10.1209/0295-5075/78/10005).
-/// It updates the particles by looping through the linked lists. 
+/// Andersen-thermostatted version of multiparticle collision dynamics (MPCD-AT) that <b>does</b> conserve angular momentum (MPCD-AT+a). 
+/// It is just like andersenMPC() but includes a correction to conserve angular momentum.
+/// Energy is not conserved; rather the system is thermostatted to `KBT`.
 /// @param CL An MPCD cell (including the linked list of particles in each cell). 
 /// @param SP The species-wide information about MPCD particles.
 /// @param SS The species-wide information about swimmers.
 /// @param KBT The thermal energy. 
 /// @param CLQ The geometric centre of `CL`, the MPCD cell.
 /// @param outP Flag whether or not to output the pressure.
+/// @see andersenMPC()
 ///
 void andersenROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int outP ) {
 	int i,j,id;
@@ -1580,7 +1573,8 @@ void andersenROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 /// @brief Does the Langevin thermostatted collision. 
 /// 
 /// Invented by Noguchi, Kikuchi and Gompper (https://iopscience.iop.org/article/10.1209/0295-5075/78/10005).
-/// It updates the particles by looping through the linked lists. 
+/// Langevin-thermostatted version of multiparticle collision dynamics (MPCD). 
+/// Energy is not conserved; rather the system is thermostatted to `KBT`.
 /// @param CL An MPCD cell (including the linked list of particles in each cell). 
 /// @param SP The species-wide information about MPCD particles.
 /// @param SS The species-wide information about swimmers.
@@ -1695,9 +1689,9 @@ void langevinMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 /// 
 /// @brief Langevin MPC collision that conserves angular momentum (uses Langevin thermostat). 
 /// 
-/// Lorem Ipsum
 /// Invented by Noguchi, Kikuchi and Gompper (https://iopscience.iop.org/article/10.1209/0295-5075/78/10005).
-/// It updates the particles by looping through the linked lists. 
+/// Langevin-thermostatted version of multiparticle collision dynamics (MPCD) that <b>does</b> conserver angular momentum. 
+/// It is just like langevinMPC() but includes a correction to conserve angular momentum.
 /// @param CL An MPCD cell (including the linked list of particles in each cell). 
 /// @param SP The species-wide information about MPCD particles.
 /// @param SS The species-wide information about swimmers.
@@ -1706,6 +1700,7 @@ void langevinMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 /// @param Step The MPCD time step in MPCD units.
 /// @param CLQ The geometric centre of `CL`, the MPCD cell.
 /// @param outP Flag whether or not to output the pressure.
+/// @see langevinMPC()
 ///
 void langevinROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,double Step,double *CLQ,int outP ) {
 	int i,j,id;
@@ -1942,9 +1937,10 @@ void langevinROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 /// 
 /// @brief An active stochastic rotation dynamics (SRD) algorithm. 
 ///
-/// Lorem Ipsum
-/// Does the stochastic rotation collision but then rotates the resulting velocities towards the centre of mass velocity injecting momentum but keeping the energy constant.
-/// It updates the particles by looping through the linked list. 
+/// @warning Experimental. Proposed by Shendruk but not published or fully characterized yet. 
+/// Does the stochastic rotation collision (see stochrotMPC()) but then rotates the resulting velocities towards the centre of mass velocity injecting momentum but keeping the energy constant.
+/// It updates the particles by looping through the linked lists. 
+
 /// @param CL An MPCD cell (including the linked list of particles in each cell). 
 /// @param SP The species-wide information about MPCD particles.
 /// @param RTECH The MPCD collision operator. See `definitions.h` for all options.
@@ -1952,6 +1948,7 @@ void langevinROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 /// @param S Sine of the rotation angle.
 /// @param CLQ The geometric centre of `CL`, the MPCD cell.
 /// @param outP Flag whether or not to output the pressure.
+/// @seee stochrotMPC()
 ///
 void activeSRD( cell *CL,spec *SP,int RTECH,double C,double S,double *CLQ,int outP ) {
 	int i;
@@ -2003,7 +2000,7 @@ void activeSRD( cell *CL,spec *SP,int RTECH,double C,double S,double *CLQ,int ou
 /// @brief Active dry polar collision operator based on Vicsek algorithm. 
 ///
 /// Lorem Ipsum
-/// This is meant to be the Vicsek algorithm <b>but<b/> instead of an interaction radius the alignment occurs within an MPCD cell. 
+/// This is meant to be the Vicsek algorithm <b>but</b> instead of an interaction radius the alignment occurs within an MPCD cell. 
 ///	Here ACT serves as the NOISE range (typically, eta in Vicsek algorithms).
 /// It updates the particles by looping through the linked list. 
 /// @param CL An MPCD cell (including the linked list of particles in each cell). 
@@ -2613,6 +2610,8 @@ void dipoleAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 /// @brief Does the MPC collision operation. 
 ///
 /// Lorem Ipsum
+/// The continuum fluid is discretized into point-like fluid particles and these point particles undergo coarse-grained multi-particle collision events. 
+/// A particle-based mesoscale simulation technique for complex fluids which incorporates thermal fluctuations and hydrodynamic interactions. 
 /// @param CL An MPCD cell. 
 /// @param SP The species-wide information about MPCD particles.
 /// @param SS The species-wide information about swimmers.
@@ -3635,7 +3634,7 @@ void localMPCVCM( double vcm[_3D],cell CL,spec *SP ) {
 /// @param CL An MPCD cell (including the linked list of particles in each cell). 
 /// @param SP The species-wide information about MPCD particles.
 /// @param specS The species-wide information about swimmers.
-/// @return M The local mass of a cell (including MPCD, MD and swimmer particles).
+/// @return The local mass of a cell (including MPCD, MD and swimmer particles).
 ///
 double localMASS( cell CL,spec *SP,specSwimmer specS ) {
 	int id;
@@ -3685,7 +3684,7 @@ double localMASS( cell CL,spec *SP,specSwimmer specS ) {
 /// @param CL An MPCD cell (including the linked list of particles in each cell). 
 /// @param SP The species-wide information about MPCD particles.
 /// @param specS The species-wide information about swimmers.
-/// @return KBT The local thermal energy of a cell (via equipartition theorem). 
+/// @return The local thermal energy of a cell (via equipartition theorem). 
 ///
 double localTEMP( cell CL,spec *SP,specSwimmer specS ) {
 /*
@@ -3756,7 +3755,7 @@ double localTEMP( cell CL,spec *SP,specSwimmer specS ) {
 /// It includes MPCD, MD and swimmer
 /// It updates the particles by looping through the linked lists. 
 /// @param CL An MPCD cell (including the linked list of particles in each cell). 
-/// @return i Total number of particles in this cell.
+/// @return Total number of particles in this cell.
 ///
 int localPOP( cell CL ) {
 	int i = 0;
@@ -3798,6 +3797,7 @@ int localPOP( cell CL ) {
 /// @brief This routine randomly `scrambles` the MPCD particle velocities, i.e. randomly exchanges particle velocities.
 ///
 /// Lorem Ipsum
+/// (in `DIM` dimensions) (global population `GPOP`) 
 /// It updates all the particles by looping through the global populations. 
 /// @param p All the MPCD particles. 
 ///
@@ -4044,7 +4044,7 @@ void localMomInertiaTensor( cell *CL,spec *SP,specSwimmer specS ) {
 /// @param SP The species-wide information about MPCD particles.
 /// @param r0 The point about which the rotation occurs.
 /// @param n0 The axis about which the rotation occurs. 
-/// @return momI Magnitude of the moment of inertia about the given position and axis. 
+/// @return Magnitude of the moment of inertia about the given position and axis. 
 ///
 double localMomInertia_SRD( cell CL,spec *SP,double r0[],double n[] ) {
 	int id,d;
@@ -4078,6 +4078,7 @@ double localMomInertia_SRD( cell CL,spec *SP,double r0[],double n[] ) {
 /// @brief This is a very coarse check to make sure that none of the MPCD particles have escaped the control volume
 /// 
 /// Lorem Ipsum
+/// (in `DIM` dimensions) (global population `GPOP`) (number of swimmers `NS`)
 /// It updates the particles by looping through the global population of all MPCD particles. 
 /// @param pp All the MPCD particles. 
 ///
@@ -4665,6 +4666,7 @@ void calcPressureStreaming( cell ***CL,spec *SP ) {
 /// @brief Zero collisional pressure term --- also divided by volume but cell volume=1.
 ///
 /// Lorem Ipsum
+/// (in `DIM` dimensions) 
 /// @param CL An MPCD cell. 
 /// @param dt The MPCD time step.
 ///
@@ -4677,6 +4679,7 @@ void normPressureColl( cell *CL,double dt ) {
 /// @brief The <b>pre</b>-collision calculations needed to calculate the collisional pressure term.
 ///
 /// Lorem Ipsum
+/// (in `DIM` dimensions) 
 /// @param relQ The MPCD particle position relative to the geometric centre of the cell `CLQ`. The relative position is returned through this variable.
 /// @param dp The change in momentum, which is being set to the initial velocity here in order to later find the difference. The change in momentum is returned through this variable.
 /// @param p An MPCD particle. 
@@ -4696,6 +4699,7 @@ void calcPressureColl_preColl( double *relQ,double *dp,particleMPC *p,double *CL
 /// @brief The <b>post</b>-collision calculations needed to calculate the collisional pressure term.
 ///
 /// Lorem Ipsum
+/// (in `DIM` dimensions) 
 /// @param relQ The MPCD particle position relative to the geometric centre of the cell `CLQ`. 
 /// @param dp The change in momentum, which was previously initialized in calcPressureColl_preColl(). The change in momentum is returned through this variable.
 /// @param M The MPCD particle mass.
