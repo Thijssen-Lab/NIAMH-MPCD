@@ -291,12 +291,12 @@ void rotatebackBC_MD( bc *WALL,particleMD *atom ) {
 ///
 /// @brief			Checks if the Boundary condition should be applied to the MD particle. 
 ///	
-/// Calculates the distance of the particle from the center of the BC, and based on the shape of the 
-/// control volume it determines if the particle is outside or inside of it.
+/// Calculates the distance of the particle from the wall, and based on the shape of the 
+/// control volume it determines if the particle is outside/inside/on the wall.
 ///
 /// @param WALL 	One of the walls of the BCs that particle is interacting with.
 /// @param atom 	The MD particle.
-/// @return			The variable that detemines if the particle is inside or outside the specified
+/// @return			The variable that detemines if the particle is inside(+)/outside(-)/on(0) the specified
 /// 				wall of the control volume.
 /// @see			calcW()
 ///
@@ -333,7 +333,7 @@ double calcW_MD( bc WALL,particleMD *atom ){
 /// @brief			The streaming step of the algorithm.
 ///
 /// Using trans() routine translates the MD particle's position, \f$ Q_{\mbox{New}} = Q_{\mbox{Old}} + t \times V \f$ 
-/// in which \f$ Q_{\mbox{New}} \f$ is the new poition of the prticle,
+/// in which \f$ Q_{\mbox{New}} \f$ is the new poition of the particle,
 /// \f$ Q_{\mbox{Old}} \f$ is the old position of the particle,
 /// \f$ t \f$ is the streaming time and \f$ V \f$ is the velocity of the particle.
 ///
@@ -352,7 +352,7 @@ void stream_MD( particleMD *atom,double t ) {
 /// @brief			Rewinds particle back to its old position.
 ///
 /// Using rewind_trans() brings back the particle to its position in the previous timestep, 
-/// \f$ Q_{\mbox{New}} = Q_{\mbox{Old}} - t \times V \f$ in which \f$ Q_{\mbox{New}} \f$ is the new poition of the prticle,
+/// \f$ Q_{\mbox{New}} = Q_{\mbox{Old}} - t \times V \f$ in which \f$ Q_{\mbox{New}} \f$ is the new poition of the particle,
 /// \f$ Q_{\mbox{Old}} \f$ is the old position of the particle, \f$ t \f$ is the streaming time and \f$ V \f$ is the velocity
 /// of the particle.
 ///
@@ -980,12 +980,12 @@ void rotatebackBC_swimmer( bc *WALL,smono *atom ) {
 ///
 /// @brief			Checks if the Boundary condition should be applied to the MD particle. 
 ///	
-/// Calculates the distance of the particle from the center of the BC, and based on the shape of the 
-/// control volume determines if the particle is outside or inside of it.
+/// Calculates the distance of the particle from the wall, and based on the shape of the 
+/// control volume determines if the particle is outside/inside/on the wall.
 ///
 /// @param WALL 	One of the walls of the BCs that particle is interacting with.
 /// @param atom 	The MD particle, being either the head or the middle monomer of the swimmer.
-/// @return			The variable that detemines if the particle is inside or outside the specified
+/// @return			The variable that detemines if the particle is inside(+)/outside(-)/on(0) the specified
 ///  				wall of the control volume.
 /// @see			calcW()
 ///
@@ -1016,7 +1016,7 @@ double calcW_swimmer( bc WALL,smono *atom ) {
 /// @brief			The streaming step of the algorithm, swimmers' version.
 ///
 /// Using trans() routine translates the MD particle's position, 
-/// \f$ Q_{\mbox{New}} = Q_{\mbox{Old}} + t \times V \f$ in which \f$ Q_{\mbox{New}} \f$ is the new poition of the prticle,
+/// \f$ Q_{\mbox{New}} = Q_{\mbox{Old}} + t \times V \f$ in which \f$ Q_{\mbox{New}} \f$ is the new poition of the particle,
 /// \f$ Q_{\mbox{Old}} \f$ is the old position of the particle, \f$ t \f$ is the streaming time and \f$ V \f$ is the velocity
 /// of the particle.
 ///
@@ -1034,7 +1034,7 @@ void stream_swimmer( smono *atom,double t ) {
 /// @brief			Rewinds particle back to its old position, swimmers' version.
 ///
 /// Using rewind_trans() brings back the particle to its position in the previous timestep,
-/// \f$ Q_{\mbox{New}} = Q_{\mbox{Old}} - t \times V \f$ in which \f$ Q_{\mbox{New}} \f$ is the new poition of the prticle,
+/// \f$ Q_{\mbox{New}} = Q_{\mbox{Old}} - t \times V \f$ in which \f$ Q_{\mbox{New}} \f$ is the new poition of the particle,
 /// \f$ Q_{\mbox{Old}} \f$ is the old position of the particle, \f$ t \f$ is the streaming time and \f$ V \f$ is the velocity
 /// of the particle.
 /// 
@@ -1308,7 +1308,7 @@ void velBC_swimmer( smono *atom,bc *WALL,specSwimmer SS,double n[_3D] ) {
 		for( i=0; i<_3D; i++ ) VN[i] = atom_POS[i] - WALL->Q[i];
 		//Since VT isn't being used, use VT as the crossprod.
 		crossprod( VN,V,VT );
-// 		dotprodmat( VT,IIwall,VN,_3D );
+		//dotprodmat( VT,IIwall,VN,_3D );
 		dotprodMatVec( IIwall,VT,VN,_3D );
 		for( i=0; i<_3D; i++) WALL->dL[i] -= VN[i] * J;
 	}
