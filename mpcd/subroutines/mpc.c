@@ -2682,6 +2682,27 @@ void dipoleAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 /// @param CLQ The geometric centre of `CL`, the MPCD cell.
 /// @param outP Flag whether or not to output the pressure.
 ///
+/// For momentum collision operators:
+/// @see andersenMPC()
+/// @see andersenROT()
+/// @see langevinMPC()
+/// @see langevinROT()
+/// @see stochrotMPC()
+/// 
+/// For liquid crystal collision operator:
+/// @see andersenROT_LC()
+///
+/// For active matter collision operators:
+/// @see dipoleAndersenROT_LC()
+/// @see dipoleAndersenMPC()
+/// @see vicsek()
+/// @see chate()
+/// @see activeSRD()
+/// @see vicsekAndersenMPC()
+/// @see vicsekLangevinMPC()
+/// @see chateAndersenMPC()
+/// @see chateLangevinMPC()
+///
 void MPCcollision( cell *CL,spec *SP,specSwimmer SS,double KBT,int RTECH,double C,double S,double FRICCO,double TimeStep,int MDmode,int LC,double RELAX,double *CLQ,int outP ) {
 	particleMD *tmd;	//Temporary particleMD
 
@@ -4114,7 +4135,7 @@ void checkEscape_all( particleMPC *pp ) {
 	double Q[_3D];
 	for( i=0; i<GPOP; i++ ){
 		for( d=0; d<_3D; d++ ) Q[d] = (pp+i)->Q[d];
-		for( d=0; d<_3D; d++ ) if( Q[d]<0. || Q[d]>XYZ_P1)  {
+		for( d=0; d<_3D; d++ ) if( Q[d]<0. || Q[d]>XYZ_P1[d] )  {
 			#ifdef DBG
 				printf( "Warning: Particle %d escaped control volume",i );
 				pvec( Q,_3D );
