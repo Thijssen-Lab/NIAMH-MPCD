@@ -1,5 +1,6 @@
 ///
 /// @file
+/// @brief Helpful routines
 ///
 
 # include<stdio.h>
