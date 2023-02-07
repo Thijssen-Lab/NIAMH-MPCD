@@ -1559,7 +1559,21 @@ void torqueLCBC( bc *WALL,double n[], double U0[], double torqueMPC[],double rod
 		}
 	#endif
 }
-
+/// This routine performs an MPC collision which conserved angular momentum.
+///
+/// MPC collision that conserves angular momentum (uses andersen thermostat), and returns the CM velocity and the local temperature of the cell.
+/// See https://pubs.rsc.org/en/content/articlelanding/2015/sm/c5sm00839e
+/// Notice that all of this must be entirely in 3D even if system is 2D since angular momentum is perpendicular.
+/// It takes into account the total mass, velocity and angular momentum of MPC particles, MD particles and swimmers.
+///
+/// @param CL Class containing cell data (pointed to local cell considered)
+/// @param SP pointer to the species helper "class" (contains information of the mass, etc, of the considered species)
+/// @param SS pointer to the swimmers.
+/// @param KBT Temperature
+/// @param dt Integration timestep
+/// @param CLQ Position of the cell
+/// @param outP Parameter that determines if we should output pressure (0 not, 1 yes)
+///
 void andersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double dt,double *CLQ,int outP ) {
 /*
     MPC collision that conserves angular momentum (uses andersen thermostat), and returns the
@@ -1787,6 +1801,25 @@ void andersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double dt,doubl
 		i++;
 	}
 }
+/// This routine performs an MPC collision which conserved angular momentum and adds an effective dipole force to the local cell.
+///
+/// MPC collision that conserves angular momentum (uses andersen thermostat), and returns the CM velocity and the local temperature of the cell.
+/// See https://pubs.rsc.org/en/content/articlelanding/2015/sm/c5sm00839e
+/// Notice that all of this must be entirely in 3D even if system is 2D since angular momentum is perpendicular.
+/// It takes into account the total mass, velocity and angular momentum of MPC particles, MD particles and swimmers.
+/// It also splits the cell in two along the intersection of the centre of mass and perpendicular to the local director.
+/// It then adds a velocity component to the particles in opposite direction on either side of this plane to mimic a dipole.
+///
+/// @param CL Class containing cell data (pointed to local cell considered)
+/// @param SP pointer to the species helper "class" (contains information of the mass, etc, of the considered species)
+/// @param SS pointer to the swimmers.
+/// @param KBT Temperature
+/// @param RELAX At the moment doesn't do anything
+/// @param RTECH input which defines different rotation techniques.
+/// @param dt Integration timestep
+/// @param CLQ Position of the cell
+/// @param outP Parameter that determines if we should output pressure (0 not, 1 yes).
+///
 void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RELAX,double dt,int RTECH,double *CLQ,int outP ) {
 /*
     MPC collision that conserves angular momentum (uses andersen thermostat), and returns the
@@ -2426,6 +2459,17 @@ void velGrad1D( cell ***CL ) {
 	for( i=0; i<DIM; i++ ) CL[a][b][c].E[i][0] = backwardDeriv( CL[a][b][c].VCM[i],CL[a-1][b][c].VCM[i],1. );
 }
 
+///
+/// @brief Calculates and returns the local topological charge
+///
+/// A subroutine that finds and gives the topological charge (in the 2D XY-plane) at the local cell with position (i,j,k) by rotating the cell directory around the 8 neighbours of the cell.
+///
+/// @param CL Class containing cell data
+/// @param i x index of cell considered.
+/// @param j y index of cell considered.
+/// @param k z index of cell considered.
+/// @return returns the topological charge at position (i,j,k)
+///
 double topoChargeLocal( cell ***CL, int i, int j, int k){
 	//A function to calculate the topological charge, and place it into charge
 	//calculate local topo charge
@@ -2443,6 +2487,15 @@ double topoChargeLocal( cell ***CL, int i, int j, int k){
 	return 0.5*phi/pi;
 }
 
+///
+/// @brief Returns the smallest vector between two directors u and v
+///
+/// Returns the smallest vector between two directors u and v. It takes into account that the director is defined as u=-u.
+///
+/// @param u a vector (director)
+/// @param u a vector (director)
+/// @return returns the (smallest) angle between the two directors
+///
 double topoSmallestAngle( double u[], double v[]){
 	//copy pasting code from python here to calculate smallest angle
 	double dot = dotprod(u, v, _2D);
@@ -2460,7 +2513,21 @@ double topoSmallestAngle( double u[], double v[]){
 
 	return sign*atan2(fabs(det), dot);
 }
-
+///
+/// @brief Returns the angle of the defect.
+///
+/// Calculates and returns the angle of the defect. A defect first has to be detected using topoChargeLocal() as the charge of that function needs to be given in this function.
+/// This function calculated the derivatives of the Q tensor of the local cell and its neighbours and then uses the equation  taken from: https://pubs.rsc.org/en/content/articlelanding/2016/sm/c6sm01146b/
+/// Currently doesn't seem to be able to handle when the cell are taken at the boundary.
+///
+/// @param CL Class containing cell data
+/// @param x x index of cell considered.
+/// @param y y index of cell considered.
+/// @param z z index of cell considered.
+/// @param charge charge of the defect.
+/// @returns returns the angle of a defect.
+/// @see topoChargeLocal()
+///
 double topoAngleLocal( cell ***CL, int x, int y, int z, double charge){
 	// A function to compute the angle of a defect, meant to be paired with the above
 	// Equation essentially taken from: https://pubs.rsc.org/en/content/articlelanding/2016/sm/c6sm01146b/
@@ -2503,7 +2570,15 @@ double topoAngleLocal( cell ***CL, int x, int y, int z, double charge){
 	double angle = (charge / (1.0 - charge)) * atan2(sumTop, sumBot); //compute angle per the equation
 	return angle;
 }
-
+///
+/// @brief Calculates the Q tensor.
+///
+/// Calculates the Q tensor form the director and nematic order in CL.
+/// Currently only works in 2D.
+///
+/// @param CL Contains cell data at previously defined indices.
+/// @param output The Q tensor.
+///
 //FIXME: only works for 2D for now!!!
 void computeQ(cell CL, double output[_2D][_2D]){
 	// set up the Q tensor object we plan to return
