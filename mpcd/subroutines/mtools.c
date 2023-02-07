@@ -1,7 +1,8 @@
-/**
-* @file
-*/
-
+///
+/// @file
+/// @brief Math functions applied in MPCD
+///
+/// Different math methods are collecetd there for easy access in any place of the code
 # include<math.h>
 # include<stdio.h>
 # include<stdlib.h>
@@ -19,14 +20,14 @@
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
-/**
- * A "smart" Pow method that will only call C-math pow if necessary
- *		(non-natural y).
- * First checks if y is int and below the smart y limit if not then do just C-math pow
- *
- * @param x any real number
- * @param y any real number
-*/
+///
+/// @brief A "smart" Pow method that will only call C-math pow if necessary (non-natural y).
+///
+/// First checks if y is int and below the smart y limit if not then do just C-math pow
+///
+/// @param x any real number
+/// @param y any real number
+///
 double smrtPow(double x, double y){
 
 	const int yLim = 10; // an arbitrary limit for smart y usage
@@ -40,35 +41,35 @@ double smrtPow(double x, double y){
 		return result;
 	} else return pow(x, y); // otherwise just do C-math pow
 }
-/**
- * Check if two floats are equal within set TOL
- *
- * TOL is real number that is defined in definitions.h
- * 
- * @param x any real number
- * @param y any real number
-*/
+///
+/// @brief Check if two floats are equal within set TOL
+///
+/// TOL is real number that is defined in definitions.h
+///
+///@param x any real number
+///@param y any real number
+///
 int feq(double x,double y) {
 		return fabs(x-y)<=TOL;
 }
-/**
- * Check if two floats are NOT equal within set TOL
- *
- * TOL is real number that is defined in definitions.h
- * 
- * @param x any real number
- * @param y any real number
-*/
+///
+/// @brief Check if two floats are NOT equal within set TOL
+///
+/// TOL is real number that is defined in definitions.h
+///
+///@param x any real number
+///@param y any real number
+///
 int fneq(double x,double y) {
 		return fabs(x-y)>=TOL;
 }
-/**
- * Evaluates the Levi Civita index counter
- * 
- * @param i first index
- * @param j second index
- * @param k third index
-*/
+///
+/// @brief Evaluates the Levi Civita index counter
+///
+/// @param i first index
+/// @param j second index
+/// @param k third index
+///
 int levicivita( int i,int j,int k ) {
 
 	signed int result;
@@ -81,14 +82,13 @@ int levicivita( int i,int j,int k ) {
 	else result = 0;
 	return result;
 }
-/**
- * Takes the dot product of two vectors
- *   and returns a scalar
- * 
- * @param x first vector
- * @param y second vector
- * @param dimension dimensionality of the vectors
-*/
+///
+/// @brief Takes the dot product of two vectors and returns a scalar
+///
+/// @param x first vector
+/// @param y second vector
+/// @param dimension dimensionality of the vectors
+///
 double dotprod( double x[], double y[],int dimension ) {
 	int i;
 	double result = 0.;
@@ -97,57 +97,53 @@ double dotprod( double x[], double y[],int dimension ) {
 	}
 	return result;
 }
-/**
- * Takes the dot product of a matrix
- *   to a vector and returns a vector
- * 
- * @param M matrix
- * @param v vector
- * @param result output vector
- * @param dimension dimensionality of the operands
-*/
+///
+/// @brief Takes the dot product of a matrix to a vector and returns a vector
+///
+/// @param M matrix
+/// @param v vector
+/// @param result output vector
+/// @param dimension dimensionality of the operands
+///
 void dotprodMatVec( double M[][3],double v[],double result[],int dimension ) {
 	int i,j;
 	for( i=0; i<dimension; i++ ) result[i] = 0.;
 	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) result[i] += M[i][j]*v[j];
 }
-/**
- * Takes the dot product of a vector
- *  to a matrix and returns a vector
- * 
- * @param v vector
- * @param M matrix
- * @param result output vector
- * @param dimension dimensionality of the operands
-*/
+///
+/// @brief Takes the dot product of a vector to a matrix and returns a vector
+///
+/// @param v vector
+/// @param M matrix
+/// @param result output vector
+/// @param dimension dimensionality of the operands
+///
 void dotprodVecMat( double v[], double M[][3],double result[],int dimension ) {
 	int i,j;
 	for( i=0; i<dimension; i++ ) result[i] = 0.;
 	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) result[i] += v[j] * M[j][i];
 }
-/**
- * Takes the dot product of a matrix
- *  to another matrix and returns a matrix
- * 
- * @param A first matrix
- * @param B second matrix
- * @param result output matrix
- * @param dimension dimensionality of the operands
-*/
+///
+/// @brief Takes the dot product of a matrix to another matrix and returns a matrix
+///
+/// @param A first matrix
+/// @param B second matrix
+/// @param result output matrix
+/// @param dimension dimensionality of the operands
+///
 void dotprodMatMat( double A[][3],double B[][3],double result[][3],int dimension ) {
 	int i,j,k;
 	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) result[i][j] = 0.;
 	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) for( k=0; k<dimension; k++ ) result[i][j] += A[i][k]*B[k][j];
 }
-/**
- * Takes the cross product of two 3D vectors and
- *  sets it as the third
- *	Must be 3D since in 2D, result is in 3rd dimension
- * 
- * @param x first vector
- * @param y second vector
- * @param result output vector
-*/
+///
+/// @brief Takes the cross product of two 3D vectors and sets it as the third
+///	Must be 3D since in 2D, result is in 3rd dimension
+///
+/// @param x first vector
+/// @param y second vector
+/// @param result output vector
+///
 void crossprod( double x[3], double y[3], double result[3] ) {
 	int i;
 	for( i=0; i<_3D; i++ ) result[i]=0.; // init
@@ -156,15 +152,15 @@ void crossprod( double x[3], double y[3], double result[3] ) {
 	result[1] = x[2]*y[0] - x[0]*y[2];
 	result[2] = x[0]*y[1] - x[1]*y[0];
 }
-/**
- *  Old version of the cross product operation.
- *	 This version was found to be slow (gprof said this and it's calls to
- *	 levicivita took >35% runtime!!!!)
- * 
- * @param x first vector
- * @param y second vector
- * @param result output vector
-*/
+///
+/// @brief Old version of the cross product operation.
+///	 This version was found to be slow (gprof said this and it's calls to
+///	 levicivita took >35% runtime!!!!)
+///
+/// @param x first vector
+/// @param y second vector
+/// @param result output vector
+///
 void oldcrossprod( double x[3], double y[3], double result[3] ) {
 	int i,j,k;
 	signed int eps;
@@ -174,25 +170,25 @@ void oldcrossprod( double x[3], double y[3], double result[3] ) {
 				result[i] += ((double) eps) * x[j] * y[k];
 	}
 }
-/**
- *  Finds the outer product of two vectors, return a matrix
- * 
- * @param x first vector
- * @param y second vector
- * @param result output matrix
- * @param dimension dimensionality of the operands
-*/
+///
+/// @brief Finds the outer product of two vectors, returns a matrix
+///
+/// @param x first vector
+/// @param y second vector
+/// @param result output matrix
+/// @param dimension dimensionality of the operands
+///
 void outerprod( double x[], double y[], double result[][_3D],int dimension ) {
 	int i,j;
 	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) result[i][j] = 0.;
 	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) result[i][j] = x[i]*y[j];
 }
-/**
- *  Finds the magnitude of the vector, returns scalar value
- * 
- * @param x input vector
- * @param dimension dimensionality of the vector
-*/
+///
+/// @brief Finds the magnitude of the vector, returns scalar value
+///
+/// @param x input vector
+/// @param dimension dimensionality of the vector
+///
 double length( double x[],int dimension ) {
 	int i;
 	double result = 0.;
@@ -200,79 +196,77 @@ double length( double x[],int dimension ) {
 	result = sqrt( result );
 	return result;
 }
-/**
- *  Normalizes the input vector
- * 
- * @param x input vector
- * @param dimension dimensionality of the vector
-*/
+///
+/// @brief Normalizes the input vector
+///
+/// @param x input vector
+/// @param dimension dimensionality of the vector
+///
 void norm( double x[],int dimension ) {
 	int i;
 	double l = 0.;
 	l = length( x,dimension );
 	if( fneq(l,0.0) ) for ( i=0; i<dimension; i++ ) x[i] = x[i] / l;
 }
-/**
- *  Normalizes the input vector and returns as separate one
- * 
- * @param xin input vector
- * @param xout output vector
- * @param dimension dimensionality of the vectors
-*/
+///
+/// @brief Normalizes the input vector and returns as separate one
+///
+/// @param xin input vector
+/// @param xout output vector
+/// @param dimension dimensionality of the vectors
+///
 void normCopy( double xin[],double xout[],int dimension ) {
 	int i;
 	double l = 0.;
 	l = length( xin,dimension );
 	if( fneq(l,0.0) ) for ( i=0; i<dimension; i++ ) xout[i] = xin[i] / l;
 }
-/**
- *  Finds the normal vector (n)
- *   to a plane defined by x and y
- *	 It assumes 3D because even in 2D, the result must be in 3rd dimension
- * 
- * @param x first input vector
- * @param y second input vector
- * @param n dimensionality of the vectors
-*/
+///
+/// @brief Finds the normal vector (n) to a plane defined by x and y
+///  
+///	 It assumes 3D because even in 2D, the result must be in 3rd dimension
+///
+/// @param x first input vector
+/// @param y second input vector
+/// @param n dimensionality of the vectors
+///
 void normalplane( double x[3], double y[3], double n[3] ) {
 	crossprod( x,y,n );
 	norm( n,_3D );
 }
-/**
- * Gives the vector projection of v onto
- *  n (which is most often the normal of a
- *  plane-normal compontent)
- * 
- * @param v input vector to project
- * @param n input vector which is used for projection to
- * @param VN output vector projection
- * @param dimension dimensionality of the vectors
-*/
+///
+/// @brief Gives the vector projection of v onto n (which is most often the normal of a plane-normal compontent)
+///
+/// @param v input vector to project
+/// @param n input vector which is used for projection to
+/// @param VN output vector projection
+/// @param dimension dimensionality of the vectors
+///
 void proj( double v[],double n[],double VN[],int dimension ) {
 	int i;
 	double x;
 	x = dotprod( v,n,dimension );
 	for( i=0; i<dimension; i++ ) VN[i] = x*n[i];
 }
-/**
- * Gives the tangential component of the vector
- * 
- * @param v input vector
- * @param VN input normal component of the vector
- * @param VT output tangential component of the vector
- * @param dimension dimensionality of the vectors
-*/
+///
+/// @brief Gives the tangential component of the vector
+///
+/// @param v input vector
+/// @param VN input normal component of the vector
+/// @param VT output tangential component of the vector
+/// @param dimension dimensionality of the vectors
+///
 void tang( double v[],double VN[],double VT[],int dimension ) {
 	int i;
 	for( i=0; i<dimension; i++ ) VT[i] = v[i] - VN[i];
 }
-/**
- * Returns the cosign of the angle between two vectors
- * 
- * @param v1 first input vector
- * @param v2 second input vector
- * @param dimension dimensionality of the vectors
-*/
+///
+/// @brief Returns the cosign of the angle between two vectors
+///
+/// @param v1 first input vector
+/// @param v2 second input vector
+/// @param dimension dimensionality of the vectors
+///
 double cosang( double v1[],double v2[],int dimension ) {
 	double cosa;
 	cosa = dotprod( v1,v2,dimension );
@@ -280,12 +274,12 @@ double cosang( double v1[],double v2[],int dimension ) {
 	cosa /= length( v2,dimension );
 	return cosa;
 }
-/**
- * arctan that returns a signed angle
- * 
- * @param y first input scalar
- * @param x second input scalar
-*/
+///
+/// @brief arctan that returns a signed angle
+/// 
+/// @param y first input scalar
+/// @param x second input scalar
+///
 double atan2( double y,double x ) {
 	double at=0.0;
 	if( x>0.0 ) at=atan(y/x);
@@ -298,20 +292,28 @@ double atan2( double y,double x ) {
 	//if( at<0.0 )at+=2.0*pi;
 	return at;
 }
+///
+/// @brief Finds the Unsigned angle between two vectors, return scalar
+///
+/// @param v1 first input vector
+/// @param v2 second input vector
+/// @param dimension dimensionality of the vectors
+///
 double absAngle( double v1[], double v2[], int dimension ) {
-/*
-	Finds the UNsigned angle between two vectors
-*/
 	return acos( cosang(v1,v2,dimension) );
 }
+///
+///	@brief Finds the SIGNED angle between two vectors
+///	If not in 3D, need to set to be 3D
+///	// |A·B| = |A| |B| COS(θ)
+///	// |A×B| = |A| |B| SIN(θ)
+///	return Math.Atan2(Cross(A,B), Dot(A,B));
+///
+/// @param v1 first input vector
+/// @param v2 second input vector
+/// @param dimension dimensionality of the vectors
+///
 double signedAngle( double v1[], double v2[], int dimension ) {
-/*
-	Finds the SIGNED angle between two vectors
-	If not in 3D, need to set to be 3D
-	// |A·B| = |A| |B| COS(θ)
-	// |A×B| = |A| |B| SIN(θ)
-	return Math.Atan2(Cross(A,B), Dot(A,B));
-*/
 	double A[_3D],B[_3D],cross[_3D];
 	double s,c;
 	int i;
@@ -326,20 +328,29 @@ double signedAngle( double v1[], double v2[], int dimension ) {
 	c = dotprod(A,B,dimension);
 	return atan2(s,c);
 }
+///
+///	@brief Calculates the distance between two points
+///
+/// @param P1 first input point
+/// @param P2 second input point
+/// @param dimension dimensionality of the points
+///
 double distpoints( double P1[_3D],double P2[_3D],int dimension ) {
-/*
-    Calculates the distance between two points
-*/
 	double dist = 0.;
 	int i;
 
 	for( i=0; i<dimension; i++ ) dist += (P2[i]-P1[i]) * (P2[i]-P1[i]);
 	return sqrt(dist);
 }
+///
+///	@brief Calculates the distance from a point to a surface
+///
+/// There is still a question regarding planar surfaces
+///
+/// @param WALL input boundary
+/// @param P input point
+///
 double distsurf( bc WALL,double P[_3D] ) {
-/*
-    Calculates the distance from a point to a surface
-*/
 	double len = 0.;
 	double dist = 0.;
 	int i;
@@ -351,11 +362,15 @@ double distsurf( bc WALL,double P[_3D] ) {
 	dist = fabs( dist ) / len;
 	return dist;
 }
+///
+///	@brief Calculates the distance from a point to a plane
+///
+/// @param WALL input boundary
+/// @param x input point x coordinate
+/// @param y input point y coordinate
+/// @param z input point z coordinate
+///
 double distplane( bc WALL,double x, double y, double z ) {
-/*
-    Calculates the distance from a point to a plane
-    I'm not sure if this works for non-planar surfaces!!!
-*/
 	double len = 0.;
 	double dist = 0.;
 	int i;
@@ -368,24 +383,34 @@ double distplane( bc WALL,double x, double y, double z ) {
 	dist = fabs( dist ) / len;
 	return dist;
 }
+///
+///	@brief Calculates Pythagorean theorem
+///
+/// @param x input real number
+/// @param y input real number
+///
 double pythag( double x, double y ) {
-/*
-    Calculates Pythagorean theorem
-*/
 	return sqrt( x*x + y*y );
 }
+///
+///	@brief Magnitude of x times sign of y
+///
+/// @param x input real number
+/// @param y input real number
+///
 double SIGN( double x,double y ) {
-/*
-    Magnitude of x times sign of y
-*/
 	if( y>0. ) return fabs(x);
 	else return -1.*fabs(x);
 }
+///
+///	@brief Numerically calculates the moment of inertia of a bc structure.
+///		WARNING!!! CURRENTLY JUST APPROXIMATES EVERYTHING AS THE CLOSEST ELLIPSOID!!!
+///
+/// @param body input boudary condition
+/// @param XYZ parameters of the control volume (not in use in this function)
+/// @param dimension dimensionality of the structure
+///
 void latticeEstMomInert( bc *body,int XYZ[],int dimension ) {
-/*
-    Numerically calculates the moment of inertia of a bc structure.
-		WARNING!!! CURRENTLY JUST APPROXIMATES EVERYTHING AS THE CLOSEST ELLIPSOID!!!
-*/
 	int i,j;
 	for( i=0; i<_3D; i++ ) for( j=0; j<_3D; j++ ) body->I[i][j] = 0.0;
 
@@ -403,10 +428,15 @@ void latticeEstMomInert( bc *body,int XYZ[],int dimension ) {
 		printf( "Warning: Moment of inertia tensor zero because dimensionality not 3 or 2D." );
 	}
 }
+///
+///	@brief Calculates the moment of inertia of a bc structure.
+/// Formula for it is different depending on the boundary conditions type
+///
+/// @param body input boudary condition
+/// @param XYZ parameters of the control volume
+/// @param dimension dimensionality of the inputs
+///
 void mominert( bc *body,int XYZ[],int dimension ) {
-/*
-    Calculates the moment of inertia of a bc structure.
-*/
 	int i,j;
 	for( i=0; i<_3D; i++ ) for( j=0; j<_3D; j++ ) body->I[i][j] = 0.0;
 
@@ -476,11 +506,15 @@ void mominert( bc *body,int XYZ[],int dimension ) {
 		printf( "Warning: Moment of inertia tensor zero because dimensionality not 3 or 2D." );
 	}
 }
+///
+///	@brief This routine numerically estimates the volume of the BC object.
+///		WARNING!!! CURRENTLY JUST APPROXIMATES EVERYTHING AS THE CLOSEST ELLIPSOID!!!
+///
+/// @param body input boudary condition
+/// @param XYZ parameters of the control volume
+/// @param dimension dimensionality of the inputs
+///
 double latticeEstVol( bc *body,int XYZ[],int dimension ) {
-/*
-    This routine numerically estimates the volume of the BC object.
-		WARNING!!! CURRENTLY JUST APPROXIMATES EVERYTHING AS THE CLOSEST ELLIPSOID!!!
-*/
 	double vol = 0.0;
 	if( dimension==_3D ) vol = 4.0*pi*( body->AINV[0]*body->AINV[1]*body->AINV[2]*smrtPow(body->R,3) )/3.0;
 	else if( dimension==_2D ) vol = pi*body->AINV[0]*body->AINV[1]*smrtPow(body->R,2);
@@ -489,12 +523,16 @@ double latticeEstVol( bc *body,int XYZ[],int dimension ) {
 	}
 	return vol;
 }
+///
+///	@brief This routine returns the volume of the BC object
+///   for dimension=3 and the area for dimension=2
+///   i.e. it returns the dimension-dimensional volume
+///
+/// @param body input boudary condition
+/// @param XYZ parameters of the control volume
+/// @param dimension dimensionality of the inputs
+///
 void dim_vol( bc *body,int XYZ[],int dimension ) {
-/*
-    This routine returns the volume of the BC object
-    for dimension=3 and the area for dimension=2
-    i.e. it returns the dimension-dimensional volume
-*/
 	body->VOL = 0.0;
 	if( dimension==_3D ) {
 		//Sphere & ellipsoids
@@ -522,12 +560,24 @@ void dim_vol( bc *body,int XYZ[],int dimension ) {
 		printf( "Warning: Volume zero because dimensionality not 3 or 2D." );
 	}
 }
+///
+///	@brief The random initializers may give a net momentum
+///   to the system. We do not allow this by doing a
+///   Galilean transformation to rest frame.
+///
+///  The function finds the total net momentum of the whole system and subtract it from the velocities of all the stuff
+///  
+/// @param pp reference to the particles in the system
+/// @param WALL reference to the boundaries in the system
+/// @param simMD reference to the simulation parameters
+/// @param KBT Thermal energy
+/// @param VEL The average speed of the particles in the system
+/// @param POP Total number of particles in the system
+/// @param NBC Total number of of boundaries present in the system
+/// @param MDmode The MD coupling mode
+/// @param dimension Dimensions of the system
+///
 void galileantrans( particleMPC *pp,bc WALL[],simptr simMD,spec SP[],double KBT,double VEL[],int POP,int NBC,int MDmode,int dimension ) {
-/*
-     The random initializers may give a net momentum
-     to the system. We do not allow this by doing a
-     Galilean transformation to rest frame.
-*/
 	int i,j;
 	double NET[_3D];		//Net momentum
 	double M,totM=0.0;			//Mass and total mass
@@ -566,12 +616,20 @@ void galileantrans( particleMPC *pp,bc WALL[],simptr simMD,spec SP[],double KBT,
 		if(dimension>=_3D) (simMD->atom.items+i)->vz -= NET[2];
 	}
 }
+///
+///	@brief Zeros the components of the positions and
+///   velocities of objects that are greater
+///   dimension than the simulation (just paranoid)
+///  
+/// @param pp reference to the particles in the system
+/// @param WALL reference to the boundaries in the system
+/// @param simMD reference to the simulation parameters
+/// @param GPOP Total number of particles in the system
+/// @param NBC Total number of of boundaries present in the system
+/// @param MDmode The MD coupling mode
+/// @param dimension Dimensions of the system
+///
 void zeroExtraDims( particleMPC *pp,bc WALL[],simptr simMD,int GPOP,int NBC,int MDmode,int dimension ) {
-/*
-    Zeros the components of the positions and
-    velocities of objects that are greater
-    dimension than the simulation (just paranoid)
-*/
 	int i;
 	if( dimension<_3D ) {
 		for( i=0; i<GPOP; i++ ) {
@@ -602,10 +660,18 @@ void zeroExtraDims( particleMPC *pp,bc WALL[],simptr simMD,int GPOP,int NBC,int 
 		}
 	}
 }
+///
+///	@brief Generic histogram binning algorithm
+///
+///  Create a histogram from the values in the input
+///  
+/// @param values actual values of the velocity in every MPCD cell
+/// @param hist histogram of the velocity in each of the 3D component
+/// @param minRange Minimum range of the histogram
+/// @param maxRange Maximum range of the histogram
+/// @param POP Total volume of the system
+///
 void histbin( double values[],int hist[BINS],double minRange,double maxRange,int POP ) {
-/*
-    Generic histogram binning algorithm
-*/
 	int i,bin,binsM1;
 	double invDenom;
 
@@ -623,13 +689,19 @@ void histbin( double values[],int hist[BINS],double minRange,double maxRange,int
 		else hist[bin]++;
 	}
 }
+///
+///	@brief This routine is the parallel axis theorem.
+///    It takes a inertia tensor I about the centre
+///    of mass and calculates the I about a
+///    displaced by R
+///
+///  
+/// @param I input an inertia tensor
+/// @param R input displacement
+/// @param M input mass
+/// @param dimension Dimensions of the input values
+///
 void parallelaxis( double I[][_3D],double R[],double M,int dimension ) {
-/*
-    This routine is the parallel axis theorem.
-    It takes a inertia tensor I about the centre
-    of mass and calculates the I about a
-    displaced by R
-*/
 	int i,j,k;
 
 	for( i=0; i<_3D; i++ ) for( j=0; j<_3D; j++ ) {
@@ -638,32 +710,50 @@ void parallelaxis( double I[][_3D],double R[],double M,int dimension ) {
 		I[i][j] *= M;
 	}
 }
+///
+///	@brief Operate in the frame of reference of the bc.
+///    The routine labframe must proceed it.
+///		
+///    Subtract the velocity of the walls from the velocity of the objects
+///  
+/// @param V input velocity
+/// @param WALL reference to the boundary
+/// @param dimension Dimensions of the input values
+///
 void restframe( double V[],bc WALL,int dimension ) {
-/*
-    Operate in the frame of reference of the bc.
-    The routine labframe must proceed it.
-*/
 	int i;
 	for( i=0; i<dimension; i++ ) V[i] -= WALL.V[i];
 }
+///
+///	@brief Operate in the frame of reference of the bc.
+///    The routine restframe must preceed it.
+///		
+///    Add the velocity of the walls to the velocity of the objects
+///  
+/// @param V input velocity
+/// @param WALL reference to the boundary
+/// @param dimension Dimensions of the input values
+///
 void labframe( double V[],bc WALL,int dimension ) {
-/*
-    Operate in the frame of reference of the bc.
-    The routine restframe must preceed it.
-*/
 	int i;
 	for( i=0; i<dimension; i++ ) V[i] += WALL.V[i];
 }
+///
+///	@brief Finds the determinant of a 2x2 matrix
+///
+///
+/// @param m input 2x2matrix
+///
 double det2x2( double m[_2D][_2D] ) {
-/*
-    Finds the determinant of a 2x2 matrix
-*/
 	return m[0][0]*m[1][1] - m[0][1]*m[1][0];
 }
+///
+///	@brief Finds the determinant of a 3x3 matrix
+///
+///
+/// @param m input 3x3matrix
+///
 double det3x3( double m[_3D][_3D] ) {
-/*
-    Finds the determinant of a 3x3 matrix
-*/
 	double c1,c2,c3;
 
 	c1 = m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1]);
@@ -671,14 +761,18 @@ double det3x3( double m[_3D][_3D] ) {
 	c3 = m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
 	return( c1 - c2 + c3);
 }
+///
+///	@brief Finds the determinant of a nxn matrix (not more than 3x3)
+///    Recursive definition of determinate using expansion by minors
+///    Stolen from http://paulbourke.net/miscellaneous/determinant/
+///    BUT
+///    I HATE passing to a double pointer so I'll just stick to det2x3 and det3x3
+///
+///
+/// @param a reference to the nxn matrix
+/// @param n dimensionality of the matrix
+///
 double determinant( double **a,int n ) {
-/*
-    Finds the determinant of a nxn matrix
-    Recursive definition of determinate using expansion by minors
-    Stolen from http://paulbourke.net/miscellaneous/determinant/
-    BUT
-    I HATE passing to a double pointer so I'll just stick to det2x3 and det3x3
-*/
 	int i,j,j1,j2;
 	double det = 0.;
 	double **m = NULL;
@@ -712,17 +806,26 @@ double determinant( double **a,int n ) {
 
 	return det;
 }
+///
+///	@brief Finds the trace of the matrix
+///
+///
+/// @param a reference to the nxn matrix
+/// @param n dimensionality of the matrix
+///
 double trace( double **a,int n ) {
 	int i;
 	double tr=0.;
 	for( i=0; i<n; i++ ) tr+=a[i][i];
 	return tr;
 }
-
+///
+///	@brief Inverts a 2x2 matrix
+///
+///
+/// @param m reference to the 2x2 matrix
+///
 void invert2x2( double m[_2D][_2D] ) {
-/*
-    Inverts a 2x2 matrix
-*/
 	double det;
 	double n[_2D][_2D];		//The inverted matrix
 	int i,j;
@@ -748,10 +851,15 @@ void invert2x2( double m[_2D][_2D] ) {
 		for( i=0; i<_2D; i++ ) for( j=0; j<_2D; j++ ) m[i][j] = n[i][j];
 	}
 }
+///
+///	@brief Returns the i,j cofactor for a 3x3 matrix m
+///
+///
+/// @param m reference to the 3x3 matrix
+/// @param i cofactor index
+/// @param j cofactor index
+///
 double cofactor3x3( double m[_3D][_3D],int i,int j ) {
-/*
-    Returns the i,j cofactor for a 3x3 matrix m
-*/
 	double a00,a01,a10,a11;
 	int c;
 
@@ -801,10 +909,14 @@ double cofactor3x3( double m[_3D][_3D],int i,int j ) {
 	}
 	return c * ( a00*a11 - a01*a10 );
 }
+///
+///	@brief Returns the i,j cofactor for a 3x3 matrix
+///
+///
+/// @param m_inv reference to the inverted 3x3 matrix
+/// @param m reference to the 3x3 matrix to invert
+///
 void invert3x3(double m_inv[_3D][_3D],double m[_3D][_3D]) {
-/*
-    Inverts a 3x3 matrix
-*/
 	double det;
 	int i,j;
 
@@ -812,12 +924,22 @@ void invert3x3(double m_inv[_3D][_3D],double m[_3D][_3D]) {
 // 	det = determinant( &m[0],3 );
 	for( i=0; i<_3D; i++ )for( j=0; j<_3D; j++ ) m_inv[j][i] = cofactor3x3( m,i,j ) / det;
 }
+///
+///	@brief Calculates the energy, the linear momentum
+///    and the angular momentum of a point particleMPC
+///    and an object
+///
+///
+/// @param VA velocity of the particle
+/// @param MA mass of the particle
+/// @param QA position of the particle
+/// @param VB velocity of the boundary
+/// @param MB mass of the boundary
+/// @param QB position of the boundary
+/// @param IB tensor of the boundary
+/// @param dimension dimensionality of the input values
+///
 void conservation( double VA[],int MA,double QA[],double VB[],int MB,double QB[],double WB[],double IB[_3D][_3D],int dimension ) {
-/*
-    Calculates the energy, the linear momentum
-    and the angular momentum of a point particleMPC
-    and an object
-*/
 	int i,j;
 	double E,TE;
 	double P[_3D],TP[_3D];
@@ -890,13 +1012,18 @@ void conservation( double VA[],int MA,double QA[],double VB[],int MB,double QB[]
 	printf( "Total Angular Momentum:" );
 	pvec( TL,_3D );
 }
+///
+///	@brief This function calculates W which is used to
+///	    determine if boundary conditions should be
+///	    applied to a particleMPC. It is a more generic form of calcW()
+///		Non-4-fold symmetries
+///
+///
+/// @param WALL input boundary to calculate
+/// @param POS position of the particle
+/// @param dimension dimensionality of the input values
+///
 double non4foldSymmCalcW( bc WALL,double POS[], int dimension ) {
-	/*
-	   This function calculates W which is used to
-	   determine if boundary conditions should be
-	   applied to a particleMPC. It is a more generic form of calcW()
-		 Non-4-fold symmetries
-	*/
 	double terms, W=0.0;
 	int i;
 	double r,phi,theta;
@@ -942,11 +1069,16 @@ double non4foldSymmCalcW( bc WALL,double POS[], int dimension ) {
 
 	return W;
 }
+///
+///	@brief This function evaluates the surface
+///   function at the position POS - exactly like calcW
+///
+///
+/// @param WALL input boundary to calculate
+/// @param POS position of the particle
+/// @param dimension dimensionality of the input values
+///
 double surf_func( bc WALL,double POS[], int dimension ) {
-/*
-   This function evaluates the surface
-   function at the position POS - exactly like clacW
-*/
 	double terms, W=0.0;
 	int i;
 
@@ -971,9 +1103,16 @@ double surf_func( bc WALL,double POS[], int dimension ) {
 	}
 	return W;
 }
+///
+///	@brief Find the two eigenvalues for m for a 2x2 matrix
+///
+///
+/// @param m reference to the 2x2 matrix
+/// @param eigval output Eigenvalues
+///
 void eigenvalues2x2( double **m,double eigval[] ) {
 /*
-    Find the two eigenvalues for m for a 2x2 matrix
+    
 */
 	double det=determinant( m,_2D );
 	double trace=m[0][0]+m[1][1];
