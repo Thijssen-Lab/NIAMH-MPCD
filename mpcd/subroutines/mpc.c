@@ -4122,8 +4122,8 @@ void checkEscape_all( particleMPC *pp ) {
 /// 
 /// @brief Applies a change in velocity to every MPCD particle in a cell. 
 ///
-/// Lorem Ipsum
-/// It updates the particles by looping through the linked lists. 
+/// This routine loops through the linked list of a given cell, adding a constant velocity to each particle velocity. 
+/// It adds to every particle in the cell, including MPCD, MD and swimmer particles. 
 /// @param CL An MPCD cell (including the linked list of particles in each cell). 
 /// @param addVel The vector that is being added to the velocity of every MPCD particle in cell `CL`.
 ///
@@ -4166,8 +4166,8 @@ void cellVelForce( cell *CL,double addVel[3] ) {
 /// 
 /// @brief Overrides the velocity of every MPCD particle in a cell. 
 /// 
-/// Lorem Ipsum
-/// It updates the particles by looping through the linked lists. 
+/// This routine loops through the linked list of a given cell, overwriting every particle velocity to a set value. 
+/// It sets the velocity of every particle in the cell, including MPCD, MD and swimmer particles. 
 /// @param CL An MPCD cell (including the linked list of particles in each cell). 
 /// @param vel The vector that every particle's velocity is set to within the cell `CL`. 
 ///
