@@ -4130,8 +4130,8 @@ void checkEscape_all( particleMPC *pp ) {
 void cellVelForce( cell *CL,double addVel[3] ) {
 	int i,j;
 	particleMPC *tmpc;	//Temporary particleMPC
-	particleMD *tmd;		//Temporary particleMD
-	smono *pSW;					//Temporary pointer to swimmer monomers
+	particleMD *tmd;	//Temporary particleMD
+	smono *pSW;			//Temporary pointer to swimmer monomers
 
 	//Give particles a kick
 	// MPC particles
@@ -4174,8 +4174,8 @@ void cellVelForce( cell *CL,double addVel[3] ) {
 void cellVelSet( cell *CL,double vel[3] ) {
 	int i,j;
 	particleMPC *tmpc;	//Temporary particleMPC
-	particleMD *tmd;		//Temporary particleMD
-	smono *pSW;					//Temporary pointer to swimmer monomers
+	particleMD *tmd;	//Temporary particleMD
+	smono *pSW;			//Temporary pointer to swimmer monomers
 
 	//Give particles a kick
 	// MPC particles
@@ -4251,11 +4251,11 @@ void cellVelSet( cell *CL,double vel[3] ) {
 void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr simMD,specSwimmer *SS,swimmer swimmers[],double AVNOW[_3D],double AVV[_3D],double avDIR[_3D],inputList in,double *KBTNOW, double *AVS,int runtime,int MDmode,outputFlagsList outFlags,outputFilesList outFiles ) {
 
 	int i,j,k;						//Counting variables
-	double RSHIFT[_3D];		//Random vector to positively shift all components of the simulation
-	double CLQ[_3D];					//Position of the cell since calculating pressure sucks
+	double RSHIFT[_3D];				//Random vector to positively shift all components of the simulation
+	double CLQ[_3D];				//Position of the cell since calculating pressure sucks
 	int BC_FLAG;					//Flags if the BC moved in this time step
-	int outPressure=0;		//Whether to make the pressure calculations (never used just outputted)
-	int bcCNT,reCNT,rethermCNT;					//Count if any particles had problems with the BCs
+	int outPressure=0;				//Whether to make the pressure calculations (never used just outputted)
+	int bcCNT,reCNT,rethermCNT;		//Count if any particles had problems with the BCs
 
 	#ifdef DBG
 		if ( DBUG >= DBGSTEPS ) {
@@ -4686,12 +4686,17 @@ void calcPressureStreaming( cell ***CL,spec *SP ) {
 }
 
 /// 
-/// @brief Zero collisional pressure term --- also divided by volume but cell volume=1.
+/// @brief Zero-collisional pressure.
 ///
-/// Lorem Ipsum
-/// (in `DIM` dimensions) 
+/// The zero-collisional term in the pressure, i.e. the kinetic contribution. 
+/// It is divided by volume a^DIM but cell volume=1, so this is not included. 
+/// Dividing by volume and time make the changes in momentum into pressure
+/// - \f$P_{ij} = \frac{1}{V} \left\langle \delta r_i F_j \right\rangle = \frac{1}{V \ \delta t} \left\langle \delta r_i \Delta p_j \right\rangle \f$. 
+/// - https://link.springer.com/chapter/10.1007/978-3-540-87706-6_1
 /// @param CL An MPCD cell. 
 /// @param dt The MPCD time step.
+/// @see calcPressureColl_preColl()
+/// @see calcPressureColl_postColl()
 ///
 void normPressureColl( cell *CL,double dt ) {
 	int i,j;
@@ -4701,12 +4706,16 @@ void normPressureColl( cell *CL,double dt ) {
 /// 
 /// @brief The <b>pre</b>-collision calculations needed to calculate the collisional pressure term.
 ///
-/// Lorem Ipsum
-/// (in `DIM` dimensions) 
+/// To calculate the pressure, need to know change in momentum. 
+/// So record initial velocity before the MPCD collision and relative position from the centre of the cell. 
+/// - \f$P_{ij} = \frac{1}{V} \left\langle \delta r_i F_j \right\rangle = \frac{1}{V \ \delta t} \left\langle \delta r_i \Delta p_j \right\rangle \f$. 
+/// - https://link.springer.com/chapter/10.1007/978-3-540-87706-6_1
 /// @param relQ The MPCD particle position relative to the geometric centre of the cell `CLQ`. The relative position is returned through this variable.
 /// @param dp The change in momentum, which is being set to the initial velocity here in order to later find the difference. The change in momentum is returned through this variable.
 /// @param p An MPCD particle. 
 /// @param CLQ The geometric centre of `CL`, the MPCD cell.
+/// @see calcPressureColl_postColl()
+/// @see normPressureColl()
 ///
 void calcPressureColl_preColl( double *relQ,double *dp,particleMPC *p,double *CLQ ) {
 	int d;
@@ -4721,8 +4730,11 @@ void calcPressureColl_preColl( double *relQ,double *dp,particleMPC *p,double *CL
 /// 
 /// @brief The <b>post</b>-collision calculations needed to calculate the collisional pressure term.
 ///
-/// Lorem Ipsum
-/// (in `DIM` dimensions) 
+/// To calculate the pressure, need to find in momentum after the collision operation. 
+/// So record difference in velocity. 
+/// Impulse is equivalent to force over the MPCD time step, where the time step is divided in normPressureColl(). 
+/// - \f$P_{ij} = \frac{1}{V} \left\langle \delta r_i F_j \right\rangle = \frac{1}{V \ \delta t} \left\langle \delta r_i \Delta p_j \right\rangle \f$. 
+/// - https://link.springer.com/chapter/10.1007/978-3-540-87706-6_1
 /// @param relQ The MPCD particle position relative to the geometric centre of the cell `CLQ`. 
 /// @param dp The change in momentum, which was previously initialized in calcPressureColl_preColl(). The change in momentum is returned through this variable.
 /// @param M The MPCD particle mass.
