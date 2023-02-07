@@ -5,12 +5,13 @@
 ///The number, type, size, and other properties of the swimmers are read from the input file. They are initialised, then forces are taken into account.
 ///
 ///The swimmers repulse each other via a Weeks-Chandler-Andersen potential. The monomers are coupled two-by-two with either FENE, Hookean interaction,
-///or a 6th order potential.
+///or a 6th order potential. More information on those potentials can be found here @link[https://doi.org/10.1002/elps.200800673. The swimmers
+///can become non-interacting, ie no WCA force between different dimers, if the appropriate tag is turned on.
 ///
 ///These forces are used to integrate the swimmers' motions between timesteps. The swimmers interact with the fluid with dipole
 ///forces and rotlets. Run/tumble dynamics and magnetic interactions can also be turned on.
 ///
-///This subroutine also sets swimmers in their randomized initial position (if there is room - comment here?), bins them, and links them.
+///This subroutine also sets swimmers in their randomized initial position, bins them, and links them.
 
 # include<math.h>
 # include<stdio.h>
@@ -39,7 +40,7 @@
 ///
 ///@brief
 ///
-/// This function reads the swimmer details from swimmer.inp, by reading in the adresses of the variables as pointers. It then allocates memory
+/// Read the swimmer details from swimmer.inp, by reading in the adresses of the variables as pointers. It then allocates memory
 /// to each swimmer.
 ///
 ///@param fpath Path to the input file.
@@ -140,7 +141,7 @@ void readswimmers( char fpath[],specSwimmer *specS,swimmer **sw ) {
 ///
 /// @brief 
 ///
-/// This subroutine initializes the swimmers' coordinates. It may run into trouble if there is not enough space to fit all the swimmers.
+/// Initialize the swimmers' coordinates. It may run into trouble if there is not enough space to fit all the swimmers.
 ///
 /// @param SS Swimmer properties, read from the input file by readswimmers.
 /// @param swimmers Pointer to the swimmers.
@@ -315,7 +316,7 @@ void setswimmers( specSwimmer *SS,swimmer *swimmers,bc WALL[],int stepsMD,double
 /// 
 /// @brief 
 ///
-/// Outputs the positions and speeds of the swimmers, as well as whether they are in the run, tumble, shrink, or extension phase.
+/// Output the positions and speeds of the swimmers, as well as whether they are in the run, tumble, shrink, or extension phase.
 ///
 /// @param fout File where the data will be written.
 /// @param swimmers List of all the swimmers.
@@ -381,8 +382,7 @@ void runtumbleout( FILE *fout,swimmer *sw ) {
 ///
 /// @brief 
 ///
-/// Apply period boundary conditions to swimmer monomer interactions. If the distance in any dimension between two monomers is greater 
-/// than half of the box that they're in, this means that the periodic BC have been crossed and so the coordinates are unwrapped.
+/// Apply period boundary conditions to swimmer monomer interactions. Unwraps coordinates if needed.
 ///
 /// @param dr Distance between the monomers.
 void swimmerPBC_dr(double *dr ) {
@@ -398,7 +398,8 @@ void swimmerPBC_dr(double *dr ) {
 ///
 /// @brief 
 ///
-/// Calculates the orientation vector of each swimmer, by substracting the position of the swimmer's body from its head's position.
+/// Calculate the orientation vector of each swimmer, by substracting the position of the swimmer's body from its head's position.
+/// 
 /// Takes into account the periodic boundary conditions, and normalizes the orientation it returns.
 ///
 /// @param n Orientation vector, enters the function empty and leaves it with the normalized orientation. 
@@ -415,6 +416,7 @@ void swimmerOri( double n[],swimmer *sw ) {
 /// @brief 
 ///
 /// Calculate the Weeks-Chandler-Andersen force from the monomer separation r, which has to be scaled by the monomer size ahead of time.
+///
 /// The force only acts at radii smaller than rcut (1.122462048309373), its strength depends on eps, and its magnitude is capped at fcap (1E3).
 /// To get the force vector this must be multiplied by vec(r). For more details,
 /// see @link[https://doi.org/10.1002/elps.200800673].
@@ -439,7 +441,9 @@ double swimmerWCA( double r,double eps ) {
 ///
 /// @brief 
 ///
-/// Calculate the FENE force from the separation r scaled by an equilibrium distance ro, default value 4. The value of ro can be changed in the input file.
+/// Calculate the FENE force from the separation r scaled by an equilibrium distance ro, default value 4. 
+///
+///The value of ro can be changed in the input file.
 ///	To get the force vector this must be multiplied by vec(r).
 ///	If the FENE chain is passed then there is a large "backup" force to pull the monomers together. For more details, see @link[https://doi.org/10.1002/elps.200800673].
 ///
@@ -482,7 +486,9 @@ double swimmerSpring6( double r,double k ) {
 ///
 /// @brief 
 ///
-/// Verlet velocity algorithm, for non-interacting swimmers. The velocity is first updated to its value at the half timestep. The position is updated using this
+/// Verlet velocity algorithm, for non-interacting swimmers.
+///
+/// The velocity is first updated to its value at the half timestep. The position is updated using this
 /// velocity, then the boundary conditions are used to check that the swimmer is still in bounds. The forces (between the monomer couples) are updated at the new position,
 /// the acceleration is calculated from there, and the velocity is updated again, now to its value at the end of the timestep. For more details,
 /// see @link[https://en.wikipedia.org/wiki/Verlet_integration].
@@ -536,7 +542,9 @@ void swimmerVerlet_nonInteracting( specSwimmer SS,swimmer *s,double dt,int sprin
 ///
 /// @brief 
 ///
-/// Verlet velocity algorithm, for interacting swimmers. The velocity is first updated to its value at the half timestep. The position is updated using this
+/// Verlet velocity algorithm, for interacting swimmers. 
+///
+///The velocity is first updated to its value at the half timestep. The position is updated using this
 /// velocity, then the boundary conditions are used to check that the swimmer is still in bounds. The forces (between the monomer couples and between each monomers) 
 /// are updated at the new position,
 /// the acceleration is calculated from there, and the velocity is updated again, now to its value at the end of the timestep. For more details,
@@ -638,6 +646,7 @@ void smonoDist( double r[],double *dr,smono m1, smono m2 ) {
 /// @brief 
 ///
 /// Calculate the magnitude of the force between two monomers in the same swimmer, using a spring coupling and a WCA repulsion.
+///
 /// See @link[ https://doi.org/10.1002/elps.200800673] for more details, and Definitions.h for the spring types.
 ///
 /// @param dr Distance between the monomers. Scaled by sigma for the WCA interaction, and by ro for the spring coupling.
@@ -658,7 +667,9 @@ double smonoForceMag_sameSwimmer( double dr,specSwimmer SS,swimmer *s,int spring
 ///
 /// @brief 
 ///
-/// Calculate the force between two monomers in the same swimmer. First calculates the distance between the monomers, then the magnitude of 
+/// Calculate the force between two monomers in the same swimmer. 
+///
+/// First calculates the distance between the monomers, then the magnitude of 
 /// the force sum. The acceleration due to the force is then returned, as a vectorial quantity.
 ///
 /// @param a Vector built for the acceleration due to the force calculated in this function.
@@ -682,6 +693,7 @@ void smonoForce_sameSwimmer( double a[],specSwimmer SS,swimmer *s,int springType
 /// @brief 
 ///
 /// Calculate the magnitude of the WCA force between two monomers in different swimmers.
+///
 ///	If tumbling is activated, swimmers still see each other's true size, without shrinking.
 ///
 /// @param dr Distance between the swimmer, scaled by sigma (default value 4, can be changed in the input file).
@@ -694,7 +706,9 @@ double smonoForceMag_differentSwimmers( double dr,specSwimmer SS ) {
 ///
 /// @brief 
 ///
-/// Calculate the WCA force between two monomers in different swimmer. First calculates the distance between the monomers, then the magnitude of 
+/// Calculate the WCA force between two monomers in different swimmer.
+///
+/// First calculates the distance between the monomers, then the magnitude of 
 /// the WCA. The acceleration due to the force is then returned, as a vectorial quantity.
 ///
 /// @param a Vector built for the acceleration due to the force calculated in this function.
@@ -718,7 +732,9 @@ void smonoForce_differentSwimmers( double a[],specSwimmer SS,smono s1,smono s2 )
 ///
 /// @brief 
 ///
-/// Integrate the motion of the swimmers, using velocity Verlet integration. Applies a magnetic field to magnetotactic swimmers if this
+/// Integrate the motion of the swimmers, using velocity Verlet integration.
+///
+/// Applies a magnetic field to magnetotactic swimmers if this
 /// option is turned on. If the swimmer type is 'near wall', path becomes two-dimensionnal.
 ///
 /// @param SS Swimmer properties.
@@ -819,7 +835,9 @@ void integrateSwimmers( specSwimmer SS,swimmer swimmers[],bc WALL[],int stepsMD,
 ///
 /// @brief 
 ///
-/// Apply the magnetic torque to one swimmer. First calculates a normalized orientation vector, then compute its cross product with
+/// Apply the magnetic torque to one swimmer. 
+///
+/// First calculates a normalized orientation vector, then compute its cross product with
 /// the magnetic field. Multiply by the magnetic moment to find the torque, which is then applied to the swimmer's head. An opposite torque is 
 /// applied to its body.
 ///
@@ -879,7 +897,9 @@ void swimmerMagTorque( specSwimmer SS,swimmer *sw,double dt,double MAG[] ) {
 ///
 /// @brief 
 ///
-/// Apply the magnetic torque to all swimmers. First calculates a normalized orientation vector, then compute its cross product with
+/// Apply the magnetic torque to all swimmers. 
+///
+/// First calculates a normalized orientation vector, then compute its cross product with
 /// the magnetic field. Multiply by the magnetic moment to find the torque, which is then applied to the swimmer's head. An opposite torque is 
 /// applied to its body.
 ///
@@ -932,7 +952,7 @@ void allSwimmersMagTorque( specSwimmer SS,swimmer swimmers[],double timeStep,int
 ///
 /// @brief 
 ///
-/// Apply both the force dipole and the rotlet-torque dipole to each swimmer
+/// Apply both the force dipole and the rotlet-torque dipole to each swimmer. @see[swimmerForceDipole()]@see[swimmerRotletDipole]
 ///
 /// @param SS Swimmer properties.
 /// @param swimmers List of swimmers.
@@ -941,7 +961,7 @@ void allSwimmersMagTorque( specSwimmer SS,swimmer swimmers[],double timeStep,int
 /// @param timeStep The time in MPCD units of one iteration of the MPCD algorithm.
 /// @param SRDparticles List of all fluid particles.
 /// @param WALL Boundary conditions.
-/// @param simMD MD side of the simulation, for polymers.
+/// @param simMD Structure that contains all the details on the MD side of the simulation, for polymers.
 void swimmerDipole( specSwimmer SS,swimmer swimmers[],cell ***CL,spec SP[],double timeStep,particleMPC *SRDparticles,bc WALL[],simptr simMD ) {
 	int i,d;
 	int aH,bH,cH,aT,bT,cT;
@@ -1079,16 +1099,16 @@ void swimmerDipole( specSwimmer SS,swimmer swimmers[],cell ***CL,spec SP[],doubl
 }
 ///
 /// @brief 
-/// @param SS 
-/// @param sw 
-/// @param CL 
-/// @param SP 
-/// @param timeStep 
+///
+/// Set the swimming speed and the propulsion force on the fluid. This is where the "invisible" tail comes in.
+///
+/// @param SS Swimmer properties
+/// @param sw List of swimmers
+/// @param CL List of all the MPCD cells, with the chains they contain.
+/// @param SP Fluid particle properties.
+/// @param timeStep The time in MPCD units of one iteration of the MPCD algorithm.
 void swimmerForceDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double timeStep ) {
-/*
-    Set the swimming speed and the propulsion force on the fluid
-    This is where the "invisible" tail comes in.
-*/
+
   int a=0,b=0,c=0,d=0;
 	double r[DIM],n[DIM],acc[DIM],QT[_3D];
 	double m;
@@ -1186,16 +1206,16 @@ void swimmerForceDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double 
 }
 ///
 /// @brief 
-/// @param SS 
-/// @param sw 
-/// @param CL 
-/// @param SP 
-/// @param timeStep 
+///
+/// Set the swimmer's rotations and the torque on the fluid. This is also where the "invisible" tail comes in.
+///
+/// @param SS Swimmer properties
+/// @param sw List of swimmers
+/// @param CL List of all the MPCD cells, with the chains they contain.
+/// @param SP Fluid particle properties.
+/// @param timeStep The time in MPCD units of one iteration of the MPCD algorithm.
 void swimmerRotletDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double timeStep ) {
-/*
-    Set the swimmer's rotations and the torque on the fluid
-    This is also where the "invisible" tail comes in.
-*/
+
 	int a=0,b=0,c=0,d=0;
 	double q_sw[_3D];													//Position of the swimmers' head or tail
 	double r_mh[DIM],n_mh[DIM]; 							//Vectors betweem middle/body and head
@@ -1290,23 +1310,25 @@ void swimmerRotletDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double
 }
 ///
 /// @brief 
-/// @param SS 
-/// @param swimmers 
-/// @param WALL 
-/// @param stepsMD 
-/// @param MAG 
-/// @param dt 
-/// @param RTOUT 
-/// @param fruntumble 
+///
+/// Stochastic run and tumble.
+///
+/// This routine checks the number of times since last run/tumble switching event.
+/// If an event occurs a new random run/tumble time is generated.
+/// If the swimmer tumbles then its size can shrink (or technically grow but this shouldn't occur).
+/// If it runs then its shrinkMDSteps size is returned to normal.
+/// Uses a hookean spring during shrinking so that FENE spring isn't broken.
+///
+/// @param SS Swimmer properties
+/// @param swimmers List of swimmers
+/// @param WALL Boundary conditions
+/// @param stepsMD Number of molecular dynamics steps per MPCD timestep.
+/// @param MAG Magnetic field.
+/// @param dt The time in MPCD units of one iteration of the MPCD algorithm.
+/// @param RTOUT Tag for output.
+/// @param fruntumble File for output, it RTOUT set to 1.
 void runTumbleDynamics( specSwimmer *SS,swimmer swimmers[],bc WALL[],int stepsMD,double MAG[],double dt,int RTOUT,FILE *fruntumble ) {
-/*
-    Stochastically run and tumble.
-    This routine checks the number of times since last run/tumble switching event.
-    If an event occurs a new random run/tumble time is generated
-    If the swimmer tumbles then its size can shrink (or technically grow but this shouldn't occur)
-    If it runs then its shrinkMDSteps size is returned to normal
-	Uses a hookean spring during shrinking so that FENE spring isn't broken
-*/
+
   int i,j;
   double dr,ds,dk;			//FENE separation and LJ sigma step size for changing
   int shrinkMDSteps=10*stepsMD;
@@ -1485,7 +1507,8 @@ void runTumbleDynamics( specSwimmer *SS,swimmer swimmers[],bc WALL[],int stepsMD
 ///
 /// @brief 
 ///
-/// This function does the initial binning of the swimmers after they have been first initialized.
+/// Initial binning of the swimmers after they have been first initialized.
+///
 /// It is different from bin in that it uses the actual array of particleMPCs rather than the array of pointers to particleMPCs.
 ///
 /// @param SS Swimmer properties.
@@ -1509,11 +1532,13 @@ void bininSwimmers( specSwimmer SS,swimmer swimmers[],cell ***CL ) {
 }
 ///
 /// @brief 
-/// This function bins the swimmers, i.e. it places a pointer to the particleMPC in the appropriate new
-/// list and removes it from its old list.
+/// Bin the swimmers.
+///
+/// Places a pointer to the particleMPC in the appropriate new
+/// list and removes it from its old list. Takes into account periodic BC.
 ///
 /// @param CL List of all the MPCD cells, with the chains they contain.
-/// @param shifted Tag 
+/// @param shifted Tag to apply periodic boundary conditions if necessary.
 void binSwimmers( cell ***CL,int shifted ) {
 	int i,j,k,a,b,c;
 	smono *cp;	//Pointer to current item in list
@@ -1552,8 +1577,11 @@ void binSwimmers( cell ***CL,int shifted ) {
 }
 ///
 /// @brief 
+///
+/// This routine adds a swimmer to a list.
+///
 /// @param CL List of all the MPCD cells, with the chains they contain.
-/// @param s Monomer.
+/// @param s Monomer to be added to list.
 void addlinkSwimmer( cell *CL,smono *s ) {
 
 	smono *tp;	//Temporary pointer to swimmer monomer
