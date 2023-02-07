@@ -5,12 +5,13 @@
 ///The number, type, size, and other properties of the swimmers are read from the input file. They are initialised, then forces are taken into account.
 ///
 ///The swimmers repulse each other via a Weeks-Chandler-Andersen potential. The monomers are coupled two-by-two with either FENE, Hookean interaction,
-///or a 6th order potential.
+///or a 6th order potential. More information on those potentials can be found here @link[https://doi.org/10.1002/elps.200800673. The swimmers
+///can become non-interacting, ie no WCA force between different dimers, if the appropriate tag is turned on.
 ///
 ///These forces are used to integrate the swimmers' motions between timesteps. The swimmers interact with the fluid with dipole
 ///forces and rotlets. Run/tumble dynamics and magnetic interactions can also be turned on.
 ///
-///This subroutine also sets swimmers in their randomized initial position (if there is room - comment here?), bins them, and links them.
+///This subroutine also sets swimmers in their randomized initial position, bins them, and links them.
 
 # include<math.h>
 # include<stdio.h>
@@ -932,7 +933,7 @@ void allSwimmersMagTorque( specSwimmer SS,swimmer swimmers[],double timeStep,int
 ///
 /// @brief 
 ///
-/// Apply both the force dipole and the rotlet-torque dipole to each swimmer
+/// Apply both the force dipole and the rotlet-torque dipole to each swimmer. @see[swimmerForceDipole()]@see[swimmerRotletDipole]
 ///
 /// @param SS Swimmer properties.
 /// @param swimmers List of swimmers.
@@ -1079,16 +1080,16 @@ void swimmerDipole( specSwimmer SS,swimmer swimmers[],cell ***CL,spec SP[],doubl
 }
 ///
 /// @brief 
-/// @param SS 
-/// @param sw 
-/// @param CL 
-/// @param SP 
-/// @param timeStep 
+///
+///Set the swimming speed and the propulsion force on the fluid. This is where the "invisible" tail comes in.
+///
+/// @param SS Swimmer properties
+/// @param sw List of swimmers
+/// @param CL List of all the MPCD cells, with the chains they contain.
+/// @param SP Fluid particle properties.
+/// @param timeStep The time in MPCD units of one iteration of the MPCD algorithm.
 void swimmerForceDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double timeStep ) {
-/*
-    Set the swimming speed and the propulsion force on the fluid
-    This is where the "invisible" tail comes in.
-*/
+
   int a=0,b=0,c=0,d=0;
 	double r[DIM],n[DIM],acc[DIM],QT[_3D];
 	double m;
@@ -1186,16 +1187,16 @@ void swimmerForceDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double 
 }
 ///
 /// @brief 
-/// @param SS 
-/// @param sw 
-/// @param CL 
-/// @param SP 
-/// @param timeStep 
+///
+///Set the swimmer's rotations and the torque on the fluid. This is also where the "invisible" tail comes in.
+///
+/// @param SS Swimmer properties
+/// @param sw List of swimmers
+/// @param CL List of all the MPCD cells, with the chains they contain.
+/// @param SP Fluid particle properties.
+/// @param timeStep The time in MPCD units of one iteration of the MPCD algorithm.
 void swimmerRotletDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double timeStep ) {
-/*
-    Set the swimmer's rotations and the torque on the fluid
-    This is also where the "invisible" tail comes in.
-*/
+
 	int a=0,b=0,c=0,d=0;
 	double q_sw[_3D];													//Position of the swimmers' head or tail
 	double r_mh[DIM],n_mh[DIM]; 							//Vectors betweem middle/body and head
