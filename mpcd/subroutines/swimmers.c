@@ -40,7 +40,7 @@
 ///
 ///@brief
 ///
-/// This function reads the swimmer details from swimmer.inp, by reading in the adresses of the variables as pointers. It then allocates memory
+/// Read the swimmer details from swimmer.inp, by reading in the adresses of the variables as pointers. It then allocates memory
 /// to each swimmer.
 ///
 ///@param fpath Path to the input file.
@@ -141,7 +141,7 @@ void readswimmers( char fpath[],specSwimmer *specS,swimmer **sw ) {
 ///
 /// @brief 
 ///
-/// This subroutine initializes the swimmers' coordinates. It may run into trouble if there is not enough space to fit all the swimmers.
+/// Initialize the swimmers' coordinates. It may run into trouble if there is not enough space to fit all the swimmers.
 ///
 /// @param SS Swimmer properties, read from the input file by readswimmers.
 /// @param swimmers Pointer to the swimmers.
@@ -316,7 +316,7 @@ void setswimmers( specSwimmer *SS,swimmer *swimmers,bc WALL[],int stepsMD,double
 /// 
 /// @brief 
 ///
-/// Outputs the positions and speeds of the swimmers, as well as whether they are in the run, tumble, shrink, or extension phase.
+/// Output the positions and speeds of the swimmers, as well as whether they are in the run, tumble, shrink, or extension phase.
 ///
 /// @param fout File where the data will be written.
 /// @param swimmers List of all the swimmers.
@@ -398,7 +398,7 @@ void swimmerPBC_dr(double *dr ) {
 ///
 /// @brief 
 ///
-/// Calculates the orientation vector of each swimmer, by substracting the position of the swimmer's body from its head's position.
+/// Calculate the orientation vector of each swimmer, by substracting the position of the swimmer's body from its head's position.
 /// 
 /// Takes into account the periodic boundary conditions, and normalizes the orientation it returns.
 ///
@@ -693,6 +693,7 @@ void smonoForce_sameSwimmer( double a[],specSwimmer SS,swimmer *s,int springType
 /// @brief 
 ///
 /// Calculate the magnitude of the WCA force between two monomers in different swimmers.
+///
 ///	If tumbling is activated, swimmers still see each other's true size, without shrinking.
 ///
 /// @param dr Distance between the swimmer, scaled by sigma (default value 4, can be changed in the input file).
@@ -896,7 +897,9 @@ void swimmerMagTorque( specSwimmer SS,swimmer *sw,double dt,double MAG[] ) {
 ///
 /// @brief 
 ///
-/// Apply the magnetic torque to all swimmers. First calculates a normalized orientation vector, then compute its cross product with
+/// Apply the magnetic torque to all swimmers. 
+///
+/// First calculates a normalized orientation vector, then compute its cross product with
 /// the magnetic field. Multiply by the magnetic moment to find the torque, which is then applied to the swimmer's head. An opposite torque is 
 /// applied to its body.
 ///
@@ -1097,7 +1100,7 @@ void swimmerDipole( specSwimmer SS,swimmer swimmers[],cell ***CL,spec SP[],doubl
 ///
 /// @brief 
 ///
-///Set the swimming speed and the propulsion force on the fluid. This is where the "invisible" tail comes in.
+/// Set the swimming speed and the propulsion force on the fluid. This is where the "invisible" tail comes in.
 ///
 /// @param SS Swimmer properties
 /// @param sw List of swimmers
@@ -1204,7 +1207,7 @@ void swimmerForceDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double 
 ///
 /// @brief 
 ///
-///Set the swimmer's rotations and the torque on the fluid. This is also where the "invisible" tail comes in.
+/// Set the swimmer's rotations and the torque on the fluid. This is also where the "invisible" tail comes in.
 ///
 /// @param SS Swimmer properties
 /// @param sw List of swimmers
@@ -1504,7 +1507,8 @@ void runTumbleDynamics( specSwimmer *SS,swimmer swimmers[],bc WALL[],int stepsMD
 ///
 /// @brief 
 ///
-/// This function does the initial binning of the swimmers after they have been first initialized.
+/// Initial binning of the swimmers after they have been first initialized.
+///
 /// It is different from bin in that it uses the actual array of particleMPCs rather than the array of pointers to particleMPCs.
 ///
 /// @param SS Swimmer properties.
@@ -1528,7 +1532,9 @@ void bininSwimmers( specSwimmer SS,swimmer swimmers[],cell ***CL ) {
 }
 ///
 /// @brief 
-/// This function bins the swimmers, i.e. it places a pointer to the particleMPC in the appropriate new
+/// Bin the swimmers.
+///
+/// Places a pointer to the particleMPC in the appropriate new
 /// list and removes it from its old list. Takes into account periodic BC.
 ///
 /// @param CL List of all the MPCD cells, with the chains they contain.
