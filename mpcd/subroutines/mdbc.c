@@ -3,8 +3,8 @@
 /// @brief Boundary conditions (BCs) on molecular dynamics (MD) particles.
 ///
 /// This file includes the routines that determine the interaction of the MD particles with
-/// the BCs. For instance how position and velocity of the MD particles are updated when crossing a 
-/// bounday and if the energy, momentum and angular momentum are conserved.
+/// the BCs. For instance how position and velocity of the MD particles are updated when  
+/// crossing a bounday and if the energy, momentum and angular momentum are conserved.
 /// 
 
 # include<stdio.h>
@@ -132,12 +132,13 @@ void MD_BCcollision( particleMD *atom,bc WALL[],double KBT,double t_step ) {
 }
 
 ///
-/// @brief			Checks if the MD particle is inside all the boundaries, if not it reports which   
-/// boundary is crossed.
+/// @brief			Checks if the MD particle is inside all the boundaries, if not it reports which 
+/// 				boundary is crossed.
 ///
 /// It checks the particle's position with respect to the BCs. If it is outside any of them 
-/// it calculates the crosstime through crosstime_MD(). If the crosstime does not match the streaming 
-/// timestep it rises a warning, but later in MD_BCcollision routine the issue is solved.
+/// it calculates the crosstime through crosstime_MD(). If the crosstime does not match the  
+/// streaming timestep it rises a warning, but later in MD_BCcollision() routine the issue 
+/// is solved.
 ///
 /// @param WALL		All of the walls (BCs) that particle might interact with.
 /// @param atom		The MD particle.
@@ -225,12 +226,13 @@ void shiftBC_MD( double *shift,bc *WALL,particleMD *atom ) {
 ///
 /// @brief			Rotates the BC, if it has some orientation.
 ///
-/// To do this, it rotates the particle's position, velocity, orientation about the BC surface instead. This 
-/// routine does the rotation and rotation back by having a sign passed to it.
+/// It rotates the particle's position, velocity, orientation about the BC surface instead using the
+/// <a href="https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula">Rodrigues' rotation</a>. 
+/// This routine does the rotation and rotation back by having a sign passed to it.
 ///
 /// @param WALL		One of the walls of the BCs that particle is interacting with.
 /// @param atom		The MD particles.
-/// @param sign 	The sign by which the orientation will be.
+/// @param sign 	The sign by which the orientation will happen.
 /// @sa 			rotateBC(), rotatebackBC(), MPC_BCrotation()
 ///
 void MD_BCrotation( bc *WALL,particleMD *atom, double sign ) {
@@ -263,8 +265,10 @@ void MD_BCrotation( bc *WALL,particleMD *atom, double sign ) {
 ///
 /// @brief			Checks if the BC has some orientation, if so it must be rotated.
 ///
-/// MD_BCrotation() is used to do this in which the particle's pos, vel, orientation are rotated about 
-/// the BC surface instead. Uses NEGATIVE the angles since the particle is being rotated instead of the BC
+/// MD_BCrotation() is used to do this in which the particle's position, velocity, orientation are
+/// rotated about the BC surface instead. Uses NEGATIVE the angles since the particle is being rotated
+/// instead of the BC.  
+/// 
 /// 
 /// @param WALL		One of the walls of the BCs that particle is interacting with.
 /// @param atom 	The MD particle.
@@ -296,8 +300,8 @@ void rotatebackBC_MD( bc *WALL,particleMD *atom ) {
 ///
 /// @param WALL 	One of the walls of the BCs that particle is interacting with.
 /// @param atom 	The MD particle.
-/// @return			The variable that detemines if the particle is inside(+)/outside(-)/on(0) the specified
-/// 				wall of the control volume.
+/// @return			The variable that detemines if the particle is inside(+)/outside(-)/on(0) the 
+/// 				specified wall of the control volume.
 /// @see			calcW()
 ///
 double calcW_MD( bc WALL,particleMD *atom ){
@@ -332,8 +336,9 @@ double calcW_MD( bc WALL,particleMD *atom ){
 ///
 /// @brief			The streaming step of the algorithm.
 ///
-/// Using trans() routine translates the MD particle's position, \f$ Q_{\mbox{New}} = Q_{\mbox{Old}} + t \times V \f$ 
-/// in which \f$ Q_{\mbox{New}} \f$ is the new poition of the particle,
+/// Using trans() routine translates the MD particle's position,
+/// \f$ Q_{\mbox{New}} = Q_{\mbox{Old}} + t \times V \f$ 
+/// in which \f$ Q_{\mbox{New}} \f$ is the new position of the particle,
 /// \f$ Q_{\mbox{Old}} \f$ is the old position of the particle,
 /// \f$ t \f$ is the streaming time and \f$ V \f$ is the velocity of the particle.
 ///
@@ -351,10 +356,11 @@ void stream_MD( particleMD *atom,double t ) {
 ///
 /// @brief			Rewinds particle back to its old position.
 ///
-/// Using rewind_trans() brings back the particle to its position in the previous timestep, 
-/// \f$ Q_{\mbox{New}} = Q_{\mbox{Old}} - t \times V \f$ in which \f$ Q_{\mbox{New}} \f$ is the new poition of the particle,
-/// \f$ Q_{\mbox{Old}} \f$ is the old position of the particle, \f$ t \f$ is the streaming time and \f$ V \f$ is the velocity
-/// of the particle.
+/// Using rewind_trans() brings back the particle to its old position,
+/// \f$ Q_{\mbox{New}} = Q_{\mbox{Old}} - t \times V \f$ in which \f$ Q_{\mbox{New}} \f$
+/// is the new position of the particle,
+/// \f$ Q_{\mbox{Old}} \f$ is the old position of the particle, \f$ t \f$ is the streaming time
+/// and \f$ V \f$ is the velocity of the particle.
 ///
 /// @param atom		The MD particle.
 /// @param time		The time for which particle streams backward.
@@ -371,8 +377,9 @@ void rewind_MD( particleMD *atom,double time ) {
 ///
 /// It Calculates the time takes for the particle to cross the boundary by solving the trajectory 
 ///	equation \f$ \left[ \left(Q - Q_c \right) + V \times t \right]^2 = R ^2 \f$ in which \f$ Q \f$
-/// is the position of the particle, \f$ Q_c \f$ is the poistion of the center of the control volume,\f$ V \f$
-/// is the velocity of the particle, \f$ t \f$ is the streaming time, \f$ R \f$ is the radius of the control volume.
+/// is the position of the particle, \f$ Q_c \f$ is the position of the center of the control volume,\f$ 
+/// V \f$ is the velocity of the particle,
+/// \f$ t \f$ is the streaming time, \f$ R \f$ is the radius of the control volume.
 /// It can also use the <a href="https://en.wikipedia.org/wiki/Secant_method">secant method</a>.
 ///  
 /// @param atom		The MD particle.
@@ -380,7 +387,9 @@ void rewind_MD( particleMD *atom,double time ) {
 /// @param tc_pos	One of the crosstimes.
 /// @param tc_neg	One of the crosstimes.
 /// @param t_step	The maximum streaming time.
-///	@see			secant_time_MD(), crosstime(), 
+///	@see			secant_time_MD(), crosstime() 
+/// @note			In case the wall is \b planar or the \b the \b secant \b method is used
+/// 				\f$ tc_pos = tc_neg \f$.
 ///
 void crosstime_MD( particleMD *atom,bc WALL,double *tc_pos, double *tc_neg,double t_step ) {
 	double a=0.0,b=0.0,c=0.0;
@@ -494,7 +503,8 @@ double secant_time_MD( particleMD *atom,bc WALL,double t_step ) {
 ///
 /// It takes the gradient of \f$ ( a(x-h) )^p + (b(y-k))^p + (c(z-l))^p - r = 0 \f$, that is the equation
 /// for the control volume, since the gradient is equal to the normal. For powers of 1 and 2 it takes the
-/// shortcuts and uses the specific solution programmed in. For higher powers it uses a more general solution. 
+/// shortcuts and uses the specific solution programmed in. For higher powers it uses a more general 
+/// solution. 
 /// 
 /// @param	n			The normal vector to the surface.
 /// @param WALL 		One of the walls of the BCs that particle is interacting with.
@@ -528,10 +538,10 @@ double *normal_MD( double *n,bc WALL,particleMD *atom,int dimension ) {
 /// @brief			This subroutine applies the BC transformation to the velocity of the MD particle.
 ///
 ///	It transforms the velocity (the normal and tangential components) of the MD particle considering the 
-/// conditions at the surface of the boundary. For instance, it can \b conserve the \b energy/momentum/angular
-/// \b momentum using impulse method or it can apply the rule method such as \b bounceback or \b reflection or
-/// \b periodic which does NOT necesarily conserve momentum. The BCs global variables defined in the definition.h
-/// set how particle velosity will be updated.  
+/// conditions at the surface of the boundary. For instance, it can \b conserve the \b energy/momentum/
+/// \b angular \b momentum using impulse method or it can apply the rule method such as \b bounceback or 
+/// \b reflection or \b periodic which does NOT necesarily conserve momentum. The BCs global variables 
+/// defined in the definition.h set how particle velosity will be updated.  
 ///
 /// @param atom		The MD particle.
 /// @param WALL 	One of the walls of the BCs that particle is interacting with.
@@ -915,12 +925,13 @@ void shiftBC_swimmer( double *shift,bc *WALL,smono *atom ) {
 ///
 /// @brief			Rotates the BC, if it has some orientation.
 ///
-/// To do this, it rotates the particle's pos, vel, orientation about the BC surface instead. This 
-/// routine does the rotation and rotation back by having a sign passed to it.
+/// It rotates the particle's posotion, velocity, orientation about the BC surface instead using the 
+/// <a href="https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula">Rodrigues' rotation</a>.
+/// This routine does the rotation and rotation back by having a sign passed to it.
 ///
 /// @param WALL		One of the walls of the BCs that particle is interacting with.
 /// @param atom 	The MD particles, being either the head or the middle monomer of the swimmer.
-/// @param sign 	The sign by which the orientation will be.
+/// @param sign 	The sign by which the orientation will happen.
 /// @sa 			rotateBC(), rotatebackBC(), MPC_BCrotation()
 ///
 void swimmer_BCrotation( bc *WALL,smono *atom, double sign ) {
@@ -951,9 +962,9 @@ void swimmer_BCrotation( bc *WALL,smono *atom, double sign ) {
 ///
 /// @brief			Checks if the BC has some orientation, if so it must be rotated.
 ///
-/// swimmer_BCrotation() is used to do this in which the particle's position, velocity, orientation are rotated 
-/// about the BC surface instead. Uses NEGATIVE the angles since the particle is being rotated instead 
-///	of the BC.
+/// swimmer_BCrotation() is used to do this in which the particle's position, velocity, orientation are 
+/// rotated about the BC surface instead. Uses NEGATIVE the angles since the particle is being rotated
+/// instead of the BC.
 ///
 /// @param WALL		One of the walls of the BCs that particle is interacting with.
 /// @param atom 	The MD particle, being either the head or the middle monomer of the swimmer.
@@ -985,8 +996,8 @@ void rotatebackBC_swimmer( bc *WALL,smono *atom ) {
 ///
 /// @param WALL 	One of the walls of the BCs that particle is interacting with.
 /// @param atom 	The MD particle, being either the head or the middle monomer of the swimmer.
-/// @return			The variable that detemines if the particle is inside(+)/outside(-)/on(0) the specified
-///  				wall of the control volume.
+/// @return			The variable that detemines if the particle is inside(+)/outside(-)/on(0) the 
+///  				specified wall of the control volume.
 /// @see			calcW()
 ///
 double calcW_swimmer( bc WALL,smono *atom ) {
@@ -1016,9 +1027,10 @@ double calcW_swimmer( bc WALL,smono *atom ) {
 /// @brief			The streaming step of the algorithm, swimmers' version.
 ///
 /// Using trans() routine translates the MD particle's position, 
-/// \f$ Q_{\mbox{New}} = Q_{\mbox{Old}} + t \times V \f$ in which \f$ Q_{\mbox{New}} \f$ is the new poition of the particle,
-/// \f$ Q_{\mbox{Old}} \f$ is the old position of the particle, \f$ t \f$ is the streaming time and \f$ V \f$ is the velocity
-/// of the particle.
+/// \f$ Q_{\mbox{New}} = Q_{\mbox{Old}} + t \times V \f$ in which \f$ Q_{\mbox{New}} \f$ is the new 
+/// position of the particle,
+/// \f$ Q_{\mbox{Old}} \f$ is the old position of the particle, \f$ t \f$ is the streaming time and \f$ 
+/// V \f$ is the velocity of the particle.
 ///
 /// @param atom		The MD particle, being either the head or the middle monomer of the swimmer.
 /// @param t		The time for which particle must stream.
@@ -1034,9 +1046,9 @@ void stream_swimmer( smono *atom,double t ) {
 /// @brief			Rewinds particle back to its old position, swimmers' version.
 ///
 /// Using rewind_trans() brings back the particle to its position in the previous timestep,
-/// \f$ Q_{\mbox{New}} = Q_{\mbox{Old}} - t \times V \f$ in which \f$ Q_{\mbox{New}} \f$ is the new poition of the particle,
-/// \f$ Q_{\mbox{Old}} \f$ is the old position of the particle, \f$ t \f$ is the streaming time and \f$ V \f$ is the velocity
-/// of the particle.
+/// \f$ Q_{\mbox{New}} = Q_{\mbox{Old}} - t \times V \f$ in which \f$ Q_{\mbox{New}} \f$ is the new 
+/// position of the particle, \f$ Q_{\mbox{Old}} \f$ is the old position of the particle,
+/// \f$ t \f$ is the streaming time and \f$ V \f$ is the velocity of the particle.
 /// 
 /// @param atom		The MD particle, being either the head or the middle monomer of the swimmer.
 /// @param time 	The time for which particle streams backward.
@@ -1052,8 +1064,9 @@ void rewind_swimmer( smono *atom,double time ) {
 ///
 /// It Calculates the time takes for the particle to cross the boundary either by solving the trajectory 
 ///	equation, \f$ \left[ \left(Q - Q_c \right) + V \times t \right]^2 = R ^2 \f$ in which \f$ Q \f$
-/// is the position of the particle, \f$ Q_c \f$ is the poistion of the center of the control volume,\f$ V \f$
-/// is the velocity of the particle, \f$ t \f$ is the streaming time, \f$ R \f$ is the radius of the control volume. 
+/// is the position of the particle, \f$ Q_c \f$ is the poistion of the center of the control volume,\f$ 
+/// V \f$ is the velocity of the particle,
+/// \f$ t \f$ is the streaming time, \f$ R \f$ is the radius of the control volume. 
 /// It can also use the <a href="https://en.wikipedia.org/wiki/Secant_method">secan method</a>.
 /// 
 /// @param atom		The MD particle, being either the head or the middle monomer of the swimmer.
@@ -1062,6 +1075,8 @@ void rewind_swimmer( smono *atom,double time ) {
 /// @param tc_neg 	One of the crosstimes.
 /// @param t_step 	The maximum streaming time.
 ///	@see			secant_time_swimmer(), crosstime()
+/// @note			In case the wall is \b planar or the \b the \b secant \b method is used
+/// 				\f$ tc_pos = tc_neg \f$.
 ///
 void crosstime_swimmer( smono *atom,bc WALL,double *tc_pos, double *tc_neg,double t_step ) {
     int d;
@@ -1150,8 +1165,9 @@ double secant_time_swimmer( smono *atom,bc WALL,double t_step ) {
 ///						presently ON the surface.
 ///
 /// It takes the gradient of \f$ ( a(x-h) )^p + (b(y-k))^p + (c(z-l))^p - r = 0 \f$, that is the equation
-/// for the control volume, since the gradient is equal to the normal. For powers of 1 and 2 it takes the 
-/// shortcuts and uses the specific solution programmed in. For higher powers it uses a more general solution. 
+/// for the control volume, since the gradient is equal to the normal. For powers of 1 and 2 it takes  
+/// the shortcuts and uses the specific solution programmed in. For higher powers it uses a more general 
+/// solution. 
 ///
 /// @param n 			The normal vector to the surface.
 /// @param WALL 		One of the walls of the BCs that particle is interacting with.
@@ -1178,10 +1194,10 @@ double *normal_swimmer( double *n,bc WALL,smono *atom,int dimension ) {
 ///					swimmer's version.
 ///
 ///	It transforms the velocity (the normal and tangential components) of the MD particle considering the 
-/// conditions at the surface of the boundary. For instance, it can \b conserve the \b energy/momentum/angular
-/// \b momentum using impulse method or it can apply the rule method such as \b bounceback or \b reflection or
-/// \b periodic which does NOT necesarily conserve momentum. The BCs global variables defined in the definition.h
-/// set how particle velosity will be updated. 
+/// conditions at the surface of the boundary. For instance, it can \b conserve the \b energy/momentum/
+/// \b angular \b momentum using impulse method or it can apply the rule method such as \b bounceback or 
+/// \b reflection or \b periodic which does NOT necesarily conserve momentum. The BCs global variables 
+/// defined in the definition.h set how particle velosity will be updated. 
 ///
 /// @param atom		The MD particle, being either the head or the middle monomer of the swimmer.
 /// @param WALL 	One of the walls of the BCs that particle is interacting with.
@@ -1315,7 +1331,8 @@ void velBC_swimmer( smono *atom,bc *WALL,specSwimmer SS,double n[_3D] ) {
 }
 
 ///
-/// @brief			This subroutine applies the BC transformation to position of the MD particle, swimmers' version.
+/// @brief			This subroutine applies the BC transformation to position of the MD particle
+/// 				swimmers' version.
 ///
 /// It updates the position of the MD particle by applying the normal and tangential displacements 
 /// specified in the input file, when crossing a periodic boundary.
