@@ -17,7 +17,9 @@
 #include "../headers/cJson.h"
 
 // list of exclusions for "comment" tags
+/// @brief The number of comment tags in the `commentTags` array.
 const int commentTagCount = 4;
+/// @brief The array of all possible comment tags.
 char* commentTags[] = {"c", "comment", "//", "#"};
 
 /* 
