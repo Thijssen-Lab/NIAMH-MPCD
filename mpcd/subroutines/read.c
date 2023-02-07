@@ -1,3 +1,10 @@
+///
+/// @file
+/// @brief Contains the routines for reading files, including parsing input.
+///
+/// A variety of helper methods for reading files and parsing input. While there are some general methods, most methods
+/// here are for either parsing legacy input files (ie, input.inp etc), or for parsing the all-in-one JSON input file.
+
 # include <stdio.h>
 # include <stdlib.h>
 # include <string.h>
@@ -17,11 +24,15 @@
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
+/// @brief If a read from file fileName fails, then write to fsynopsis and stop the program
+///
+/// Helper method to automate printing of read errors to terminal from legacy input files. Primarily for debugging
+/// purposes.
+///
+/// @param flag Flag id. <0 if reached EoF early, 0 if failed to read, >0 if read successfully
+/// @param failure String showing the line that failed to read
+/// @param file
 void checkRead( int flag,char failure[],char file[]) {
-	/*
-	   If a read from file fileName fails
-		 then write to fsynopsis and stop the program
-	*/
 	if(flag<0) {
 		printf( "\nError: Reached end of file before read %s from %s.\n",failure,file );
 		exit( 1 );
@@ -31,6 +42,8 @@ void checkRead( int flag,char failure[],char file[]) {
 		exit( 1 );
 	}
 }
+
+/// @brief LEGACY.
 void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL,int *MDmode ) {
 /*
    By reading in the addresses of the variables as
@@ -202,6 +215,8 @@ void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL
 
 	fclose( finput );
 }
+
+/// @brief LEGACY.
 void readpc( char fpath[],outputFlagsList *out ) {
 /*
    By reading in the addresses of the variables as
@@ -351,6 +366,8 @@ void readpc( char fpath[],outputFlagsList *out ) {
 
 	fclose( finput );
 }
+
+/// @brief LEGACY.
 void bcin( FILE *fbc,bc *WALL,char fname[] ) {
 /*
    By reading in the addresses of the variables as
@@ -545,10 +562,14 @@ void bcin( FILE *fbc,bc *WALL,char fname[] ) {
 		}
 	}
 }
+
+/// @brief Determines if a boundary is a planar periodic boundary
+///
+/// Performs a series of checks, in order, to verify if something is a periodic boundary condition. This is then marked
+/// as a planar PBC in `XYZPBC`.
+///
+/// @param WALL Pointer to a particular boundary condition
 void setPBC( bc *WALL ) {
-/*
-   Determines if a boundary is a planar periodic boundary
-*/
 	int i;
 	//Check if any axis is a planar PBC
 	for( i=0; i<_3D; i++ ) {
@@ -569,6 +590,7 @@ void setPBC( bc *WALL ) {
 	}
 }
 
+/// @brief LEGACY.
 void readbc( char fpath[],bc **WALL ) {
 /*
    By calling bcin this function sets each of
@@ -600,12 +622,37 @@ void readbc( char fpath[],bc **WALL ) {
 	for( i=0; i<NBC; i++ ) setPBC( (*WALL+i) );
 	fclose( fbc );
 }
+
+/// @brief Reads a checkpoint to resume a simulation
+///
+/// Reads the entirety of a checkpoint file and use this to re-populate the simulation. The method iteratively goes
+/// through all aspects of the simulation and reads them in, allocating memory as and when necessary.
+///
+/// This is used to resume an existing simulation. The only thing that is not checkpoint-ed is the random number
+/// generator state, which is re-seeded outside of this routine.
+///
+/// @param fpath Path to the directory where the checkpoint file is.
+/// @param in Pointer to object containing input parameters (corresponding to legacy input.inp). Expected to be &in.
+/// @param SP Pointer to the species list. Expected to be &SP.
+/// @param pSRD Pointer to the particle list. Expected to be &pSRD.
+/// @param CL Pointer to the cell array. Expected to be &CL.
+/// @param MDmode Pointer to the MD mode int flag. Expected to be &MDmode.
+/// @param WALL Pointer to the boundary condition list. Expected to be &WALL.
+/// @param out Pointer to the object containing output flags (corresponding to legacy printcom.inp). Expected to be &out.
+/// @param runtime Pointer to the current runtime of the simulation. Expected to be &runtime.
+/// @param warmtime Pointer to the warmup timesteps performed by the simulation. Expected to be &warmtime.
+/// @param theory Pointer to the object containing the kinetic theory parameters. Expected to be &theory.
+/// @param AVVEL Pointer to the average velocity of the system. Expected to be &AVVEL.
+/// @param AVS Pointer to the average scalar order parameter of the system. Expected to be &AVS.
+/// @param avDIR Pointer to the average vector director of the system. Expected to be &avDIR.
+/// @param S4 Pointer to the fourth moment of the scalar order parameter of the system. Expected to be &S4.
+/// @param stdN Pointer to the standard deviation of the number of particles in the system. Expected to be &stdN.
+/// @param KBTNOW Pointer to the current temperature of the system. Expected to be &KBTNOW.
+/// @param AVV Pointer to the average velocity of the system. Expected to be &AVV.
+/// @param AVNOW Pointer to the average velocity now of the system. Expected to be &AVNOW.
+/// @param specS Pointer to the object containing the swimmer species hyperparameters. Expected to be &specS.
+/// @param sw Pointer to the swimmer list. Expected to be &sw.
 void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL,int *MDmode,bc **WALL,outputFlagsList *out,int *runtime,int *warmtime,kinTheory *theory,double *AVVEL, double *AVS,double avDIR[_3D],double *S4,double *stdN,double *KBTNOW,double AVV[_3D],double AVNOW[_3D],specSwimmer *specS,swimmer **sw ) {
-/*
-   By reading in the addresses of the variables as
-   pointers this function sets the values to what
-   is in the input file input.inp
-*/
 	FILE *finput;
 	int i,j;
 	char STR[100];
@@ -741,6 +788,16 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 	fclose( finput );
 }
 
+/// @brief Read the arguments for the program.
+///
+/// Reads the arguments for the main program. All arguments are of form `-x [value]` where x is the argument and value
+/// is the value of the argument. The arguments can be listed in any order.
+///
+/// @param argc The C argc variable.
+/// @param argv The C argv variable.
+/// @param ip The input file name, read from the arguments.
+/// @param op The output directory, read from the arguments.
+/// @param inMode The input mode, read from the arguments. Switches between legacy (.inp) and new (.json) input files.
 void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 	int arg;
 	int strln;
@@ -817,22 +874,23 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
     }
 }
 
-/*
-	Checks if a given BC, as a cJSON object, is valid and contains all the
-	 	necessary parameters it needs.
-	Returns 1 if valid, 0 if not.
-*/
+/// @brief Checks if a given boundary condition contains the minimum primitives required by the input system.
+///
+/// The JSON input system allows for the user to ignore stating the value of certain JSON tags. For boundary conditions
+/// however, there are some tags that are essential for a boundary to function. This method checks to ensure that these
+/// tags are present in a given BC object.
+///
+/// The list of necessary tags is as follows:
+/// - `"aInv"`
+/// - `"P"`
+/// - `"R"`
+/// - `"DN"`
+/// - `"MVN"`
+/// - `"MVT"`
+///
+/// @param bc cJSON object containing the boundary condition to be checked.
+/// @return 1 if valid, 0 if not.
 int checkBC(cJSON *bc){
-	/*
-		Need to check if the following json tags exist, do so using cJSON
-			primitives:
-		- "aInv"
-		- "P"
-		- "R"
-		- "DN"
-		- "MVN"
-		- "MVT"
-	*/
 	char tagList[6][5] = {"aInv", "P", "R", "DN", "MVN", "MVT"};
 
 	cJSON *temp = NULL;
@@ -845,12 +903,34 @@ int checkBC(cJSON *bc){
 	return 1; // if you're here without returning then all succesful
 }
 
+/// @brief Main method for reading a JSON input file to populate the simulation parameters.
+///
+/// This (big) method performs all reading for the JSON input system. A summary of the method is as follows:
+/// 1. Read in the JSON file and prepare it in cJSON format. Prepare helper linked lists.
+/// 2. Perform "overrides", which are hacks to allow for shortcuts using the input system.
+/// 3. Read in legacy input.inp parameters.
+/// 4. Read in species hyper-parameters to populate `SP` array, and hence populate main particle list.
+/// 5. Read in legacy printcom.inp parameters.
+/// 6. Read in boundary conditions, corresponding to legacy bc.inp parameters.
+/// 7. Read in legacy swimmers.inp parameters, and allocate memory for swimmers.
+/// 8. Perform input verification, and clean-up before returning.
+///
+/// Many methods used in this method are defined in cJson.c.
+///
+/// @param fpath Path to the json input file.
+/// @param in Pointer to the inputList struct to be populated. Expected to be `&in`.
+/// @param SP Pointer to the particle species list to be populated. Expected to be `&SP`.
+/// @param pSRD Pointer to the particle list. Expected to be `&pSRD`.
+/// @param CL Pointer to the cell array. Expected to be `&CL`.
+/// @param MDMode Pointer to the MD mode flag integer. Expected to be `&MDMode`.
+/// @param out Pointer to the output flag structure. Expected to be `&out`.
+/// @param WALL Pointer to the boundary condition list. Expected to be `&WALL`.
+/// @param specS Pointer to the swimmer species list to be populated. Expected to be `&specS`.
+/// @param sw Pointer to the swimmer list. Expected to be `&sw`.
+/// @see cJson.c
 void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
    cell ****CL, int *MDMode, outputFlagsList *out, bc **WALL,
    specSwimmer *specS, swimmer **sw){
-/*
-	Main method for reading in Json, parsing it, and populating ALL inputs
-*/
 	int i, j; // counting variables
 
 	char* fileStr = NULL;
@@ -895,12 +975,12 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	int domainWalls = 0; // Whether to add domain walls. 0 = off, 1 = PBC, 2 = solid
     float checkPointTimer = 0.0; // hours until MPCD will run a checkpoint
 
-	/// Get overrides
+	// Get overrides
 	domainWalls = getJObjInt(jObj, "domainWalls", 0, jsonTagList); // domainWalls
     checkPointTimer = getJObjDou(jObj, "checkpointTimerOut", 0.0, jsonTagList); // checkpointTimerOut
 
 	// perform general overrides
-	///NOTE: none here yet :)
+	// NOTE: none here yet :)
 
 	// 1. Old input.inp ////////////////////////////////////////////////////////
 	// scroll up to void readin() to see better descriptions & definitions for these
@@ -937,7 +1017,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	in->zeroNetMom = getJObjInt(jObj, "zeroNetMom", 0, jsonTagList); // zeroNetMom
 	in->GALINV = getJObjInt(jObj, "galInv", 1, jsonTagList); // GALINV
 	in->TSTECH = getJObjInt(jObj, "tsTech", 0, jsonTagList); // TSTECH
-  const char* collOpTags[2] = {"rTech", "collOp"}; // possible tags for collision operator
+    const char* collOpTags[2] = {"rTech", "collOp"}; // possible tags for collision operator
 	in->RTECH = getJObjIntMultiple(jObj, collOpTags, 2, 2, jsonTagList); // RTECH
 	in->LC = getJObjInt(jObj, "lc", 0, jsonTagList); // LC
 	in->TAU = getJObjDou(jObj, "tau", 0.5, jsonTagList); // TAU

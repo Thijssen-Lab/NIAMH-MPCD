@@ -32,8 +32,10 @@
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
-static unsigned long mt[NN];	//Mersenne twister variable: the array for the state vector
-static int mti=NN+1;		//Mersenne twister variable: mti==NN+1 means mt[NN] is not initialized
+/// @brief MT variable: The state vector of the RNG
+static unsigned long mt[NN];
+/// @brief MT variable: MT counter variable. `mti==NN+1` means mt[NN] is not initialized
+static int mti=NN+1;
 
 /// @brief Generate a random seed, if necessary, and initialize the Mersenne Twister random number generator.
 ///
@@ -156,8 +158,10 @@ unsigned long MT_genrand_int32(void){
 
     See <http://creativecommons.org/publicdomain/zero/1.0/>. */
 
-static unsigned long X_state[4]; // RNG state
-int X_seeded = 0; // flag to show whether this has been seeded or not.
+/// @brief Xoroshiro variable: the state vector of the RNG.
+static unsigned long X_state[4];
+/// @brief Xoroshiro variable: flag to show whether this has been seeded or not.
+int X_seeded = 0;
 
 /// @brief Rotates a 32-bit integer left by a given number of bits.
 ///
