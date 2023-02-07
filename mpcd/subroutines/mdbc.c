@@ -46,7 +46,7 @@
 /// it is simply brought back to its old position with no velocity
 /// 
 /// @param atom		The MD particle
-/// @param WALL		The walls of the BCs
+/// @param WALL		All of the walls (BCs) that particle might interact with 
 /// @param KBT		Thermal energy
 /// @param t_step	The MD timestep increment
 /// 
@@ -136,7 +136,7 @@ void MD_BCcollision( particleMD *atom,bc WALL[],double KBT,double t_step ) {
 /// it calculates the crosstime through crosstime_MD(). If the crosstime does not match the streaming 
 /// timestep it rises a warning, but later in MD_BCcollision routine the issue is solved
 ///
-/// @param WALL		The walls of the Bcs
+/// @param WALL		All of the walls (BCs) that particle might interact with
 /// @param atom		The MD particle
 /// @param t_min	The rest of the `time` remains for particle to stream after reducing the collision 
 /// 				time 
@@ -194,7 +194,7 @@ void chooseBC_MD( bc WALL[],particleMD *atom,double *t_min,double *chosenW,int *
 /// It checks if the BC is periodic, then it calculates the shift and shifts the BC
 /// 
 /// @param shift	this is how much the boundary must be shifted, gets calculated inside the routine
-/// @param WALL		One of the walls of the BCs
+/// @param WALL		One of the walls of the BCs that particle is interacting with
 /// @param atom 	The MD particle
 ///
 void shiftBC_MD( double *shift,bc *WALL,particleMD *atom ) {
@@ -223,7 +223,7 @@ void shiftBC_MD( double *shift,bc *WALL,particleMD *atom ) {
 /// To do this, it rotates the particle's pos, vel, orientation about the BC surface instead. This 
 /// routine does the rotation and rotation back by having a sign passed to it
 ///
-/// @param WALL		One of the walls of the BCs
+/// @param WALL		One of the walls of the BCs that particle is interacting with
 /// @param atom		The MD particles
 /// @param sign 	The sign by which the orientation will be
 /// @sa rotateBC(), rotatebackBC()
@@ -262,7 +262,7 @@ void MD_BCrotation( bc *WALL,particleMD *atom, double sign ) {
 /// the BC surface instead. Uses NEGATIVE the angles since the particle is being rotated instead of the
 ///	BC
 /// 
-/// @param WALL		One of the walls of the BCs
+/// @param WALL		One of the walls of the BCs that particle is interacting with
 /// @param atom 	The MD particle
 ///	@note			The current implementation is very wasteful. Every \b particle
 ///					is rotated about the centre of each BC. While this is simplest, there are very many 
@@ -275,7 +275,7 @@ void rotateBC_MD( bc *WALL,particleMD *atom ) {
 ///
 /// @brief 			Undoes the rotateBC_MD()
 /// 
-/// @param WALL		One of the walls of the BCs
+/// @param WALL		One of the walls of the BCs that particle is interacting with
 /// @param atom		The MD particle
 /// 
 void rotatebackBC_MD( bc *WALL,particleMD *atom ) {
@@ -288,7 +288,7 @@ void rotatebackBC_MD( bc *WALL,particleMD *atom ) {
 /// Calculates the distance of the particle from the center of the BC, and based on the shape of the 
 /// control volume it determines if the particle is outside or inside of it
 ///
-/// @param WALL 	One of the walls of the BCs
+/// @param WALL 	One of the walls of the BCs that particle is interacting with
 /// @param atom 	The MD particle
 /// @return			W, that detemines if the particle is inside or outside the control volume defined
 ///					by the `WALL`
@@ -361,7 +361,7 @@ void rewind_MD( particleMD *atom,double time ) {
 /// It can also use the <a href="https://en.wikipedia.org/wiki/Secant_method">secant method</a>
 ///  
 /// @param atom		The MD particle
-/// @param WALL		One of the walls of the BCs
+/// @param WALL		One of the walls of the BCs that particle is interacting with
 /// @param tc_pos	One of the crosstimes 
 /// @param tc_neg	One of the crosstimes
 /// @param t_step	The maximum streaming time
@@ -423,7 +423,7 @@ void crosstime_MD( particleMD *atom,bc WALL,double *tc_pos, double *tc_neg,doubl
 /// the particle
 ///
 /// @param atom		The MD particle
-/// @param WALL		One of the walls of the BCs
+/// @param WALL		One of the walls of the BCs that particle is interacting with
 /// @param t_step	The maximum streaming time
 /// @return 		The crosstime
 ///
@@ -482,7 +482,7 @@ double secant_time_MD( particleMD *atom,bc WALL,double t_step ) {
 /// solution programmed in. For higher powers it uses a more general solution 
 /// 
 /// @param	n			The normal vector to the surface
-/// @param WALL 		One of the walls of the BCs
+/// @param WALL 		One of the walls of the BCs that particle is interacting with
 /// @param atom 		The MD particle
 /// @param dimension	The dimenson of the control volume
 /// @return				The normal vector to the surface, `n` 
@@ -519,7 +519,7 @@ double *normal_MD( double *n,bc WALL,particleMD *atom,int dimension ) {
 /// be updated  
 ///
 /// @param atom		The MD particle
-/// @param WALL 	One of the walls of the BCS
+/// @param WALL 	One of the walls of the BCs that particle is interacting with
 /// @param n 		The normal vector to the surface of the wall
 /// @param KBT 		Thermal energy
 ///
@@ -684,13 +684,13 @@ void velBC_MD( particleMD *atom,bc *WALL,double n[_3D],double KBT ) {
 }
 
 ///
-/// @brief		This subroutine applies the BC transformation to position of the MD particle 
+/// @brief			This subroutine applies the BC transformation to position of the MD particle 
 ///
 /// It updates the position of the MD particle by applying the normal and tangential displacements 
 /// specified in the input file, when crossing a periodic boundary
 ///  
 /// @param atom		The MD particle 
-/// @param WALL 	One of the walls of the BCs
+/// @param WALL 	One of the walls of the BCs that particle is interacting with
 /// @param n 		The normal vector to the surface of the wall
 /// @note			It does NOT stream! That is done in a seperate routine
 ///	
@@ -725,7 +725,7 @@ void posBC_MD( particleMD *atom,bc WALL,double n[_3D] ) {
 /* ****************************************** */
 
 ///
-/// @brief		Applies the BCS to the MD particle forming the swimmer body, in case it is required
+/// @brief			Applies the BCS to the MD particle forming the swimmer body, in case it is required
 ///
 /// It checks if the particle is inside the boundaries. If it's inside the boundaries it does not
 /// do anything. But if it is not, it rewinds it to its old position, then it calculates the time takes 
@@ -735,7 +735,7 @@ void posBC_MD( particleMD *atom,bc WALL,double n[_3D] ) {
 /// its old position with no velocity
 ///
 /// @param atom		The MD particle, being either the head or the middle monomer of the swimmer
-/// @param WALL 	One of the walls of the BCs
+/// @param WALL 	One of the walls of the BCs that particle is interacting with
 /// @param SS 		It specifies the type (features) of the swimmer to which this monomer belong
 /// @param t_step	The MD timestep increment
 ///  
@@ -819,7 +819,7 @@ void swimmer_BCcollision( smono *atom,bc WALL[],specSwimmer SS,double t_step ) {
 /// it calculates the crosstime through crosstime_swimmer(). If the crosstime does not match the
 /// streaming timestep it rises a warning, but later in swimmer_BCcollision routine the issue is solved
 ///
-/// @param WALL 	The walls of the Bcs
+/// @param WALL 	All of the walls (BCs) that particle might interact with
 /// @param atom 	The MD particle, being either the head or the middle monomer of the swimmer
 /// @param t_min 	The rest of the `time` remains for particle to stream after reducing the collision 
 /// 				time
@@ -877,7 +877,7 @@ void chooseBC_swimmer( bc WALL[],smono *atom,double *t_min,double *chosenW,int *
 /// It checks if the BC is periodic, then it calculates the shift and shifts the BC
 ///
 /// @param shift	this is how much the boundary must be shifted, gets calculated inside the routine
-/// @param WALL 	One of the walls of the BCs
+/// @param WALL 	One of the walls of the BCs that particle is interacting with
 /// @param atom 	The MD particle, being either the head or the middle monomer of the swimmer 
 ///
 void shiftBC_swimmer( double *shift,bc *WALL,smono *atom ) {
@@ -899,7 +899,7 @@ void shiftBC_swimmer( double *shift,bc *WALL,smono *atom ) {
 /// To do this, it rotates the particle's pos, vel, orientation about the BC surface instead. This 
 /// routine does the rotation and rotation back by having a sign passed to it
 ///
-/// @param WALL		One of the walls of the BCs 
+/// @param WALL		One of the walls of the BCs that particle is interacting with 
 /// @param atom 	The MD particles, being either the head or the middle monomer of the swimmer
 /// @param sign 	The sign by which the orientation will be
 /// @sa rotateBC(), rotatebackBC()
@@ -936,7 +936,7 @@ void swimmer_BCrotation( bc *WALL,smono *atom, double sign ) {
 /// about the BC surface instead. Uses NEGATIVE the angles since the particle is being rotated instead 
 ///	of the BC
 ///
-/// @param WALL		One of the walls of the BCs
+/// @param WALL		One of the walls of the BCs that particle is interacting with
 /// @param atom 	The MD particle, being either the head or the middle monomer of the swimmer
 ///	@note			The current implementation is very wasteful. Every ***particle***
 ///					is rotated about the centre of each BC. While this is simplest, there are very many 
@@ -949,7 +949,7 @@ void rotateBC_swimmer( bc *WALL,smono *atom ) {
 ///
 /// @brief 			Undoes the rotateBC_swimmer()
 /// 
-/// @param WALL		One of the walls of the BCs
+/// @param WALL		One of the walls of the BCs that particle is interacting with
 /// @param atom		The MD particle, being either the head or the middle monomer of the swimmer
 ///
 void rotatebackBC_swimmer( bc *WALL,smono *atom ) {
@@ -962,7 +962,7 @@ void rotatebackBC_swimmer( bc *WALL,smono *atom ) {
 /// Calculates the distance of the particle from the center of the BC, and based on the shape of the 
 /// control volume determines if the particle is outside or inside of it
 ///
-/// @param WALL 	One of the walls of the BCs
+/// @param WALL 	One of the walls of the BCs that particle is interacting with
 /// @param atom 	The MD particle, being either the head or the middle monomer of the swimmer
 /// @return			W, that detemines if the particle is inside or outside the control volume defined
 ///					by the `WALL`
@@ -991,7 +991,7 @@ double calcW_swimmer( bc WALL,smono *atom ) {
 }
 
 ///
-/// @brief		The streaming step of the algorithm, swimmers' version
+/// @brief			The streaming step of the algorithm, swimmers' version
 ///
 /// Using trans() routine translates the MD particle's position
 ///
@@ -1005,12 +1005,12 @@ void stream_swimmer( smono *atom,double t ) {
 }
 
 ///
-/// @brief		Rewinds particle back to its old position, swimmers' version
+/// @brief			Rewinds particle back to its old position, swimmers' version
 ///
 /// Using rewind_trans() brings back the particle to its position in the previous timestep
 /// 
-/// @param atom	The MD particle, being either the head or the middle monomer of the swimmer
-/// @param time The time for which particle streams backward
+/// @param atom		The MD particle, being either the head or the middle monomer of the swimmer
+/// @param time 	The time for which particle streams backward
 ///
 void rewind_swimmer( smono *atom,double time ) {
 	int d;
@@ -1024,7 +1024,7 @@ void rewind_swimmer( smono *atom,double time ) {
 ///	equation. It can also use the <a href="https://en.wikipedia.org/wiki/Secant_method">secan method</a>
 /// 
 /// @param atom		The MD particle, being either the head or the middle monomer of the swimmer
-/// @param WALL 	One of the walls of the BCs
+/// @param WALL 	One of the walls of the BCs that particle is interacting with
 /// @param tc_pos 	One of the roots of the quadratic trajectory equation, one of the crosstimes
 /// @param tc_neg 	One of the roots of the quadratic trajectory equation, one of the crosstimes
 /// @param t_step 	The maximum streaming time
@@ -1065,7 +1065,7 @@ void crosstime_swimmer( smono *atom,bc WALL,double *tc_pos, double *tc_neg,doubl
 }
 
 ///
-/// @brief		Numerically determines the crossing times, swimmers' version
+/// @brief			Numerically determines the crossing times, swimmers' version
 ///
 /// It uses the <a href="https://en.wikipedia.org/wiki/Secant_method">secan method</a> to calculate the 
 /// the cross time. The secant method is a root-finding algorithm that uses a succession of roots of 
@@ -1073,7 +1073,7 @@ void crosstime_swimmer( smono *atom,bc WALL,double *tc_pos, double *tc_neg,doubl
 /// the particle
 /// 
 /// @param atom		The MD particle, being either the head or the middle monomer of the swimmer 
-/// @param WALL 	One of the walls of the BCs
+/// @param WALL 	One of the walls of the BCs that particle is interacting with
 /// @param t_step 	The maximum streaming time
 /// @return 		The crosstime
 ///
@@ -1113,15 +1113,15 @@ double secant_time_swimmer( smono *atom,bc WALL,double t_step ) {
 }
 
 ///
-/// @brief		Finds the normal to the surface at the position of the particle that is
-///				presently ON the surface
+/// @brief				Finds the normal to the surface at the position of the particle that is
+///						presently ON the surface
 ///
 /// It takes the gradient of \f$( a(x-h) )^p + (b(y-k))^p + (c(z-l))^p - r = 0\f$, since the gradient 
 /// is equal to the normal. For powers of 1 and 2 it takes the shortcuts and uses the specific
 /// solution programmed in. For higher powers it uses a more general solution 
 ///
 /// @param n 			The normal vector to the surface
-/// @param WALL 		One of the walls of the BCs
+/// @param WALL 		One of the walls of the BCs that particle is interacting with
 /// @param atom 		The MD particle, being either the head or the middle monomer of the swimmer
 /// @param dimension	The dimenson of the control volume 
 /// @return				The normal vector to the surface, `n`
@@ -1140,8 +1140,8 @@ double *normal_swimmer( double *n,bc WALL,smono *atom,int dimension ) {
 }
 
 ///
-/// @brief		This subroutine applies the BC transformation to the velocity of the MD particle,
-///				swimmer's version
+/// @brief			This subroutine applies the BC transformation to the velocity of the MD particle,
+///					swimmer's version
 ///
 ///	It transforms the velocity (the normal and tangential components) of the MD particle considering the 
 /// conditions at the surface of the boundary. For instance, it can \b conserve the \b energy/momentum/
@@ -1151,7 +1151,7 @@ double *normal_swimmer( double *n,bc WALL,smono *atom,int dimension ) {
 /// be updated  
 ///
 /// @param atom		The MD particle, being either the head or the middle monomer of the swimmer
-/// @param WALL 	One of the walls of the BCS
+/// @param WALL 	One of the walls of the BCs that particle is interacting with
 /// @param SS 		It specifies the type (features) of the swimmer to which this monomer belong
 /// @param n		The normal vector to the surface of the wall
 ///
@@ -1281,15 +1281,15 @@ void velBC_swimmer( smono *atom,bc *WALL,specSwimmer SS,double n[_3D] ) {
 }
 
 ///
-/// @brief		This subroutine applies the BC transformation to position of the MD particle,  
-///				swimmers' version
+/// @brief			This subroutine applies the BC transformation to position of the MD particle,  
+///					swimmers' version
 ///
 /// It updates the position of the MD particle by applying the normal and tangential displacements 
 /// specified in the input file, when crossing a periodic boundary
 ///
-/// @param atom The MD particle,, being either the head or the middle monomer of the swimmer 
-/// @param WALL One of the walls of the BCs
-/// @param n 	The normal vector to the surface of the wall
+/// @param atom 	The MD particle,, being either the head or the middle monomer of the swimmer 
+/// @param WALL 	One of the walls of the BCs that particle is interacting with
+/// @param n 		The normal vector to the surface of the wall
 /// @note			It does NOT stream! That is done in a seperate routine
 ///
 void posBC_swimmer( smono *atom,bc WALL,double n[_3D] ) {
