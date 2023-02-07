@@ -44,7 +44,7 @@
 /// 
 /// @brief This function calculates the properties of all the cells.
 ///
-/// The function calculates properties of all the cell. This includes the cell
+/// The function calculates properties of all the cell. This includes the cell-level
 /// - population (number of particles) 
 /// - mass 
 /// - centre of mass position
@@ -508,7 +508,7 @@ double trans( double t,double V, double QOLD ) {
 /// @param t The time interval for which the particle accelerates.
 /// @param GRAV The acceleration with which the particle speed increases.
 /// @param VOLD The initial speed of the particle.
-/// @return VNEW The newly accelerated component of the velocity. 
+/// @return The newly accelerated component of the velocity. 
 ///
 double acc( double t,double GRAV,double VOLD ) {
 	double VNEW;
@@ -757,7 +757,8 @@ void rotate_CL( cell CL,spec *SP,double r0[],double n0[],double dw ) {
 /// 
 /// @brief Rewinds a translation.
 /// 
-/// This function simply <b>un</b>-updates (rewinds) one component of a generic position vector based on a constant speed in that direction by subtracting the displacement. 
+/// This function restores the previous component of a generic position vector based on a constant speed in that direction by subtracting the displacement. 
+/// That is to say, it rewinds the particle position to the previous time step. 
 /// @param t The time interval for which the object is rewound.
 /// @param V The object's velocity component.
 /// @param P The object's present position component.
@@ -773,7 +774,8 @@ double rewind_trans( double t,double V,double P ) {
 /// 
 /// @brief Rewind an acceleration vector.
 /// 
-/// This function simply <b>un</b>-updates (rewinds) one component of a generic velocity vector based on a constant accelearation in that direction by subtracting the displacement. 
+/// This function restores the previous component of a generic velocity vector based on a constant accelearation in that direction by subtracting the displacement. 
+/// That is to say, it rewinds the particle velocity to the previous time step. 
 /// @param t The time interval for which the object is rewound.
 /// @param V The object's acceleration component.
 /// @param P The object's present velocity component.
@@ -788,7 +790,8 @@ double rewind_acc(double t,double G,double V){
 /// 
 /// @brief Bring a given MPCD particle back a time step.
 /// 
-/// This function simply <b>un</b>-updates (rewinds) the position vector based on a constant velocity by subtracting the displacement. 
+/// This function restores the previous component of the MPCD position vector based on a constant velocity by subtracting the displacement. 
+/// That is to say, it rewinds the particle position to the previous time step. 
 /// @param p An MPCD particle. 
 /// @param time The time interval for which the MPCD particle is rewound.
 ///
@@ -800,7 +803,8 @@ void rewind_P( particleMPC *p,double time ) {
 /// 
 /// @brief Bring a given boundary back a time step.
 /// 
-/// This function simply <b>un</b>-updates (rewinds) the position vector based on a constant velocity by subtracting the displacement. 
+/// This function restores the previous component of the wall boundary position vector based on a constant velocity by subtracting the displacement. 
+/// That is to say, it rewinds the wall position to the previous time step. 
 /// @param WALL A moving wall (boundary conditions). 
 /// @param time The time interval for which the MPCD particle is rewound.
 ///
@@ -4210,26 +4214,29 @@ void cellVelSet( cell *CL,double vel[3] ) {
 /// 
 /// @brief The timestep routine contains all the routines that happen in each time iteration. 
 ///
-/// Lorem Ipsum
-/// SKELETON
-/// Grid shift
-/// Bin
-/// Local properties
-/// Ghost particles
-/// Liquid Crystal
-/// Magnetic torque
-/// Jeffery torque
-/// MPCD collision operation
-/// Temperature scaling
-/// Grid shift back
-/// Streaming
-/// MPC/BC collision
-/// Stream the BCs
-/// BC/BC collision
-/// BC/MPC collision
-/// Bin
-/// Local properties
-/// Lorem Ipsum
+/// This routine includes all the major aspects of the MPCD code. 
+/// Everything in a time step, except writing output and checkpointing, is included within this function. 
+/// The outline of everything done in a single time step is:
+/// - Integrate molecular dynamics type particles (integrateMD() and integrateSwimmers()).
+/// - Grid shift (ranshift() and gridShift_all()).
+/// - Bin (bin(), binSwimmers() and binMD()).
+/// - Accelerate the particles (acc_all()).
+/// - Calculate local properties (localPROP()).
+/// - Apply ghost particles at surfaces (ghostPart()). 
+/// - Collision operation
+///   * Liquid crystal collision operation (LCcollision(), magTorque_all() and jefferysTorque()).
+///   * Velocity collision operation (MPCcollision(), multiphaseColl(), incompColl() and scramble())
+/// - Temperature scaling (scaleT()).
+/// - Grid shift back (gridShift_all()).
+/// - Swimmer forces on fluid (swimmerDipole()).
+/// - Streaming (stream_all()).
+/// - BCs
+///   + MPCD particle collision with BCs (MPC_BCcollision()).
+///   + Stream/rotate the BCs (stream_BC() and spin_BC()).
+///   + BC collision with other BCs (BC_BCcollision()).
+///   + Moving BC collision with MPC particles (BC_MPCcollision()).
+/// - Re-Bin (bin(), binSwimmers() and binMD()).
+/// - Re-Local properties (localPROP()).
 /// @param CL All of the MPCD cells. 
 /// @param SRDparticles All the MPCD particles. 
 /// @param SP The species-wide information about MPCD particles.
@@ -4263,14 +4270,12 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 			else printf( "\nBegin time step %i. Simulation time = %lf\n",runtime,runtime*in.dt );
 		}
 	#endif
-	if( outFlags.PRESOUT>=OUT && runtime%outFlags.PRESOUT==0 ) outPressure=1;
 	//Zero counters
+	if( outFlags.PRESOUT>=OUT && runtime%outFlags.PRESOUT==0 ) outPressure=1;
 	zerocnt( KBTNOW,AVNOW,AVS );
-
 	// Zero impulse on BCs
 	// NOTE: Louise thinks this should be fine being here (and did check),
 	// This was moved when editing ghostPart to increase anchoring strength
-	// (as oriBC is now called in ghostPart too).
 	// If something looks bad related to mobile walls, maybe start looking here.
 	for( i=0; i<NBC; i++ ) {
 		zerovec(WALL[i].dV,DIM);
@@ -4518,18 +4523,6 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 	reCNT=0;
 	rethermCNT=0;
 	for( i=0; i<GPOP; i++ ) MPC_BCcollision( SRDparticles,i,WALL,SP,in.KBT,in.dt,in.LC,&bcCNT,&reCNT,&rethermCNT,1 );
-	// XYZPBC[0]=1;
-	// XYZPBC[1]=1;
-	// if(DIM>=_3D) XYZPBC[2]=1;
-	// for( i=0; i<GPOP; i++ ) rudimentaryPBC_box( (SRDparticles+i) );
-	// XYZPBC[0]=0
-	// XYZPBC[1]=0;
-	// if(DIM>=_3D) XYZPBC[2]=0;
-	// for( i=0; i<GPOP; i++ ) rudimentaryBBBC_box( (SRDparticles+i) );
-	// XYZPBC[0]=1;
-	// XYZPBC[1]=0;
-	// if(DIM>=_3D) XYZPBC[2]=1;
-	// for( i=0; i<GPOP; i++ ) rudimentaryChannel_y( (SRDparticles+i) );
 	#ifdef DBG
 		if( DBUG == DBGBCCNT ) if(bcCNT>0) printf( "\t%d particles had difficulty with the BCs (%d rewind events; %d rethermalization events).\n",bcCNT,reCNT,rethermCNT );
 	#endif
