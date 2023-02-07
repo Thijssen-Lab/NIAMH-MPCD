@@ -537,7 +537,9 @@ void swimmerVerlet_nonInteracting( specSwimmer SS,swimmer *s,double dt,int sprin
 ///
 /// @brief 
 ///
-/// Verlet velocity algorithm, for interacting swimmers. The velocity is first updated to its value at the half timestep. The position is updated using this
+/// Verlet velocity algorithm, for interacting swimmers. 
+///
+///The velocity is first updated to its value at the half timestep. The position is updated using this
 /// velocity, then the boundary conditions are used to check that the swimmer is still in bounds. The forces (between the monomer couples and between each monomers) 
 /// are updated at the new position,
 /// the acceleration is calculated from there, and the velocity is updated again, now to its value at the end of the timestep. For more details,
@@ -639,6 +641,7 @@ void smonoDist( double r[],double *dr,smono m1, smono m2 ) {
 /// @brief 
 ///
 /// Calculate the magnitude of the force between two monomers in the same swimmer, using a spring coupling and a WCA repulsion.
+///
 /// See @link[ https://doi.org/10.1002/elps.200800673] for more details, and Definitions.h for the spring types.
 ///
 /// @param dr Distance between the monomers. Scaled by sigma for the WCA interaction, and by ro for the spring coupling.
