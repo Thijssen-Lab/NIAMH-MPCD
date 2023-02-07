@@ -382,8 +382,7 @@ void runtumbleout( FILE *fout,swimmer *sw ) {
 ///
 /// @brief 
 ///
-/// Apply period boundary conditions to swimmer monomer interactions. If the distance in any dimension between two monomers is greater 
-/// than half of the box that they're in, this means that the periodic BC have been crossed and so the coordinates are unwrapped.
+/// Apply period boundary conditions to swimmer monomer interactions. Unwraps coordinates if needed.
 ///
 /// @param dr Distance between the monomers.
 void swimmerPBC_dr(double *dr ) {
@@ -400,6 +399,7 @@ void swimmerPBC_dr(double *dr ) {
 /// @brief 
 ///
 /// Calculates the orientation vector of each swimmer, by substracting the position of the swimmer's body from its head's position.
+/// 
 /// Takes into account the periodic boundary conditions, and normalizes the orientation it returns.
 ///
 /// @param n Orientation vector, enters the function empty and leaves it with the normalized orientation. 
@@ -416,6 +416,7 @@ void swimmerOri( double n[],swimmer *sw ) {
 /// @brief 
 ///
 /// Calculate the Weeks-Chandler-Andersen force from the monomer separation r, which has to be scaled by the monomer size ahead of time.
+///
 /// The force only acts at radii smaller than rcut (1.122462048309373), its strength depends on eps, and its magnitude is capped at fcap (1E3).
 /// To get the force vector this must be multiplied by vec(r). For more details,
 /// see @link[https://doi.org/10.1002/elps.200800673].
@@ -440,7 +441,9 @@ double swimmerWCA( double r,double eps ) {
 ///
 /// @brief 
 ///
-/// Calculate the FENE force from the separation r scaled by an equilibrium distance ro, default value 4. The value of ro can be changed in the input file.
+/// Calculate the FENE force from the separation r scaled by an equilibrium distance ro, default value 4. 
+///
+///The value of ro can be changed in the input file.
 ///	To get the force vector this must be multiplied by vec(r).
 ///	If the FENE chain is passed then there is a large "backup" force to pull the monomers together. For more details, see @link[https://doi.org/10.1002/elps.200800673].
 ///
@@ -483,7 +486,9 @@ double swimmerSpring6( double r,double k ) {
 ///
 /// @brief 
 ///
-/// Verlet velocity algorithm, for non-interacting swimmers. The velocity is first updated to its value at the half timestep. The position is updated using this
+/// Verlet velocity algorithm, for non-interacting swimmers.
+///
+/// The velocity is first updated to its value at the half timestep. The position is updated using this
 /// velocity, then the boundary conditions are used to check that the swimmer is still in bounds. The forces (between the monomer couples) are updated at the new position,
 /// the acceleration is calculated from there, and the velocity is updated again, now to its value at the end of the timestep. For more details,
 /// see @link[https://en.wikipedia.org/wiki/Verlet_integration].
@@ -662,7 +667,9 @@ double smonoForceMag_sameSwimmer( double dr,specSwimmer SS,swimmer *s,int spring
 ///
 /// @brief 
 ///
-/// Calculate the force between two monomers in the same swimmer. First calculates the distance between the monomers, then the magnitude of 
+/// Calculate the force between two monomers in the same swimmer. 
+///
+/// First calculates the distance between the monomers, then the magnitude of 
 /// the force sum. The acceleration due to the force is then returned, as a vectorial quantity.
 ///
 /// @param a Vector built for the acceleration due to the force calculated in this function.
@@ -698,7 +705,9 @@ double smonoForceMag_differentSwimmers( double dr,specSwimmer SS ) {
 ///
 /// @brief 
 ///
-/// Calculate the WCA force between two monomers in different swimmer. First calculates the distance between the monomers, then the magnitude of 
+/// Calculate the WCA force between two monomers in different swimmer.
+///
+/// First calculates the distance between the monomers, then the magnitude of 
 /// the WCA. The acceleration due to the force is then returned, as a vectorial quantity.
 ///
 /// @param a Vector built for the acceleration due to the force calculated in this function.
@@ -722,7 +731,9 @@ void smonoForce_differentSwimmers( double a[],specSwimmer SS,smono s1,smono s2 )
 ///
 /// @brief 
 ///
-/// Integrate the motion of the swimmers, using velocity Verlet integration. Applies a magnetic field to magnetotactic swimmers if this
+/// Integrate the motion of the swimmers, using velocity Verlet integration.
+///
+/// Applies a magnetic field to magnetotactic swimmers if this
 /// option is turned on. If the swimmer type is 'near wall', path becomes two-dimensionnal.
 ///
 /// @param SS Swimmer properties.
@@ -823,7 +834,9 @@ void integrateSwimmers( specSwimmer SS,swimmer swimmers[],bc WALL[],int stepsMD,
 ///
 /// @brief 
 ///
-/// Apply the magnetic torque to one swimmer. First calculates a normalized orientation vector, then compute its cross product with
+/// Apply the magnetic torque to one swimmer. 
+///
+/// First calculates a normalized orientation vector, then compute its cross product with
 /// the magnetic field. Multiply by the magnetic moment to find the torque, which is then applied to the swimmer's head. An opposite torque is 
 /// applied to its body.
 ///
@@ -1295,7 +1308,9 @@ void swimmerRotletDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double
 ///
 /// @brief 
 ///
-/// Stochastically run and tumble. This routine checks the number of times since last run/tumble switching event.
+/// Stochastic run and tumble.
+///
+/// This routine checks the number of times since last run/tumble switching event.
 /// If an event occurs a new random run/tumble time is generated.
 /// If the swimmer tumbles then its size can shrink (or technically grow but this shouldn't occur).
 /// If it runs then its shrinkMDSteps size is returned to normal.
