@@ -473,7 +473,6 @@ void printVersionSummary( ) {
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
 /// @param SP This is the subpopulation of species.
-/// @return Header printed in output file
 ///
 void outheader( FILE *fout,int SP ) {
 /* Simple header output for output files */
@@ -498,7 +497,6 @@ void outheader( FILE *fout,int SP ) {
 /// |V| is the speed.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void coordheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -515,7 +513,6 @@ void coordheader( FILE *fout ) {
 /// POP is the cell population
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void coarseheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -535,7 +532,6 @@ void coarseheader( FILE *fout ) {
 /// S is the scalar order parameter.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void orderheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -550,7 +546,6 @@ void orderheader( FILE *fout ) {
 /// QXX, QXY, QXZ, QYX, QYZ, QZX, QZY, and QZZ are components of the order parameter tensor.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void orderQheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -566,7 +561,6 @@ void orderQheader( FILE *fout ) {
 /// |QXX|2 to |QZZ|2 are squared components of the order parameter tensor as they may be complex nubers.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void orderQKheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -579,10 +573,9 @@ void orderQKheader( FILE *fout ) {
 /// Column headers are produced for average velocity .dat files to display raw data in a table format.
 /// Time, t, is the first column header.
 /// VcmX, VcmY, and VcmZ are centre of mass velocities in Cartesian co-ordinates.
-/// KBT is thermal energy.
+/// KBT is thermal energy and is only considered if COLL_TYPE is set to thermal collisions in input.json.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void avvelheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -595,11 +588,10 @@ void avvelheader( FILE *fout ) {
 /// Column headers are produced for average velocity and velocity gradient .dat files to display raw data in a table format.
 /// Time, t, is the first column header.
 /// VcmX, VcmY, and VcmZ are centre of mass velocities in Cartesian co-ordinates.
-/// KBT is
+/// KBT is thermal energy and is only considered if COLL_TYPE is set to thermal collisions in input.json
 /// dVXX to dVVZZ are average cell velocities in Cartesian co-ordinates.
 /// dVXX - x dir of vx
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void avvelWithGradVelheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -615,7 +607,6 @@ void avvelWithGradVelheader( FILE *fout ) {
 /// C is the value of the correlation function at separation dr.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void corrheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -631,7 +622,6 @@ void corrheader( FILE *fout ) {
 /// E is the corresponding energy value.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void energyspectheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -647,7 +637,6 @@ void energyspectheader( FILE *fout ) {
 /// Omega is the corresponding enstropy value.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void enstrophyspectheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -664,7 +653,6 @@ void enstrophyspectheader( FILE *fout ) {
 /// angle is the orientational angle of a topological defect.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void topoheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -682,7 +670,6 @@ void topoheader( FILE *fout ) {
 /// angle is the orientational angle of a topological defect.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void defectheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -697,7 +684,6 @@ void defectheader( FILE *fout ) {
 /// DXX to DZZ are disclination tensor components.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void disclinTensorheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -712,7 +698,6 @@ void disclinTensorheader( FILE *fout ) {
 /// QX, QY, and QZ are indices of spatial positions in Cartesian co-ordinates.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void multiphaseheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -731,7 +716,6 @@ void multiphaseheader( FILE *fout ) {
 /// Pxx to Pzz are components of the pressure tensor P.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void pressureheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -747,7 +731,7 @@ void pressureheader( FILE *fout ) {
 /// BinderCumulant is the number of counts for the given bin.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
+/// @param binSize This is the size of bins for the binder.
 ///
 void binderheader( FILE *fout,int binSize ) {
 /* Simple header for output columns */
@@ -760,11 +744,10 @@ void binderheader( FILE *fout,int binSize ) {
 ///
 /// Column headers are produced for average scalar order parameter .dat files to display raw data in a table format.
 /// Time, t, is the first column header.
-/// S and S4 are the scalar order parameter and average scalar order paremeter respectively.
+/// S and S4 are the scalar order parameter and fourt moment of the scalar order paremeter respectively.
 /// nX, nY, and nZ are the director values in each of the Cartesian directions.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void avsheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -779,7 +762,6 @@ void avsheader( FILE *fout ) {
 /// densSTD is the standard deviation of the density.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void densheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -794,7 +776,6 @@ void densheader( FILE *fout ) {
 /// Enstrophy is the average enstrophy.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void avenstrophyheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -810,7 +791,6 @@ void avenstrophyheader( FILE *fout ) {
 /// VcmX, VcmY, and VcmZ are centre of mass velocities in Cartesian co-ordinates.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void flowheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -828,7 +808,6 @@ void flowheader( FILE *fout ) {
 /// LX, LY, and LZ are angular velocities in Cartesian co-ordinates.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void solidsheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -844,7 +823,6 @@ void solidsheader( FILE *fout ) {
 /// PX, PY, and PZ are the probability distributions in Cartesian co-ordinates.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void histVelheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -860,7 +838,6 @@ void histVelheader( FILE *fout ) {
 /// PX, PY, and PZ are the probability distributions in Cartesian co-ordinates.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void histVortheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -876,7 +853,6 @@ void histVortheader( FILE *fout ) {
 /// PX, PY, and PZ are the probability distributions in Cartesian co-ordinates.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void histDirheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -892,7 +868,6 @@ void histDirheader( FILE *fout ) {
 /// P is the probability distribution.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void histSpeedheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -908,7 +883,6 @@ void histSpeedheader( FILE *fout ) {
 /// P is the probability distribution.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void histEnstrheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -924,7 +898,6 @@ void histEnstrheader( FILE *fout ) {
 /// P is the probability distribution.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void histNheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -940,7 +913,6 @@ void histNheader( FILE *fout ) {
 /// P is the probability distribution.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void histSheader( FILE *fout ) {
 /* Simple header for output columns */
@@ -956,10 +928,9 @@ void histSheader( FILE *fout ) {
 /// MPC_nem is the nematic contributions to the energy.
 /// BC_rot the rotational energy contribution at the boundary.
 /// Total is the total energy.
-/// KBT is the thermal energy contribution.
+/// KBT is the thermal energy contribution and is only considered if COLL_TYPE is set to thermal collisions in input.json.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void energyheader( FILE *fout ) {
 	/* Simple header for output columns */
@@ -976,7 +947,6 @@ void energyheader( FILE *fout ) {
 /// MPC_nem is the nematic contributions to the energy.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void energyfieldheader( FILE *fout ) {
 	/* Simple header for output columns */
@@ -994,9 +964,7 @@ void energyfieldheader( FILE *fout ) {
 /// MVX, MVY, and MVZ are middle velocities in Cartesian co-ordinates.
 /// RTphase is the run-tumble phase of the swimmer.
 ///
-/// @param FILE This is the file name of the output file.
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void swimmerheader( FILE *fout ) {
 	/* Simple header for output columns */
@@ -1011,9 +979,7 @@ void swimmerheader( FILE *fout ) {
 /// nX, nY, and nZ are the swimmer orientation in Cartesian co-ordinates.
 /// RTphase is the run-tumble phase of the swimmer.
 ///
-
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void swimmeroriheader( FILE *fout ) {
 	/* Simple header for output columns */
@@ -1029,7 +995,6 @@ void swimmeroriheader( FILE *fout ) {
 /// dAng is the change in angle of the swimmer.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void runtumbleheader( FILE *fout ) {
 	/* Simple header for output columns */
@@ -1044,7 +1009,6 @@ void runtumbleheader( FILE *fout ) {
 /// MPC_nem is the nematic contributions to the energy.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @return Column headers printed in output files.
 ///
 void energyneighboursheader( FILE *fout ) {
 	/* Simple header for output columns */
@@ -1062,7 +1026,7 @@ void energyneighboursheader( FILE *fout ) {
 /// @param p List of MPC particle index numbers.
 /// @param SP Subpopulation of species.
 ///
-/// @return Co-ordinates printed in output files.
+/// @see outputResults
 ///
 void coordout( FILE *fout[MAXSPECI],int pr,double T,particleMPC p[],spec SP[] ) {
 /* Prints particleMPC coordinate data to output file */
@@ -1098,7 +1062,7 @@ void coordout( FILE *fout[MAXSPECI],int pr,double T,particleMPC p[],spec SP[] ) 
 /// @param CL This is a pointer to the co-ordinates and cell of each particle in the MPC list.
 /// @see cellout()
 ///
-/// @return Coarse grained data printed in output files.
+/// @see outputResults
 ///
 void coarseout( FILE *fout,double t,cell ***CL ) {
 	/*
@@ -1131,7 +1095,7 @@ void coarseout( FILE *fout,double t,cell ***CL ) {
 ///
 /// @param CL This is a pointer to the co-ordinates and cell of each particle.
 ///
-/// @return Cell data and Position for each particle.
+/// @see outputResults
 ///
 void cellout( cell ***CL ) {
 /*
@@ -1192,8 +1156,6 @@ void cellout( cell ***CL ) {
 /// @param XYZ_P1 This is three-dimensional list of particle positions.
 ///
 /// @see cellout()
-///
-/// @return List of all MPC particles, MD particles, and swimmers.
 ///
 void listout( cell ***CL,int XYZ_P1[_3D] ) {
 /*
@@ -1256,8 +1218,6 @@ void listout( cell ***CL,int XYZ_P1[_3D] ) {
 ///
 /// @param p This is an index for each MPC particle.
 ///
-/// @return MPC particle positions and velocities printed to terminal.
-///
 void pcoord( particleMPC p ) {
 /*
     Prints the particleMPC's coordinates (position
@@ -1274,8 +1234,6 @@ void pcoord( particleMPC p ) {
 /// This function prints boundary positions, velocity, and angular velocity to terminal.
 ///
 /// @param WALL This is a pointer obtaining information on boundary conditions.
-///
-/// @return Boundary positions and velocities printed to terminal.
 ///
 void bccoord( bc WALL ) {
 /*
@@ -1295,8 +1253,6 @@ void bccoord( bc WALL ) {
 ///
 /// @param p This is an index for each MD particle.
 ///
-/// @return MD particle positions and velocities printed to terminal.
-///
 void mdcoord( particleMD p ) {
 /*
     Prints the particleMPC's coordinates (position
@@ -1312,8 +1268,6 @@ void mdcoord( particleMD p ) {
 /// This function prints swimmers respective positions and velocities to terminal.
 ///
 /// @param sw This is an index for each swimmer.
-///
-/// @return Swimmer positions and velocities printed to terminal.
 ///
 void swcoord( swimmer sw ) {
 /*
@@ -1334,8 +1288,6 @@ void swcoord( swimmer sw ) {
 /// @param VEC This is the vector that will be printed.
 /// @param dimension This is the dimensionality of the vector that will be printed.
 ///
-/// @return Prints the requested vector.
-///
 void pvec( double VEC[],int dimension ) {
 /*
     Prints any vector
@@ -1352,8 +1304,6 @@ void pvec( double VEC[],int dimension ) {
 /// This is a generic function that prints three-dimensional tensors.
 ///
 /// @param TENS This is the 3D tensor that will be printed.
-///
-/// @return Prints the requested 3D tensor.
 ///
 void ptens3D( double TENS[][_3D] ) {
 /*
@@ -1377,8 +1327,6 @@ void ptens3D( double TENS[][_3D] ) {
 ///
 /// @param TENS This is the 2D tensor that will be printed.
 ///
-/// @return Prints the requested 2D tensor.
-///
 void ptens2D( double TENS[][_2D] ) {
 /*
     Prints any vector
@@ -1400,8 +1348,7 @@ void ptens2D( double TENS[][_2D] ) {
 /// This is a generic function that prints two-dimensional and three-dimensional tensors.
 ///
 /// @param TENS This is pointer to the 2D or 3D tensor that will be printed.
-///
-/// @return Prints the requested tensor.
+/// @param dimension This is the dimensionality of the tensor.
 ///
 void ptens( double **TENS,int dimension ) {
 	int i,j;
@@ -1427,8 +1374,6 @@ void ptens( double **TENS,int dimension ) {
 /// @param ANG This is the three-dimensional angular velocities of MPC particles.
 /// @param dimension This is the dimensionality.
 ///
-/// @return MPC particle positions, velocities, and angular velocities printed to terminal.
-///
 void pvcoord( double POS[_3D],double VEL[_3D],double ANG[_3D],int dimension ) {
 /*
     Prints the particleMPC's coordinates (position
@@ -1450,8 +1395,6 @@ void pvcoord( double POS[_3D],double VEL[_3D],double ANG[_3D],int dimension ) {
 ///
 /// @param p This is an index for each MPC particle.
 ///
-/// @return MPC particle information printed to terminal.
-///
 void pall( particleMPC p[] ) {
 	/* Prints all particleMPC coordinate data to terminal */
 	int i;
@@ -1470,8 +1413,6 @@ void pall( particleMPC p[] ) {
 /// @param AVVEL This is the average speed in any direction.
 /// @param SP This is a pointer that fetches species information such as population.
 /// @param theory This is a pointer that fetches theoretical information calculated from input.json.
-///
-/// @return Input paramters printed.
 ///
 void listinput( inputList in,double AVVEL,spec SP[],kinTheory theory ) {
 /*
@@ -1543,8 +1484,6 @@ void listinput( inputList in,double AVVEL,spec SP[],kinTheory theory ) {
 /// @param out This is a flag that determines if data should be output or not.
 /// @param theory This is a pointer that fetches theoretical information.
 /// @param fsynopsis This is a pointer to the synopsis.dat output file.
-///
-/// @return Relevant information printed to synopsis.dat.
 ///
 void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList out,kinTheory theory,FILE *fsynopsis ) {
 /*
@@ -1697,7 +1636,7 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 /// @param maxRange This is the maximum velocity.
 /// @param t This is the time.
 ///
-/// @return Velocity histogram values and bins printed to file.
+/// @see outputResults
 ///
 void histVelout( FILE *fout,int vel[_3D][BINS],double minRange,double maxRange,double t ) {
 /*
@@ -1721,12 +1660,12 @@ void histVelout( FILE *fout,int vel[_3D][BINS],double minRange,double maxRange,d
 /// This function prints speed probability distributions for a given number of bins to produce a histogram.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
-/// @param vel This is the speed for the corresponding bin it resides in.
+/// @param speed This is the speed for the corresponding bin it resides in.
 /// @param minRange This is the minimum speed.
 /// @param maxRange This is the maximum speed.
 /// @param t This is the time.
 ///
-/// @return Speed histogram values and bins printed to file.
+/// @see outputResults
 ///
 void histSpeedout( FILE *fout,int speed[BINS],double minRange,double maxRange,double t ) {
 /*
@@ -1755,7 +1694,7 @@ void histSpeedout( FILE *fout,int speed[BINS],double minRange,double maxRange,do
 /// @param maxRange This is the maximum vorticity.
 /// @param t This is the time.
 ///
-/// @return Vorticity histogram values and bins printed to file.
+/// @see outputResults
 ///
 void histVortout( FILE *fout,int vort[_3D][BINS],double minRange,double maxRange,double t ) {
 /*
@@ -1784,7 +1723,7 @@ void histVortout( FILE *fout,int vort[_3D][BINS],double minRange,double maxRange
 /// @param maxRange This is the maximum enstrophy.
 /// @param t This is the time.
 ///
-/// @return Enstrophy histogram values and bins printed to file.
+/// @see outputResults
 ///
 void histEnstrout( FILE *fout,int enstrophy[BINS],double minRange,double maxRange,double t ) {
 /*
@@ -1813,7 +1752,7 @@ void histEnstrout( FILE *fout,int enstrophy[BINS],double minRange,double maxRang
 /// @param maxRange This is the maximum enstrophy.
 /// @param t This is the time.
 ///
-/// @return Director orientation histogram values and bins printed to file.
+/// @see outputResults
 ///
 void histDirout( FILE *fout,int dir[_3D][BINS],double minRange,double maxRange,double t ) {
 /*
@@ -1842,7 +1781,7 @@ void histDirout( FILE *fout,int dir[_3D][BINS],double minRange,double maxRange,d
 /// @param maxRange This is the maximum scalar order parameter.
 /// @param t This is the time.
 ///
-/// @return Scalar order parameter histogram values and bins printed to file.
+/// @see outputResults
 ///
 void histSout( FILE *fout,int S[BINS],double minRange,double maxRange,double t ) {
 /*
@@ -1871,7 +1810,7 @@ void histSout( FILE *fout,int S[BINS],double minRange,double maxRange,double t )
 /// @param maxRange This is the maximum particle density.
 /// @param t This is the time.
 ///
-/// @return Particle density histogram values and bins printed to file.
+/// @see outputResults
 ///
 void histNout( FILE *fout,int dens[BINS],double minRange,double maxRange,double t ) {
 /*
@@ -1889,18 +1828,21 @@ void histNout( FILE *fout,int dens[BINS],double minRange,double maxRange,double 
 	#endif
 }
 
+///
 /// @brief Outputs energy data.
 ///
 /// This function collates and prints nematic, kinetic and boundary energy contributions.
+/// The thermal energy KBT and rotational energy at the boundary is also output.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
 /// @param pp This is a pointer to MPC particle indices.
 /// @param pSP This is a pointer to sub population indices.
 /// @param WALL This is a pointer to boundary position information.
 /// @param t This is the time.
-/// @param WALL This is a pointer that fetches thermal energy KBT.
+/// @param KBT This is a pointer that fetches thermal energy KBT and is only considered if COLL_TYPE is set to thermal collisions in input.json.
+/// @param wmf This is the mean field potential.
 ///
-/// @return Total energy and energy information outputted.
+/// @see outputResults
 ///
 void enout( FILE *fout,particleMPC *pp,spec *pSP,bc WALL[],double t,double KBT,double wmf ) {
 /*
@@ -1939,6 +1881,20 @@ void enout( FILE *fout,particleMPC *pp,spec *pSP,bc WALL[],double t,double KBT,d
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs orientation interaction energy with neighbouring cells.
+///
+/// This function calculates and prints the average cell orientation interaction energy with neighbouring cells by considering kinetic and nematic contributions.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param CL This is a pointer to the co-ordinates and cell of each particle.
+/// @param SP This is a pointer to species sub population indices.
+/// @param MFPOT This is a pointer to mean field potential specified by input.json.
+/// @param LC This is a flag that states if the system is a liquid crystal.
+///
+/// @see outputResults
+///
 void enfieldout( FILE *fout,cell ***CL,spec *SP,double MFPOT,int LC ) {
 /*
     Calculate and print the average orientation interaction energy with neighbouring cells
@@ -1976,6 +1932,22 @@ void enfieldout( FILE *fout,cell ***CL,spec *SP,double MFPOT,int LC ) {
 		fprintf( fout, "%5i\t%5i\t%5i\t%e\t%e\n",a,b,c,enK,wmf );
 	}
 }
+
+///
+/// @brief Outputs average cell orientation interaction energy with neighbouring cells.
+///
+/// This function calculates the total director of all the cells under consideration and computes the energy based on the local director and tensor order parameter.
+/// The value computed is the average cell orientation interaction energy with neighbouring cells and is printed out.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param t This is time.
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param CL This is a pointer to the co-ordinates and cell of each particle.
+/// @param MFPOT This is a pointer to mean field potential specified by input.json.
+/// @param LC This is a flag that states if the system is a liquid crystal.
+///
+/// @see outputResults
+///
 void enneighboursout( FILE *fout,double t,cell ***CL,double MFPOT,int LC ) {
 /*
     Calculate and print the average orientation interaction energy between neighbouring cells.
@@ -2030,6 +2002,19 @@ void enneighboursout( FILE *fout,double t,cell ***CL,double MFPOT,int LC ) {
 	for( d=0; d<DIM; d++ ) free( Q[d] );
 	free( Q );
 }
+
+///
+/// @brief Outputs coarse grained average velocity to file.
+///
+/// This function simply prints the coarse grained average velocity to the output data file.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param t This is time.
+/// @param vel This is the velocity in three dimensions.
+/// @param KBT This is a pointer that fetches thermal energy KBT and is only considered if COLL_TYPE is set to thermal collisions in input.json.
+///
+/// @see outputResults
+///
 void avvelout( FILE *fout,double t,double vel[_3D],double KBT ) {
 /*
     Print coarse data to file
@@ -2039,6 +2024,20 @@ void avvelout( FILE *fout,double t,double vel[_3D],double KBT ) {
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs coarse grained average velocity and velocity gradient tensor to file.
+///
+/// This function simply prints the coarse grained average velocity and velocity gradient tensor to the output data file.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param t This is time.
+/// @param vel This is the velocity in three dimensions.
+/// @param KBT This is a pointer that fetches thermal energy KBT and is only considered if COLL_TYPE is set to thermal collisions in input.json.
+/// @param gradVel This is velocity gradient tensor.
+///
+/// @see outputResults
+///
 void avveloutWithGradVel( FILE *fout,double t,double vel[_3D],double KBT,double gradVel[_3D][_3D] ) {
 /*
     Print coarse data to file
@@ -2049,6 +2048,20 @@ void avveloutWithGradVel( FILE *fout,double t,double vel[_3D],double KBT,double 
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs coarse grained scalar order parameter to file.
+///
+/// This function simply prints the coarse grained scalar order parameter to the output data file.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param t This is time.
+/// @param S This is a pointer to the scalar order parameter.
+/// @param S4 This is a pointer to the fourth moment of the scalar order parameter.
+/// @param DIR This is a pointer that fetches the director orientation in three dimensions.
+///
+/// @see outputResults
+///
 void avsout( FILE *fout,double t,double S,double S4,double DIR[] ) {
 /*
     Print coarse data to file
@@ -2058,6 +2071,18 @@ void avsout( FILE *fout,double t,double S,double S4,double DIR[] ) {
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs coarse grained standard deviations of density to file.
+///
+/// This function simply prints the coarse grained standard deviations of density to the output data file.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param t This is time.
+/// @param stdN This is a pointer to the standard deviations of density.
+///
+/// @see outputResults
+///
 void densSTDout( FILE *fout,double t,double stdN ) {
 /*
     Print coarse data to file
@@ -2067,6 +2092,18 @@ void densSTDout( FILE *fout,double t,double stdN ) {
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs coarse grained average enstrophy to file.
+///
+/// This function simply prints the coarse grained average enstrophy to the output data file.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param t This is time.
+/// @param E This is a pointer to the average enstrophy.
+///
+/// @see outputResults
+///
 void avenstrophyout( FILE *fout,double t,double E ) {
 /*
     Print coarse data to file
@@ -2076,6 +2113,18 @@ void avenstrophyout( FILE *fout,double t,double E ) {
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs binder cumulants for each given timestep.
+///
+/// This function simply prints the binder cumulants to the output data file.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param t This is time.
+/// @param UL This is a pointer to the binder cumulant.
+///
+/// @see outputResults
+///
 void binderout( FILE *fout,double t,double UL ) {
 /*
     Print coarse data to file
@@ -2085,6 +2134,21 @@ void binderout( FILE *fout,double t,double UL ) {
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs flow field data calculated from cell velocities.
+///
+/// This function computes the centre of mass velocity in the `x`,`y`, and `z` directions for each cell, as well as the average velocity.
+/// The sum of all centre of mass velocities are computed into an average in the `x`, `y`, and `z` directions.
+/// The centre of mass velocities and averages are printed to the output file.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param CL This is a pointer to the co-ordinates and cell of each particle.
+/// @param interval is the time interval used for normalisation.
+/// @param t This is the time step.
+///
+/// @see outputResults
+///
 void flowout( FILE *fout,cell ***CL,int interval, double t) {
 /*
     Turns sum of cells' vcm into average, prints average to
@@ -2107,6 +2171,18 @@ void flowout( FILE *fout,cell ***CL,int interval, double t) {
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs solid object data and prints to file.
+///
+/// This function simply prints the solid object data to the output data file.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param WALL This is a pointer to all of the walls (boundary conditions).
+/// @param t This is the time step.
+///
+/// @see outputResults
+///
 void solidout( FILE *fout,bc WALL,double t ) {
 /*
     Print solids data to file
@@ -2120,6 +2196,25 @@ void solidout( FILE *fout,bc WALL,double t ) {
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs topological charge and defect angle data to file for 2D defects only.
+///
+/// This function only works for 2D defects and serves two functions. If `TOPOUT` is flagged in input.json, the topological charge and angle of defect are calculated by `topoChargeLocal` and `topoAngleLocal` and the results are printed to a .dat file.
+/// If `DEFECTOUT` is flagged in input.json, the charge and angle are are grouped into clusters of non-zero values to identify defects. Each defect is given an identity, `defID`, with the topological charge and angle averaged for the whole defect.
+///
+/// @param ftopo This is a pointer to the topological charge .dat file to be produced.
+/// @param TOPOOUT This is a flag that determines whether the topological charge and angle should be printed, specified in input.json.
+/// @param fdefect This is a pointer to the topological defect .dat file to be produced.
+/// @param DEFECTOUT This is a flag that determines whether the defect topological charge and angle should be printed, specified in input.json.
+/// @param t This is the time step.
+/// @param CL This is a pointer to the co-ordinates and cell of each particle.
+/// @param tolD This is a cutoff that acts as the tolerance of the defect tracker.
+///
+/// @see topoChargeLocal
+/// @see topoAngleLocal
+/// @see outputResults
+///
 void topoChargeAndDefectsOut( FILE *ftopo,int TOPOOUT,FILE *fdefect,int DEFECTOUT,double t,cell ***CL,double tolD){
 	/*
 	 Print topological charge data to file
@@ -2250,6 +2345,21 @@ void topoChargeAndDefectsOut( FILE *ftopo,int TOPOOUT,FILE *fdefect,int DEFECTOU
 		#endif
 	}
 }
+
+///
+/// @brief Outputs disclination tensor data to file.
+///
+/// This function calculates and prints three-dimensional disclination tensor data to file.
+/// The disclination tensor is calculated from the tensor ordere parameter `Q`, which in turn is calculated by 'tensOrderParam'.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param t This is the time step.
+/// @param CL This is a pointer to the co-ordinates and cell of each particle.
+/// @param LC This is a flag that states if the system is a liquid crystal.
+///
+/// @see tensOrderParam
+/// @see outputResults
+///
 void disclinationTensorOut( FILE *fout,double t,cell ***CL,int LC ) {
 	/*
 	 Print disclination tensor data to file
@@ -2295,6 +2405,19 @@ void disclinationTensorOut( FILE *fout,double t,cell ***CL,int LC ) {
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs scalar order parameter and director field data to file.
+///
+/// This function simply prints the scalar order paramter and director field to an output data file.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param t This is the time step.
+/// @param CL This is a pointer to the co-ordinates and cell of each particle.
+/// @param LC This is a flag that states if the system is a liquid crystal.
+///
+/// @see outputResults
+///
 void orderout( FILE *fout,double t,cell ***CL,int LC ) {
 	/*
 	 Print scalar order parameter and director field data to file
@@ -2311,6 +2434,19 @@ void orderout( FILE *fout,double t,cell ***CL,int LC ) {
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs multiphase data to file.
+///
+/// This function simply prints multiphase data to an output data file.
+/// The species type, colour, and multiphase phi parameter are printed.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param t This is the time step.
+/// @param CL This is a pointer to the co-ordinates and cell of each particle.
+///
+/// @see outputResults
+///
 void multiphaseout( FILE *fout,double t,cell ***CL ) {
 	/*
 	 Print phi/colour/species-type field data to file
@@ -2327,6 +2463,19 @@ void multiphaseout( FILE *fout,double t,cell ***CL ) {
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs pressure field data to file.
+///
+/// This function simply prints pressure field data to an output data file.
+/// The streaming pressure `Ps` and collisional pressure `Pc` are the contributing facts computed.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param t This is the time step.
+/// @param CL This is a pointer to the co-ordinates and cell of each particle.
+///
+/// @see outputResults
+///
 void pressureout( FILE *fout,double t,cell ***CL ) {
 	/*
 	 Calculate and print pressure field data to file
@@ -2350,6 +2499,20 @@ void pressureout( FILE *fout,double t,cell ***CL ) {
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs tensor order parameter Q data to file.
+///
+/// This function obtains the tensor order parameter from `tensOrderParam`.
+/// The tensor order parameter value is then printed to an output data file.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param t This is the time step.
+/// @param CL This is a pointer to the co-ordinates and cell of each particle.
+/// @param LC This is a flag that states if the system is a liquid crystal.
+///
+/// @see outputResults
+///
 void orderQout( FILE *fout,double t,cell ***CL,int LC ) {
 	/*
 	 Print scalar order parameter data to file
@@ -2379,6 +2542,25 @@ void orderQout( FILE *fout,double t,cell ***CL,int LC ) {
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs wave number and tensor order parameter data to file.
+///
+/// This function calculates the real and imaginary parts of the tensor order parameter and the wave number K in the 2D x-y plane.
+/// The wave number and squared modulus of the tensor order paramter are printed to file.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param t This is the time step.
+/// @param pMPC This a pointer to MPC particles.
+/// @param CL This is a pointer to the co-ordinates and cell of each particle.
+/// @param LC This is a flag that states if the system is a liquid crystal.
+///
+/// @see findRotationMatrix
+/// @see dotprodMatVec
+/// @see dotprodMatMat
+///
+/// @see outputResults
+///
 void orderQKout( FILE *fout,double t,particleMPC pMPC[],cell ***CL,int LC ) {
 	/*
 	 Print scalar order parameter data to file
@@ -2474,6 +2656,18 @@ void orderQKout( FILE *fout,double t,particleMPC pMPC[],cell ***CL,int LC ) {
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs autocorrelation function data to file.
+///
+/// This function simply prints the autocorrelation function data to a data output file.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param corr This is the autocorrelation data.
+/// @param t This is the time step.
+///
+/// @see outputResults
+///
 void corrout( FILE *fout,double corr[],double t ) {
 	/*
 	 Print scalar order parameter data to file
@@ -2491,6 +2685,18 @@ void corrout( FILE *fout,double corr[],double t ) {
 		fflush(fout);
 	#endif
 }
+
+///
+/// @brief Outputs spectra data to file.
+///
+/// This function simply prints the energy or enstrophy spectrum data to a data output file.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param spect This is the spectrum data.
+/// @param t This is the time step.
+///
+/// @see outputResults
+///
 void spectout( FILE *fout,double spect[],double t ) {
 	/*
 	 Print scalar order parameter data to file
@@ -2515,6 +2721,34 @@ void spectout( FILE *fout,double spect[],double t ) {
 	#endif
 }
 
+///
+/// @brief A checkpointing function to allow MPCD to re-initialise a simulation from these parameters.
+///
+/// This function outputs entire simulation data so that it can be used as a set of re-initialisation parameter for another simulation.
+/// Total time and input parameter, as well as the all the output parameters are output
+/// Information on swimmers, MPC particle species, MD particles and boundaries are also all output.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param in This is the list of inputs from input.json.
+/// @param SP This is the species-wide information about MPCD particles.
+/// @param pSRD This is a list of information for all MPCD particles.
+/// @param MDmode This is a flag to determine if MD mode is on.
+/// @param WALL This is a pointer to boundary position information.
+/// @param outFlag This is a flag for .dat files to be output.
+/// @param runtime This is the length of time the simulation runs.
+/// @param warmtime This is the length of warm up time of the simulation.
+/// @param AVVEL This is a pointer to the average speed.
+/// @param AVS This is is a pointer to the average scalar order parameter.
+/// @param avDIR This is the average director orientation in three-dimensions.
+/// @param S4 This is a pointer to the fourth moment of the scalar order parameter.
+/// @param stdN This is the standard deviation of the density.
+/// @param KBTNOW This is a pointer to the current un-thermostated temperature.
+/// @param AVV This is a pointer to the past average flow velocities.
+/// @param AVNOW This is a pointer to the current average flow velocities.
+/// @param theory These are theoretical values based off input.json.
+/// @param specS This is the swimmer species.
+/// @param sw This is a pointer to the list of swimmers.
+///
 void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,bc *WALL,outputFlagsList outFlag,int runtime,int warmtime,double AVVEL,double AVS,double avDIR[_3D],double S4,double stdN,double KBTNOW,double AVV[_3D],double AVNOW[_3D],kinTheory theory,specSwimmer specS,swimmer *sw ) {
 	/*
 	 Checkpoint the entire simulation
@@ -2582,6 +2816,38 @@ void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,b
 	fflush(fout); // force flush
 }
 
+///
+/// @brief This function runs a checkpoint operation.
+///
+/// This function runs a checkpointing operation that clears up code in `mpcd.c` during checkpointing.
+/// Checkpoints may either be time-based or not and is based off `checkpoint()`.
+///
+/// @param op This is the path to the output file.
+/// @param lastCheckpoint This is the last checkpoint time.
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param in This is the list of inputs from input.json.
+/// @param SP This is the species-wide information about MPCD particles.
+/// @param pSRD This is a list of information for all MPCD particles.
+/// @param MDmode This is a flag to determine if MD mode is on.
+/// @param WALL This is a pointer to boundary position information.
+/// @param outFlag This is a flag for .dat files to be output.
+/// @param runtime This is the length of time the simulation runs.
+/// @param warmtime This is the length of warm up time of the simulation.
+/// @param AVVEL This is a pointer to the average speed.
+/// @param AVS This is is a pointer to the average scalar order parameter.
+/// @param avDIR This is the average director orientation in three-dimensions.
+/// @param S4 This is a pointer to the fourth moment of the scalar order parameter.
+/// @param stdN This is the standard deviation of the density.
+/// @param KBTNOW This is a pointer to the current un-thermostated temperature.
+/// @param AVV This is a pointer to the past average flow velocities.
+/// @param AVNOW This is a pointer to the current average flow velocities.
+/// @param theory These are theoretical values based off input.json.
+/// @param specS This is the swimmer species.
+/// @param sw This is a pointer to the list of swimmers.
+///
+/// @see checkpoint
+/// @see openCheckpoint
+///
 void runCheckpoint(char op[500],time_t *lastCheckpoint,FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,bc *WALL,outputFlagsList outFlag,int runtime,int warmtime,double AVVEL,double AVS,double avDIR[_3D],double S4,double stdN,double KBTNOW,double AVV[_3D],double AVNOW[_3D],kinTheory theory,specSwimmer specS,swimmer *sw ) {
     /*
      * Run a checkpoint operation, used to clean up code in mpcd.c
@@ -2610,6 +2876,72 @@ void runCheckpoint(char op[500],time_t *lastCheckpoint,FILE *fout,inputList in,s
     fclose( fout );
 }
 
+///
+/// @brief This function outputs all results except histograms.
+///
+/// This function calls relevent functions to calculate values and output the results into data files. This includes all correlation functions and averaged data requested in the input.
+///
+/// @param CL This is a pointer to the co-ordinates and cell of each particle.
+/// @param SRDparticles This is a pointer to the array of particles.
+/// @param SP This is the species-wide information about MPCD particles.
+/// @param WALL This is a pointer to boundary position information.
+/// @param simMD This is a pointer to the MD simulation.
+/// @param SS This is a pointer to the swimmer species.
+/// @param swimmers This is the list of swimmers.
+/// @param AVNOW This is a pointer to the current average flow velocities.
+/// @param AVV This is a pointer to the past average flow velocities.
+/// @param avDIR This is the average director orientation in three-dimensions.
+/// @param runtime This is the length of time the simulation runs.
+/// @param in This is the list of inputs from input.json.
+/// @param AVVEL This is a pointer to the average speed.
+/// @param KBTNOW This is a pointer to the current un-thermostated temperature.
+/// @param AVS This is is a pointer to the average scalar order parameter.
+/// @param S4 This is a pointer to the fourth moment of the scalar order parameter.
+/// @param stdN This is the standard deviation of the density.
+/// @param MDmode This is a flag to determine if MD mode is on.
+/// @param outFlag This is a flag for .dat files to be output.
+/// @param outFiles This is the list of output files.
+///
+/// @see solidout
+/// @see bin
+/// @see binSwimmers
+/// @see binMD
+/// @see localPROP
+/// @see avVel
+/// @see localVelGrad
+/// @see galileantrans
+/// @see zeroExtraDims
+/// @see avOrderParam
+/// @see avS4
+/// @see avsout
+/// @see densSTDout
+/// @see binderCumulant
+/// @see binderout
+/// @see avveloutWithGradVel
+/// @see avEnstrophy
+/// @see avenstrophyout
+/// @see enout
+/// @see enfieldout
+/// @see enneighboursout
+/// @see swimout
+/// @see swimoriout
+/// @see corrout
+/// @see velvelCorr
+/// @see dirdirCorr
+/// @see orderorderCorr
+/// @see normCorr
+/// @see FTspectrum
+/// @see spectout
+/// @see coordout
+/// @see flowout
+/// @see coarseout
+/// @see orderout
+/// @see orderQout
+/// @see disclinationTensorOut
+/// @see multiphaseout
+/// @see pressureout
+/// @see orderQKout
+///
 void outputResults( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr simMD,specSwimmer SS, swimmer swimmers[],double AVNOW[_3D],double AVV[_3D],double avDIR[_3D], int runtime, inputList in, double AVVEL, double KBTNOW,double *AVS,double *S4,double *stdN,int MDmode,outputFlagsList outFlag,outputFilesList outFiles ) {
 	/*
 	 Output the results (except histograms of distributions, which are separate since they take lots of memory)
@@ -2796,6 +3128,24 @@ void outputResults( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],sim
 	if(in.LC!=ISOF && DIM==_2D) if((outFlag.TOPOOUT>=OUT && runtime%outFlag.TOPOOUT==0)||(outFlag.DEFECTOUT>=OUT && runtime%outFlag.DEFECTOUT==0)) topoChargeAndDefectsOut( outFiles.ftopo, outFlag.TOPOOUT, outFiles.fdefects, outFlag.DEFECTOUT, time_now, CL, in.tolD);
 }
 
+
+///
+/// @brief This function outputs histogram results.
+///
+/// This function calls relevent functions to calculate values and output the histogram results into data files.
+///
+/// @param CL This is a pointer to the co-ordinates and cell of each particle.
+/// @param runtime This is the length of time the simulation runs.
+/// @param in This is the list of inputs from input.json.
+/// @param outFlag This is a flag for .dat files to be output.
+/// @param outFiles This is the list of output files.
+///
+/// @see histVelout
+/// @see histSpeedout
+/// @see histEnstout
+/// @see histVortout
+/// @see histNout
+///
 void outputHist( cell ***CL,int runtime, inputList in,outputFlagsList outFlag,outputFilesList outFiles ) {
 	/*
 	 Output histograms of distributions
@@ -2952,6 +3302,16 @@ void outputHist( cell ***CL,int runtime, inputList in,outputFlagsList outFlag,ou
 	}
 }
 
+///
+/// @brief This function closes output files after writing.
+///
+/// This function closes output files after writing.
+///
+/// @param SP This is the species-wide information about MPCD particles.
+/// @param WALL This is a pointer to boundary position information.
+/// @param outFlag This is a flag for .dat files to be output.
+/// @param outFiles This is the list of output files.
+///
 void closeOutputFiles( spec *SP,bc WALL[],outputFlagsList outFlag,outputFilesList outFiles ) {
 	int i;
 
@@ -2995,6 +3355,16 @@ void closeOutputFiles( spec *SP,bc WALL[],outputFlagsList outFlag,outputFilesLis
 	if( outFlag.SOLOUT>=OUT ) for( i=0; i<NBC; i++ ) if( WALL[i].DSPLC ) fclose( outFiles.fsolids[i] );
 }
 
+///
+/// @brief This function writes output files.
+///
+/// This function writes output files.
+///
+/// @param t This is the time step.
+/// @param f This is a flag for .dat files to be output.
+/// @param RFRAME This is a pointer to rest frame.
+/// @param zeroNetMom This is momentum correction term to reset to the rest frame.
+///
 int writeOutput( int t,outputFlagsList f,int RFRAME,int zeroNetMom ) {
 	if( ( RFRAME && t%zeroNetMom==0 ) || ( f.ENOUT>=OUT && t%f.ENOUT==0 ) || ( f.TRAJOUT>=OUT  && t%f.TRAJOUT==0 ) || ( f.AVVELOUT>=OUT && t%f.AVVELOUT==0 ) || ( f.QKOUT && t%f.QKOUT==0 ) || ( f.AVSOUT>=OUT && t%f.AVSOUT==0 ) || ( f.ENNEIGHBOURS>=OUT && t%f.ENNEIGHBOURS==0 ) || ( f.SOLOUT>=OUT && t%f.SOLOUT==0 ) || ( f.BINDER && t%f.BINDER==0 ) || ( f.SWOUT && t%f.SWOUT==0 ) || ( f.SWORIOUT && t%f.SWORIOUT==0 ) ) {
 		return 1;
@@ -3009,6 +3379,15 @@ int writeOutput( int t,outputFlagsList f,int RFRAME,int zeroNetMom ) {
 	}
 	else return 0;
 }
+
+///
+/// @brief This function writes histogram output files.
+///
+/// This function writes histogram output files
+///
+/// @param t This is the time step.
+/// @param f This is momentum correction term to reset to the rest frame.
+///
 int writeHistograms( int t,outputFlagsList f ) {
 	if( ( f.HISTVELOUT>=OUT && t%f.HISTVELOUT==0 ) || ( f.HISTSPEEDOUT>=OUT && t%f.HISTSPEEDOUT==0 ) || ( f.HISTVORTOUT>=OUT && t%f.HISTVORTOUT==0 ) || ( f.HISTENSTROUT>=OUT && t%f.HISTENSTROUT==0 ) || ( f.HISTDIROUT>=OUT && t%f.HISTDIROUT==0 ) || ( f.HISTSOUT>=OUT && t%f.HISTSOUT==0 ) || ( f.HISTNOUT>=OUT && t%f.HISTNOUT==0 ) ) {
 		return 1;
