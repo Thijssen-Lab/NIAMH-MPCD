@@ -1818,7 +1818,6 @@ void enfieldout( FILE *fout,cell ***CL,spec *SP,double MFPOT,int LC ) {
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
 /// @param t This is time.
-/// @param fout This is a pointer to the output .dat file name to be produced.
 /// @param CL This is a pointer to the co-ordinates and cell of each particle.
 /// @param MFPOT This is a pointer to mean-field potential specified by input.json.
 /// @param LC This is a flag that states if the system is a liquid crystal.
@@ -2155,7 +2154,7 @@ void topoChargeAndDefectsOut( FILE *ftopo,int TOPOOUT,FILE *fdefect,int DEFECTOU
 				} else {
 					// -1/2 defects need additional considerations due to 3-fold symmetry
 					locAngle = fmod(topoAngle[i][j], 2.0*M_PI/3.0);
-					locAngle = 3.0*(locAngle < 0.0) ? (2.0*M_PI/3.0 + locAngle) : locAngle;
+					locAngle = 3.0*((locAngle < 0.0) ? (2.0*M_PI/3.0 + locAngle) : locAngle);
 				}
                 avAx += cos(locAngle);
                 avAy += sin(locAngle);
