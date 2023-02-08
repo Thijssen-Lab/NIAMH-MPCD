@@ -7,9 +7,10 @@
 /// then forces are taken into account.
 ///
 /// The swimmers repulse each other via a Weeks-Chandler-Andersen potential. The monomers are coupled two-by-two with
-/// either FENE, Hookean interaction, or a 6th order potential. More information on those potentials can be found here
-/// @link https://doi.org/10.1002/elps.200800673. The swimmers can become non-interacting, ie no WCA force between
-/// different dimers, if the appropriate tag is turned on.
+/// either FENE, Hookean interaction, or a 6th order potential. More information on those potentials can be found
+/// @link https://doi.org/10.1002/elps.200800673 here@endlink.
+/// The swimmers can become non-interacting, ie no WCA force between different dimers, if the appropriate tag is turned
+/// on.
 ///
 /// These forces are used to integrate the swimmers' motions between timesteps. The swimmers interact with the fluid
 /// with dipole forces and rotlets. Run/tumble dynamics and magnetic interactions can also be turned on.
@@ -44,8 +45,8 @@
 ///
 /// @brief Read in the user input for swimmer details. 
 ///
-/// Read the swimmer details from swimmer.inp, by reading in the adresses of the variables as pointers. It then
-/// allocates memory to each swimmer.
+/// Read the swimmer details from legacy swimmer.inp files, by reading in the addresses of the variables as pointers.
+/// It then allocates memory to each swimmer.
 ///
 /// @param fpath Path to the input file.
 /// @param specS Pointer to which the input values for swimmer properties are sent.
@@ -147,7 +148,8 @@ void readswimmers( char fpath[],specSwimmer *specS,swimmer **sw ) {
 ///
 /// @brief Initialize the swimmers' coordinates. 
 ///
-/// Initialize the swimmers' coordinates. It may run into trouble if there is not enough space to fit all the swimmers.
+/// Initialize swimmer coordinates at the start of a simulation. It may run into trouble if there is not enough space to
+/// fit all the swimmers.
 ///
 /// @param SS Swimmer properties, read from the input file by readswimmers().
 /// @param swimmers Swimmer array to be initialized.
@@ -398,7 +400,7 @@ void runtumbleout( FILE *fout,swimmer *sw ) {
 ///
 /// @brief Apply period boundary conditions to swimmer monomer interactions.
 ///
-/// Apply period boundary conditions to swimmer monomers for their pair interactions. Unwraps coordinates if needed.
+/// Convert a distance to a distance under periodic boundary conditions.
 ///
 /// @param dr Pointer to distance between the monomers. Expected to be passed by reference.
 ///
@@ -439,11 +441,13 @@ void swimmerOri( double n[],swimmer *sw ) {
 /// Calculate the Weeks-Chandler-Andersen force from the monomer separation r, which has to be scaled by the monomer
 /// size ahead of time.
 ///
-/// The force only acts at radii smaller than rcut (1.122462048309373), its strength depends on eps, and its magnitude
-/// is capped at fcap (1E3). To get the force vector this must be multiplied by vec(r). For more details,
-/// see @link[https://doi.org/10.1002/elps.200800673].
+/// The force only acts at radii smaller than `rcut`, its strength depends on `eps`, and its magnitude is capped at
+/// `fcap`.
 ///
-/// @param r Distance between two monomers, scaled by their size sigma (default value 4, can be changed in the input file). 
+/// To get the force vector this must be multiplied by `vec(r)`. For more details,
+/// @link[https://doi.org/10.1002/elps.200800673] see@endlink.
+///
+/// @param r Distance between two monomers, scaled by their size `sigma` (default value 4, can be changed in the input file).
 /// @param eps Interaction energy. Default value of 1.
 /// @return Magnitude of the WCA force.
 ///
@@ -463,11 +467,11 @@ double swimmerWCA( double r,double eps ) {
 }
 
 ///
-/// @brief Calculate the FENE force from the separation r scaled by an equilibrium distance ro, default value 4. 
+/// @brief Calculate the FENE force from the separation `r` scaled by an equilibrium distance `ro`, default value 4.
 ///
-/// The value of ro can be changed in the input file. To get the force vector this must be multiplied by vec(r). If the
-/// FENE chain is passed then there is a large "backup" force to pull the monomers together. For more details, see
-/// @link https://doi.org/10.1002/elps.200800673.
+/// The value of `ro` can be changed in the input file. To get the force vector this must be multiplied by `vec(r)`. If
+/// the FENE chain is passed then there is a large "backup" force to pull the monomers together. For more details,
+/// @link https://doi.org/10.1002/elps.200800673 see@endlink.
 ///
 /// @param r Scaled distance between two halves of a swimmer.
 /// @param k Spring strength.
@@ -486,8 +490,9 @@ double swimmerFENE( double r,double k ) {
 ///
 /// @brief Hookean force. 
 ///
-/// Calculate the Hookean force for a separation r, scaled by ro (default value 4, can be changed in the input file).
-/// To get the force vector this must be multiplied by vec(r).
+/// Calculate the Hookean force for a separation `r`, scaled by `ro` (default value 4, can be changed in the input
+/// file).
+/// To get the force vector this must be multiplied by `vec(r)`.
 ///
 /// @param r Scaled distance between two halves of a swimmer.
 /// @param k Spring strength.
@@ -500,8 +505,8 @@ double swimmerHookean( double r,double k ) {
 ///
 /// @brief Non-linear spring force to power six. 
 ///
-/// Calculate the non-linear spring force from the separation r, scaled by ro (default value 4, can be changed in the
-/// input file). To get the force vector this must be multiplied by vec(r).
+/// Calculate the non-linear spring force from the separation `r`, scaled by `ro` (default value 4, can be changed in
+/// the input file). To get the force vector this must be multiplied by `vec(r)`.
 ///
 /// @param r Scaled distance between two halves of a swimmer.
 /// @param k Spring strength.
@@ -519,7 +524,7 @@ double swimmerSpring6( double r,double k ) {
 /// velocity, then the boundary conditions are used to check that the swimmer is still in bounds. The forces (between
 /// the monomer couples) are updated at the new position, the acceleration is calculated from there, and the velocity is
 /// updated again, now to its value at the end of the timestep. For more details,
-/// see @link[https://en.wikipedia.org/wiki/Verlet_integration].
+/// @link[https://en.wikipedia.org/wiki/Verlet_integration] see@endlink.
 ///
 /// @param SS Swimmer properties.
 /// @param s List of swimmers. Their positions, velocities, and accelerations will be updated.
@@ -576,7 +581,7 @@ void swimmerVerlet_nonInteracting( specSwimmer SS,swimmer *s,double dt,int sprin
 /// the boundary conditions are used to check that the swimmer is still in bounds. The forces (between the monomer
 /// couples and between each monomers) are updated at the new position, the acceleration is calculated from there, and
 /// the velocity is updated again, now to its value at the end of the timestep. For more details,
-/// see @link[https://en.wikipedia.org/wiki/Verlet_integration].
+/// @link https://en.wikipedia.org/wiki/Verlet_integration see@endlink.
 ///
 /// @param SS Swimmer properties.
 /// @param s List of swimmers. Their positions, velocities, and accelerations will be updated.
@@ -681,7 +686,7 @@ void smonoDist( double r[],double *dr,smono m1, smono m2 ) {
 /// Calculate the magnitude of the force between two monomers in the same swimmer, using a spring coupling and a WCA
 /// repulsion.
 ///
-/// See @link https://doi.org/10.1002/elps.200800673 for more details and definitions.h for the spring types.
+/// See @link https://doi.org/10.1002/elps.200800673 @endlink for more details and definitions.h for the spring types.
 ///
 /// @param dr Distance between the monomers. Scaled by sigma for the WCA interaction, and by ro for the spring coupling.
 /// @param SS Swimmer properties.
@@ -731,8 +736,8 @@ void smonoForce_sameSwimmer( double a[],specSwimmer SS,swimmer *s,int springType
 /// Calculate the magnitude of the WCA force between two monomers in different swimmers. If tumbling is activated,
 /// swimmers still see each other's true size, without shrinking.
 ///
-/// @param dr Distance between the swimmer, scaled by sigma (default value 4, can be changed in the input file).
-/// @param SS Swimmer properties, used here to obtaine sigma and epsilon.
+/// @param dr Distance between the swimmer, scaled by `sigma` (default value 4, can be changed in the input file).
+/// @param SS Swimmer properties, used here to obtaine `sigma` and `epsilon`.
 /// @return Magnitude of the WCA force.
 ///
 double smonoForceMag_differentSwimmers( double dr,specSwimmer SS ) {
@@ -1133,7 +1138,7 @@ void swimmerDipole( specSwimmer SS,swimmer swimmers[],cell ***CL,spec SP[],doubl
 
 ///
 /// @brief Set the swimming speed and the propulsion force on the fluid. 
-
+///
 /// This is where the "invisible" tail is used by the simulator.
 ///
 /// @param SS Swimmer properties
@@ -1647,7 +1652,7 @@ void addlinkSwimmer( cell *CL,smono *s ) {
 ///
 /// @brief This routine removes a link from a list and relinks the list.
 ///
-/// This function removes the `current` swimmer monomer from a linked list and re-stiches the list back together.
+/// This function removes the `current` swimmer monomer from a linked list and re-stitches the list back together.
 ///
 /// @param current Monomer to be removed fromn list.
 /// @param CL List of all the MPCD cells, with the chains they contain.
