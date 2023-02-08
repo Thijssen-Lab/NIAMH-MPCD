@@ -1,5 +1,6 @@
 ///
 /// @file
+///
 /// @brief Contains all the pseudo-classes used in the code.
 ///
 /// The code makes heavy use of pseudo-classes in the form of C typedef'd structs. This file contains all of the structs
@@ -7,6 +8,7 @@
 ///
 /// Members of these structs usually have a 1:1 correspondence with JSON input file parameters, and are displayed when
 /// appropriate.
+///
 
 #ifndef SRDCLSS_H
 #define SRDCLSS_H
@@ -21,10 +23,12 @@
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
+///
 /// @brief A struct representing a single MPCD particle.
 ///
 /// The central structure used throughout MPCD. Particles are mostly stored inside a single linked list, and then
 /// pointed to by all other structures.
+///
 typedef struct particleMPC {
 	double Q[3];			        ///< The particle position vector
 	double V[3];			        ///< The particle velocity vector
@@ -37,9 +41,11 @@ typedef struct particleMPC {
 	struct particleMPC *previous;	///< Pointer to previous particle in the cell list
 } particleMPC;
 
+///
 /// @brief A struct representing the hyper-parameters for a single species of MPCD particles
 ///
 /// Contains common parameters for all particles of a given species. These are stored in an array of these structures.
+///
 typedef struct spec {
 	int POP;	            ///< Total population of the species - json `'pop'` (`'dens'` can override it for simple geometries)
 	int QDIST;				///< How the position of this species' particles is initialised - json `'qDist'`
@@ -60,10 +66,12 @@ typedef struct spec {
 	double MINACTRATIO;		///< Minimum proportion of particles in the cell for activity to be applied
 } spec;
 
+///
 /// @brief A struct representing a single simulation boundary/ wall
 ///
 /// Contains the information required for BC calculations. Stored as an array of these structures. A description of how
 /// BCs are calculated is provided.
+///
 typedef struct bc {
     /// Boundary conditions take on a general form of
     /// `( (x-h)/a )^p + ((y-k)/b)^p + ((z-l)/c)^p = R^p`
@@ -226,10 +234,12 @@ typedef struct bc {
 */
 } bc;
 
+///
 /// @brief The struct representing a single MPCD cell
 ///
 /// This struct acts as a container for all information about a single MPCD cell. These are primarily stored as a 3D
 /// array representing the system domain.
+///
 typedef struct cell {
 	int POP;					///< Total population of the cell (MPC particles, swimmers, and monomers)
 	double MASS;				///< Total mass of the cell
@@ -249,9 +259,11 @@ typedef struct cell {
 	struct smono *sp;			///< Pointer to first swimmer monomer particle in list
 } cell;
 
+///
 /// @brief Helper container struct containing all output files
 ///
 /// All output files are stored within this struct, used as a container for simple passing to functions.
+///
 typedef struct outputFilesList {
 	FILE *fcoarse,*fflow,*fenergy,*fenergyfield,*fenneighbours;
 	FILE *fsynopsis,*favvel,*forder,*forderQ,*forderQK,*favs,*fdensSTD,*fchckpnt,*fenstrophy,*fmultiphase,*fpressure;
@@ -264,11 +276,13 @@ typedef struct outputFilesList {
 	FILE *fswimmers,*fswimmersOri,*fruntumble;
 } outputFilesList;
 
+///
 /// @brief Container for possible outputs. Each int represents the time period between dumps of that output.
 ///
 /// This struct is used to store the time period between dumps of each output. Each dump is stored as an integer: A
 /// value of 0 means that no dump takes place, a finite positive value indicates the period between dumps for that
 /// output.
+///
 typedef struct outputFlagsList {
 	int TRAJOUT;				///< Flag for if the detailed trajectories of every particle are outputted - json `'trajOut'`
 	int COAROUT;				///< Flag for if coarse grain is outputted - json `'coarseOut'`
@@ -316,10 +330,12 @@ typedef struct outputFlagsList {
     int RTOUT;	                ///< Flag for if swimmer run/tumbles are outputted - json `'swimRTOut'`
 } outputFlagsList;
 
+///
 /// @brief Helper container struct that contains kinetic theory parameters
 ///
 /// This container structure is used to store all fluid kinetic theory parameters that may be of use, to make it easy
 /// to pass them around.
+///
 typedef struct kinTheory {
 	double MFP;					///< Mean Free Path
 	double VISC;				///< Kinematic viscosity
@@ -329,11 +345,13 @@ typedef struct kinTheory {
 	double sumM;				///< Sum of all masses
 } kinTheory;
 
+///
 /// @brief Helper container struct that contains input parameters
 ///
 /// This container structure was used to store the parameters associated with the legacy input.inp file. Now it stores
 /// all of the "central" parameters of the system simulation. It is used to simplify passing these parameters around
 /// between methods.
+///
 typedef struct inputList {
 	double KBT;					///< Temperature: A third of thermal energy. Sets energy scale - json `'kbt'`
 	double dt;					///< MPCD time step value - json `'dt'`
@@ -363,10 +381,12 @@ typedef struct inputList {
 	int MULTIPHASE;				///< MULTIPHASE mode. If MULTIPHASE==0 then no interactions between particles of different species occurs
 } inputList;
 
+///
 /// @brief Struct that contains all of the parameters associated with a species of swimmers.
 ///
 /// This container structure is used to store all of the hyper-parameters associated with a species of swimmers. It is
 /// stored as an array.
+///
 typedef struct specSwimmer {
 	int TYPE;					///< Type of swimmer 0=fix-dipole; 1=dumbbell; 2=dumbell with excluded vol; 3=dumbell with no counter-force  - json `'typeSwim'`
 	int QDIST;					///< QDIST is the flag which tells how the swimmers are intially placed - json `'qDistSwim'`
@@ -395,9 +415,11 @@ typedef struct specSwimmer {
 	double MAGMOM;				///< Magnetic moment strength/magnitude - json `'magMomSwim'`
 } specSwimmer;
 
+///
 /// @brief Struct that represents a single monomer
 ///
 /// This container structure is used to store all of the parameters associated with a single monomer.
+///
 typedef struct smono {
 	double Q[_3D];				///< Position of the monomer
 	double V[_3D];				///< Velocity of the monomer
@@ -407,9 +429,11 @@ typedef struct smono {
 	struct smono *previous;		///< Pointer to previous particle in cell list
 } smono;
 
+///
 /// @brief Struct that represents a single MPCD swimmer
 ///
 /// This container structure is used to store all of the parameters associated with a single MPCD swimmer.
+///
 typedef struct swimmer {
 	smono H;                    ///< The head of the dumbbell
     smono M;					///< The middle of the dumbbell
