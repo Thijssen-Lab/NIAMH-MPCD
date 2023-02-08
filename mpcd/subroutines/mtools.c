@@ -1,8 +1,10 @@
 ///
 /// @file
-/// @brief Math functions applied in MPCD
 ///
-/// Different math methods are collecetd there for easy access in any place of the code
+/// @brief Math functions applied in MPCD.
+///
+/// Different math methods are collected there for easy access in any place of the code.
+///
 # include<math.h>
 # include<stdio.h>
 # include<stdlib.h>
@@ -23,10 +25,12 @@
 ///
 /// @brief A "smart" Pow method that will only call C-math pow if necessary (non-natural y).
 ///
-/// First checks if y is int and below the smart y limit if not then do just C-math pow
+/// First checks if y is an int and sufficiently small, and if so do an optimised power routine. If not then do just
+/// C-math pow.
 ///
-/// @param x any real number
-/// @param y any real number
+/// @param x any real number.
+/// @param y any real number.
+/// @return x^y
 ///
 double smrtPow(double x, double y){
 
@@ -41,34 +45,42 @@ double smrtPow(double x, double y){
 		return result;
 	} else return pow(x, y); // otherwise just do C-math pow
 }
+
 ///
-/// @brief Check if two floats are equal within set TOL
+/// @brief Check if two doubles are equivalent.
 ///
-/// TOL is real number that is defined in definitions.h
+/// Checks if two doubles are within a given `TOL`. `TOL` is real number that is defined in definitions.h.
 ///
-///@param x any real number
-///@param y any real number
+/// @param x any real number.
+/// @param y any real number.
+/// @return 1 if `x` and `y` are equivalent, 0 otherwise.
 ///
 int feq(double x,double y) {
 		return fabs(x-y)<=TOL;
 }
+
 ///
-/// @brief Check if two floats are NOT equal within set TOL
+/// @brief Check if two doubles are not equivalent.
 ///
-/// TOL is real number that is defined in definitions.h
+/// Checks if two doubles are further apart than a given `TOL`. `TOL` is real number that is defined in definitions.h.
 ///
-///@param x any real number
-///@param y any real number
+/// @param x any real number.
+/// @param y any real number.
+/// @return 1 if `x` and `y` are not equivalent, 0 otherwise.
 ///
 int fneq(double x,double y) {
 		return fabs(x-y)>=TOL;
 }
+
 ///
-/// @brief Evaluates the Levi Civita index counter
+/// @brief Evaluates the Levi-Civita tensor.
 ///
-/// @param i first index
-/// @param j second index
-/// @param k third index
+/// Evaluates the Levi-Civita tensor.
+///
+/// @param i first index.
+/// @param j second index.
+/// @param k third index.
+/// @return The value of the Levi-Civita tensor with indices `i`, `j`, `k`.
 ///
 int levicivita( int i,int j,int k ) {
 
@@ -82,12 +94,16 @@ int levicivita( int i,int j,int k ) {
 	else result = 0;
 	return result;
 }
+
 ///
-/// @brief Takes the dot product of two vectors and returns a scalar
+/// @brief Takes the dot product of two vectors and returns a scalar.
 ///
-/// @param x first vector
-/// @param y second vector
-/// @param dimension dimensionality of the vectors
+/// Takes the dot product of two vectors and returns a scalar.
+///
+/// @param x first vector, passed as an array.
+/// @param y second vector, passed as an array.
+/// @param dimension dimensionality of the vectors.
+/// @return The dot product of `x` and `y`.
 ///
 double dotprod( double x[], double y[],int dimension ) {
 	int i;
@@ -97,52 +113,63 @@ double dotprod( double x[], double y[],int dimension ) {
 	}
 	return result;
 }
+
 ///
-/// @brief Takes the dot product of a matrix to a vector and returns a vector
+/// @brief Takes the dot product of a matrix to a vector, returning a vector.
 ///
-/// @param M matrix
-/// @param v vector
-/// @param result output vector
-/// @param dimension dimensionality of the operands
+/// Takes the dot product of a matrix to a vector, returning a vector.
+///
+/// @param M Matrix, stored as a 2D array.
+/// @param v Vector.
+/// @param result Output vector.
+/// @param dimension Dimensionality of the operands.
 ///
 void dotprodMatVec( double M[][3],double v[],double result[],int dimension ) {
 	int i,j;
 	for( i=0; i<dimension; i++ ) result[i] = 0.;
 	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) result[i] += M[i][j]*v[j];
 }
+
 ///
-/// @brief Takes the dot product of a vector to a matrix and returns a vector
+/// @brief Takes the dot product of a vector to a matrix, returning a vector.
 ///
-/// @param v vector
-/// @param M matrix
-/// @param result output vector
-/// @param dimension dimensionality of the operands
+/// Takes the dot product of a vector to a matrix, returning a vector.
+///
+/// @param v Vector.
+/// @param M Matrix.
+/// @param result Output vector.
+/// @param dimension Dimensionality of the operands.
 ///
 void dotprodVecMat( double v[], double M[][3],double result[],int dimension ) {
 	int i,j;
 	for( i=0; i<dimension; i++ ) result[i] = 0.;
 	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) result[i] += v[j] * M[j][i];
 }
+
 ///
-/// @brief Takes the dot product of a matrix to another matrix and returns a matrix
+/// @brief Takes the dot product of a matrix to another matrix, returning a matrix.
 ///
-/// @param A first matrix
-/// @param B second matrix
-/// @param result output matrix
-/// @param dimension dimensionality of the operands
+/// Takes the dot product of a matrix to another matrix, returning a matrix.
+///
+/// @param A First matrix.
+/// @param B Second matrix.
+/// @param result Output matrix.
+/// @param dimension Dimensionality of the operands.
 ///
 void dotprodMatMat( double A[][3],double B[][3],double result[][3],int dimension ) {
 	int i,j,k;
 	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) result[i][j] = 0.;
 	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) for( k=0; k<dimension; k++ ) result[i][j] += A[i][k]*B[k][j];
 }
+
 ///
-/// @brief Takes the cross product of two 3D vectors and sets it as the third
-///	Must be 3D since in 2D, result is in 3rd dimension
+/// @brief Takes the cross product of two 3D vectors and sets it as the third.
 ///
-/// @param x first vector
-/// @param y second vector
-/// @param result output vector
+///	Requires to be passed 3D vectors, even if in 2D mode. This is due to the output always being a 3D vector.
+///
+/// @param x First vector.
+/// @param y Second vector
+/// @param result Output vector.
 ///
 void crossprod( double x[3], double y[3], double result[3] ) {
 	int i;
@@ -152,14 +179,15 @@ void crossprod( double x[3], double y[3], double result[3] ) {
 	result[1] = x[2]*y[0] - x[0]*y[2];
 	result[2] = x[0]*y[1] - x[1]*y[0];
 }
+
 ///
-/// @brief Old version of the cross product operation.
-///	 This version was found to be slow (gprof said this and it's calls to
-///	 levicivita took >35% runtime!!!!)
+/// @brief Legacy. Old version of the cross product operation.
 ///
-/// @param x first vector
-/// @param y second vector
-/// @param result output vector
+///	This version was found to be slow (gprof said this and it's calls to levi-civita took >35% runtime!!!!).
+///
+/// @param x First vector.
+/// @param y Second vector.
+/// @param result Output vector.
 ///
 void oldcrossprod( double x[3], double y[3], double result[3] ) {
 	int i,j,k;
@@ -170,24 +198,31 @@ void oldcrossprod( double x[3], double y[3], double result[3] ) {
 				result[i] += ((double) eps) * x[j] * y[k];
 	}
 }
+
 ///
-/// @brief Finds the outer product of two vectors, returns a matrix
+/// @brief Finds the outer product of two vectors, returns a matrix.
 ///
-/// @param x first vector
-/// @param y second vector
-/// @param result output matrix
-/// @param dimension dimensionality of the operands
+/// Finds the outer product of two vectors, returns a matrix.
+///
+/// @param x First vector.
+/// @param y Second vector.
+/// @param result Output matrix.
+/// @param dimension Dimensionality of the operands.
 ///
 void outerprod( double x[], double y[], double result[][_3D],int dimension ) {
 	int i,j;
 	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) result[i][j] = 0.;
 	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) result[i][j] = x[i]*y[j];
 }
+
 ///
-/// @brief Finds the magnitude of the vector, returns scalar value
+/// @brief Finds the magnitude of the vector, returns scalar value.
 ///
-/// @param x input vector
-/// @param dimension dimensionality of the vector
+/// Finds the magnitude of the vector, returns scalar value.
+///
+/// @param x Input vector.
+/// @param dimension Dimensionality of the vector.
+/// @return Magnitude of the `x` vector.
 ///
 double length( double x[],int dimension ) {
 	int i;
@@ -196,11 +231,14 @@ double length( double x[],int dimension ) {
 	result = sqrt( result );
 	return result;
 }
+
 ///
-/// @brief Normalizes the input vector
+/// @brief Normalizes the input vector.
 ///
-/// @param x input vector
-/// @param dimension dimensionality of the vector
+/// Modifies the input vector such that it is normalised.
+///
+/// @param x Input vector.
+/// @param dimension Dimensionality of the vector.
 ///
 void norm( double x[],int dimension ) {
 	int i;
@@ -208,12 +246,15 @@ void norm( double x[],int dimension ) {
 	l = length( x,dimension );
 	if( fneq(l,0.0) ) for ( i=0; i<dimension; i++ ) x[i] = x[i] / l;
 }
+
 ///
-/// @brief Normalizes the input vector and returns as separate one
+/// @brief Normalizes the input vector, returning it as a separate vector.
 ///
-/// @param xin input vector
-/// @param xout output vector
-/// @param dimension dimensionality of the vectors
+/// Normalizes the input vector, returning it as a separate vector.
+///
+/// @param xin Input vector.
+/// @param xout Output vector.
+/// @param dimension Dimensionality of the vectors.
 ///
 void normCopy( double xin[],double xout[],int dimension ) {
 	int i;
@@ -221,14 +262,15 @@ void normCopy( double xin[],double xout[],int dimension ) {
 	l = length( xin,dimension );
 	if( fneq(l,0.0) ) for ( i=0; i<dimension; i++ ) xout[i] = xin[i] / l;
 }
+
 ///
-/// @brief Finds the normal vector (n) to a plane defined by x and y
+/// @brief Finds the unit normal vector (n) to a plane defined by x and y.
 ///  
-///	 It assumes 3D because even in 2D, the result must be in 3rd dimension
+///	 It assumes 3D because even in 2D, the result must be in 3rd dimension.
 ///
-/// @param x first input vector
-/// @param y second input vector
-/// @param n dimensionality of the vectors
+/// @param x First input vector.
+/// @param y Second input vector.
+/// @param n Dimensionality of the vectors
 ///
 void normalplane( double x[3], double y[3], double n[3] ) {
 	crossprod( x,y,n );
