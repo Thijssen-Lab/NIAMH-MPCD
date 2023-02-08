@@ -31,9 +31,8 @@
 ///
 /// @param x any real number.
 /// @param y any real number.
-/// @return x^y
+/// @return x^y.
 ///
-
 double smrtPow(double x, double y){
 
 	const int yLim = 10; // an arbitrary limit for smart y usage
@@ -104,7 +103,7 @@ int levicivita( int i,int j,int k ) {
 ///
 /// @param x first vector, passed as an array.
 /// @param y second vector, passed as an array.
-/// @param dimension dimensionality of the vectors.
+/// @param dimension Dimensionality of the vectors.
 /// @return The dot product of `x` and `y`.
 ///
 double dotprod( double x[], double y[],int dimension ) {
@@ -170,7 +169,7 @@ void dotprodMatMat( double A[][3],double B[][3],double result[][3],int dimension
 ///	Requires to be passed 3D vectors, even if in 2D mode. This is due to the output always being a 3D vector.
 ///
 /// @param x First vector.
-/// @param y Second vector
+/// @param y Second vector.
 /// @param result Output vector.
 ///
 void crossprod( double x[3], double y[3], double result[3] ) {
@@ -318,7 +317,7 @@ void tang( double v[],double VN[],double VT[],int dimension ) {
 ///
 /// @param v1 First input vector.
 /// @param v2 Second input vector.
-/// @param dimension dimensionality of the vectors.
+/// @param dimension Dimensionality of the vectors.
 /// @return Cosine of the angle between `v1` and `v2`.
 ///
 double cosang( double v1[],double v2[],int dimension ) {
@@ -330,9 +329,9 @@ double cosang( double v1[],double v2[],int dimension ) {
 }
 
 ///
-/// @brief arctan that returns a signed angle
+/// @brief arctan that returns a signed angle.
 ///
-/// arctan that returns a signed angle
+/// arctan that returns a signed angle.
 /// 
 /// @param y First input scalar.
 /// @param x Second input scalar.
@@ -395,7 +394,7 @@ double signedAngle( double v1[], double v2[], int dimension ) {
 ///
 ///	@brief Calculates the distance between two points.
 ///
-/// Computes the distance between two points.n
+/// Computes the distance between two points.
 ///
 /// @param P1 First point.
 /// @param P2 Second point.
@@ -411,7 +410,7 @@ double distpoints( double P1[_3D],double P2[_3D],int dimension ) {
 }
 
 ///
-///	@brief Calculates the distance from a point to a surface
+///	@brief Calculates the distance from a point to a surface.
 ///
 /// Computes the distance from a `bc` boundary and a given point. Not fully sure if this works for non-planar surfaces.
 ///
@@ -655,8 +654,8 @@ void dim_vol( bc *body,int XYZ[],int dimension ) {
 ///
 ///	@brief Applies the anti-gallilean transformation to the system.
 ///
-/// The function finds the total net momentum of the whole system and subtract it from the velocities of all objects in
-/// the system.
+/// The function finds the total net momentum of the whole system and subtract it from the velocities of 
+/// all objects in the system.
 ///  
 /// @param pp List of all particles in the system.
 /// @param WALL List of all boundaries in the system.
@@ -709,7 +708,7 @@ void galileantrans( particleMPC *pp,bc WALL[],simptr simMD,spec SP[],double KBT,
 }
 
 ///
-///	@brief Zeros the components of the positions and velocities of objects that are greater dimension than the simulation
+///	@brief Zeros the components of the positions and velocities of objects that are greater dimension than the simulation.
 ///
 /// This method is mostly for paranoia - It adds zeros to all components of positions & velocities of any objects, where
 /// the components have greater index than the simulation dimensionality.
@@ -757,7 +756,7 @@ void zeroExtraDims( particleMPC *pp,bc WALL[],simptr simMD,int GPOP,int NBC,int 
 ///
 ///	@brief Generic histogram binning algorithm.
 ///
-/// Create a histogram from the values in the input
+/// Create a histogram from the values in the input.
 ///  
 /// @param values Values to be binned.
 /// @param hist Histogram to be filled.
@@ -833,7 +832,7 @@ void labframe( double V[],bc WALL,int dimension ) {
 }
 
 ///
-///	@brief Finds the determinant of a 2x2 matrix
+///	@brief Finds the determinant of a 2x2 matrix.
 ///
 /// Finds the determinant of a 2x2 matrix.
 ///
@@ -845,7 +844,7 @@ double det2x2( double m[_2D][_2D] ) {
 }
 
 ///
-///	@brief Finds the determinant of a 3x3 matrix
+///	@brief Finds the determinant of a 3x3 matrix.
 ///
 /// Finds the determinant of a 3x3 matrix.
 ///
@@ -909,7 +908,7 @@ double determinant( double **a,int n ) {
 }
 
 ///
-///	@brief Finds the trace of the matrix
+///	@brief Finds the trace of the matrix.
 ///
 /// Computes the trace of the matrix.
 ///
@@ -928,7 +927,7 @@ double trace( double **a,int n ) {
 ///
 /// Inverts a 2x2 matrix. Outputs to the same matrix.
 ///
-/// @param m reference to the 2x2 matrix. Directly modifies this matrix.
+/// @param m Reference to the 2x2 matrix. Directly modifies this matrix.
 ///
 void invert2x2( double m[_2D][_2D] ) {
 	double det;
@@ -963,9 +962,9 @@ void invert2x2( double m[_2D][_2D] ) {
 /// Returns the i,j cofactor for a 3x3 matrix `m`.
 ///
 /// @param m 3x3 matrix.
-/// @param i cofactor index.
-/// @param j cofactor index.
-/// @return cofactor 'i,j' of the matrix.
+/// @param i Cofactor index.
+/// @param j Cofactor index.
+/// @return Cofactor 'i,j' of the matrix.
 ///
 double cofactor3x3( double m[_3D][_3D],int i,int j ) {
 	double a00,a01,a10,a11;
@@ -1128,7 +1127,7 @@ void conservation( double VA[],int MA,double QA[],double VB[],int MB,double QB[]
 ///
 /// Evaluates a surface function for a BC for a given position. For 4-fold symmetry.
 ///
-/// @param WALL Boundary condition to evaluate surface function for
+/// @param WALL Boundary condition to evaluate surface function for.
 /// @param POS Position to evaluate surface function at.
 /// @param dimension Dimensionality of the input values.
 /// @return Value of the surface function.
@@ -1183,8 +1182,8 @@ double non4foldSymmCalcW( bc WALL,double POS[], int dimension ) {
 ///
 ///	@brief Evaluates a surface function for a BC for a given position.
 ///
-/// This method gives the value of the surface function for a given position. Doesn't require 4-fold symmetry like
-/// non4foldSymmCalcW().
+/// This method gives the value of the surface function for a given position. Doesn't require 4-fold 
+/// symmetry like non4foldSymmCalcW().
 ///
 /// @param WALL Boundary to evaluate surface function for.
 /// @param POS Position to evaluate surface function at.
@@ -1433,7 +1432,7 @@ void eigenvectors3x3( double **m,double eigval[],double eigvec[][_3D] ) {
 /// @param dimension Dimensionality of the matrix.
 /// @param eigval Output eingenvalues.
 /// @warning m is lost!
-/// @warning dimension must be 1, 2, or 3.
+/// @warning Dimension must be 1, 2, or 3.
 ///
 void solveEigensystem( double **m,int dimension,double eigval[] ) {
 	int i,j;
@@ -1482,7 +1481,7 @@ double centredDeriv( double xM1,double xP1,double dt ) {
 /// Find the derivative of x by a centred derivative (forward).
 ///
 /// @param x0 Value to find derivative from.
-/// @param xP1 value of the center.
+/// @param xP1 Value of the center.
 /// @param dt Time step for derivation.
 ///
 double forwardDeriv( double x0,double xP1,double dt ) {
@@ -1496,7 +1495,7 @@ double forwardDeriv( double x0,double xP1,double dt ) {
 /// Find the derivative of x by a centred derivative (backward).
 ///
 /// @param x0 Value to find derivative from.
-/// @param xM1 value of the center.
+/// @param xM1 Value of the center.
 /// @param dt Time step for derivation.
 ///
 double backwardDeriv( double x0,double xM1,double dt ) {
@@ -1509,7 +1508,7 @@ double backwardDeriv( double x0,double xM1,double dt ) {
 ///
 /// Find the integral of a discrete function with equal steps in x.
 ///
-/// @param F value of the input discrete function.
+/// @param F Value of the input discrete function.
 /// @param dx Input value step.
 /// @param dt Input time step.
 ///
