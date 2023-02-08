@@ -1,5 +1,6 @@
 ///
 /// @file
+///
 /// @brief Boundary conditions (BCs) on molecular dynamics (MD) particles.
 ///
 /// This file includes the routines that determine the interaction of the MD particles with
@@ -233,7 +234,9 @@ void shiftBC_MD( double *shift,bc *WALL,particleMD *atom ) {
 /// @param WALL		One of the walls of the BCs that particle is interacting with.
 /// @param atom		The MD particles.
 /// @param sign 	The sign by which the orientation will happen.
-/// @sa 			rotateBC(), rotatebackBC(), MPC_BCrotation()
+/// @see 			rotateBC()
+/// @see			rotatebackBC()
+/// @see 			MPC_BCrotation()
 ///
 void MD_BCrotation( bc *WALL,particleMD *atom, double sign ) {
 	int i;
@@ -932,7 +935,9 @@ void shiftBC_swimmer( double *shift,bc *WALL,smono *atom ) {
 /// @param WALL		One of the walls of the BCs that particle is interacting with.
 /// @param atom 	The MD particles, being either the head or the middle monomer of the swimmer.
 /// @param sign 	The sign by which the orientation will happen.
-/// @sa 			rotateBC(), rotatebackBC(), MPC_BCrotation()
+/// @see			rotateBC()
+/// @see			rotatebackBC()
+/// @see 			MPC_BCrotation()
 ///
 void swimmer_BCrotation( bc *WALL,smono *atom, double sign ) {
 	int i;
