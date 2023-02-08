@@ -13,18 +13,12 @@
 
 ## Introduction
 
-This is just meant to be a quick and dirty guide to the MPCD output data files and what one might find in them. It is not meant to be a complete reference.
-
-Output files for the MPCD must be requested in the input json file.
-
-The table below lists all output files, a brief description of their contents, as well as a list of the data found within.
+This is is a comprehensive reference guide to MPCD output data files and what one might find in them. The output files listed in these tables must be requested in the input.json file using the flags highlighted in the input tag column. With the exception of `synopsisOut`, the values in the input are the frequency with which the relevent data will be written to the outputs for the corresponding tag. While all outputs are written to `.dat` files, they are essentially text files and are not compressed.
 
 
 ## Output Tables
 
 ### System Information
-
-All tags suffixed with "out", unless otherwise specified, take a value representing how frequently (in timesteps) you want that quantity to be dumped to file.
 
 Input tag       |Output file         | Description
 ---             |---                 | ---             
@@ -36,7 +30,7 @@ Input tag       |Output file         | Description
 Input tag       |Output file         | Description                                                                               |Outputs                    | Column Headers
 ---             |---                 | ---                                                                                       | ---                       | ---
 `neighbourEnOut`| `enneighbours.dat` | Orientational energy from neighbours. System-averaged single value                        |Time                       | `t`
-               |                   |                                                                                          |Nematic energy             | `tMPC_nem`
+--              |--                  |--                                                                                         |Nematic energy             | `tMPC_nem`
 `avSOut`        | `avS.dat`          | Total average scalar order parameter. System-averaged single value                        |Time                       | `t`
 --              |--                  |--                                                                                         |Scalar order parameter     | `S`
 --              |--                  |--                                                                                         |4th moment of Scalar order | `S4`
