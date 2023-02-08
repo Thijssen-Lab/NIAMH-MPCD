@@ -78,9 +78,9 @@ int fneq(double x,double y) {
 ///
 /// Evaluates the Levi-Civita tensor.
 ///
-/// @param i first index.
-/// @param j second index.
-/// @param k third index.
+/// @param i First index.
+/// @param j Second index.
+/// @param k Third index.
 /// @return The value of the Levi-Civita tensor with indices `i`, `j`, `k`.
 ///
 int levicivita( int i,int j,int k ) {
@@ -101,8 +101,8 @@ int levicivita( int i,int j,int k ) {
 ///
 /// Takes the dot product of two vectors and returns a scalar.
 ///
-/// @param x first vector, passed as an array.
-/// @param y second vector, passed as an array.
+/// @param x First vector, passed as an array.
+/// @param y Second vector, passed as an array.
 /// @param dimension Dimensionality of the vectors.
 /// @return The dot product of `x` and `y`.
 ///
@@ -329,9 +329,9 @@ double cosang( double v1[],double v2[],int dimension ) {
 }
 
 ///
-/// @brief arctan that returns a signed angle.
+/// @brief Arctan that returns a signed angle.
 ///
-/// arctan that returns a signed angle.
+/// Arctan that returns a signed angle.
 /// 
 /// @param y First input scalar.
 /// @param x Second input scalar.
@@ -439,7 +439,7 @@ double distsurf( bc WALL,double P[_3D] ) {
 /// @param WALL Input boundary.
 /// @param x Input point x coordinate.
 /// @param y Input point y coordinate.
-/// @param z input point z coordinate.
+/// @param z Input point z coordinate.
 /// @return Distance from the vector `(x, y, z)` to `WALL`.
 ///
 double distplane( bc WALL,double x, double y, double z ) {
@@ -1585,9 +1585,9 @@ void rodriguesRotation( double vec[],double rotAx[],double theta ) {
 /// Sets a rotation matrix based on angles about the cartesian axes.
 ///
 /// @param M Rotation matrix to be output to.
-/// @param angx x component of the angle to rotate.
-/// @param angy y component of the angle to rotate.
-/// @param angz z component of the angle to rotate.
+/// @param angx X component of the angle to rotate.
+/// @param angy Y component of the angle to rotate.
+/// @param angz Z component of the angle to rotate.
 ///
 void setRotMatrix3D( double M[][3],double angx,double angy,double angz ) {
 	double cosx,sinx,cosy,siny,cosz,sinz;
@@ -1615,7 +1615,7 @@ void setRotMatrix3D( double M[][3],double angx,double angy,double angz ) {
 /// Creates a 2D rotation matrix (rotation matrix about the z axis).
 ///
 /// @param M Rotation matrix to be output to.
-/// @param angz z component of the angle to rotate.
+/// @param angz Z component of the angle to rotate.
 ///
 void setRotMatrix2D( double M[][3],double angz ) {
 	M[0][0] = cos(angz);
