@@ -106,7 +106,7 @@ typedef struct spec {
 /// - SQUIRCLE: `A=[1,1,1,1]`, `p>=4` (even), `Q=centre`, `R=radius`
 ///
 ///	There are additional complications:
-///	1. An absolute operator can be used around the terms:
+///	1. An absolute operator can be used by turning on the `ABS` flag, which puts absolute operators around the terms:
 ///		- \f$ \mathcal{S} = \left| \frac{x-Q_x}{A_x} \right|^{p_x} + \left| \frac{y-Q_y}{A_y} \right|^{p_y} + \left| \frac{z-Q_z}{A_z} \right|^{p_z} - R^{p_R} = 0 \f$
 ///	2. This only allows a certain subset of rotational symmetries (even and less than or equal to 4-fold). For
 ///     different symmetries, we have ROTSYMM[2]. Let:
@@ -422,7 +422,7 @@ typedef struct specSwimmer {
     int MSPid;			        ///< Multiphase fluid particle type of the middle monomer (tail is invisible) --- json `'mspIdSwim'`.
 	double FS;					///< Magnitude of propulsion force to set swimming speed --- json `'fsSwim'`.
 	double TS;					///< Magnitude of torque to set swimmer rotlet dipole (sign sets CW or CCW) --- json `'tsSwim'`.
-	double DS;					///< Dipole strength (DS>0 --->pusher; DS<0 --->puller) (i.e. length of dipole in multiples of head/middle separation) --- json `'dsSwim'`.
+	double DS;					///< Dipole strength (for a pusher DS>0; for a puller DS<0) (i.e. length of dipole in multiples of head/middle separation) --- json `'dsSwim'`.
 	double sizeShrink;			///< How much Lennard Jones sigma (monomer size) and ro (equilibrium separation) are shrunk when tumbling --- json `'sizeShrinkSwim'`.
 	double springShrink;		///< How much the spring constant is shrunk when tumbling --- json `'springShrinkSwim'`.
 	double fixDist;				///< The fixed distance from the wall for DUMBBELL_NEARWALL mode --- json `'fixDistSwim'`.
