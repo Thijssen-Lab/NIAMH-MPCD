@@ -425,7 +425,7 @@ void openenergyneighbours( FILE **f,char dir[],char fname[],char ext[] ) {
 ///
 /// This function initializes the synopsis output file.
 /// It opens it up for writing and reading while formatting it with its header.
-/// when called for the first time, as specified by the firsttime parameter, it truncates the file to
+/// when called for the first time, as specified by the `firsttime` parameter, it truncates the file to
 /// zero length. When called for the second time, it is opened in apending mode.
 ///
 /// @param fsynopsis Return pointer to the synopsis output file being opened.
@@ -1119,7 +1119,7 @@ void initvar( unsigned long *seed,time_t *to,clock_t *co,int *runtime,int *warmt
 /// @brief Function that initiates the position of a MPCD particle.
 ///
 /// This function initiates the position for a MPCD particle, either randomly
-/// or reding it from a file.
+/// or reading it from a file.
 ///
 /// @param Q Return pointer to the position of the MPCD particle.
 /// @param PL Integer that is 0 if position is determined randomly, 1 if read from a file.
@@ -1140,7 +1140,7 @@ void place( double Q[],int PL,FILE *fin ) {
 }
 
 ///
-/// @brief Function thath randomly places an MPCD particle.
+/// @brief Function that randomly places an MPCD particle.
 ///
 /// This function randomly places an MPCD particle within one SRD cell of its current position.
 ///
@@ -1203,7 +1203,7 @@ void push( double V[],double KBT,int PL,double MASS,FILE *fin ) {
 /// This subroutines sets the initial orientation. It can do so by:
 /// i) set it randomly, ii) aligned to one of the axes, iii) in a 45 degree configuration,
 /// iv) randomly parallel to one of the planes formef by the axes, v) pointing parallel to
-/// the ray starting at the origin and pointing toewards the top right corner ot vi) forming a
+/// the ray starting at the origin and pointing towards the top right corner ot vi) forming a
 /// defect pair (+1/2 and -1/2) configuration.
 ///
 /// @param U Return pointer to the MPCD particle's orientation.
@@ -1364,7 +1364,7 @@ int checkplaceMPC( int i,particleMPC *pp,spec SP[],bc WALL[] ) {
 /// If that is the case, then the particle's position is shifted.  The process
 /// is repeated until the particle is no longer within an obstacle.
 ///
-/// @param pp Return pointer to the MPCD poarticle whose position is being checked.
+/// @param pp Return pointer to the MPCD particle whose position is being checked.
 /// @param WALL Array of all boundary conditions (obstacles).
 ///
 void replacePos_WithCheck( particleMPC *pp,bc WALL[] ) {
@@ -1391,7 +1391,7 @@ void replacePos_WithCheck( particleMPC *pp,bc WALL[] ) {
 }
 
 ///
-/// @brief  Function that checks if an MPCD paticles is within an obstacle.
+/// @brief  Function that checks if an MPCD particles is within an obstacle.
 ///
 /// This function checks if an MPCD is within an obstacle. If they are,
 /// it shifts their position until they are not. The position of the MPCD particles are checked
