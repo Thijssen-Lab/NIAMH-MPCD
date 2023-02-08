@@ -23,7 +23,7 @@ All tags suffixed with "out", unless otherwise specified, take a value represent
 Input tag       |Output file         | Description                                                                               |Outputs                    | Column Headers
 ---             |---                 | ---                                                                                       | ---                       | ---
 `trajOut`       |`detailedSP0.dat`   | Detailed particle trajectories for every particle of species type given by `trajSpecOut`  |Time                       | `t`
-,               |,                    |,                                                                                           |X, Y, Z co-ordinates       | `QX`,`QY`,`QZ`
+-               |-                   |-                                                                                          |X, Y, Z co-ordinates       | `QX`,`QY`,`QZ`
                 |                    |                                                                                           |Cell velocities            | `VX`,`VY`,`VZ`
                 |                    |                                                                                           |Speed                      | `|V|`
                 |                    |                                                                                           |Species velocities         | `UX`,`UY`,`UZ`
