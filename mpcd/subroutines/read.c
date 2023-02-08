@@ -24,14 +24,17 @@
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
+
+///
 /// @brief If a read from file fileName fails, then write to fsynopsis and stop the program
 ///
 /// Helper method to automate printing of read errors to terminal from legacy input files. Primarily for debugging
 /// purposes.
 ///
-/// @param flag Flag id. <0 if reached EoF early, 0 if failed to read, >0 if read successfully
-/// @param failure String showing the line that failed to read
+/// @param flag Flag id. <0 if reached end of file early, 0 if failed to read, >0 if read successfully.
+/// @param failure String showing the line that failed to read.
 /// @param file
+///
 void checkRead( int flag,char failure[],char file[]) {
 	if(flag<0) {
 		printf( "\nError: Reached end of file before read %s from %s.\n",failure,file );
@@ -43,7 +46,9 @@ void checkRead( int flag,char failure[],char file[]) {
 	}
 }
 
+///
 /// @brief LEGACY.
+///
 void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL,int *MDmode ) {
 /*
    By reading in the addresses of the variables as
@@ -216,7 +221,9 @@ void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL
 	fclose( finput );
 }
 
+///
 /// @brief LEGACY.
+///
 void readpc( char fpath[],outputFlagsList *out ) {
 /*
    By reading in the addresses of the variables as
@@ -367,7 +374,9 @@ void readpc( char fpath[],outputFlagsList *out ) {
 	fclose( finput );
 }
 
+///
 /// @brief LEGACY.
+///
 void bcin( FILE *fbc,bc *WALL,char fname[] ) {
 /*
    By reading in the addresses of the variables as
@@ -563,12 +572,14 @@ void bcin( FILE *fbc,bc *WALL,char fname[] ) {
 	}
 }
 
-/// @brief Determines if a boundary is a planar periodic boundary
 ///
-/// Performs a series of checks, in order, to verify if something is a periodic boundary condition. This is then marked
+/// @brief Determines if a boundary is a planar periodic boundary.
+///
+/// Performs a series of checks, in order, to verify if boundary condition is periodic. This is then marked
 /// as a planar PBC in `XYZPBC`.
 ///
-/// @param WALL Pointer to a particular boundary condition
+/// @param WALL Pointer to a particular boundary condition.
+///
 void setPBC( bc *WALL ) {
 	int i;
 	//Check if any axis is a planar PBC
@@ -590,7 +601,9 @@ void setPBC( bc *WALL ) {
 	}
 }
 
+///
 /// @brief LEGACY.
+///
 void readbc( char fpath[],bc **WALL ) {
 /*
    By calling bcin this function sets each of
@@ -623,12 +636,12 @@ void readbc( char fpath[],bc **WALL ) {
 	fclose( fbc );
 }
 
-/// @brief Reads a checkpoint to resume a simulation
 ///
-/// Reads the entirety of a checkpoint file and use this to re-populate the simulation. The method iteratively goes
+/// @brief Reads a checkpoint to resume a simulation.
+///
+/// Reads the entirety of a checkpoint file and uses it to re-populate the simulation. The method iteratively goes
 /// through all aspects of the simulation and reads them in, allocating memory as and when necessary.
-///
-/// This is used to resume an existing simulation. The only thing that is not checkpoint-ed is the random number
+/// This is used to resume an existing simulation. The only thing that is not checkpointed is the random number
 /// generator state, which is re-seeded outside of this routine.
 ///
 /// @param fpath Path to the directory where the checkpoint file is.
@@ -652,6 +665,7 @@ void readbc( char fpath[],bc **WALL ) {
 /// @param AVNOW Pointer to the average velocity now of the system. Expected to be &AVNOW.
 /// @param specS Pointer to the object containing the swimmer species hyperparameters. Expected to be &specS.
 /// @param sw Pointer to the swimmer list. Expected to be &sw.
+///
 void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL,int *MDmode,bc **WALL,outputFlagsList *out,int *runtime,int *warmtime,kinTheory *theory,double *AVVEL, double *AVS,double avDIR[_3D],double *S4,double *stdN,double *KBTNOW,double AVV[_3D],double AVNOW[_3D],specSwimmer *specS,swimmer **sw ) {
 	FILE *finput;
 	int i,j;
@@ -767,7 +781,7 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 		else printf("Warning: Failed to read MPCD particle %d.\n",i);
 	}
 
-	//Swimmers 
+	//Swimmers
 	if(fscanf( finput,"%d %d %d %d %d %d %lf %lf %d %d",&NS, &(specS->TYPE), &(specS->QDIST), &(specS->ODIST), &(specS->headM), &(specS->middM), &(specS->iheadM), &(specS->imiddM), &(specS->HSPid), &(specS->MSPid) ));
 	else printf("Warning: Failed to read swimmer-type variables.\n");
 	if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %d %lf", &(specS->FS), &(specS->TS), &(specS->DS), &(specS->sizeShrink), &(specS->springShrink), &(specS->fixDist), &(specS->k), &(specS->ro), &(specS->iro), &(specS->sig), &(specS->isig), &(specS->eps), &(specS->runTime), &(specS->tumbleTime), &(specS->shrinkTime), &(specS->MAGMOM) ));
@@ -788,6 +802,7 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 	fclose( finput );
 }
 
+///
 /// @brief Read the arguments for the program.
 ///
 /// Reads the arguments for the main program. All arguments are of form `-x [value]` where x is the argument and value
@@ -798,6 +813,7 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 /// @param ip The input file name, read from the arguments.
 /// @param op The output directory, read from the arguments.
 /// @param inMode The input mode, read from the arguments. Switches between legacy (.inp) and new (.json) input files.
+///
 void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 	int arg;
 	int strln;
@@ -874,6 +890,7 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
     }
 }
 
+///
 /// @brief Checks if a given boundary condition contains the minimum primitives required by the input system.
 ///
 /// The JSON input system allows for the user to ignore stating the value of certain JSON tags. For boundary conditions
@@ -890,6 +907,7 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 ///
 /// @param bc cJSON object containing the boundary condition to be checked.
 /// @return 1 if valid, 0 if not.
+///
 int checkBC(cJSON *bc){
 	char tagList[6][5] = {"aInv", "P", "R", "DN", "MVN", "MVT"};
 
@@ -903,6 +921,7 @@ int checkBC(cJSON *bc){
 	return 1; // if you're here without returning then all succesful
 }
 
+///
 /// @brief Main method for reading a JSON input file to populate the simulation parameters.
 ///
 /// This (big) method performs all reading for the JSON input system. A summary of the method is as follows:
@@ -928,6 +947,7 @@ int checkBC(cJSON *bc){
 /// @param specS Pointer to the swimmer species list to be populated. Expected to be `&specS`.
 /// @param sw Pointer to the swimmer list. Expected to be `&sw`.
 /// @see cJson.c
+///
 void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
    cell ****CL, int *MDMode, outputFlagsList *out, bc **WALL,
    specSwimmer *specS, swimmer **sw){
