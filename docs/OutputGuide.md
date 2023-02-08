@@ -2,8 +2,11 @@
 
 ## Contents
 1. [Introduction](#introduction)
-2. [Output Table](#output-table)
+2. [Output Tables](#output-table)
     - [Main Output file Table](#main-output-file-table)
+    - [Defect Output file Table](#defect-output-file-table)
+    - [Histogram Output file Table](#histogram-output-file-table)
+    - [Swimmer Output file Table](#swimmer-output-file-table)
 
 ## Introduction
 
@@ -68,38 +71,10 @@ Input tag       |Output file         | Description                              
 --              |--                  |--                                                                                         |Standard Deviation of density| `densSTD`
 `enstrophyOut`  | `avEnstrophy.dat`  | Enstrophy field                                                                           |Time                       | `t`
 --              |--                  |--                                                                                         |Average enstrophy          | `enstrophy`
-`histVelOut`    | `histVel.dat`      | Velocity probability distribution in x, y, and z directions                               |Time                       | `t`
---              |--                  |--                                                                                         |Bin velocity               | `V`
---              |--                  |--                                                                                         |Bin probability            | `PX`,`PY`,`PZ`
-`histSpeedOut`  | `distSpeed.dat`    | Speed probability distribution                                                            |Time                       | `t`
---              |--                  |--                                                                                         |Bin speeds                 | `|V|`
---              |--                  |--                                                                                         |Bin probability            | `P`
-`histVortOut`   | `distVort.dat`     | Vorticity probability distribution in x, y, and z directions                              |Time                       | `t`
---              |--                  |--                                                                                         |Bin vorticity              | `W`
---              |--                  |--                                                                                         |Bin probability            | `PX`,`PY`,`PZ`
-`histEnsOut`    | `distEnstrophy.dat`| Enstrophy probability distribution                                                        |Time                       | `t`
---              |--                  |--                                                                                         |Bin enstrophy              | `|W|`
---              |--                  |--                                                                                         |Bin probability            | `P`
-`histDirOut`    | `distDir.dat`      | Director orientation probability distribution in x, y, and z directions                   |Time                       | `t`
---              |--                  |--                                                                                         |Bin orientation            | `n`
---              |--                  |--                                                                                         |Bin probability            | `PX`,`PY`,`PZ`
-`histSOut`      | `distS.dat`        | Scalar order parameter probability distribution                                           |Time                       | `t`
---              |--                  |--                                                                                         |Bin scalar order parameter | `S`
---              |--                  |--                                                                                         |Bin probability            | `P`
-`histNOut`      | `distN.dat`        | Number per cell probability distribution                                                  |Time                       | `t`
---              |--                  |--                                                                                         |Bin density                | `stdN`
---              |--                  |--                                                                                         |Bin probability            | `P`
 `topoFieldOut`  | `topochargefield.dat`| Topological charge field and angles                                                     |Time                       | `t`
 --              |--                  |--                                                                                         |X, Y, Z co-ordinates       | `QX`,`QY`,`QZ`
 --              |--                  |--                                                                                         |Topological charge         | `charge`
 --              |--                  |--                                                                                         |Angle of defect            | `angle`
-`defectsOut`    |`defects.dat`       | Defect positions and orientations                                                         |Time                       | `t`
---              |--                  |--                                                                                         |Number of defects at `t`   | `numDefects`
---              |--                  |--                                                                                         |X, Y co-ordinates          | `QX`,`QY`,`QZ`
---              |--                  |--                                                                                         |Topological charge         | `charge`
---              |--                  |--                                                                                         |Angle of defect            | `angle`
-`disclinOut`    | `disclinTensorfield.dat`| Disclination tensor field                                                            |X, Y, Z co-ordinates       | `QX`,`QY`,`QZ`
---              |--                  |--                                                                                         |Disclination tensor components | `DXX`,`DXY`...`DZY`,`DZZ`
 `energyOut`     | `energy.dat`       | System energy field                                                                       |Time                       | `t`
 --              |--                  |--                                                                                         |Kinetic energy             | `MPC_kin`
 --              |--                  |--                                                                                         |Nematic energy             | `MPC_nem`
@@ -130,6 +105,51 @@ Input tag       |Output file         | Description                              
 --              |--                  |--                                                                                         |Enstrophy                  | `Omega`                
 `binderOut`     | `binderCumulant.dat`| Binder cumulant, bin size must be set in `binderBin`                                     |Time                       | `t`
 --              |--                  |--                                                                                         |Binder cumulant            | `BinderCumulant`
+`synopsisOut`   | `synopsis.dat`     | Synopsis output. Highly recommended to be on. 1 = on, 0 = off.                            | ---                       | ---
+`checkpointOut` | `checkpoint.dat`   | Simulation checkpointing. Provides data for re-populating the system and restarting another simulation from this point| ---    | ---
+
+### Defect Output Files Table
+
+Input tag       |Output file         | Description                                                                               |Outputs                    | Column Headers
+---             |---                 | ---                                                                                       | ---                       | ---
+`defectsOut`    |`defects.dat`       | Defect positions and orientations                                                         |Time                       | `t`
+--              |--                  |--                                                                                         |Number of defects at `t`   | `numDefects`
+--              |--                  |--                                                                                         |X, Y co-ordinates          | `QX`,`QY`,`QZ`
+--              |--                  |--                                                                                         |Topological charge         | `charge`
+--              |--                  |--                                                                                         |Angle of defect            | `angle`
+`disclinOut`    | `disclinTensorfield.dat`| Disclination tensor field                                                            |X, Y, Z co-ordinates       | `QX`,`QY`,`QZ`
+--              |--                  |--                                                                                         |Disclination tensor components | `DXX`,`DXY`...`DZY`,`DZZ`
+
+### Histogram Output Files Table
+
+Input tag       |Output file         | Description                                                                               |Outputs                    | Column Headers
+---             |---                 | ---                                                                                       | ---                       | ---
+`histVelOut`    | `histVel.dat`      | Velocity probability distribution in x, y, and z directions                               |Time                       | `t`
+--              |--                  |--                                                                                         |Bin velocity               | `V`
+--              |--                  |--                                                                                         |Bin probability            | `PX`,`PY`,`PZ`
+`histSpeedOut`  | `distSpeed.dat`    | Speed probability distribution                                                            |Time                       | `t`
+--              |--                  |--                                                                                         |Bin speeds                 | `|V|`
+--              |--                  |--                                                                                         |Bin probability            | `P`
+`histVortOut`   | `distVort.dat`     | Vorticity probability distribution in x, y, and z directions                              |Time                       | `t`
+--              |--                  |--                                                                                         |Bin vorticity              | `W`
+--              |--                  |--                                                                                         |Bin probability            | `PX`,`PY`,`PZ`
+`histEnsOut`    | `distEnstrophy.dat`| Enstrophy probability distribution                                                        |Time                       | `t`
+--              |--                  |--                                                                                         |Bin enstrophy              | `|W|`
+--              |--                  |--                                                                                         |Bin probability            | `P`
+`histDirOut`    | `distDir.dat`      | Director orientation probability distribution in x, y, and z directions                   |Time                       | `t`
+--              |--                  |--                                                                                         |Bin orientation            | `n`
+--              |--                  |--                                                                                         |Bin probability            | `PX`,`PY`,`PZ`
+`histSOut`      | `distS.dat`        | Scalar order parameter probability distribution                                           |Time                       | `t`
+--              |--                  |--                                                                                         |Bin scalar order parameter | `S`
+--              |--                  |--                                                                                         |Bin probability            | `P`
+`histNOut`      | `distN.dat`        | Number per cell probability distribution                                                  |Time                       | `t`
+--              |--                  |--                                                                                         |Bin density                | `stdN`
+--              |--                  |--                                                                                         |Bin probability            | `P`
+
+### Swimmer Output Files Table
+
+Input tag       |Output file         | Description                                                                               |Outputs                    | Column Headers
+---             |---                 | ---                                                                                       | ---                       | ---
 `swimQOut`      | `swimmers.dat`     | Swimmer head(H) and middle(M) positions, velocities, and run-tumble phase                 |Time                       | `t`
 --              |--                  |--                                                                                         |Head particle positions    | `HX`,`HY`,`HZ`
 --              |--                  |--                                                                                         |Head particle velocities   | `HVX`,`HVY`,`HVZ`
@@ -142,5 +162,3 @@ Input tag       |Output file         | Description                              
 `swimROut` OR `swimRTOut`| `runtumble.dat`  | Swimmer run/ tumble. `swimRTOut` is prioritised                                    |Run-tumble phase           | `RTphase`
 --              |--                  |--                                                                                         |Time interval              | `dt_cnt`
 --              |--                  |--                                                                                         |Change in angle            | `dAng`
-`synopsisOut`   | `synopsis.dat`     | Synopsis output. Highly recommended to be on. 1 = on, 0 = off.                            | ---                       | ---
-`checkpointOut` | `checkpoint.dat`   | Simulation checkpointing. Provides data for re-populating the system and restarting another simulation from this point| ---    | ---
