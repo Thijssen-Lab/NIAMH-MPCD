@@ -47,7 +47,7 @@ Input tag       |Output file         | Description                              
 `trajOut`       |`detailedSP0.dat`   | Detailed particle trajectories for every particle of species type given by `trajSpecOut`  |Time                       | `t`
 --              |--                  |--                                                                                         |X, Y, Z co-ordinates       | `QX`,`QY`,`QZ`
 --              |--                  |--                                                                                         |Cell velocities            | `VX`,`VY`,`VZ`
---              |--                  |--                                                                                         |Speed                      | `lVl`
+--              |--                  |--                                                                                         |Speed                      | &#124;`V`&#124;
 --              |--                  |--                                                                                         |Species velocities         | `UX`,`UY`,`UZ`
 `coarseOut`     |`coarsegrain.dat`   | Coarse grain data (cell velocity, densities, density of each species) field               |Time                       | `t`
 --              |--                  |--                                                                                         |X, Y, Z co-ordinates       | `QX`,`QY`,`QZ`
