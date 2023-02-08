@@ -2,14 +2,14 @@
 
 ## Contents
 1. [Introduction](#introduction)
-2. [Output Tables](#output-table)
-    - [Miscellaneous Outputs](#main-output-file-table)
-    - [Flow fields](#flowfield-output-file-table)
-    - [Order parameters](#order-param-output-file-table)
-    - [Defects and disclinations](#defect-output-file-table)
-    - [Correlation functions](#corr-funcs-output-file-table)
-    - [Histograms](#histogram-output-file-table)
-    - [Swimmers](#swimmer-output-file-table)
+2. [Output Tables](#output-tables)
+    - [System Information](#system-information)
+    - [Scalar Outputs](#scalar-outputs)
+    - [Field Outputs](#field-outputs)
+    - [Histograms](#histograms)
+    - [Correlation Functions](#correlation-functions)
+    - [Swimmers](#swimmers)
+
 
 ## Introduction
 
@@ -20,49 +20,33 @@ Output files for the MPCD must be requested in the input json file.
 The table below lists all output files, a brief description of their contents, as well as a list of the data found within.
 
 
-## Output Table
+## Output Tables
 
-### Main Output Table
+### System Information
 
 All tags suffixed with "out", unless otherwise specified, take a value representing how frequently (in timesteps) you want that quantity to be dumped to file.
 
+Input tag       |Output file         | Description
+---             |---                 | ---             
+`synopsisOut`   | `synopsis.dat`     | Synopsis output. Highly recommended to be on. 1 = on, 0 = off. Provides a detailed documentation of simulation information as the code runs.
+`checkpointOut` | `checkpoint.dat`   | Simulation checkpointing. Provides data for re-populating the system and restarting another simulation from this point
+
+### Scalar Outputs
+
 Input tag       |Output file         | Description                                                                               |Outputs                    | Column Headers
 ---             |---                 | ---                                                                                       | ---                       | ---
-`oriEnOut`      | `enfield.dat`      | Orientational energy field                                                                |X, Y, Z co-ordinates       | `QX`,`QY`,`QZ`
---              |--                  |--                                                                                         |Kinetic energy             | `MPC_kin`
---              |--                  |--                                                                                         |Nematic energy             | `tMPC_nem`
-`colourOut`     | `multiphase.dat`   | Colour/ phi/ species-type field                                                           |Time                       | `t`
---              |--                  |--                                                                                         |X, Y, Z co-ordinates       | `QX`,`QY`,`QZ`
---              |--                  |--                                                                                         |multiphase                 | `N_0`
-`pressureOut`   | `pressure.dat`     | Pressure field                                                                            |Time                       | `t`
---              |--                  |--                                                                                         |X, Y, Z co-ordinates       | `QX`,`QY`,`QZ`
---              |--                  |--                                                                                         |Pressure tensor components | `Pxx`,`Pxy`...`Pzy`,`Pzz`
 `neighbourEnOut`| `enneighbours.dat` | Orientational energy from neighbours. System-averaged single value                        |Time                       | `t`
---              |--                  |--                                                                                         |Nematic energy             | `tMPC_nem`
-
+               |                   |                                                                                          |Nematic energy             | `tMPC_nem`
+`avSOut`        | `avS.dat`          | Total average scalar order parameter. System-averaged single value                        |Time                       | `t`
+--              |--                  |--                                                                                         |Scalar order parameter     | `S`
+--              |--                  |--                                                                                         |4th moment of Scalar order | `S4`
+--              |--                  |--                                                                                         |Director orientation       | `nX`,`nY`,`nZ`
 `densSDOut`     | `densSTD.dat `     | Standard deviation of the number per cell. System-averaged single value                   |Time                       | `t`
 --              |--                  |--                                                                                         |Standard Deviation of density| `densSTD`
-`enstrophyOut`  | `avEnstrophy.dat`  | Enstrophy field                                                                           |Time                       | `t`
---              |--                  |--                                                                                         |Average enstrophy          | `enstrophy`
-`energyOut`     | `energy.dat`       | System energy field                                                                       |Time                       | `t`
---              |--                  |--                                                                                         |Kinetic energy             | `MPC_kin`
---              |--                  |--                                                                                         |Nematic energy             | `MPC_nem`
---              |--                  |--                                                                                         |Boundary kinetic energy    | `BC_kin`
---              |--                  |--                                                                                         |Boundary rotational energy | `BC_rot`
---              |--                  |--                                                                                         |Total energy               | `Total`
---              |--                  |--                                                                                         |Thermal energy             | `KBT`
-`energySpecOut` | `energySpectrum.dat`| Energy spectra  (radial function)                                                        |Time                       | `t`
---              |--                  |--                                                                                         |Wave number                | `k`
---              |--                  |--                                                                                         |Energy                     | `E`                
-`enstrophySpecOut`| `enstrophySpectrum.dat`| Enstrophy spectra  (radial function)                                                |Time                       | `t`
---              |--                  |--                                                                                         |Wave number                | `k`
---              |--                  |--                                                                                         |Enstrophy                  | `Omega`                
 `binderOut`     | `binderCumulant.dat`| Binder cumulant, bin size must be set in `binderBin`                                     |Time                       | `t`
 --              |--                  |--                                                                                         |Binder cumulant            | `BinderCumulant`
-`synopsisOut`   | `synopsis.dat`     | Synopsis output. Highly recommended to be on. 1 = on, 0 = off.                            | ---                       | ---
-`checkpointOut` | `checkpoint.dat`   | Simulation checkpointing. Provides data for re-populating the system and restarting another simulation from this point| ---    | ---
 
-### Flow fields
+### Field Outputs
 
 Input tag       |Output file         | Description                                                                               |Outputs                    | Column Headers
 ---             |---                 | ---                                                                                       | ---                       | ---
@@ -85,32 +69,39 @@ Input tag       |Output file         | Description                              
 --              |--                  |--                                                                                         |X derivatives of velocity  | `dVXX`,`dVYX`,`dVZX`
 --              |--                  |--                                                                                         |Y derivatives of velocity  | `dVXY`,`dVYY`,`dVZY`
 --              |--                  |--                                                                                         |Z derivatives of velocity  | `dVXZ`,`dVYZ`,`dVZZ`
-
-### Order Parameter Outputs
-
-Input tag       |Output file         | Description                                                                               |Outputs                    | Column Headers
----             |---                 | ---                                                                                       | ---                       | ---
 `dirSOut`       |`directorfield.dat` | Director and scalar order parameter fields                                                |Time                       | `t`
 --              |--                  |--                                                                                         |X, Y, Z co-ordinates       | `QX`,`QY`,`QZ`
 --              |--                  |--                                                                                         |Director orientation       | `NX`,`NY`,`NZ`
-`avSOut`        | `avS.dat`          | Total average scalar order parameter. System-averaged single value                        |Time                       | `t`
---              |--                  |--                                                                                         |Scalar order parameter     | `S`
---              |--                  |--                                                                                         |4th moment of Scalar order | `S4`
---              |--                  |--                                                                                         |Director orientation       | `nX`,`nY`,`nZ`
 `qTensOut`      | `ordertens.dat`    | Q tensor field                                                                            |X, Y, Z co-ordinates       | `X`,`Y`,`Z`
 --              |--                  |--                                                                                         |Q tensor components        | `QXX`,`QXY`...`QZY`,`QZZ`
 `qkTensOut`     | `recipOrder.dat`   | Reciprocal Q tensor field                                                                 |Time                       | `t`
 --              |--                  |--                                                                                         |Wave Vectors               | `K123_X`,`K123_Y`,`K123_Z`
 --              |--                  |--                                                                                         |Squared-modulus of Q tensor| `|QXX|2`,`|QXY|2`...,`|QZZ|2`
-
-### Defect Outputs
-
-Input tag       |Output file         | Description                                                                               |Outputs                    | Column Headers
----             |---                 | ---                                                                                       | ---                       | ---
+`oriEnOut`      | `enfield.dat`      | Orientational energy field                                                                |X, Y, Z co-ordinates       | `QX`,`QY`,`QZ`
+--              |--                  |--                                                                                         |Kinetic energy             | `MPC_kin`
+--              |--                  |--                                                                                         |Nematic energy             | `tMPC_nem`
+`colourOut`     | `multiphase.dat`   | Colour/ phi/ species-type field                                                           |Time                       | `t`
+--              |--                  |--                                                                                         |X, Y, Z co-ordinates       | `QX`,`QY`,`QZ`
+--              |--                  |--                                                                                         |multiphase                 | `N_0`
+`pressureOut`   | `pressure.dat`     | Pressure field                                                                            |Time                       | `t`
+--              |--                  |--                                                                                         |X, Y, Z co-ordinates       | `QX`,`QY`,`QZ`
+--              |--                  |--                                                                                         |Pressure tensor components | `Pxx`,`Pxy`...`Pzy`,`Pzz`
+`enstrophyOut`  | `avEnstrophy.dat`  | Enstrophy field                                                                           |Time                       | `t`
+--              |--                  |--                                                                                         |Average enstrophy          | `enstrophy`
 `topoFieldOut`  | `topochargefield.dat`| Topological charge field and angles                                                     |Time                       | `t`
 --              |--                  |--                                                                                         |X, Y, Z co-ordinates       | `QX`,`QY`,`QZ`
 --              |--                  |--                                                                                         |Topological charge         | `charge`
 --              |--                  |--                                                                                         |Angle of defect            | `angle`
+`energyOut`     | `energy.dat`       | System energy field                                                                       |Time                       | `t`
+--              |--                  |--                                                                                         |Kinetic energy             | `MPC_kin`
+--              |--                  |--                                                                                         |Nematic energy             | `MPC_nem`
+--              |--                  |--                                                                                         |Boundary kinetic energy    | `BC_kin`
+--              |--                  |--                                                                                         |Boundary rotational energy | `BC_rot`
+--              |--                  |--                                                                                         |Total energy               | `Total`
+--              |--                  |--                                                                                         |Thermal energy             | `KBT`
+`energySpecOut` | `energySpectrum.dat`| Energy spectra  (radial function)                                                        |Time                       | `t`
+--              |--                  |--                                                                                         |Wave number                | `k`
+--              |--                  |--                                                                                         |Energy                     | `E`                
 `defectsOut`    |`defects.dat`       | Defect positions and orientations                                                         |Time                       | `t`
 --              |--                  |--                                                                                         |Number of defects at `t`   | `numDefects`
 --              |--                  |--                                                                                         |X, Y co-ordinates          | `QX`,`QY`,`QZ`
@@ -118,28 +109,11 @@ Input tag       |Output file         | Description                              
 --              |--                  |--                                                                                         |Angle of defect            | `angle`
 `disclinOut`    | `disclinTensorfield.dat`| Disclination tensor field                                                            |X, Y, Z co-ordinates       | `QX`,`QY`,`QZ`
 --              |--                  |--                                                                                         |Disclination tensor components | `DXX`,`DXY`...`DZY`,`DZZ`
+`enstrophySpecOut`| `enstrophySpectrum.dat`| Enstrophy spectra  (radial function)                                                |Time                       | `t`
+--              |--                  |--                                                                                         |Wave number                | `k`
+--              |--                  |--                                                                                         |Enstrophy                  | `Omega`                
 
-### Correlation Function Outputs
-
-Input tag       |Output file         | Description                                                                               |Outputs                    | Column Headers
----             |---                 | ---                                                                                       | ---                       | ---
-`velCorrOut`    | `corrVelVel.dat`   | Velocity autocorrelation (radial function)                                                |Time                       | `t`
---              |--                  |--                                                                                         |Separation                 | `dr`
---              |--                  |--                                                                                         |Correlation value          | `C`
-`dirCorrOut`    | `corrDirDir.dat`   | Director autocorrelation (radial function)                                                |Time                       | `t`
---              |--                  |--                                                                                         |Separation                 | `dr`
---              |--                  |--                                                                                         |Correlation value          | `C`
-`vortCorrOut`   | `corrVortVort.dat` | Vorticity autocorrelation (radial function)                                               |Time                       | `t`
---              |--                  |--                                                                                         |Separation                 | `dr`
---              |--                  |--                                                                                         |Correlation value          | `C`
-`orderCorrOut`  | `corrOrderOrder.dat`| Scalar order parameter autocorrelation (radial function)                                 |Time                       | `t`
---              |--                  |--                                                                                         |Separation                 | `dr`
---              |--                  |--                                                                                         |Correlation value          | `C`
-`phaseCorrOut`  | `corrPhiPhi.dat`   | Binary fluid correlation (radial function)                                                |Time                       | `t`
---              |--                  |--                                                                                         |Separation                 | `dr`
---              |--                  |--                                                                                         |Correlation value          | `C`
-
-### Histogram Outputs
+### Histograms
 
 Input tag       |Output file         | Description                                                                               |Outputs                    | Column Headers
 ---             |---                 | ---                                                                                       | ---                       | ---
@@ -165,7 +139,27 @@ Input tag       |Output file         | Description                              
 --              |--                  |--                                                                                         |Bin density                | `stdN`
 --              |--                  |--                                                                                         |Bin probability            | `P`
 
-### Swimmer Outputs
+### Correlation Functions
+
+Input tag       |Output file         | Description                                                                               |Outputs                    | Column Headers
+---             |---                 | ---                                                                                       | ---                       | ---
+`velCorrOut`    | `corrVelVel.dat`   | Velocity autocorrelation (radial function)                                                |Time                       | `t`
+--              |--                  |--                                                                                         |Separation                 | `dr`
+--              |--                  |--                                                                                         |Correlation value          | `C`
+`dirCorrOut`    | `corrDirDir.dat`   | Director autocorrelation (radial function)                                                |Time                       | `t`
+--              |--                  |--                                                                                         |Separation                 | `dr`
+--              |--                  |--                                                                                         |Correlation value          | `C`
+`vortCorrOut`   | `corrVortVort.dat` | Vorticity autocorrelation (radial function)                                               |Time                       | `t`
+--              |--                  |--                                                                                         |Separation                 | `dr`
+--              |--                  |--                                                                                         |Correlation value          | `C`
+`orderCorrOut`  | `corrOrderOrder.dat`| Scalar order parameter autocorrelation (radial function)                                 |Time                       | `t`
+--              |--                  |--                                                                                         |Separation                 | `dr`
+--              |--                  |--                                                                                         |Correlation value          | `C`
+`phaseCorrOut`  | `corrPhiPhi.dat`   | Binary fluid correlation (radial function)                                                |Time                       | `t`
+--              |--                  |--                                                                                         |Separation                 | `dr`
+--              |--                  |--                                                                                         |Correlation value          | `C`
+
+### Swimmers
 
 Input tag       |Output file         | Description                                                                               |Outputs                    | Column Headers
 ---             |---                 | ---                                                                                       | ---                       | ---
