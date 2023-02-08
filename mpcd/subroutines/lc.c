@@ -764,7 +764,7 @@ void saintillanRotRate(double dudt[],double w[],double u[],double E[_3D][_3D],do
 /// Includes a check to see if the angle "swings past" the magnetic field (shouldn't be allowed by overdamped assumption).
 ///
 /// @param pMPC Pointer to specific MPCD particle.
-/// @param Species helper "class" (contains information on mass, etc, of species).
+/// @param SP List of species.
 /// @param dt The rod orientation.
 /// @param MAG The external applied field.
 ///
@@ -844,7 +844,7 @@ void magTorque( particleMPC *pMPC,spec *SP,double dt,double MAG[] ) {
 /// @brief Apply the torque due to external magnetic field on all MPCD particles.
 ///
 /// @param pp pointer to first MPCD particle.
-/// @param species helper "class" (contains information on mass, etc, of species).
+/// @param species List of species.
 /// @param dt The rod orientation.
 /// @param MAG The external applied field.
 ///
@@ -859,7 +859,7 @@ void magTorque_all( particleMPC *pp,spec *SP,double dt,double MAG[] ) {
 /// Currently not in use.
 ///
 /// @param CL Class containing cell data (pointed to local cell considered).
-/// @param species helper "class" (contains information on mass, etc, of species).
+/// @param SP List of species.
 /// @param dt The rod orientation.
 /// @param MAG The external applied field.
 ///
@@ -993,9 +993,8 @@ double avOrderParam( particleMPC *p,int LC,double avDIR[] ) {
 	return avS;
 }
 ///
-/// @brief This routine finds and returns the average global scalar fourth order mode of all MPCD particles.
+/// @brief Find and return the average global scalar fourth order mode of all MPCD particles.
 ///
-/// This routine finds and returns the average global scalar fourth order mode of all MPCD particles.
 /// It uses the already calculated average director (DIR) of the MPCD particles.
 ///
 /// @param p Pointer to first MPCD particle.
@@ -1004,9 +1003,6 @@ double avOrderParam( particleMPC *p,int LC,double avDIR[] ) {
 /// @return The average global scalar fourth order mode.
 ///
 double avS4( particleMPC *p,int LC,double DIR[] ) {
-/*
-   This routine finds the average global scalar fourth order mode
-*/
 	double U[_3D];
 	double un,un2,un4;	//orientation dot director
 	double S4;
@@ -1033,7 +1029,7 @@ double avS4( particleMPC *p,int LC,double DIR[] ) {
 	return S4;
 }
 ///
-/// @brief This subroutine calculate the tensor order parameter from a set of orientation vectors or MPCD particles.
+/// @brief Calculate the tensor order parameter from a set of orientation vectors or MPCD particles.
 ///
 /// This subroutine sums the tensor order parameter from a set of orientation vectors.
 ///
@@ -1041,9 +1037,6 @@ double avS4( particleMPC *p,int LC,double DIR[] ) {
 /// @param S The calculated tensor order parameter (taken as the sum, needs to be normalized).
 ///
 void addToTensOrderParam( particleMPC *pMPC,double **S ) {
-/*
-    Calculate the tensor order parameter from the set of orientation vectors
-*/
 	int i,j;
 
 	while(pMPC!=NULL) {
@@ -1054,7 +1047,7 @@ void addToTensOrderParam( particleMPC *pMPC,double **S ) {
 	}
 }
 ///
-/// @brief This subroutine calculates the sum of the tensor order parameter from a set of velocity vectors of MPCD particles.
+/// @brief Calculate the sum of the tensor order parameter from a set of velocity vectors of MPCD particles.
 ///
 /// This subroutine sums the tensor order parameter from a set of velocity vectors of MPCD particles.
 /// Used for isotropic fluids where velocity is same as director field.
@@ -1063,10 +1056,6 @@ void addToTensOrderParam( particleMPC *pMPC,double **S ) {
 /// @param S The calculated tensor order parameter (taken as the sum, needs to be normalized).
 ///
 void addToTensOrderParamVel( particleMPC *pMPC,double **S ) {
-/*
-    Calculate the tensor order parameter from the set of velocity vectors
-    Velocity is same as director field here
-*/
 	int i,j;
 	double U[_3D];
 
@@ -1081,7 +1070,6 @@ void addToTensOrderParamVel( particleMPC *pMPC,double **S ) {
 ///
 /// @brief Function to calculate the tensor order parameter in a cell.
 ///
-/// This routine calculated the tensor order parameter in a cell.
 /// For isotropic fluids (LC=0) velocity is same as director field, otherwise normal director field.
 ///
 /// @param CL Class containing cell data (pointed to local cell considered).
@@ -1089,9 +1077,6 @@ void addToTensOrderParamVel( particleMPC *pMPC,double **S ) {
 /// @param LC Variable to define if Nematic LC using an isotropic fluid (0), the local nematic order  value (1) or global nematic order value (2).
 ///
 void tensOrderParam( cell *CL,double **S,int LC ) {
-/*
-    Calculate the tensor order parameter from the set of orientation vectors
-*/
 	int i,j;
 	particleMPC *pMPC;	//Temporary pointer to MPC particles
 	double POPinv,fDIM,c;
@@ -1118,7 +1103,7 @@ void tensOrderParam( cell *CL,double **S,int LC ) {
 ///
 /// @brief function to calculate the tensor order parameter in a cell and their immediate surrounding cells.
 ///
-/// This routine calculates the tensor order parameter in a cell and their immediate surrounding cells (direct neighbours and it's diagonal next-nearest neighbours).
+/// This routine calculates the tensor order parameter in a cell, its neighbours, and their diagonal next-nearest neighbours.
 /// For isotropic fluids (LC=0) velocity is same as director field, otherwise normal director field.
 ///
 /// @param CL Class containing cell data.
@@ -1129,9 +1114,6 @@ void tensOrderParam( cell *CL,double **S,int LC ) {
 /// @param c z index of cell considered.
 ///
 void tensOrderParamNNN( cell ***CL,double **S,int LC,int a,int b,int c ) {
-/*
-    Calculate the tensor order parameter from the set of orientation vectors from the next-nearest neighbours
-*/
 	int i,j,x,y,z;
 	int POP;
 	particleMPC *pMPC;	//Temporary pointer to MPC particles
@@ -1168,19 +1150,15 @@ void tensOrderParamNNN( cell ***CL,double **S,int LC,int a,int b,int c ) {
 ///
 /// @brief This routine finds and returns the Binder cumulant for a bin size L of cells.
 ///
-/// This routine finds and returns the Binder cumulant for a bin size L of cells.
 /// The Binder cumulant is calculated over the orientation parameter (velocity if isotropic fluid).
 /// See https://en.wikipedia.org/wiki/Binder_parameter.
 ///
-/// @param CL Class containing cell data.
+/// @param CL All of the MPCD cells (including the linked list of particles in each cell). 
 /// @param L The bin size considered.
 /// @param LC Variable to define if Nematic LC using an isotropic fluid (0), the local nematic order  value (1) or global nematic order value (2).
 /// @return The Binder cumulant value.
 ///
 double binderCumulant( cell ***CL,int L,int LC ) {
-/*
-   This routine finds the Binder cumulant for a bin size L
-*/
 	int nBins[_3D]={0.0};			//Number of cumulant bins
 	int i,j,k,a,b,c,d;			//Indices
 	double UL,thisS,avS,avS2,avS4;		//Average of the square and power 4 of order parameter and the Binder cumulant
@@ -1248,21 +1226,17 @@ double binderCumulant( cell ***CL,int L,int LC ) {
 ///
 /// @brief This subroutine applies the BC transformation of the orientation to a MPCD particle caused by a boundary (wall).
 ///
-/// This subroutine applies the BC transformation of the orientation to an MPCD particles caused by a boundary (wall).
 /// The boundary is considered a ghost particle that affects the orientation of the MPCD particles.
 /// If the boundary is movable, there is also a torque between the MPCD and the boundary that is taken care off by applying the appropriate force on the BC due to
 /// the reorientation of the MPCD particle.
 /// This force would be the opposite torque that the boundary would have applied to the MPCD necesarry for MPCD reorientation.
 ///
 /// @param pp Pointer to an MPCD particle.
-/// @param SP Pointer to the species helper "class" (contains information of the mass, etc, of the considered species).
+/// @param SP List of species.
 /// @param Wall Pointer to the considered boundary.
 /// @param n The normal of the boundary.
 ///
 void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
-/*
-    This subroutine applies the BC transformation to orientation.
-*/
 	double UN[_3D],UT[_3D],U0[_3D];
 	double angleAnch;
 	double torque[_3D],r[_3D];			//Torque on MPCD particle --- Not REALLY torque ( angular impulse but time step falls out)
@@ -1372,7 +1346,8 @@ void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
 ///
 /// This subroutine applies the appropriate torque on a moveable BC .
 /// This subroutine uses the implied torque on the MPCD particle which was necesarry for its reorientation due to the BC boundary conditions.
-/// The equal and opposite force to that, is the force exerted by MPCD particle on the BC.
+/// The equal and opposite force to that is the force exerted by MPCD particle on the BC.
+/// The force exerted by the BC is converted into rotational and tranlational motion of the boundary.
 ///
 /// @param Wall pointer to the considered boundary.
 /// @param n The normal of the boundary.
@@ -1382,12 +1357,6 @@ void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
 /// @param posColl The vector from the centre of the colloid to the force on the boundary.
 ///
 void torqueLCBC( bc *WALL,double n[], double U0[], double torqueMPC[],double rodlength,  double posColl[] ) {
-	/*
-			This subroutine uses the torque on the MPCD particle to create a force on the BC.
-			The equal and opposite force to that, is the force exerted by the BC to create that MPC torque.
-			The force exerted by the BC is converted into rotational and tranlational motion of the boundary.
-	*/
-
 	int i,j;
 	double t_hat[_3D],f_hat[_3D]; //unit vectors: tangent vector to the surface of the colloid (for the tangential component of the force created by the colloid), unit vector of the MPC force acting into the colloid.
 	double MPC_force[_3D], force_n[_3D], force_t[_3D]; // MPC force, normal component of the colloid force, tangent component of the colloid force, colloid force.
@@ -1480,11 +1449,11 @@ void torqueLCBC( bc *WALL,double n[], double U0[], double torqueMPC[],double rod
 ///
 /// MPC collision that conserves angular momentum (uses andersen thermostat), and returns the CM velocity and the local temperature of the cell.
 /// See https://pubs.rsc.org/en/content/articlelanding/2015/sm/c5sm00839e
-/// Notice that all of this must be entirely in 3D even if system is 2D since angular momentum is perpendicular.
+/// Notice that all of this must be entirely in 3D even if system is 2D since angular momentum is a cross product.
 /// It takes into account the total mass, velocity and angular momentum of MPC particles, MD particles and swimmers.
 ///
 /// @param CL Class containing cell data (pointed to local cell considered).
-/// @param SP Pointer to the species helper "class" (contains information of the mass, etc, of the considered species).
+/// @param SP List of species.
 /// @param SS Pointer to the swimmers.
 /// @param KBT Temperature.
 /// @param dt Integration timestep.
@@ -1492,11 +1461,6 @@ void torqueLCBC( bc *WALL,double n[], double U0[], double torqueMPC[],double rod
 /// @param outP Parameter that determines if we should output pressure (0 not, 1 yes).
 ///
 void andersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double dt,double *CLQ,int outP ) {
-/*
-    MPC collision that conserves angular momentum (uses andersen thermostat), and returns the
-    CM velocity and the local temperature of the cell.
-    Notice that all of this must be entirely in 3D even if system is 2D since angular momentum is perpendicular
-*/
 	int i,j,id;
 	double MASS;			//MASS
 	double RV[CL->POP][_3D];	//Random velocities
@@ -1722,7 +1686,7 @@ void andersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double dt,doubl
 ///
 /// MPC collision that conserves angular momentum (uses andersen thermostat), and returns the CM velocity and the local temperature of the cell.
 /// See https://pubs.rsc.org/en/content/articlelanding/2015/sm/c5sm00839e.
-/// Notice that all of this must be entirely in 3D even if system is 2D since angular momentum is perpendicular.
+/// Notice that all of this must be entirely in 3D even if system is 2D since angular momentum is a cross product.
 /// It takes into account the total mass, velocity and angular momentum of MPC particles, MD particles and swimmers.
 /// It also splits the cell in two along the intersection of the centre of mass and perpendicular to the local director.
 /// It then adds a velocity component to the particles in opposite direction on either side of this plane to mimic a dipole.
@@ -1738,11 +1702,6 @@ void andersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double dt,doubl
 /// @param outP Parameter that determines if we should output pressure (0 not, 1 yes).
 ///
 void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RELAX,double dt,int RTECH,double *CLQ,int outP ) {
-/*
-    MPC collision that conserves angular momentum (uses andersen thermostat), and returns the
-    CM velocity and the local temperature of the cell.
-    Notice that all of this must be entirely in 3D even if system is 2D since angular momentum is perpendicular
-*/
 	int i,j,id;
 	double M,MASS,ACT,pmOne,sigWidth,sigPos;
 	double RV[CL->POP][_3D];	//Random velocities
@@ -2047,17 +2006,12 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 /// @brief This routine finds the local velocity gradient tensor of all cells.
 ///
 /// This routine finds the local velocity gradient tensor E[i][j]= dv[i]/dx[j] of all cells.
-/// It does not bother with periodic BCs
+/// It does not bother with periodic BCs.
 /// It uses different routines for the different dimensions for convenience (currently used the D3Q15 and D2Q9 neighbours. Does not work with 1D).
 ///
-/// @param CL Class containing cell data.
+/// @param CL All of the MPCD cells (including the linked list of particles in each cell). 
 ///
 void localVelGrad( cell ***CL ) {
-/*
-   This routine finds the local velocity gradient tensor by taking the derivatives with neighbouring cells
-   It does not bother with periodic BCs
-   It uses different routines for the different dimensions for convenience
-*/
 	// if( DIM == _3D ) velGrad3D( CL );
 	if( DIM == _3D ) velGradD3Q15( CL );
 // 	else if( DIM == _2D ) velGrad2D( CL );
@@ -2070,13 +2024,10 @@ void localVelGrad( cell ***CL ) {
 /// This routine finds the local velocity gradient tensor E[i][j]= dv[i]/dx[j] of all cells for 3D using D3Q15 neighbour grid.
 /// It does not bother with periodic BCs and doesn't calculate corners.
 ///
-/// @param CL Class containing cell data.
+/// @param CL All of the MPCD cells (including the linked list of particles in each cell). 
 ///
 void velGradD3Q15( cell ***CL ) {
-/*
-   This routine finds the 3D local velocity gradient tensor by taking the derivatives with neighbouring cells
-   It does not bother with periodic BCs
-*/
+
 	int a,b,c,i,j,k;
 	int numNodes = 14;
 	int unitVec[14][3] = { {1,0,0},{0,1,0},{-1,0,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,1},{-1,1,1},{1,-1,1},{-1,-1,1},{1,1,-1},{-1,1,-1},{1,-1,-1},{-1,-1,-1} };		 	//LB nodal unit vectors
@@ -2129,18 +2080,12 @@ void velGradD3Q15( cell ***CL ) {
 /// @brief This routine finds the local velocity gradient tensor of all cells for 2D using D2Q9 neighbour grid.
 ///
 /// This routine finds the local velocity gradient tensor E[i][j]= dv[i]/dx[j] of all cells for 2D using D3Q9 neighbour grid.
-/// It does not bother with periodic BCs and doesn't calculate corners
+/// It does not bother with periodic BCs and doesn't calculate corners.
+/// It uses LB-type derivatives to get isotropy correct to leading order - see https://iopscience.iop.org/article/10.1209/0295-5075/101/50006 .
 ///
-/// @param CL Class containing cell data.
+/// @param CL All of the MPCD cells (including the linked list of particles in each cell).
 ///
 void velGradD2Q9( cell ***CL ) {
-/*
-   This routine finds the 2D local velocity gradient tensor by taking the derivatives with neighbouring cells
-   IT USES THE LB-TYPE DERIVATIVES TO GET ISOTROPY CORRECT TO LEADING ORDER
-   --- See Ramadugu, etal EPL, 101 (2013) 50006
-   It does not bother with periodic BCs
-   There is no z.
-*/
 	int a,b,c,i,j,k;
 	int numNodes = 8;
 	int unitVec[8][3] = { {1,0,0},{0,1,0},{-1,0,0},{0,-1,0},{1,1,0},{-1,1,0},{-1,-1,0},{1,-1,0} }; 	//LB nodal unit vectors
@@ -2179,13 +2124,9 @@ void velGradD2Q9( cell ***CL ) {
 /// Currently not in use.
 /// This routine finds the local velocity gradient tensor E[i][j]= dv[i]/dx[j] of all cells for 3D using the Carthesian neighbours.
 ///
-/// @param CL Class containing cell data.
+/// @param CL All of the MPCD cells (including the linked list of particles in each cell).
 ///
 void velGrad3D( cell ***CL ) {
-/*
-   This routine finds the 3D local velocity gradient tensor by taking the derivatives with neighbouring cells
-   It does not bother with periodic BCs
-*/
 	int a,b,c,i;
 	//Bulk
 	for( a=1; a<XYZ[0]; a++ ) for( b=1; b<XYZ[1]; b++ ) for( c=1; c<XYZ[2]; c++ ) for( i=0; i<DIM; i++ ) {
@@ -2289,15 +2230,11 @@ void velGrad3D( cell ***CL ) {
 ///
 /// Currently not in use.
 /// This routine finds the local velocity gradient tensor E[i][j]= dv[i]/dx[j] of all cells for 2D using the Carthesian neighbours.
+/// There is no z.
 ///
-/// @param CL Class containing cell data.
+/// @param CL All of the MPCD cells (including the linked list of particles in each cell).
 ///
 void velGrad2D( cell ***CL ) {
-/*
-   This routine finds the 2D local velocity gradient tensor by taking the derivatives with neighbouring cells
-   It does not bother with periodic BCs
-   There is no z.
-*/
 	int a,b,c,i;
 	c=0;		//There is no z
 	//Bulk
@@ -2356,14 +2293,11 @@ void velGrad2D( cell ***CL ) {
 /// Currently not in use.
 /// This routine finds the local velocity gradient tensor E[i][j]= dv[i]/dx[j] of all cells for 1D using the Carthesian neighbours.
 ///
-/// @param CL Class containing cell data.
+/// @param CL All of the MPCD cells (including the linked list of particles in each cell).
 ///
 void velGrad1D( cell ***CL ) {
-/*
-   This routine finds the 1D local velocity gradient tensor by taking the derivatives with neighbouring cells
-   It does not bother with periodic BCs
-   There is no z or y --- this is just silly
-*/
+
+//   There is no z or y --- this is just silly
 	int a,b,c,i;
 	c=0;		//There is no z
 	b=0;
@@ -2379,17 +2313,16 @@ void velGrad1D( cell ***CL ) {
 ///
 /// @brief Calculates and returns the local topological charge.
 ///
-/// A subroutine that finds and gives the topological charge (in the 2D XY-plane) at the local cell with position (i,j,k) by rotating the cell directory around the 8 neighbours of the cell.
+/// A subroutine that finds and gives the topological charge (in the 2D XY-plane) at the local cell 
+/// with position (i,j,k) by rotating the cell directory around the 8 neighbours of the cell.
 ///
-/// @param CL Class containing cell data.
+/// @param CL All of the MPCD cells (including the linked list of particles in each cell).
 /// @param i The x index of cell considered.
 /// @param j The y index of cell considered.
 /// @param k The z index of cell considered.
 /// @return Returns the topological charge at position (i,j,k).
 ///
 double topoChargeLocal( cell ***CL, int i, int j, int k){
-	//A function to calculate the topological charge, and place it into charge
-	//calculate local topo charge
 	double phi = .0; //reset
 
 	phi += topoSmallestAngle( CL[i+1][j][k].DIR, CL[i+1][j+1][k].DIR);
@@ -2407,7 +2340,7 @@ double topoChargeLocal( cell ***CL, int i, int j, int k){
 ///
 /// @brief Returns the smallest vector between two directors u and v.
 ///
-/// Returns the smallest vector between two directors u and v. It takes into account that the director is defined as u=-u.
+/// Takes into account that the director is defined as u=-u.
 ///
 /// @param u A vector (director).
 /// @param u A vector (director).
@@ -2433,11 +2366,11 @@ double topoSmallestAngle( double u[], double v[]){
 ///
 /// @brief Returns the angle of the defect.
 ///
-/// Calculates and returns the angle of the defect. A defect first has to be detected using topoChargeLocal() as the charge of that function needs to be given in this function.
-/// This function calculated the derivatives of the Q tensor of the local cell and its neighbours and then uses the equation  taken from: https://pubs.rsc.org/en/content/articlelanding/2016/sm/c6sm01146b/.
+/// A defect first has to be detected using topoChargeLocal() as the charge of that function needs to be given in this function.
+/// This function calculated the derivatives of the Q tensor of the local cell and its neighbours and then uses the equation  taken from: https://pubs.rsc.org/en/content/articlelanding/2016/sm/c6sm01146b/ .
 /// Currently doesn't seem to be able to handle when the cell are taken at the boundary.
 ///
-/// @param CL Class containing cell data
+/// @param CL All of the MPCD cells (including the linked list of particles in each cell).
 /// @param x The x index of cell considered.
 /// @param y The y index of cell considered.
 /// @param z The z index of cell considered.
@@ -2446,9 +2379,6 @@ double topoSmallestAngle( double u[], double v[]){
 /// @see topoChargeLocal()
 ///
 double topoAngleLocal( cell ***CL, int x, int y, int z, double charge){
-	// A function to compute the angle of a defect, meant to be paired with the above
-	// Equation essentially taken from: https://pubs.rsc.org/en/content/articlelanding/2016/sm/c6sm01146b/
-
 	//init summing vars
 	double sumTop = 0.0;
 	double sumBot = 0.0;
@@ -2476,8 +2406,7 @@ double topoAngleLocal( cell ***CL, int x, int y, int z, double charge){
 		double xQxy = centredDeriv(QLeft[1][0], QRight[1][0], 1.0);
 		double yQxx = centredDeriv(QBot[0][0], QTop[0][0], 1.0);
 		double yQxy = centredDeriv(QBot[1][0], QTop[1][0], 1.0);
-		/*** TODO: Computing these is a nightmare, maybe make a seperate function that computes \nabla\cdot Q and returns the result? Would need to replace the above after***/
-
+		
 		sumTop += sign*xQxy - yQxx; // compute top here
 		sumBot += xQxx + sign*yQxy; // compute bot here
 
@@ -2488,7 +2417,7 @@ double topoAngleLocal( cell ***CL, int x, int y, int z, double charge){
 	return angle;
 }
 ///
-/// @brief Calculates the Q tensor.
+/// @brief Calculate the Q tensor.
 ///
 /// Calculates the Q tensor form the director and nematic order in CL.
 /// Currently only works in 2D.
