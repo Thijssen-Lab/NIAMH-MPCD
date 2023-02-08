@@ -2,9 +2,8 @@
 /// @file
 /// @brief Contains all the global constants, as pre-processor definitions, used in the code.
 ///
-/// MPCD avoids the use of explicit numbers where possible, and instead makes use of pre-processor defines. These are
+/// This MPCD code avoids the use of explicit numbers where ever possible, and instead makes use of pre-processor defines. These are
 /// stated in this file, with comments explaining each.
-///
 /// Broadly speaking, these are broken up into the following categories:
 /// - Compile options
 /// - Program constants
@@ -84,15 +83,15 @@
 /* ****************************************** */
 /* ********* MERSENNE RANDOM NUMBER ********* */
 /* ****************************************** */
-/// @brief Word count for MT generation.
+/// @brief Word count for Mersenne Twister random number generation.
 # define NN 624
-/// @brief Middle word for MT generation.
+/// @brief Middle word for Mersenne Twister random number generation.
 # define MM 397
-/// @brief Constant vector a for MT generation.
+/// @brief Constant vector a for Mersenne Twister random number generation.
 # define MATRIX_A 0x9908b0dfUL
-/// @brief Most significant w-r bits for MT generation.
+/// @brief Most significant w-r bits for Mersenne Twister random number generation.
 # define UPPER_MASK 0x80000000UL
-/// @brief Least significant r bits for MT generation.
+/// @brief Least significant r bits for Mersenne Twister random number generation.
 # define LOWER_MASK 0x7fffffffUL
 
 /* ****************************************** */
@@ -231,7 +230,7 @@
 # define BEREND 2
 /// @brief Thermostat settings. HEYES indicates that Heyes thermostat for cell by cell thermostatting used
 # define HEYES 3
-/// @brief Thermostat settings. MAXTH is not really a thermostat. Use it with RTECH=MPCAT to have a maximum velocity vector (which is inputted as GRAV[] in input.inp)
+/// @brief Thermostat settings. MAXV is not really a thermostat. Use it with RTECH=MPCAT to have a maximum velocity vector (which is inputted as GRAV[] in input.inp)
 # define MAXV 4
 
 /* ****************************************** */
@@ -333,7 +332,7 @@
 # define DUMBBELL_MONOF 3
 /// @brief Swimmer type. Swimmers constrained to be near the y=0 (2D) or z=0 (3D) domain boundary.
 # define DUMBBELL_NEARWALL 4
-/// @brief Swimmer type. Model of a c-elegan worm.
+/// @brief Swimmer type. Model of a <i>C. elegan</i> worm.
 # define UNDULATOR 5
 //If the swimmer is in the run or tumble phase
 /// @brief Swimmer run-tumble phase. Running.
@@ -357,55 +356,55 @@
 //Used by DBUG in c-code and 'debugOut' in json input
 //Debug modes:
 //Often used:
-/// @brief Debug/ verbosity level. Outputs nothing but sim start and sim end.
+/// @brief Debug/verbosity level. Outputs nothing but sim start and sim end.
 # define DBGRUN 0
-/// @brief Debug/ verbosity level. Only outputs warnings.
+/// @brief Debug/verbosity level. Only outputs warnings.
 # define DBGWARN 1
-/// @brief Debug/ verbosity level. Only outputs initialisation information.
+/// @brief Debug/verbosity level. Only outputs initialisation information.
 # define DBGINIT 2
-/// @brief Debug/ verbosity level. Only outputs iteration steps.
+/// @brief Debug/verbosity level. Only outputs iteration steps.
 # define DBGSTEPS 3
-/// @brief Debug/ verbosity level. Gives a title to some methods and outputs them when called.
+/// @brief Debug/verbosity level. Gives a title to some methods and outputs them when called.
 # define DBGTITLE 4
-/// @brief Debug/ verbosity level.
+/// @brief Debug/verbosity level.
 # define DBGWAIT 5
-/// @brief Debug/ verbosity level.
+/// @brief Debug/verbosity level.
 # define DBGTHERM 6
-/// @brief Debug/ verbosity level.
+/// @brief Debug/verbosity level.
 # define DBGHIST 7
-/// @brief Debug/ verbosity level.
+/// @brief Debug/verbosity level.
 # define DBGBCCNT 8
-/// @brief Debug/ verbosity level.
+/// @brief Debug/verbosity level.
 
 //Rarely used:
-/// @brief Debug/ verbosity level.
+/// @brief Debug/verbosity level.
 # define DBGMPCBC 9
-/// @brief Debug/ verbosity level.
+/// @brief Debug/verbosity level.
 # define DBGBCMPC 10
-/// @brief Debug/ verbosity level.
+/// @brief Debug/verbosity level.
 # define DBGBCBC 11
-/// @brief Debug/ verbosity level.
+/// @brief Debug/verbosity level.
 # define DBGBCMAX 12
-/// @brief Debug/ verbosity level.
+/// @brief Debug/verbosity level.
 # define DBGLCCOL 13
-/// @brief Debug/ verbosity level.
+/// @brief Debug/verbosity level.
 # define DBGBCORI 14
-/// @brief Debug/ verbosity level.
+/// @brief Debug/verbosity level.
 # define DBGJEFF 15
-/// @brief Debug/ verbosity level.
+/// @brief Debug/verbosity level.
 # define DBGMAG 16
-/// @brief Debug/ verbosity level.
+/// @brief Debug/verbosity level.
 # define DBGBINARY 17
-/// @brief Debug/ verbosity level.
+/// @brief Debug/verbosity level.
 # define DBGSWIMMER 18
-/// @brief Debug/ verbosity level.
+/// @brief Debug/verbosity level.
 # define DBGRUNTUMBLE 19
-/// @brief Debug/ verbosity level.
+/// @brief Debug/verbosity level.
 # define DBGESCAPE 20
-/// @brief Debug/ verbosity level.
+/// @brief Debug/verbosity level.
 # define DBGSWIMMERDEETS 21
-/// @brief Debug/ verbosity level.
+/// @brief Debug/verbosity level.
 # define DBGSWIMMERTORQUE 22
-/// @brief Debug/ verbosity level.
+/// @brief Debug/verbosity level.
 # define DBGINCOMP 23
 #endif
