@@ -1290,14 +1290,14 @@ void eigenvectors2x2( double **m,double eigval[],double eigvec[][_2D] ) {
 }
 
 ///
-///	@brief Find the three eigenvalues for m for a 3x3 matrix
-///    MUST BE SYMMETRIC
-///    http://en.wikipedia.org/wiki/Eigenvalue_algorithm#3.C3.973_matrices
-///    and Smith, Communications of the ACM 4 (4): 168, 1961.
+///	@brief Find the three eigenvalues for m for a 3x3 matrix.
 ///
+/// Uses an algorithm from @link http://en.wikipedia.org/wiki/Eigenvalue_algorithm#3.C3.973_matrices here@endlink .
+/// Also see Smith, Communications of the ACM 4 (4): 168, 1961.
 ///
-/// @param m reference to the 3x3 matrix
-/// @param eigval reference to the output eingenvalues
+/// @param m 3x3 matrix.
+/// @param eigval Output eigenvalues.
+/// @warning m must be symmetric.
 ///
 void eigenvalues3x3( double **m,double eigval[] ) {
 	int i,j;
@@ -1355,15 +1355,15 @@ void eigenvalues3x3( double **m,double eigval[] ) {
 }
 
 ///
-///	@brief Find the three eigenvectors (normalized) for m for a SYMMETRIC 3x3 matrix
-///    Uses the Cayley-Hamilton theorem from (http://en.wikipedia.org/wiki/Eigenvalue_algorithm#3.C3.973_matrices).
-///    Don't worry about generalized eigenvector stuff for eigenvalue multiplicities greater than 1.
-///    Check if diagonal.
+///	@brief Find the three eigenvectors (normalized) for m for a SYMMETRIC 3x3 matrix.
 ///
+/// Uses an algorithm from @link http://en.wikipedia.org/wiki/Eigenvalue_algorithm#3.C3.973_matrices here@endlink .
+/// Also see Smith, Communications of the ACM 4 (4): 168, 1961.
 ///
-/// @param m reference to the 3x3 matrix
-/// @param eigval reference to the eingenvalues
-/// @param eigvec reference to the output eingenvectors
+/// @param m 3x3 matrix.
+/// @param eigval Output eigenvalues.
+/// @param eigvec Output eigenvectors.
+/// @warning m must be symmetric.
 ///
 void eigenvectors3x3( double **m,double eigval[],double eigvec[][_3D] ) {
 	int row,col,i,k;
@@ -1424,16 +1424,16 @@ void eigenvectors3x3( double **m,double eigval[],double eigvec[][_3D] ) {
 }
 
 ///
-///	@brief Finds the eigenvalues and vectors of the real, symmetric matrix m by analytical methods
-///    The matrix m is lost.
-///    It becomes the eigenvectors: the kth column of m returns the normalized eigenvector corresponding to eigval[k].
+///	@brief Finds the eigenvalues and vectors of the real, symmetric matrix m by analytical methods.
 ///
-///		Works only for 1x1, 2x2 and 3x3 everything else will be ignored
+/// The matrix m is lost. It becomes the eigenvectors: the kth column of m returns the normalized eigenvector
+/// corresponding to eigval[k]. Works only for 1x1, 2x2 and 3x3 everything else will be ignored.
 ///
-///
-/// @param m reference to the 1x1, 2x2, or 3x3 matrix
-/// @param dimension dimensionality of the matrix
-/// @param eigval output eingenvalues
+/// @param m 1x1, 2x2, or 3x3 matrix.
+/// @param dimension Dimensionality of the matrix.
+/// @param eigval Output eingenvalues.
+/// @warning m is lost!
+/// @warning dimension must be 1, 2, or 3.
 ///
 void solveEigensystem( double **m,int dimension,double eigval[] ) {
 	int i,j;
@@ -1463,12 +1463,13 @@ void solveEigensystem( double **m,int dimension,double eigval[] ) {
 }
 
 ///
-///	@brief Find the derivative of x by a centred derivative
+///	@brief Find the derivative of x by a centred derivative.
 ///
+/// Find the derivative of x by a centred derivative.
 ///
-/// @param xM1 value to find derivative from
-/// @param xP1 value of the center
-/// @param dt time step for derivation
+/// @param xM1 Value to find derivative from.
+/// @param xP1 Value of the center.
+/// @param dt Time step for derivation.
 ///
 double centredDeriv( double xM1,double xP1,double dt ) {
 	double deriv=0.5*(xP1-xM1)/dt;
@@ -1476,12 +1477,13 @@ double centredDeriv( double xM1,double xP1,double dt ) {
 }
 
 ///
-///	@brief Find the derivative of x by a centred derivative (forward)
+///	@brief Find the derivative of x by a centred derivative (forward).
 ///
+/// Find the derivative of x by a centred derivative (forward).
 ///
-/// @param x0 value to find derivative from
-/// @param xP1 value of the center
-/// @param dt time step for derivation
+/// @param x0 Value to find derivative from.
+/// @param xP1 value of the center.
+/// @param dt Time step for derivation.
 ///
 double forwardDeriv( double x0,double xP1,double dt ) {
 	double deriv=(xP1-x0)/dt;
@@ -1489,12 +1491,13 @@ double forwardDeriv( double x0,double xP1,double dt ) {
 }
 
 ///
-///	@brief Find the derivative of x by a centred derivative (backward)
+///	@brief Find the derivative of x by a centred derivative (backward).
 ///
+/// Find the derivative of x by a centred derivative (backward).
 ///
-/// @param x0 value to find derivative from
-/// @param xM1 value of the center
-/// @param dt time step for derivation
+/// @param x0 Value to find derivative from.
+/// @param xM1 value of the center.
+/// @param dt Time step for derivation.
 ///
 double backwardDeriv( double x0,double xM1,double dt ) {
 	double deriv=(x0-xM1)/dt;
@@ -1502,12 +1505,13 @@ double backwardDeriv( double x0,double xM1,double dt ) {
 }
 
 ///
-///	@brief Find the integral of a discrete function with equal steps in x
+///	@brief Find the integral of a discrete function with equal steps in x.
 ///
+/// Find the integral of a discrete function with equal steps in x.
 ///
-/// @param F value of the input discrete function
-/// @param dx input value step
-/// @param dt input time step
+/// @param F value of the input discrete function.
+/// @param dx Input value step.
+/// @param dt Input time step.
 ///
 double simps( double F[],double dx,int n ) {
 	int i,halfN;
@@ -1521,13 +1525,15 @@ double simps( double F[],double dx,int n ) {
 }
 
 ///
-///	@brief Find the standard deviation of the number of particles in each cell
-///    NOTICE: previously s1 was average number per cell but this was erroneous. Should just be sum
+///	@brief Find the standard deviation of the number of particles in each cell.
 ///
-/// @param CL reference to the cell
-/// @param GPOP total population of the entire system
-/// @param XYZ parameters of the control volume
-/// @param XYZ_P1 parameters of the control volume plus one
+/// Find the standard deviation of the number of particles in each cell. Note: Previously s1 was average number per cell
+/// but this was erroneous - Should just be sum.
+///
+/// @param CL Cell array.
+/// @param GPOP Total population of the entire system.
+/// @param XYZ Volume of the control volume.
+/// @param XYZ_P1 Volume of the control volume plus one.
 ///
 double stdNum( cell ***CL,int GPOP,int XYZ[3],int XYZ_P1[3] ) {
 	int a,b,c;
@@ -1548,14 +1554,16 @@ double stdNum( cell ***CL,int GPOP,int XYZ[3],int XYZ_P1[3] ) {
 }
 
 ///
-///	@brief This routine rotates one vector (vec) about an axis of rotation vector (rotAx) by an angle theta and writes over the vector
-///	 For some reason the rotation appears to shrink vec's magnitude slightly. Therefore rescale.
-///	 NOTICE: rotAx MUST be a UNIT vector so immediately normalized
-///	 NOTICE: that EVEN if this is 2D it MUST be 3D because the cross product cp will be in the perpendicular direction
+///	@brief Rotates one vector about an axis of rotation by an angle theta. Writes over the vector.
 ///
-/// @param vec reference to the vector to rotate
-/// @param rotAx rederence to the unit vector around which vec returns
-/// @param theta value of the rotation angle
+/// This routine rotates one vector (`vec`) about an axis of rotation vector (`rotAx`) by an angle theta and writes over
+/// the vector. For some reason the rotation appears to shrink vec's magnitude slightly. Therefore rescale.
+///
+/// @param vec Vector to be rotated.
+/// @param rotAx Axis of rotation.
+/// @param theta Rotation angle.
+/// @note `rotAx` MUST be a UNIT vector so immediately normalized.
+/// @note Requires 3D vectors due to dependency on the cross product.
 ///
 void rodriguesRotation( double vec[],double rotAx[],double theta ) {
 	int i;
@@ -1573,12 +1581,14 @@ void rodriguesRotation( double vec[],double rotAx[],double theta ) {
 }
 
 ///
-///	@brief Just sets a rotation matrix based on angles about the cartesian axes
+///	@brief Sets a rotation matrix based on angles about the cartesian axes.
 ///
-/// @param M reference to the matrix to rotate
-/// @param angx x component of the angle to rotate
-/// @param angy y component of the angle to rotate
-/// @param angz z component of the angle to rotate
+/// Sets a rotation matrix based on angles about the cartesian axes.
+///
+/// @param M Rotation matrix to be output to.
+/// @param angx x component of the angle to rotate.
+/// @param angy y component of the angle to rotate.
+/// @param angz z component of the angle to rotate.
 ///
 void setRotMatrix3D( double M[][3],double angx,double angy,double angz ) {
 	double cosx,sinx,cosy,siny,cosz,sinz;
@@ -1601,10 +1611,12 @@ void setRotMatrix3D( double M[][3],double angx,double angy,double angz ) {
 }
 
 ///
-///	@brief  Just sets a rotation matrix based on angles about the cartesian z axis (uses as input a 3x3 array regardless of dimensionality)
+///	@brief Creates a 2D rotation matrix (rotation matrix about the z axis).
 ///
-/// @param M reference to the matrix to rotate
-/// @param angz z component of the angle to rotate
+/// Creates a 2D rotation matrix (rotation matrix about the z axis).
+///
+/// @param M Rotation matrix to be output to.
+/// @param angz z component of the angle to rotate.
 ///
 void setRotMatrix2D( double M[][3],double angz ) {
 	M[0][0] = cos(angz);
@@ -1614,11 +1626,13 @@ void setRotMatrix2D( double M[][3],double angz ) {
 }
 
 ///
-///	@brief Generate the skew-symmetric cross-product matrix needed for the rotation in findRotationMatrix()
+///	@brief Generate the skew-symmetric cross-product matrix needed for the rotation in findRotationMatrix().
 ///
-/// @see findRotationMatrix
-/// @param v input vector for generating
-/// @param result output rotation matrix
+/// Generate the skew-symmetric cross-product matrix needed for the rotation in findRotationMatrix().
+///
+/// @param v Input vector for generating.
+/// @param result Output rotation matrix.
+/// @see findRotationMatrix()
 ///
 void skewSymmetricCrossProductMatrix( double *v,double result[][3] ) {
 	result[0][0]=0.;
@@ -1633,15 +1647,16 @@ void skewSymmetricCrossProductMatrix( double *v,double result[][3] ) {
 }
 
 ///
-///	@brief Find the rotation matrix for the subroutine findRotationMatrix()
+///	@brief Find the rotation matrix for the subroutine findRotationMatrix().
 ///
-/// @see dotprodMatMat
-/// @see findRotationMatrix
+/// Find the rotation matrix for the subroutine findRotationMatrix().
 ///
-/// @param rotMat output rotation matrix
-/// @param vx input matrix to rotate
-/// @param c input length of the vector
-/// @param s angle between initial vector and final vector
+/// @param rotMat Output rotation matrix.
+/// @param vx Input matrix to rotate.
+/// @param c Input length of the vector.
+/// @param s Angle between initial vector and final vector.
+/// @see dotprodMatMat()
+/// @see findRotationMatrix()
 ///
 void rotationMatrix( double rotMat[][3],double vx[][3],double c,double s ) {
 	double unity[_3D][_3D],vx2[_3D][_3D];
@@ -1657,14 +1672,15 @@ void rotationMatrix( double rotMat[][3],double vx[][3],double c,double s ) {
 }
 
 ///
-///	@brief Find the rotation matrix necesary to rotation the original vector parallel to the final vector
+///	@brief Find the rotation matrix necessary to rotate the original vector to be parallel to the final vector.
 ///
-/// @see dotprodMatMat
-/// @see findRotationMatrix
+/// Find the rotation matrix necessary to rotate the original vector to be parallel to the final vector.
 ///
-/// @param rotMat output rotation matrix
-/// @param original reference to the original vector for rotation
-/// @param final reference to the vector after rotation
+/// @param rotMat Output rotation matrix.
+/// @param original Original vector for rotation.
+/// @param final Intended vector after rotation.
+/// @see dotprodMatMat()
+/// @see findRotationMatrix()
 ///
 void findRotationMatrix( double rotMat[][3],double *original,double *final ) {
 	double a[_3D],b[_3D],v[_3D];
@@ -1681,15 +1697,15 @@ void findRotationMatrix( double rotMat[][3],double *original,double *final ) {
 }
 
 ///
-///	@brief Find the spacial autocorrelation function of director
+///	@brief Find the spatial auto-correlation function of the director.
 ///
-/// Used for output purposes
+/// Find the spacial auto-correlation function of the director. Used for output purposes.
 ///
-/// @param CL pointer to the co-ordinates and cell of ecah particle
-/// @param maxXYZ maximum dimensions in control volume
-/// @param XYZ dimensions in control volume
-/// @param avCorr correlation function and energy spectra
-/// @param dimension dimensionality of the input values
+/// @param CL Cell array.
+/// @param maxXYZ Maximum dimensions in control volume.
+/// @param XYZ Dimensions in control volume.
+/// @param avCorr Output correlation function and energy spectra.
+/// @param dimension Dimensionality of the input values.
 ///
 void dirdirCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension ) {
 	int a,b,c,d;
@@ -1722,15 +1738,15 @@ void dirdirCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension )
 }
 
 ///
-///	@brief Find the spacial autocorrelation function of director
+///	@brief Find the spatial auto-correlation function of the density.
 ///
-/// Used for output purposes
+/// Find the spacial auto-correlation function of density. Used for output purposes.
 ///
-/// @param CL pointer to the co-ordinates and cell of ecah particle
-/// @param maxXYZ maximum dimensions in control volume
-/// @param XYZ dimensions in control volume
-/// @param avCorr correlation function and energy spectra
-/// @param dimension dimensionality of the input values
+/// @param CL Cell array.
+/// @param maxXYZ Maximum dimensions in control volume.
+/// @param XYZ Dimensions in control volume.
+/// @param avCorr Output correlation function and energy spectra.
+/// @param dimension Dimensionality of the input values.
 ///
 void densdensCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension ) {
 	int a,b,c,d;
@@ -1758,15 +1774,15 @@ void densdensCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension
 }
 
 ///
-///	@brief Find the spacial autocorrelation function of scalar order parameter
+///	@brief Find the spatial auto-correlation function of scalar order parameter.
 ///
-/// Used for output purposes
+/// Find the spacial auto-correlation function of scalar order parameter. Used for output purposes.
 ///
-/// @param CL pointer to the co-ordinates and cell of ecah particle
-/// @param maxXYZ maximum dimensions in control volume
-/// @param XYZ dimensions in control volume
-/// @param avCorr correlation function and energy spectra
-/// @param dimension dimensionality of the input values
+/// @param CL Cell array.
+/// @param maxXYZ Maximum dimensions in control volume.
+/// @param XYZ Dimensions in control volume.
+/// @param avCorr Output correlation function and energy spectra.
+/// @param dimension Dimensionality of the input values.
 ///
 void orderorderCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension ) {
 	int a,b,c,d;
@@ -1821,15 +1837,15 @@ void orderorderCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimensi
 // }
 
 ///
-///	@brief Find the spacial autocorrelation function of velocity
+///	@brief Find the spatial normalised auto-correlation function of velocity.
 ///
-/// Used for output purposes
+/// Find the spacial auto-correlation function of velocity. Used for output purposes.
 ///
-/// @param CL pointer to the co-ordinates and cell of ecah particle
-/// @param maxXYZ maximum dimensions in control volume
-/// @param XYZ dimensions in control volume
-/// @param avCorr correlation function and energy spectra
-/// @param dimension dimensionality of the input values
+/// @param CL Cell array.
+/// @param maxXYZ Maximum dimensions in control volume.
+/// @param XYZ Dimensions in control volume.
+/// @param avCorr Output correlation function and energy spectra.
+/// @param dimension Dimensionality of the input values.
 ///
 void velvelNormedCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension ) {
 	int a,b,c,d;
@@ -1857,15 +1873,15 @@ void velvelNormedCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimen
 }
 
 ///
-///	@brief Find the spacial autocorrelation function of velocity
+///	@brief Find the spatial normalised auto-correlation function of vorticity.
 ///
-/// Used for output purposes
+/// Find the spatial auto-correlation function of vorticity. Used for output purposes.
 ///
-/// @param CL pointer to the co-ordinates and cell of ecah particle
-/// @param maxXYZ maximum dimensions in control volume
-/// @param XYZ dimensions in control volume
-/// @param avCorr correlation function and energy spectra
-/// @param dimension dimensionality of the input values
+/// @param CL Cell array.
+/// @param maxXYZ Maximum dimensions in control volume.
+/// @param XYZ Dimensions in control volume.
+/// @param avCorr Output correlation function and energy spectra.
+/// @param dimension Dimensionality of the input values.
 ///
 void vortvortNormedCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension ) {
 	int a,b,c,d;
@@ -1900,15 +1916,15 @@ void vortvortNormedCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dim
 }
 
 ///
-///	@brief Find the spacial autocorrelation function of velocity
+///	@brief Find the spatial auto-correlation function of velocity.
 ///
-/// Used for output purposes
+/// Find the spacial auto-correlation function of velocity. Used for output purposes.
 ///
-/// @param CL pointer to the co-ordinates and cell of ecah particle
-/// @param maxXYZ maximum dimensions in control volume
-/// @param XYZ dimensions in control volume
-/// @param avCorr correlation function and energy spectra
-/// @param dimension dimensionality of the input values
+/// @param CL Cell array.
+/// @param maxXYZ Maximum dimensions in control volume.
+/// @param XYZ Dimensions in control volume.
+/// @param avCorr Output correlation function and energy spectra.
+/// @param dimension Dimensionality of the input values.
 ///
 void velvelCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension ) {
 	int a,b,c,d;
@@ -1937,15 +1953,15 @@ void velvelCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension )
 }
 
 ///
-///	@brief Find the spacial autocorrelation function of velocity
+///	@brief Find the spatial auto-correlation function of vorticity.
 ///
-/// Used for output purposes
+/// Find the spatial auto-correlation function of vorticity. Used for output purposes.
 ///
-/// @param CL pointer to the co-ordinates and cell of ecah particle
-/// @param maxXYZ maximum dimensions in control volume
-/// @param XYZ dimensions in control volume
-/// @param avCorr correlation function and energy spectra
-/// @param dimension dimensionality of the input values
+/// @param CL Cell array.
+/// @param maxXYZ Maximum dimensions in control volume.
+/// @param XYZ Dimensions in control volume.
+/// @param avCorr Output correlation function and energy spectra.
+/// @param dimension Dimensionality of the input values.
 ///
 void vortvortCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension ) {
 	int a,b,c,d;
@@ -1981,12 +1997,12 @@ void vortvortCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension
 }
 
 ///
-///	@brief Normalize an unnormalized correlation function
+///	@brief Normalize an un-normalized correlation function.
 ///
-/// Used for output purposes
+/// Normalize an un-normalized correlation function. Used for output purposes
 ///
-/// @param corr pointer to the correlation value
-/// @param maxXYZ maximum dimensions in control volume
+/// @param corr Array containing the correlation values.
+/// @param maxXYZ Maximum dimensions in domain.
 ///
 void normCorr( double *corr,int maxXYZ ) {
 	int i;
@@ -1997,15 +2013,15 @@ void normCorr( double *corr,int maxXYZ ) {
 }
 
 ///
-///	@brief Transform a spherically symmetric function into its Fourier transform
+///	@brief Transform a spherically symmetric function into its Fourier transform.
 ///
-/// Used for output purposes
+/// Transform a spherically symmetric function into its Fourier transform. Used for output purposes.
 ///
-/// @param f input value of the function
-/// @param F output Fourier transformation
-/// @param rad detailed control volume
-/// @param n input control volume
-/// @param dimension dimensionality of the input values
+/// @param f Input array of the function to be transformed.
+/// @param F Output Fourier transformation.
+/// @param rad Array representing radial values for Fourier space.
+/// @param n Number of radial values.
+/// @param dimension Dimensionality of the input values.
 ///
 void FT_spherical( double *f,double *F,double *rad,int n,int dimension ) {
 	int r,k;
@@ -2037,14 +2053,14 @@ void FT_spherical( double *f,double *F,double *rad,int n,int dimension ) {
 }
 
 ///
-///	@brief Transform a correlation function into a spectrum
+///	@brief Transform a correlation function into a spectrum.
 ///
-/// Used for output purposes
+/// Transform a correlation function into a spectrum. Used for output purposes.
 ///
-/// @param corr pointer to the correlation value
-/// @param spect pointer to the spectrum value
-/// @param maxXYZ control volume
-/// @param dimension dimensionality of the input values
+/// @param corr Array containing the correlation values.
+/// @param spect Spectrum values to output to.
+/// @param maxXYZ Dimensions of the domain.
+/// @param dimension Dimensionality of the input values.
 ///
 void FTspectrum( double *corr,double *spect,int maxXYZ,int dimension ) {
 	int i;
@@ -2068,11 +2084,13 @@ void FTspectrum( double *corr,double *spect,int maxXYZ,int dimension ) {
 }
 
 ///
-///	@brief Check that no component of a vector is NAN or INF
+///	@brief Check that no component of a vector is NAN or INF.
 ///
+/// Check that no component of a vector is NAN or INF.
 ///
-/// @param vec reference to the vector to check
-/// @param dimension dimensionality of the input values
+/// @param vec Vector to check.
+/// @param dimension Dimensionality of the input values.
+/// @return 1 if any component is NAN or INF, 0 otherwise.
 ///
 int checkNAN_vec( double vec[],int dimension ) {
 	int d=0,flag=0;
@@ -2084,13 +2102,14 @@ int checkNAN_vec( double vec[],int dimension ) {
 }
 
 ///
-///	@brief Check that no position values are NANs or INFs
+///	@brief Check that no position values are NANs or INFs.
 ///
+/// Check that no position values are NANs or INFs. Prints to terminal if any are found.
 ///
-/// @param CL reference to the cell
-/// @param XYZ_P1 control volume plus 1
-/// @param pauseFlag bool for waiting for user to press enter
-/// @param dimension dimensionality of the input values
+/// @param CL Cell array.
+/// @param XYZ_P1 Domain dimensions plus 1.
+/// @param pauseFlag Bool for waiting for user to press enter.
+/// @param dimension Dimensionality of the input values.
 ///
 void checkNAN_Q( cell ***CL,int XYZ_P1[3],int pauseFlag,int dimension ) {
 	int i,j,k,flag,cnt=0;
@@ -2115,14 +2134,14 @@ void checkNAN_Q( cell ***CL,int XYZ_P1[3],int pauseFlag,int dimension ) {
 }
 
 ///
-///	@brief Check that no velocity values are NANs or INFs
+///	@brief Check that no velocity values are NANs or INFs.
 ///
-/// Used for output purposes
+/// Check that no velocity values are NANs or INFs. Used for output purposes. Prints to terminal if any are found.
 ///
-/// @param CL reference to the cell
-/// @param XYZ_P1 control volume plus 1
-/// @param pauseFlag bool for waiting for user to press enter
-/// @param dimension dimensionality of the input values
+/// @param CL Cell array.
+/// @param XYZ_P1 Domain dimensions plus 1.
+/// @param pauseFlag Bool for waiting for user to press enter.
+/// @param dimension Dimensionality of the input values.
 ///
 void checkNAN_V( cell ***CL,int XYZ_P1[3],int pauseFlag,int dimension ) {
 	int i,j,k,flag,cnt=0;
