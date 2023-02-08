@@ -1,5 +1,6 @@
 ///
 /// @file
+///
 /// @brief Contains all the global constants, as pre-processor definitions, used in the code.
 ///
 /// This MPCD code avoids the use of explicit numbers where ever possible, and instead makes use of pre-processor defines. These are
@@ -19,8 +20,9 @@
 /// - Swimmer types
 /// - Debug (log verbosity) options
 ///
-/// Note that as flags are commented in/ out, the Doxygen output is not reliable for this file. See comments in the code
+/// Note that as flags are commented in/out, the Doxygen output is not reliable for this file. See comments in the code
 /// for more information.
+///
 
 #ifndef DEFINITIONS_H
 #define DEFINITIONS_H
@@ -105,36 +107,36 @@
 /* ****************************************** */
 /* ***************** OUTPUT ***************** */
 /* ****************************************** */
-/// @brief If set of data should be printed out to a file set flag to OUT
+/// @brief If set of data should be printed out to a file set flag to OUT.
 # define OUT 1
-/// @brief If set of data should NOT be printed, set flag to NOUT
+/// @brief If set of data should NOT be printed, set flag to NOUT.
 # define NOUT 0
 
 /* ****************************************** */
 /* ***************** STREAM ***************** */
 /* ****************************************** */
-/// @brief If the particle needs to stream its STREAM
+/// @brief If the particle needs to stream its STREAM.
 # define STREAM 1
-/// @brief If the particle does not need to stream its NO_STREAM
+/// @brief If the particle does not need to stream its NO_STREAM.
 # define NO_STREAM 0
 
 /* ****************************************** */
 /* ******************* QDIST **************** */
 /* ****************************************** */
-//The following global variables are flag values for the variable QDIST in species structures 
-//Used for both MPCD particles and swimmers --- qDist in json
+//The following global variables are flag values for the variable QDIST in species structures.
+//Used for both MPCD particles and swimmers --- qDist in json.
 /// @brief Particle position distribution. PPF indicates that the particles can be placed randomly and freely within the control volume.
 # define PRF 0
-/// @brief Particle position distribution. READ indicates that the particles' positions should be read from a file
+/// @brief Particle position distribution. READ indicates that the particles' positions should be read from a file.
 #define READ 1
-/// @brief Particle position distribution. CENTRED places a swimmer at the centre of the control volume
+/// @brief Particle position distribution. CENTRED places a swimmer at the centre of the control volume.
 #define CENTRED 2
 
 /* ****************************************** */
 /* ******************* VDIST **************** */
 /* ****************************************** */
-//The following global variables are flag values for the variable VDIST in species structures
-//Used for both MPCD particles and swimmers --- vDist in json
+//The following global variables are flag values for the variable VDIST in species structures.
+//Used for both MPCD particles and swimmers --- vDist in json.
 /// @brief Velocity distribution. RANDVEL indicates that the particles' velocities are drawn from a have uniformly random velocity distribution.
 # define RANDVEL 0
 // /// @brief Velocity distribution. READ must be applied to both position and velocity.
@@ -149,72 +151,72 @@
 /* ****************************************** */
 /* ******************* UDIST **************** */
 /* ****************************************** */
-//The following global variables are flag values for the variable UDIST in species structures
-//Used for both MPCD particles and swimmers --- oDist in json
-/// @brief Orientation distribution. RANDORIENT indicates that the particles' direction are drawn from a have uniformly random direction
+//The following global variables are flag values for the variable UDIST in species structures.
+//Used for both MPCD particles and swimmers --- oDist in json.
+/// @brief Orientation distribution. RANDORIENT indicates that the particles' direction are drawn from a have uniformly random direction.
 # define RANDORIENT 0
-/// @brief Orientation distribution. Align all particles along X axis
+/// @brief Orientation distribution. Align all particles along X axis.
 # define ALIGNX 1
-/// @brief Orientation distribution. Align all particles along Y axis
+/// @brief Orientation distribution. Align all particles along Y axis.
 # define ALIGNY 2
-/// @brief Orientation distribution. Align all particles along Z axis
+/// @brief Orientation distribution. Align all particles along Z axis.
 # define ALIGNZ 3
-/// @brief Orientation distribution. Align all particles at 45 degree angle
+/// @brief Orientation distribution. Align all particles at 45 degree angle.
 # define ALIGN45 4
-/// @brief Orientation distribution. Align all particles randomly within XY axis
+/// @brief Orientation distribution. Align all particles randomly within XY axis.
 # define PLANEZ 5
-/// @brief Orientation distribution. Align all particles randomly within XZ axis
+/// @brief Orientation distribution. Align all particles randomly within XZ axis.
 # define PLANEY 6
-/// @brief Orientation distribution. Align all particles randomly within YZ axis
+/// @brief Orientation distribution. Align all particles randomly within YZ axis.
 # define PLANEX 7
-/// @brief Orientation distribution. Align all particles in the direction of origin towards positive right hand corner of any cartesian plane
+/// @brief Orientation distribution. Align all particles in the direction of origin towards positive right hand corner of any cartesian plane.
 # define ALIGNTR 8
-/// @brief Orientation distribution. Align all particles in the direction of two oppositely charged defects
+/// @brief Orientation distribution. Align all particles in the direction of two oppositely charged defects.
 # define ALIGNDEFECTPAIR 9
 
-/// @brief Lower cutoff for Monte Carlo method to generate new orientations from Maier-Saupe
+/// @brief Lower cutoff for Monte Carlo method to generate new orientations from Maier-Saupe.
 # define BUSMIN 0.5
-/// @brief Upper cutoff for Monte Carlo method to generate new orientations from Maier-Saupe
+/// @brief Upper cutoff for Monte Carlo method to generate new orientations from Maier-Saupe.
 # define BUSMAX 5.0
 
 /* ****************************************** */
 /* *************** NEMATIC LC *************** */
 /* ****************************************** */
-/// @brief Liquid crystal setting. Isotropic fluid - not a liquid crystal
+/// @brief Liquid crystal setting. Isotropic fluid --- not a liquid crystal.
 # define ISOF 0
-/// @brief Liquid crystal setting. Nematic LC using the local S value
+/// @brief Liquid crystal setting. Nematic LC using the local S value.
 # define LCL 1
-/// @brief Liquid crystal setting. Nematic LC using the global S value
+/// @brief Liquid crystal setting. Nematic LC using the global S value.
 # define LCG 2
 
 /* ****************************************** */
 /* ******** HYDRODYNAMIC INTERACTIONS ******* */
 /* ****************************************** */
-/// @brief Hydrodynamic interactions turned off
+/// @brief Hydrodynamic interactions turned off.
 # define HIOFF 1
-/// @brief Hydrodynamic interactions left on
+/// @brief Hydrodynamic interactions left on.
 # define HION 0
 
 /* ****************************************** */
 /* ************** NON-IDEAL EOS ************* */
 /* ****************************************** */
-/// @brief Non-ideal gas EOS settings. Ideal gas equation of state
+/// @brief Non-ideal gas EOS settings. Ideal gas equation of state.
 # define INCOMPOFF 0
-/// @brief Non-ideal gas EOS settings. Incompressibility by swapping velocities
+/// @brief Non-ideal gas EOS settings. Incompressibility by swapping velocities.
 # define INCOMPSWAP 1
-/// @brief Non-ideal gas EOS settings. Incompressibility by virial coefficients on the local density
+/// @brief Non-ideal gas EOS settings. Incompressibility by virial coefficients on the local density.
 # define INCOMPVIRIAL 2
-/// @brief Non-ideal gas EOS settings. Incompressibility by subtracting the calculated divergence
+/// @brief Non-ideal gas EOS settings. Incompressibility by subtracting the calculated divergence.
 # define INCOMPSUB 3
 
 /* ****************************************** */
 /* ********* MULTIPHASE INTERACTIONS ********* */
 /* ****************************************** */
-/// @brief Multiphase interaction settings. Multiphase interactions left off
+/// @brief Multiphase interaction settings. Multiphase interactions left off.
 # define MPHOFF 0
-/// @brief Multiphase interaction settings. Kira Koch's Surface fitter-version of multiphase interactions
+/// @brief Multiphase interaction settings. Kira Koch's Surface fitter-version of multiphase interactions.
 # define MPHSURF 1
-/// @brief Multiphase interaction settings. Point gradient-version of multiphase interactions
+/// @brief Multiphase interaction settings. Point gradient-version of multiphase interactions.
 # define MPHPOINT 2
 
 /* ****************************************** */
@@ -222,15 +224,15 @@
 /* ****************************************** */
 //The following global variables are flags for the thermostat used
 //Used by TSTECH in inputList in c-code and 'tsTech' in json input
-/// @brief Thermostat settings. NOTHERM indicates that no thermostat is implemented
+/// @brief Thermostat settings. NOTHERM indicates that no thermostat is implemented.
 # define NOTHERM 0
-/// @brief Thermostat settings. VSC indicates that velocity scaling is used as the thermometer
+/// @brief Thermostat settings. VSC indicates that velocity scaling is used as the thermometer.
 # define VSC 1
-/// @brief Thermostat settings. BEREND indicates that the Berendsen thermostat is used
+/// @brief Thermostat settings. BEREND indicates that the Berendsen thermostat is used.
 # define BEREND 2
-/// @brief Thermostat settings. HEYES indicates that Heyes thermostat for cell by cell thermostatting used
+/// @brief Thermostat settings. HEYES indicates that Heyes thermostat for cell by cell thermostatting used.
 # define HEYES 3
-/// @brief Thermostat settings. MAXV is not really a thermostat. Use it with RTECH=MPCAT to have a maximum velocity vector (which is inputted as GRAV[] in input.inp)
+/// @brief Thermostat settings. MAXV is not really a thermostat. Use it with RTECH=MPCAT to have a maximum velocity vector (which is inputted as GRAV[] in input.inp).
 # define MAXV 4
 
 /* ****************************************** */
@@ -238,72 +240,72 @@
 /* ****************************************** */
 //The following global variables are flag values for the collision operator / rotation technique.
 //Used by RTECH in inputList in c-code and 'collOp' (or 'rTech') in json input
-/// @brief Collision operator option. ARBAXIS indicates that the rotation operator is a rotation about a randomly chosen axis
+/// @brief Collision operator option. ARBAXIS indicates that the rotation operator is a rotation about a randomly chosen axis.
 # define ARBAXIS 0
-/// @brief Collision operator option. ORTHAXIS applies the rotatation about one of the three cartesian axes (randomly chosen with the sign of the rotation angle also random
+/// @brief Collision operator option. ORTHAXIS applies the rotatation about one of the three cartesian axes (randomly chosen with the sign of the rotation angle also random.
 # define ORTHAXIS 1
 /// @brief Collision operator option. AT indicates that the Andersen Thermostat version of MPC is used.
 # define MPCAT 2
-/// @brief Collision operator option.  The Andersen version that conserves angular momentum
+/// @brief Collision operator option.  The Andersen version that conserves angular momentum.
 # define RAT 3
-/// @brief Collision operator option.  The Langevin version of MPC
+/// @brief Collision operator option.  The Langevin version of MPCD.
 # define LANG 4
 // Killed the two specific no HI collision rules and the multiphase collision rule. 
 // Now made these general for any collision rule. They can now be used overlayed on ANY collision operator. 
-// 5, 6 and 18 are now available to be re-used as new collision operators
+// 5, 6 and 18 are now available to be re-used as new collision operators.
 // # define NOHI_ARBAXIS 5
 // # define NOHI_MPCAT 6
 // # define XXXX_MULTIPHASE_XXXX 18
-/// @brief Collision operator option. An MPCD version of the Vicsek algorithm
+/// @brief Collision operator option. An MPCD version of the Vicsek algorithm.
 # define VICSEK 7
-/// @brief Collision operator option. An MPCD version of the Chate algorithm
+/// @brief Collision operator option. An MPCD version of the Chate algorithm.
 # define CHATE 8
-/// @brief Collision operator option. Active SRD with ARBAXIS
+/// @brief Collision operator option. Active SRD with ARBAXIS.
 # define ACT_ARBAXIS 9
-/// @brief Collision operator option. Active SRD with ORTHAXIS
+/// @brief Collision operator option. Active SRD with ORTHAXIS.
 # define ACT_ORTHAXIS 10
-/// @brief Collision operator option. Standard Vicsek active Andersen Thermostat version of MPC
+/// @brief Collision operator option. Standard Vicsek active Andersen Thermostat version of MPCD.
 # define VICSEK_MPCAT 11
-/// @brief Collision operator option. Standard Vicsek active Langevin version of MPC
+/// @brief Collision operator option. Standard Vicsek active Langevin version of MPCD.
 # define VICSEK_LANG 12
-/// @brief Collision operator option. Chate active nematic Andersen Thermostat version of MPC
+/// @brief Collision operator option. Chate active nematic Andersen Thermostat version of MPCD.
 # define CHATE_MPCAT 13
-/// @brief Collision operator option. Chate active nematic Langevin version of MPC
+/// @brief Collision operator option. Chate active nematic Langevin version of MPCD.
 # define CHATE_LANG 14
-/// @brief Collision operator option. Cell-based dipole force in direction of centre of mass velocity
+/// @brief Collision operator option. Cell-based dipole force in direction of centre of mass velocity.
 # define DIPOLE_VCM 15
-/// @brief Collision operator option. Cell-based dipole force in direction of local director (sum of all activities)
+/// @brief Collision operator option. Cell-based dipole force in direction of local director (sum of all activities).
 # define DIPOLE_DIR_SUM 16
-/// @brief Collision operator option. Cell-based dipole force in direction of local director (average of all activities)
+/// @brief Collision operator option. Cell-based dipole force in direction of local director (average of all activities).
 # define DIPOLE_DIR_AV 17
-/// @brief Collision operator option. The Langevin version of MPC that conserves angular momentum
+/// @brief Collision operator option. The Langevin version of MPC that conserves angular momentum.
 # define RLANG 19
-/// @brief Collision operator option. Cell-based dipole force in direction of local director (average of all activities with sigmoidal falloff)
+/// @brief Collision operator option. Cell-based dipole force in direction of local director (average of all activities with sigmoidal falloff).
 # define DIPOLE_DIR_SIG 20
-/// @brief Collision operator option. Cell-based dipole force in direction of local director (sum of all activities with sigmoidal falloff)
+/// @brief Collision operator option. Cell-based dipole force in direction of local director (sum of all activities with sigmoidal falloff).
 # define DIPOLE_DIR_SIG_SUM 21
 
 /* ****************************************** */
 /* ******************** BCS ***************** */
 /* ****************************************** */
 //The following global variables are different boundary conditions: COLL_TYPE
-/// @brief BC type. Respects all conservation laws by impact analysis
+/// @brief BC type. Respects all conservation laws by impact analysis.
 # define BC_IMP 0
-/// @brief BC type. Rule based collisions at the suface
+/// @brief BC type. Rule based collisions at the suface.
 # define BC_SURF_RULES 1
-/// @brief BC type. Probabilistic reflections at the surface
+/// @brief BC type. Probabilistic reflections at the surface.
 # define BC_THERMO_SURF 2
-/// @brief BC type. Rule based collisions at t/2
+/// @brief BC type. Rule based collisions at half the time step.
 # define BC_HALF_RULES 3
-/// @brief BC type. Probabilistic reflections at t/2
+/// @brief BC type. Probabilistic reflections at half the time step.
 # define BC_THERMO_HALF 4
-// /// @brief BC type. Moving wall
+// /// @brief BC type. Moving wall.
 // #define BC_MOVING_WALL 5
 
 /* ****************************************** */
 /* ************** MD Coupling *************** */
 /* ****************************************** */
-/// @brief MD coupling option. No MD coupling
+/// @brief MD coupling option. No MD coupling.
 # define noMD 0
 /// @brief MD coupling option. MD particles included in MPCD collision operator.
 # define MDinMPC 1
@@ -314,9 +316,9 @@
 /* ************** Monte Carlo *************** */
 /* ****************************************** */
 // annealNum=(int)(MCINT+MCSLOPE*effM*S/KBT);
-/// @brief Monte Carlo setting. Slope of Monte Carlo
+/// @brief Monte Carlo setting. Slope of Monte Carlo.
 # define MCSLOPE 0.1
-/// @brief Monte Carlo setting. Interval between Monte Carlo steps
+/// @brief Monte Carlo setting. Interval between Monte Carlo steps.
 # define MCINT 5
 
 /* ****************************************** */
