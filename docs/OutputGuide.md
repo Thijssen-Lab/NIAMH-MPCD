@@ -28,7 +28,6 @@ All tags suffixed with "out", unless otherwise specified, take a value represent
 
 Input tag       |Output file         | Description                                                                               |Outputs                    | Column Headers
 ---             |---                 | ---                                                                                       | ---                       | ---
-
 `oriEnOut`      | `enfield.dat`      | Orientational energy field                                                                |X, Y, Z co-ordinates       | `QX`,`QY`,`QZ`
 --              |--                  |--                                                                                         |Kinetic energy             | `MPC_kin`
 --              |--                  |--                                                                                         |Nematic energy             | `tMPC_nem`
