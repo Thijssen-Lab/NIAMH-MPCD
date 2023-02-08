@@ -29,8 +29,8 @@
 /// First checks if y is an int and sufficiently small, and if so do an optimised power routine. If not then do just
 /// C-math pow.
 ///
-/// @param x any real number.
-/// @param y any real number.
+/// @param x Any real number.
+/// @param y Any real number.
 /// @return x^y.
 ///
 double smrtPow(double x, double y){
@@ -52,8 +52,8 @@ double smrtPow(double x, double y){
 ///
 /// Checks if two doubles are within a given `TOL`. `TOL` is real number that is defined in definitions.h.
 ///
-/// @param x any real number.
-/// @param y any real number.
+/// @param x Any real number.
+/// @param y Any real number.
 /// @return 1 if `x` and `y` are equivalent, 0 otherwise.
 ///
 int feq(double x,double y) {
@@ -65,8 +65,8 @@ int feq(double x,double y) {
 ///
 /// Checks if two doubles are further apart than a given `TOL`. `TOL` is real number that is defined in definitions.h.
 ///
-/// @param x any real number.
-/// @param y any real number.
+/// @param x Any real number.
+/// @param y Any real number.
 /// @return 1 if `x` and `y` are not equivalent, 0 otherwise.
 ///
 int fneq(double x,double y) {
