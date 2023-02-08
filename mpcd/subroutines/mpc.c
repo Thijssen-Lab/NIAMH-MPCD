@@ -3658,9 +3658,6 @@ void localVCM( double vcm[_3D],cell CL,spec *SP,specSwimmer specS ) {
 /// @see localVCM()
 ///
 void localMPCVCM( double vcm[_3D],cell CL,spec *SP ) {
-/*
-   
-*/
 	int id,i;
 	double summ = 0.0;
 	double mass;
@@ -3743,12 +3740,6 @@ double localMASS( cell CL,spec *SP,specSwimmer specS ) {
 /// @return The local thermal energy of a cell (via equipartition theorem). 
 ///
 double localTEMP( cell CL,spec *SP,specSwimmer specS ) {
-/*
-   This routine calculates the local
-   mass from the particleMPCs listed in
-   the linked list (i.e. assuming
-   localPROP hasn't been called).
-*/
 	int d,id,p = 0;
 	double V[_3D],mass,KBT = 0.0;
 	particleMPC *tmpc;
