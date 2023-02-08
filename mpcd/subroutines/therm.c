@@ -3,6 +3,8 @@
 ///
 /// @brief This file contains methods to implement thermostats, compute averages and energies.
 ///
+/// This file contains methods to implement thermostats, compute averages and energies.
+///
 
 # include<stdio.h>
 # include<math.h>
