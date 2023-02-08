@@ -70,7 +70,7 @@ Input tag       |Output file         | Description                              
 --              |--                  |--                                                                                         |Q tensor components        | `QXX`,`QXY`...`QZY`,`QZZ`
 `qkTensOut`     | `recipOrder.dat`   | Reciprocal Q tensor field                                                                 |Time                       | `t`
 --              |--                  |--                                                                                         |Wave Vectors               | `K123_X`,`K123_Y`,`K123_Z`
---              |--                  |--                                                                                         |Squared-modulus of Q tensor| `|QXX|2`,`|QXY|2`...,`|QZZ|2`
+--              |--                  |--                                                                                         |Squared-modulus of Q tensor| &#124;`QXX`&#124;`2`,&#124;`QXY`&#124;`2`...,&#124;`QZZ`&#124;`2`
 `oriEnOut`      | `enfield.dat`      | Orientational energy field                                                                |X, Y, Z co-ordinates       | `QX`,`QY`,`QZ`
 --              |--                  |--                                                                                         |Kinetic energy             | `MPC_kin`
 --              |--                  |--                                                                                         |Nematic energy             | `tMPC_nem`
@@ -115,13 +115,13 @@ Input tag       |Output file         | Description                              
 --              |--                  |--                                                                                         |Bin velocity               | `V`
 --              |--                  |--                                                                                         |Bin probability            | `PX`,`PY`,`PZ`
 `histSpeedOut`  | `distSpeed.dat`    | Speed probability distribution                                                            |Time                       | `t`
---              |--                  |--                                                                                         |Bin speeds                 | `|V|`
+--              |--                  |--                                                                                         |Bin speeds                 | &#124;`V`&#124;
 --              |--                  |--                                                                                         |Bin probability            | `P`
 `histVortOut`   | `distVort.dat`     | Vorticity probability distribution in x, y, and z directions                              |Time                       | `t`
 --              |--                  |--                                                                                         |Bin vorticity              | `W`
 --              |--                  |--                                                                                         |Bin probability            | `PX`,`PY`,`PZ`
 `histEnsOut`    | `distEnstrophy.dat`| Enstrophy probability distribution                                                        |Time                       | `t`
---              |--                  |--                                                                                         |Bin enstrophy              | `|W|`
+--              |--                  |--                                                                                         |Bin enstrophy              | &#124;`W`&#124;
 --              |--                  |--                                                                                         |Bin probability            | `P`
 `histDirOut`    | `distDir.dat`      | Director orientation probability distribution in x, y, and z directions                   |Time                       | `t`
 --              |--                  |--                                                                                         |Bin orientation            | `n`
