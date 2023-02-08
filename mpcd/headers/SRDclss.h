@@ -1,9 +1,9 @@
 ///
 /// @file
 ///
-/// @brief Contains all the pseudo-classes used in the code.
+/// @brief Contains all the structs (pseudo-classes) used in the code.
 ///
-/// The code makes heavy use of pseudo-classes in the form of C typedef'd structs. This file contains all of the structs
+/// The code makes heavy use of C typedef'd structs. This file contains all of the structs
 /// used throughout the code.
 ///
 /// Members of these structs usually have a 1:1 correspondence with JSON input file parameters, and are displayed when
@@ -67,9 +67,11 @@ typedef struct spec {
 } spec;
 
 ///
-/// @brief A struct representing a single simulation boundary/ wall
+/// @brief A struct representing a single simulation boundary/wall
 ///
-/// Contains the information required for BC calculations. Stored as an array of these structures. A description of how
+/// Contains the information required for BC calculations 
+/// (both defining the boundary surface and the rules for particle interactions with the boundary conditions). 
+/// Stored as an array of these structures. A description of how
 /// BCs are calculated is provided.
 ///
 typedef struct bc {
@@ -393,7 +395,7 @@ typedef struct specSwimmer {
 	int ODIST;					///< ODIST is the flag which tells how the swimmers are intially placed - json `'oDistSwim'`
 	int headM;                  ///< Mass of head monomer in the swimmer (tail mirrors the head) - json `'headMSwim'`
     int middM;			        ///< Mass of middle monomer in swimmer - json `'midMSwim'`
-	double iheadM;              ///< Inverse mass of the head/ tail monomers
+	double iheadM;              ///< Inverse mass of the head/tail monomers
     double imiddM;		        ///< Inverse mass of the middle monomer
 	int HSPid;                  ///< Multiphase fluid particle type of the head monomer (tail is invisible) - json `'hspIdSwim'`
     int MSPid;			        ///< Multiphase fluid particle type of the middle monomer (tail is invisible) - json `'mspIdSwim'`
