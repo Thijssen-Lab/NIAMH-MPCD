@@ -26,7 +26,9 @@
 ///
 /// @brief A struct representing a single MPCD particle.
 ///
-/// The central structure used throughout MPCD. Particles are mostly stored inside a single linked list, and then
+/// The central structure used throughout MPCD. 
+/// Particles are stored in a single array.
+/// However, they are commonly accessed through linked lists belonging to each cell, and then
 /// pointed to by all other structures.
 ///
 typedef struct particleMPC {
@@ -42,12 +44,15 @@ typedef struct particleMPC {
 } particleMPC;
 
 ///
-/// @brief A struct representing the hyper-parameters for a single species of MPCD particles
+/// @brief A struct representing the hyper-parameters for a single species of MPCD fluid particles
 ///
-/// Contains common parameters for all particles of a given species. These are stored in an array of these structures.
+/// Contains common parameters for all particles of a given MPCD fluid species (or type or particle). 
+/// These are stored in an array of these structures.
+/// The these are set through json input files and read in via readJson().
+/// @see readJson()
 ///
 typedef struct spec {
-	int POP;	            ///< Total population of the species - json `'pop'` (`'dens'` can override it for simple geometries)
+	int POP;	            ///< Total population of the MPCD particles - json `'pop'` (`'dens'` can override it for simple geometries)
 	int QDIST;				///< How the position of this species' particles is initialised - json `'qDist'`
 	int VDIST;				///< How the velocity of this species' particles is initialised - json `'vDist'`
 	int ODIST;				///< How the orientation of this species' particles is initialised - json `'oDist'`
@@ -69,43 +74,58 @@ typedef struct spec {
 ///
 /// @brief A struct representing a single simulation boundary/wall
 ///
-/// Contains the information required for BC calculations 
-/// (both defining the boundary surface and the rules for particle interactions with the boundary conditions). 
-/// Stored as an array of these structures. A description of how
-/// BCs are calculated is provided.
+/// Contains the information required for BC calculations. 
+/// This defines <b>both</b> the boundary surface and the rules for particle interactions with the boundary conditions. 
+/// All the walls are stored as an array of these structures. 
+/// A description of how boundary surfaces are calculated from these prameters is provided. 
+/// The these are set through json input files and read in via readJson(). 
+/// @see readJson()
+///
+/// @note
+/// Setting fixed boundary surfaces or initializing mobile surfaces uses the variables:
+/// - `Q[3]` for position, \f$\vec{Q}\f$. 
+/// - `AINV[3]` the "semi-axes" of the surface (as in an ellipsoid), which are the coefficients in front of each cartesion term, \f$\vec{A}\f$. 
+/// - `R` for the shift term (as in the radius of a sphere), \f$ R \f$. 
+/// - `P[4]` the powers  of each cartesion term, \f$\vec{p}\f$. 
+///
+
+/// @note
+/// Boundary surface take on a general form of
+/// - \f$ \mathcal{S} = \left( \frac{x-Q_x}{A_x} \right)^{p_x} + \left( \frac{y-Q_y}{A_y} \right)^{p_y} + \left( \frac{z-Q_z}{A_z} \right)^{p_z} - R^{p_R} = 0 \f$ where the 
+/// 	+ position of the wall is set by \f$ \vec{Q}=[Q_x,Q_y,Q_z] \f$, which has the variable name `Q[3]`
+/// 	+ semiaxes \f$ \vec{A}=[A_x,A_y,A_z] \f$, which has the variable name `AINV[3]`
+/// 	+ radius (or scalar shift) \f$ R \f$, which has the variable name `R`
+/// 	+ powers on each cartesian term \f$ \vec{p} \f$, which has the variable name `P`
+/// - The surface equation becomes `( A[0]*(x-Q[0]) )^P[0] + (A[1]*(y-Q[1]))^P[1] + (A[2]*(z-Q[2]))^P[2] - R^P[4] = 0`.
+///
+/// Some examples:
+/// PLANE:    `A=norm`, `p=1`, `R=-dist` - REMEMBER for a plane r must be neg!
+///
+/// CIRCLE:   `A=[1,1,1]`, `p=2`, `Q=centre`, `R=radius`
+///
+/// ELLIPSE:  `A=focii`, `p=2`, `Q=centre`, `R=1`
+///
+/// SQUIRCLE: `A=1`, `p>=4`, `Q=centre`, `R=radius`
+///
+///	There are additional complications:
+///	1. An absolute operator can be used around the terms:
+///	  `abs( A[0]*(x-Q[0]) )^P[0] + abs(A[1]*(y-Q[1]))^P[1] + abs(A[2]*(z-Q[2]))^P[2] - R^P[4] = 0`
+///
+///	2. This only allows a certain subset of rotational symmetries (even and less than or equal to 4-fold). For
+///     different symmetries, we have ROTSYMM[2]. Let:
+///     - `r=sqrt( (x-Q[0])^2 + (y-Q[1])^2 + (z-Q[2])^2 )`
+///		- `phi=atan2( (y-Q[1])/(x-Q[0]) )`
+///		- `theta=arccos( (z-Q[2])/r )`
+///		- `abs( A[0]*cos(ROTSYMM[0]*phi/4)*sin(ROTSYMM[1]*theta/4) )^P[0]`
+///				 `+ abs( A[1]*cos(ROTSYMM[0]*phi/4)*sin(ROTSYMM[1]*theta/4) )^P[1]`
+///					`+ abs( A[2]*cos(ROTSYMM[0]*phi/4)*sin(ROTSYMM[1]*theta/4) )^P[2] - (R/r)^P[4] = 0`
+///
+///	This formulation allows us to make things like triangles, hexagons, stars.
+///
+/// Some examples of parameter sets are provided in the code as comments in this structure.
+///
 ///
 typedef struct bc {
-    /// Boundary conditions take on a general form of
-    /// `( (x-h)/a )^p + ((y-k)/b)^p + ((z-l)/c)^p = R^p`
-    /// which is in this code:
-    /// - `AINV[3] = (a,b,c)`,
-    /// - `Q[3] = (h,l,l)`
-    /// Giving `( A[0]*(x-Q[0]) )^P[0] + (A[1]*(y-Q[1]))^P[1] + (A[2]*(z-Q[2]))^P[2] - R^P[4] = 0`
-    ///
-    /// PLANE:    `A=norm`, `p=1`, `R=-dist` - REMEMBER for a plane r must be neg!
-    ///
-    /// CIRCLE:   `A=[1,1,1]`, `p=2`, `Q=centre`, `R=radius`
-    ///
-    /// ELLIPSE:  `A=focii`, `p=2`, `Q=centre`, `R=1`
-    ///
-    /// SQUIRCLE: `A=1`, `p>=4`, `Q=centre`, `R=radius`
-    ///
-    ///	There are additional complications:
-    ///	1. An absolute operator can be used around the terms:
-    ///	  `abs( A[0]*(x-Q[0]) )^P[0] + abs(A[1]*(y-Q[1]))^P[1] + abs(A[2]*(z-Q[2]))^P[2] - R^P[4] = 0`
-    ///
-    ///	2. This only allows a certain subset of rotational symmetries (even and less than or equal to 4-fold). For
-    ///     different symmetries, we have ROTSYMM[2]. Let:
-    ///     - `r=sqrt( (x-Q[0])^2 + (y-Q[1])^2 + (z-Q[2])^2 )`
-    ///		- `phi=atan2( (y-Q[1])/(x-Q[0]) )`
-    ///		- `theta=arccos( (z-Q[2])/r )`
-    ///		- `abs( A[0]*cos(ROTSYMM[0]*phi/4)*sin(ROTSYMM[1]*theta/4) )^P[0]`
-    ///				 `+ abs( A[1]*cos(ROTSYMM[0]*phi/4)*sin(ROTSYMM[1]*theta/4) )^P[1]`
-    ///					`+ abs( A[2]*cos(ROTSYMM[0]*phi/4)*sin(ROTSYMM[1]*theta/4) )^P[2] - (R/r)^P[4] = 0`
-    ///
-    ///	This formulation allows us to make things like triangles, hexagons, stars.
-    ///
-    /// Some examples of parameter sets are provided in the code as comments in this structure.
 	// Variables that set the geometry of the surface
 	double P[4];			///< Boundary `P` parameter - json `'P'`
 	double A[3];	        ///< Boundary 'A' parameter
@@ -284,6 +304,8 @@ typedef struct outputFilesList {
 /// This struct is used to store the time period between dumps of each output. Each dump is stored as an integer: A
 /// value of 0 means that no dump takes place, a finite positive value indicates the period between dumps for that
 /// output.
+/// The these are set through json input files and read in via readJson().
+/// @see readJson()
 ///
 typedef struct outputFlagsList {
 	int TRAJOUT;				///< Flag for if the detailed trajectories of every particle are outputted - json `'trajOut'`
@@ -353,6 +375,8 @@ typedef struct kinTheory {
 /// This container structure was used to store the parameters associated with the legacy input.inp file. Now it stores
 /// all of the "central" parameters of the system simulation. It is used to simplify passing these parameters around
 /// between methods.
+/// The these are set through json input files and read in via readJson().
+/// @see readJson()
 ///
 typedef struct inputList {
 	double KBT;					///< Temperature: A third of thermal energy. Sets energy scale - json `'kbt'`
@@ -388,6 +412,8 @@ typedef struct inputList {
 ///
 /// This container structure is used to store all of the hyper-parameters associated with a species of swimmers. It is
 /// stored as an array.
+/// The these are set through json input files and read in via readJson().
+/// @see readJson()
 ///
 typedef struct specSwimmer {
 	int TYPE;					///< Type of swimmer 0=fix-dipole; 1=dumbbell; 2=dumbell with excluded vol; 3=dumbell with no counter-force  - json `'typeSwim'`
