@@ -1,18 +1,20 @@
 ///
-///@file
+/// @file
 ///
-/// @brief Implementation of dumbbell swimmers
+/// @brief Implementation of dumbbell swimmers.
 ///
-///The number, type, size, and other properties of the swimmers are read from the input file. They are initialised, then forces are taken into account.
+/// The number, type, size, and other properties of the swimmers are read from the input file. They are initialised,
+/// then forces are taken into account.
 ///
-///The swimmers repulse each other via a Weeks-Chandler-Andersen potential. The monomers are coupled two-by-two with either FENE, Hookean interaction,
-///or a 6th order potential. More information on those potentials can be found here @link https://doi.org/10.1002/elps.200800673. The swimmers
-///can become non-interacting, ie no WCA force between different dimers, if the appropriate tag is turned on.
+/// The swimmers repulse each other via a Weeks-Chandler-Andersen potential. The monomers are coupled two-by-two with
+/// either FENE, Hookean interaction, or a 6th order potential. More information on those potentials can be found here
+/// @link https://doi.org/10.1002/elps.200800673. The swimmers can become non-interacting, ie no WCA force between
+/// different dimers, if the appropriate tag is turned on.
 ///
-///These forces are used to integrate the swimmers' motions between timesteps. The swimmers interact with the fluid with dipole
-///forces and rotlets. Run/tumble dynamics and magnetic interactions can also be turned on.
+/// These forces are used to integrate the swimmers' motions between timesteps. The swimmers interact with the fluid
+/// with dipole forces and rotlets. Run/tumble dynamics and magnetic interactions can also be turned on.
 ///
-///This subroutine also sets swimmers in their randomized initial position, bins them, and links them.
+/// This subroutine also sets swimmers in their randomized initial position, bins them, and links them.
 ///
 
 # include<math.h>
@@ -42,12 +44,12 @@
 ///
 /// @brief Read in the user input for swimmer details. 
 ///
-/// Read the swimmer details from swimmer.inp, by reading in the adresses of the variables as pointers. It then allocates memory
-/// to each swimmer.
+/// Read the swimmer details from swimmer.inp, by reading in the adresses of the variables as pointers. It then
+/// allocates memory to each swimmer.
 ///
 /// @param fpath Path to the input file.
 /// @param specS Pointer to which the input values for swimmer properties are sent.
-/// @param sw This is used here to allocate memory to each swimmer.
+/// @param sw Pointer to the array of swimmers. Expected to be passed `&sw`.
 ///
 void readswimmers( char fpath[],specSwimmer *specS,swimmer **sw ) {
 
@@ -147,8 +149,8 @@ void readswimmers( char fpath[],specSwimmer *specS,swimmer **sw ) {
 ///
 /// Initialize the swimmers' coordinates. It may run into trouble if there is not enough space to fit all the swimmers.
 ///
-/// @param SS Swimmer properties, read from the input file by readswimmers.
-/// @param swimmers Pointer to the swimmers.
+/// @param SS Swimmer properties, read from the input file by readswimmers().
+/// @param swimmers Swimmer array to be initialized.
 /// @param WALL Boundary conditions, used to check that the placement of the swimmers is acceptable.
 /// @param stepsMD Number of MD steps per MPCD time step. 
 /// @param dt MPCD time step.
@@ -158,7 +160,7 @@ void setswimmers( specSwimmer *SS,swimmer *swimmers,bc WALL[],int stepsMD,double
 
 	int i,j,d,flag;
 	double U[DIM],W;
-  double shift[DIM];
+    double shift[DIM];
 
 	SS->iheadM=1.0/(double)SS->headM;
 	SS->imiddM=1.0/(double)SS->middM;
@@ -322,7 +324,8 @@ void setswimmers( specSwimmer *SS,swimmer *swimmers,bc WALL[],int stepsMD,double
 /// 
 /// @brief Write swimmer coordinates to output file. 
 ///
-/// Output the positions and speeds of the swimmers, as well as whether they are in the run, tumble, shrink, or extension phase.
+/// Output the positions and speeds of the swimmers, as well as whether they are in the run, tumble, shrink, or
+/// extension phase.
 ///
 /// @param fout File where the data will be written. 
 /// @param swimmers List of all the swimmers. 
@@ -366,13 +369,14 @@ void swimoriout( FILE *fout,swimmer swimmers[],double t ) {
 }
 
 ///
-/// @brief Write the swimmer orientation to output file.
+/// @brief Write the swimmer run-tumble state to output file.
 ///
-/// Print swimmers position, the signed angle their current orientations makes with their initial orientations, 
-/// whether they are in the run, tumble, shrink, or extension phase, and the time counter between run/tumble events.
+/// Print swimmers' signed angle their current orientations makes with their initial orientations, whether they are in
+/// the run, tumble, shrink, or extension phase, and the time counter between run/tumble events.
 ///
 /// @param fout File where the data will be written.
 /// @param sw List of all the swimmers.
+/// @see swimmerOri()
 ///
 void runtumbleout( FILE *fout,swimmer *sw ) {
 
@@ -396,10 +400,10 @@ void runtumbleout( FILE *fout,swimmer *sw ) {
 ///
 /// Apply period boundary conditions to swimmer monomers for their pair interactions. Unwraps coordinates if needed.
 ///
-/// @param dr Distance between the monomers.
+/// @param dr Pointer to distance between the monomers. Expected to be passed by reference.
 ///
 void swimmerPBC_dr(double *dr ) {
-  int d;
+    int d;
 	double boxHalf[DIM];
 
 	for( d=0; d<DIM; d++ ) boxHalf[d] = 0.5*XYZ[d];
@@ -412,7 +416,8 @@ void swimmerPBC_dr(double *dr ) {
 ///
 /// @brief Find the orientation vector of a swimmer.
 ///
-/// Calculate the orientation vector of each swimmer, by substracting the position of the swimmer's body from its head's position.
+/// Calculate the orientation vector of each swimmer, by subtracting the position of the swimmer's body from its head's
+/// position.
 /// 
 /// Takes into account the periodic boundary conditions, and normalizes the orientation it returns.
 ///
@@ -431,10 +436,11 @@ void swimmerOri( double n[],swimmer *sw ) {
 ///
 /// @brief 
 ///
-/// Calculate the Weeks-Chandler-Andersen force from the monomer separation r, which has to be scaled by the monomer size ahead of time.
+/// Calculate the Weeks-Chandler-Andersen force from the monomer separation r, which has to be scaled by the monomer
+/// size ahead of time.
 ///
-/// The force only acts at radii smaller than rcut (1.122462048309373), its strength depends on eps, and its magnitude is capped at fcap (1E3).
-/// To get the force vector this must be multiplied by vec(r). For more details,
+/// The force only acts at radii smaller than rcut (1.122462048309373), its strength depends on eps, and its magnitude
+/// is capped at fcap (1E3). To get the force vector this must be multiplied by vec(r). For more details,
 /// see @link[https://doi.org/10.1002/elps.200800673].
 ///
 /// @param r Distance between two monomers, scaled by their size sigma (default value 4, can be changed in the input file). 
@@ -459,10 +465,9 @@ double swimmerWCA( double r,double eps ) {
 ///
 /// @brief Calculate the FENE force from the separation r scaled by an equilibrium distance ro, default value 4. 
 ///
-///The value of ro can be changed in the input file.
-///	To get the force vector this must be multiplied by vec(r).
-///	If the FENE chain is passed then there is a large "backup" force to pull the monomers together. 
-/// For more details, see @link https://doi.org/10.1002/elps.200800673.
+/// The value of ro can be changed in the input file. To get the force vector this must be multiplied by vec(r). If the
+/// FENE chain is passed then there is a large "backup" force to pull the monomers together. For more details, see
+/// @link https://doi.org/10.1002/elps.200800673.
 ///
 /// @param r Scaled distance between two halves of a swimmer.
 /// @param k Spring strength.
@@ -495,8 +500,8 @@ double swimmerHookean( double r,double k ) {
 ///
 /// @brief Non-linear spring force to power six. 
 ///
-/// Calculate the non-linear spring force from the separation r, scaled by ro (default value 4, can be changed in the input file).
-/// To get the force vector this must be multiplied by vec(r).
+/// Calculate the non-linear spring force from the separation r, scaled by ro (default value 4, can be changed in the
+/// input file). To get the force vector this must be multiplied by vec(r).
 ///
 /// @param r Scaled distance between two halves of a swimmer.
 /// @param k Spring strength.
@@ -511,12 +516,13 @@ double swimmerSpring6( double r,double k ) {
 /// @brief Verlet velocity algorithm, for non-interacting swimmers.
 ///
 /// The velocity is first updated to its value at the half timestep. The position is updated using this
-/// velocity, then the boundary conditions are used to check that the swimmer is still in bounds. The forces (between the monomer couples) are updated at the new position,
-/// the acceleration is calculated from there, and the velocity is updated again, now to its value at the end of the timestep. For more details,
+/// velocity, then the boundary conditions are used to check that the swimmer is still in bounds. The forces (between
+/// the monomer couples) are updated at the new position, the acceleration is calculated from there, and the velocity is
+/// updated again, now to its value at the end of the timestep. For more details,
 /// see @link[https://en.wikipedia.org/wiki/Verlet_integration].
 ///
 /// @param SS Swimmer properties.
-/// @param s List of swimmers as pointers. Their positions, velocities, and accelerations will be updated.
+/// @param s List of swimmers. Their positions, velocities, and accelerations will be updated.
 /// @param dt Length of time interval used for integration.
 /// @param springType Tag for the type of spring used. Refer to definition.h for spring list.
 /// @param WALL Boundary conditions, used for a check halfway through the function.
@@ -566,10 +572,10 @@ void swimmerVerlet_nonInteracting( specSwimmer SS,swimmer *s,double dt,int sprin
 ///
 /// @brief Verlet velocity algorithm, for interacting swimmers. 
 ///
-///The velocity is first updated to its value at the half timestep. The position is updated using this
-/// velocity, then the boundary conditions are used to check that the swimmer is still in bounds. The forces (between the monomer couples and between each monomers) 
-/// are updated at the new position,
-/// the acceleration is calculated from there, and the velocity is updated again, now to its value at the end of the timestep. For more details,
+/// The velocity is first updated to its value at the half timestep. The position is updated using this velocity, then
+/// the boundary conditions are used to check that the swimmer is still in bounds. The forces (between the monomer
+/// couples and between each monomers) are updated at the new position, the acceleration is calculated from there, and
+/// the velocity is updated again, now to its value at the end of the timestep. For more details,
 /// see @link[https://en.wikipedia.org/wiki/Verlet_integration].
 ///
 /// @param SS Swimmer properties.
@@ -652,9 +658,10 @@ void swimmerVerlet_all( specSwimmer SS,swimmer swimmers[],double dt,int springTy
 }
 
 ///
-/// @brief Distance between two swimmer monomers.
+/// @brief Compute distance between two swimmer monomers.
 ///
-/// Calculate the distance between two swimmer monomers, unwrapping the coordinates if periodic boundary conditions require it.
+/// Calculate the distance between two swimmer monomers, unwrapping the coordinates if periodic boundary conditions
+/// require it.
 ///
 /// @param r Vector difference between the position of each monomers, returned at the end.
 /// @param dr Pointer that returns the length of vector r. 
@@ -671,7 +678,8 @@ void smonoDist( double r[],double *dr,smono m1, smono m2 ) {
 ///
 /// @brief Magnitude of the force between two monomers. 
 ///
-/// Calculate the magnitude of the force between two monomers in the same swimmer, using a spring coupling and a WCA repulsion.
+/// Calculate the magnitude of the force between two monomers in the same swimmer, using a spring coupling and a WCA
+/// repulsion.
 ///
 /// See @link https://doi.org/10.1002/elps.200800673 for more details and definitions.h for the spring types.
 ///
@@ -695,10 +703,10 @@ double smonoForceMag_sameSwimmer( double dr,specSwimmer SS,swimmer *s,int spring
 ///
 /// @brief Calculate the force between two monomers in the same swimmer. 
 ///
-/// First calculates the distance between the monomers, then the magnitude of 
-/// the force sum. The acceleration due to the force is then returned, as a vectorial quantity.
+/// First calculates the distance between the monomers, then the magnitude of the force sum. The acceleration due to
+/// the force is then returned, as a vectorial quantity.
 ///
-/// @param a Vector built for the acceleration due to the force calculated in this function.
+/// @param a Vector for the acceleration. Returns result of this function.
 /// @param SS Swimmer type.
 /// @param s Pointer to a swimmer.
 /// @param springType Tag for the type of spring used. Refer to definition.h for spring list.
@@ -720,8 +728,8 @@ void smonoForce_sameSwimmer( double a[],specSwimmer SS,swimmer *s,int springType
 ///
 /// @brief Calculate the magnitude of the Weeks-Chandler-Andersen force between two monomers in different swimmers.
 ///
-/// Calculate the magnitude of the WCA force between two monomers in different swimmers.
-///	If tumbling is activated, swimmers still see each other's true size, without shrinking.
+/// Calculate the magnitude of the WCA force between two monomers in different swimmers. If tumbling is activated,
+/// swimmers still see each other's true size, without shrinking.
 ///
 /// @param dr Distance between the swimmer, scaled by sigma (default value 4, can be changed in the input file).
 /// @param SS Swimmer properties, used here to obtaine sigma and epsilon.
@@ -735,8 +743,8 @@ double smonoForceMag_differentSwimmers( double dr,specSwimmer SS ) {
 ///
 /// @brief Calculate the WCA force between two monomers in different swimmer.
 ///
-/// First calculates the distance between the monomers, then the magnitude of 
-/// the WCA. The acceleration due to the force is then returned, as a vectorial quantity.
+/// First calculates the distance between the monomers, then the magnitude of the WCA. The acceleration due to the
+/// force is then returned, as a vectorial quantity.
 ///
 /// @param a Vector built for the acceleration due to the force calculated in this function.
 /// @param SS Swimmer type.
@@ -760,8 +768,8 @@ void smonoForce_differentSwimmers( double a[],specSwimmer SS,smono s1,smono s2 )
 ///
 /// @brief Integrate the motion of the swimmers, using velocity Verlet integration.
 ///
-/// Applies a magnetic field to magnetotactic swimmers if this
-/// option is turned on. If the swimmer type is 'near wall', path becomes two-dimensionnal.
+/// Applies a magnetic field to magneto-static swimmers if this option is turned on. If the swimmer type is 'near wall',
+/// path becomes two-dimensional.
 ///
 /// @param SS Swimmer properties.
 /// @param swimmers List of swimmers.
@@ -863,8 +871,8 @@ void integrateSwimmers( specSwimmer SS,swimmer swimmers[],bc WALL[],int stepsMD,
 ///
 /// @brief Apply the magnetic torque to one swimmer. 
 ///
-/// First calculates a normalized orientation vector, then compute its cross product with
-/// the magnetic field. Multiply by the magnetic moment to find the torque, which is then applied to the swimmer's head. An opposite torque is 
+/// First calculates a normalized orientation vector, then compute its cross product with the magnetic field. Multiply
+/// by the magnetic moment to find the torque, which is then applied to the swimmer's head. An opposite torque is
 /// applied to its body.
 ///
 /// @param SS Swimmer properties.
@@ -925,8 +933,8 @@ void swimmerMagTorque( specSwimmer SS,swimmer *sw,double dt,double MAG[] ) {
 ///
 /// @brief Apply the magnetic torque to all swimmers. 
 ///
-/// First calculates a normalized orientation vector, then compute its cross product with
-/// the magnetic field. Multiply by the magnetic moment to find the torque, which is then applied to the swimmer's head. An opposite torque is 
+/// First calculates a normalized orientation vector, then compute its cross product with the magnetic field. Multiply
+/// by the magnetic moment to find the torque, which is then applied to the swimmer's head. An opposite torque is
 /// applied to its body.
 ///
 /// @param SS Swimmers properties.
@@ -1126,7 +1134,7 @@ void swimmerDipole( specSwimmer SS,swimmer swimmers[],cell ***CL,spec SP[],doubl
 ///
 /// @brief Set the swimming speed and the propulsion force on the fluid. 
 
-/// This is where the§ "invisible" tail comes in.
+/// This is where the "invisible" tail is used by the simulator.
 ///
 /// @param SS Swimmer properties
 /// @param sw List of swimmers
@@ -1136,21 +1144,21 @@ void swimmerDipole( specSwimmer SS,swimmer swimmers[],cell ***CL,spec SP[],doubl
 ///
 void swimmerForceDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double timeStep ) {
 
-  int a=0,b=0,c=0,d=0;
-	double r[DIM],n[DIM],acc[DIM],QT[_3D];
-	double m;
-	particleMPC *pMPC;		//Temporary pointer to MPC particles
-	particleMD *pMD;	//Temporary pointer to MD particles
-	smono *pSW;			//Temporary pointer to swimmer monomers
+    int a=0,b=0,c=0,d=0;
+    double r[DIM],n[DIM],acc[DIM],QT[_3D];
+    double m;
+    particleMPC *pMPC;		//Temporary pointer to MPC particles
+    particleMD *pMD;	//Temporary pointer to MD particles
+    smono *pSW;			//Temporary pointer to swimmer monomers
 
-  for( d=0; d<_3D; d++ ) QT[d] = 0.0;
-  for( d=0; d<DIM; d++ ) {
-    r[d] = 0.0;
-    n[d] = 0.0;
-    acc[d] = 0.0;
-  }
+    for( d=0; d<_3D; d++ ) QT[d] = 0.0;
+    for( d=0; d<DIM; d++ ) {
+        r[d] = 0.0;
+        n[d] = 0.0;
+        acc[d] = 0.0;
+    }
 
-  //Vector from middle to head
+    //Vector from middle to head
 	for( d=0; d<DIM; d++ ) r[d] = sw->H.Q[d] - sw->M.Q[d];
 	swimmerPBC_dr( r );
 	normCopy( r,n,DIM );
@@ -1172,7 +1180,7 @@ void swimmerForceDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double 
 		}
 	#endif
 	for( d=0; d<DIM; d++ ) sw->M.V[d] += acc[d]*timeStep;
-  //The force on the "invisible tail" balances the force needed to move the head propulsion
+    //The force on the "invisible tail" balances the force needed to move the head propulsion
 	if(SS.TYPE!=DUMBBELL_MONOF) {
 		//Find the position of the "phantom" tail around the CM position
 		for( d=0; d<DIM; d++ ) QT[d] = sw->M.Q[d] - SS.DS*r[d];
@@ -1186,7 +1194,7 @@ void swimmerForceDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double 
 		b = (int)QT[1];
 		c = (int)QT[2];
 		//Apply the force to the fluid in the tail's cell
-    if( CL[a][b][c].MASS>0.0 ) {
+        if( CL[a][b][c].MASS>0.0 ) {
 			//Calculate the acceleration per particle in the cell (balances force on head and middle body)
 			for( d=0; d<DIM; d++ ) acc[d] = -SS.FS*n[d] / CL[a][b][c].MASS;
 			#ifdef DBG
@@ -1246,10 +1254,10 @@ void swimmerForceDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double 
 void swimmerRotletDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double timeStep ) {
 
 	int a=0,b=0,c=0,d=0;
-	double q_sw[_3D];													//Position of the swimmers' head or tail
-	double r_mh[DIM],n_mh[DIM]; 							//Vectors betweem middle/body and head
-	double r_cm[DIM],momI; 										//Centre of mass position of fluid in cell and moment of inertia
-	double dw;																//Mag of angular velocity on each MPCD particle
+	double q_sw[_3D];				//Position of the swimmers' head or tail
+	double r_mh[DIM],n_mh[DIM]; 	//Vectors betweem middle/body and head
+	double r_cm[DIM],momI; 			//Centre of mass position of fluid in cell and moment of inertia
+	double dw;						//Mag of angular velocity on each MPCD particle
 
 	for( d=0; d<_3D; d++ ) q_sw[d] = 0.0;
 	for( d=0; d<DIM; d++ ) {
@@ -1341,11 +1349,10 @@ void swimmerRotletDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double
 ///
 /// @brief Stochastic run and tumble.
 ///
-/// This routine checks the number of times since last run/tumble switching event.
-/// If an event occurs a new random run/tumble time is generated.
-/// If the swimmer tumbles then its size can shrink (or technically grow but this shouldn't occur).
-/// If it runs then its shrinkMDSteps size is returned to normal.
-/// Uses a hookean spring during shrinking so that FENE spring isn't broken.
+/// This routine checks the number of times since last run/tumble switching event. If an event occurs a new random
+/// run/ tumble time is generated. If the swimmer tumbles then its size can shrink (or technically grow but this
+/// shouldn't occur). If it runs then its shrinkMDSteps size is returned to normal. Uses a hookean spring during
+/// shrinking so that FENE spring isn't broken.
 ///
 /// @param SS Swimmer properties
 /// @param swimmers List of swimmers
@@ -1358,10 +1365,10 @@ void swimmerRotletDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double
 ///
 void runTumbleDynamics( specSwimmer *SS,swimmer swimmers[],bc WALL[],int stepsMD,double MAG[],double dt,int RTOUT,FILE *fruntumble ) {
 
-  int i,j;
-  double dr,ds,dk;			//FENE separation and LJ sigma step size for changing
-  int shrinkMDSteps=10*stepsMD;
-  double dt_int;
+    int i,j;
+    double dr,ds,dk;			//FENE separation and LJ sigma step size for changing
+    int shrinkMDSteps=10*stepsMD;
+    double dt_int;
 	double n[DIM];				//Swimmer orientation
 
 	#ifdef DBG
@@ -1378,170 +1385,172 @@ void runTumbleDynamics( specSwimmer *SS,swimmer swimmers[],bc WALL[],int stepsMD
 		/* ****************************************** */
 		/* *************** Run/Tumble *************** */
 		/* ****************************************** */
-    //Running phase
-    if( (swimmers+i)->RT==RUNNING ){
-      //Haven't reached tumbling time yet
-      if( (swimmers+i)->timeCNT < (swimmers+i)->timeRND ) (swimmers+i)->timeCNT++;
-      //Reached tumbling time --- switch to shrinking phase
-      else {
-				if( RTOUT>=OUT ) {
-					runtumbleout( fruntumble,(swimmers+i) );
-					swimmerOri( n,(swimmers+i) );
-					for( j=0; j<DIM; j++ ) (swimmers+i)->n0[j]=n[j]; //Reset old orientation to current orientation
-				}
-        (swimmers+i)->RT = SHRINKING;      //Set in shrinking phase
-        (swimmers+i)->timeCNT = 0;        //Reset counter
-        #ifdef DBG
-          if( DBUG == DBGRUNTUMBLE ) {
-            printf( "Run->Shrink mode\n" );
-          }
-        #endif
-      }
+        //Running phase
+        if( (swimmers+i)->RT==RUNNING ){
+            //Haven't reached tumbling time yet
+            if( (swimmers+i)->timeCNT < (swimmers+i)->timeRND ) {
+                (swimmers + i)->timeCNT++; //Reached tumbling time --- switch to shrinking phase
+            } else {
+                if( RTOUT>=OUT ) {
+                    runtumbleout( fruntumble,(swimmers+i) );
+                    swimmerOri( n,(swimmers+i) );
+                    for( j=0; j<DIM; j++ ) (swimmers+i)->n0[j]=n[j]; //Reset old orientation to current orientation
+                }
+                (swimmers+i)->RT = SHRINKING;      //Set in shrinking phase
+                (swimmers+i)->timeCNT = 0;        //Reset counter
+                #ifdef DBG
+                    if( DBUG == DBGRUNTUMBLE ) {
+                    printf( "Run->Shrink mode\n" );
+                    }
+                #endif
+            }
+        }
+        //Tumbling phase
+        else if( (swimmers+i)->RT==TUMBLING ){
+            //Haven't reached running time yet
+            if( (swimmers+i)->timeCNT < (swimmers+i)->timeRND ) {
+              (swimmers + i)->timeCNT++; //Reached running time --- switch to extending phase
+            } else {
+            if( RTOUT>=OUT ) {
+                runtumbleout( fruntumble,(swimmers+i) );
+                swimmerOri( n,(swimmers+i) );
+                for( j=0; j<DIM; j++ ) (swimmers+i)->n0[j]=n[j]; //Reset old orientation to current orientation
+            }
+            (swimmers+i)->RT = EXTENDING;      //Set in extending phase
+            (swimmers+i)->timeCNT = 0;        //Reset counter
+            #ifdef DBG
+                if( DBUG == DBGRUNTUMBLE ) {
+                    printf( "Tumbling->Extend mode\n" );
+                }
+            #endif
+            }
+        }
+        /* ****************************************** */
+        /* ************* Shrink/Extend ************** */
+        /* ****************************************** */
+        // Shrinking phase
+        if( (swimmers+i)->RT==SHRINKING ) {
+            //Shrink
+            //Shrink from run conformation to tumble conformation
+            //Shrink the swimmers slowly (in shrinkMDSteps steps) times more than normal MD
+            #ifdef DBG
+                if( DBUG == DBGRUNTUMBLE ) {
+                    printf( "\tInitial ro=%lf, sig=%lf, k=%lf\n",(swimmers+i)->ro,(swimmers+i)->sig,(swimmers+i)->k );
+                    printf( "\tShrink size coef=%lf\n",SS->sizeShrink );
+                    printf( "\tShrink spring coef=%lf\n",SS->springShrink );
+                    printf("\tShrink swimmer into tumbling conformation in %d steps\n",shrinkMDSteps);
+                }
+            #endif
+            if( fneq(SS->sizeShrink,1.0) ) {
+                //Shrink size first then shrink spring (factor of 2 because do it in this two step way)
+                ds=( SS->sig - (SS->sig)*(SS->sizeShrink) ) / ((double)(shrinkMDSteps * (SS->shrinkTime)));
+                for( j=0; j<shrinkMDSteps; j++ ) {
+                    (swimmers+i)->sig -= ds;
+                    (swimmers+i)->isig=1.0/((swimmers+i)->sig);
+                    integrateSwimmers( *SS,swimmers,WALL,shrinkMDSteps,dt_int,MAG,HOOKESPRING );
+                }
+                //Shrink spring
+                dr=( SS->ro - (SS->ro)*(SS->sizeShrink)) / ((double)(shrinkMDSteps * (SS->shrinkTime)));
+                for( j=0; j<shrinkMDSteps; j++ ) {
+                    (swimmers+i)->ro-=dr;
+                    (swimmers+i)->iro=1.0/((swimmers+i)->ro);
+                    integrateSwimmers( *SS,swimmers,WALL,shrinkMDSteps,dt_int,MAG,HOOKESPRING );
+                }
+            }
+            if( fneq(SS->springShrink,1.0) ) {
+                dk=( SS->k - (SS->k)*(SS->springShrink) ) / ((double)(shrinkMDSteps * (SS->shrinkTime)));
+                for( j=0; j<shrinkMDSteps; j++ ) {
+                    (swimmers+i)->k-=dk;
+                    integrateSwimmers( *SS,swimmers,WALL,shrinkMDSteps,dt_int,MAG,HOOKESPRING );
+                }
+            }
+            #ifdef DBG
+                if( DBUG == DBGRUNTUMBLE ) {
+                    printf( "\tFinal ro=%lf, sig=%lf, k=%lf\n",(swimmers+i)->ro,(swimmers+i)->sig,(swimmers+i)->k );
+                }
+            #endif
+            //Check if done shrinking
+            (swimmers+i)->timeCNT++;        //Iterate counter
+            if( (swimmers+i)->timeCNT >= SS->shrinkTime ) {
+                (swimmers+i)->RT = TUMBLING;      //Set in tumbling phase
+                (swimmers+i)->timeCNT = 0;        //Reset counter
+                (swimmers+i)->timeRND = (int) genrand_exp( SS->tumbleTime );    //Generate random integer to tumble for
+                #ifdef DBG
+                    if( DBUG == DBGRUNTUMBLE ) {
+                        printf( "Shrinking->Tumbling phase\n\tTumbling time=%d\n",(swimmers+i)->timeRND );
+                    }
+                #endif
+            }
+        }
+        //Extending phase
+        else if( (swimmers+i)->RT==EXTENDING ) {
+            #ifdef DBG
+                if( DBUG == DBGRUNTUMBLE ) {
+                    printf( "Tumble->run\n\tRunning time=%d\n",(swimmers+i)->timeRND );
+                }
+            #endif
+            //Grow from tumble conformation to run conformation
+            //Grow the swimmers slowly (in 2*shrinkMDSteps steps) times more than normal MD
+            #ifdef DBG
+                if( DBUG == DBGRUNTUMBLE ) {
+                    printf( "\tInitial ro=%lf, sig=%lf, k=%lf\n",(swimmers+i)->ro,(swimmers+i)->sig,(swimmers+i)->k );
+                    printf( "\tShrink size coef=%lf\n",SS->sizeShrink );
+                    printf( "\tShrink spring coef=%lf\n",SS->springShrink );
+                    printf("\tGrow swimmer into running conformation in %d steps\n",shrinkMDSteps);
+                }
+            #endif
+            if( fneq(SS->sizeShrink,1.0) ) {
+                dr=( SS->ro-(SS->ro)*(SS->sizeShrink) ) / ((double)(shrinkMDSteps * (SS->shrinkTime)));
+                for( j=0; j<shrinkMDSteps; j++ ) {
+                    (swimmers+i)->ro+=dr;
+                    (swimmers+i)->iro=1.0/((swimmers+i)->ro);
+                    integrateSwimmers( *SS,swimmers,WALL,shrinkMDSteps,dt_int,MAG,HOOKESPRING );
+                }
+                ds=( SS->sig-(SS->sig)*(SS->sizeShrink) ) / ((double)(shrinkMDSteps * (SS->shrinkTime)));
+                for( j=0; j<shrinkMDSteps; j++ ) {
+                    (swimmers+i)->sig+=ds;
+                    (swimmers+i)->isig=1.0/((swimmers+i)->sig);
+                    integrateSwimmers( *SS,swimmers,WALL,shrinkMDSteps,dt_int,MAG,HOOKESPRING );
+                }
+            }
+            if( fneq(SS->springShrink,1.0) ) {
+                dk=( SS->k - (SS->k)*(SS->springShrink) ) / ((double)(shrinkMDSteps * (SS->shrinkTime)));
+                for( j=0; j<shrinkMDSteps; j++ ) {
+                    (swimmers+i)->k+=dk;
+                    integrateSwimmers( *SS,swimmers,WALL,shrinkMDSteps,dt_int,MAG,HOOKESPRING );
+                }
+            }
+            #ifdef DBG
+                if( DBUG == DBGRUNTUMBLE ) {
+                    printf( "\tFinal ro=%lf, sig=%lf, k=%lf\n",(swimmers+i)->ro,(swimmers+i)->sig,(swimmers+i)->k );
+                }
+            #endif
+            //Check if done extending
+            (swimmers+i)->timeCNT++;        //Iterate counter
+            if( (swimmers+i)->timeCNT >= SS->shrinkTime ) {
+                (swimmers+i)->RT = RUNNING;      //Set in running phase
+                (swimmers+i)->timeCNT = 0;        //Reset counter
+                (swimmers+i)->timeRND = (int) genrand_exp( SS->runTime );    //Generate random integer to run for
+                #ifdef DBG
+                    if( DBUG == DBGRUNTUMBLE ) {
+                        printf( "Extending->Running phase\n\tRunning time=%d\n",(swimmers+i)->timeRND );
+                    }
+                #endif
+            }
+        }
     }
-    //Tumbling phase
-    else if( (swimmers+i)->RT==TUMBLING ){
-      //Haven't reached running time yet
-      if( (swimmers+i)->timeCNT < (swimmers+i)->timeRND ) (swimmers+i)->timeCNT++;
-      //Reached running time --- switch to extending phase
-      else {
-				if( RTOUT>=OUT ) {
-					runtumbleout( fruntumble,(swimmers+i) );
-					swimmerOri( n,(swimmers+i) );
-					for( j=0; j<DIM; j++ ) (swimmers+i)->n0[j]=n[j]; //Reset old orientation to current orientation
-				}
-        (swimmers+i)->RT = EXTENDING;      //Set in extending phase
-        (swimmers+i)->timeCNT = 0;        //Reset counter
-				#ifdef DBG
-          if( DBUG == DBGRUNTUMBLE ) {
-            printf( "Tumbling->Extend mode\n" );
-          }
-        #endif
-			}
-    }
-		/* ****************************************** */
-		/* ************* Shrink/Extend ************** */
-		/* ****************************************** */
-		// Shrinking phase
-		if( (swimmers+i)->RT==SHRINKING ) {
-			//Shrink
-			//Shrink from run conformation to tumble conformation
-			//Shrink the swimmers slowly (in shrinkMDSteps steps) times more than normal MD
-			#ifdef DBG
-				if( DBUG == DBGRUNTUMBLE ) {
-					printf( "\tInitial ro=%lf, sig=%lf, k=%lf\n",(swimmers+i)->ro,(swimmers+i)->sig,(swimmers+i)->k );
-					printf( "\tShrink size coef=%lf\n",SS->sizeShrink );
-					printf( "\tShrink spring coef=%lf\n",SS->springShrink );
-					printf("\tShrink swimmer into tumbling conformation in %d steps\n",shrinkMDSteps);
-				}
-			#endif
-			if( fneq(SS->sizeShrink,1.0) ) {
-				//Shrink size first then shrink spring (factor of 2 because do it in this two step way)
-				ds=( SS->sig - (SS->sig)*(SS->sizeShrink) ) / ((double)(shrinkMDSteps * (SS->shrinkTime)));
-				for( j=0; j<shrinkMDSteps; j++ ) {
-					(swimmers+i)->sig -= ds;
-					(swimmers+i)->isig=1.0/((swimmers+i)->sig);
-					integrateSwimmers( *SS,swimmers,WALL,shrinkMDSteps,dt_int,MAG,HOOKESPRING );
-				}
-				//Shrink spring
-				dr=( SS->ro - (SS->ro)*(SS->sizeShrink)) / ((double)(shrinkMDSteps * (SS->shrinkTime)));
-				for( j=0; j<shrinkMDSteps; j++ ) {
-					(swimmers+i)->ro-=dr;
-					(swimmers+i)->iro=1.0/((swimmers+i)->ro);
-					integrateSwimmers( *SS,swimmers,WALL,shrinkMDSteps,dt_int,MAG,HOOKESPRING );
-				}
-			}
-			if( fneq(SS->springShrink,1.0) ) {
-				dk=( SS->k - (SS->k)*(SS->springShrink) ) / ((double)(shrinkMDSteps * (SS->shrinkTime)));
-				for( j=0; j<shrinkMDSteps; j++ ) {
-					(swimmers+i)->k-=dk;
-					integrateSwimmers( *SS,swimmers,WALL,shrinkMDSteps,dt_int,MAG,HOOKESPRING );
-				}
-			}
-			#ifdef DBG
-				if( DBUG == DBGRUNTUMBLE ) {
-					printf( "\tFinal ro=%lf, sig=%lf, k=%lf\n",(swimmers+i)->ro,(swimmers+i)->sig,(swimmers+i)->k );
-				}
-			#endif
-			//Check if done shrinking
-			(swimmers+i)->timeCNT++;        //Iterate counter
-			if( (swimmers+i)->timeCNT >= SS->shrinkTime ) {
-				(swimmers+i)->RT = TUMBLING;      //Set in tumbling phase
-				(swimmers+i)->timeCNT = 0;        //Reset counter
-				(swimmers+i)->timeRND = (int) genrand_exp( SS->tumbleTime );    //Generate random integer to tumble for
-				#ifdef DBG
-					if( DBUG == DBGRUNTUMBLE ) {
-						printf( "Shrinking->Tumbling phase\n\tTumbling time=%d\n",(swimmers+i)->timeRND );
-					}
-				#endif
-			}
-		}
-		//Extending phase
-		else if( (swimmers+i)->RT==EXTENDING ) {
-				#ifdef DBG
-					if( DBUG == DBGRUNTUMBLE ) {
-						printf( "Tumble->run\n\tRunning time=%d\n",(swimmers+i)->timeRND );
-					}
-				#endif
-				//Grow from tumble conformation to run conformation
-				//Grow the swimmers slowly (in 2*shrinkMDSteps steps) times more than normal MD
-				#ifdef DBG
-					if( DBUG == DBGRUNTUMBLE ) {
-						printf( "\tInitial ro=%lf, sig=%lf, k=%lf\n",(swimmers+i)->ro,(swimmers+i)->sig,(swimmers+i)->k );
-						printf( "\tShrink size coef=%lf\n",SS->sizeShrink );
-						printf( "\tShrink spring coef=%lf\n",SS->springShrink );
-						printf("\tGrow swimmer into running conformation in %d steps\n",shrinkMDSteps);
-					}
-				#endif
-				if( fneq(SS->sizeShrink,1.0) ) {
-					dr=( SS->ro-(SS->ro)*(SS->sizeShrink) ) / ((double)(shrinkMDSteps * (SS->shrinkTime)));
-					for( j=0; j<shrinkMDSteps; j++ ) {
-						(swimmers+i)->ro+=dr;
-						(swimmers+i)->iro=1.0/((swimmers+i)->ro);
-						integrateSwimmers( *SS,swimmers,WALL,shrinkMDSteps,dt_int,MAG,HOOKESPRING );
-					}
-					ds=( SS->sig-(SS->sig)*(SS->sizeShrink) ) / ((double)(shrinkMDSteps * (SS->shrinkTime)));
-					for( j=0; j<shrinkMDSteps; j++ ) {
-						(swimmers+i)->sig+=ds;
-						(swimmers+i)->isig=1.0/((swimmers+i)->sig);
-						integrateSwimmers( *SS,swimmers,WALL,shrinkMDSteps,dt_int,MAG,HOOKESPRING );
-					}
-				}
-				if( fneq(SS->springShrink,1.0) ) {
-					dk=( SS->k - (SS->k)*(SS->springShrink) ) / ((double)(shrinkMDSteps * (SS->shrinkTime)));
-					for( j=0; j<shrinkMDSteps; j++ ) {
-						(swimmers+i)->k+=dk;
-						integrateSwimmers( *SS,swimmers,WALL,shrinkMDSteps,dt_int,MAG,HOOKESPRING );
-					}
-				}
-				#ifdef DBG
-					if( DBUG == DBGRUNTUMBLE ) {
-						printf( "\tFinal ro=%lf, sig=%lf, k=%lf\n",(swimmers+i)->ro,(swimmers+i)->sig,(swimmers+i)->k );
-					}
-				#endif
-				//Check if done extending
-				(swimmers+i)->timeCNT++;        //Iterate counter
-				if( (swimmers+i)->timeCNT >= SS->shrinkTime ) {
-					(swimmers+i)->RT = RUNNING;      //Set in running phase
-					(swimmers+i)->timeCNT = 0;        //Reset counter
-					(swimmers+i)->timeRND = (int) genrand_exp( SS->runTime );    //Generate random integer to run for
-					#ifdef DBG
-						if( DBUG == DBGRUNTUMBLE ) {
-							printf( "Extending->Running phase\n\tRunning time=%d\n",(swimmers+i)->timeRND );
-						}
-					#endif
-				}
-		}
-  }
 }
 
 ///
 /// @brief Initial binning of the swimmers after they have been first initialized.
 ///
-/// It is different from bin in that it uses the actual array of particleMPCs rather than the array of pointers to particleMPCs.
+/// It is different from bin in that it uses the actual array of particleMPCs rather than the array of pointers to
+/// particleMPCs.
 ///
 /// @param SS Swimmer properties.
 /// @param swimmers List of swimmers.
 /// @param CL List of all the MPCD cells, with the chains they contain.
+/// @see binin()
 ///
 void bininSwimmers( specSwimmer SS,swimmer swimmers[],cell ***CL ) {
 	int i,a,b,c;
@@ -1563,8 +1572,8 @@ void bininSwimmers( specSwimmer SS,swimmer swimmers[],cell ***CL ) {
 ///
 /// @brief Bin the swimmers.
 ///
-/// Places a pointer to the particleMPC in the appropriate new
-/// list and removes it from its old list. Takes into account periodic BC.
+/// Places a pointer to the particleMPC in the appropriate new list and removes it from its old list. Takes into account
+/// periodic BCs.
 ///
 /// @param CL List of all the MPCD cells, with the chains they contain.
 /// @param shifted Tag to apply periodic boundary conditions if necessary.
