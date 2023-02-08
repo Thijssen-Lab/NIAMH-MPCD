@@ -31,13 +31,13 @@
 ///
 /// This routine calculates the velocity scaling factor g. It can do so
 /// in 4 different ways, depending on which thermostat is being requested
-/// as specified by the input parameter TSTECH.
+/// as specified by the input parameter `TSTECH`.
 /// i) No thermostat, at which case g = 1.
 /// ii) Using the velocity scaling as the thermometer.
 /// iii) Using the Berendsen thermostat.
 /// iv) Finally, although not a proper thermostat, this routine can yield
 ///     a g that maximizes the velocity vector. Used in combination with
-///     the rotation technique RTECH = MPCAT.
+///     the rotation technique `RTECH = MPCAT`.
 ///
 /// @param KBT The target temperature.
 /// @param KBTNOW The current temperature.
@@ -81,7 +81,7 @@ double thermostat( double KBT,double KBTNOW,double t,double RELAX,int TSTECH ) {
 /// iv) Using the Heyes thermostat.
 /// v) Finally, although not a proper thermostat, this routine can yield
 ///     a g that maximizes the velocity vector. Used in combination with
-///     the rotation technique RTECH = MPCAT.
+///     the rotation technique `RTECH = MPCAT`.
 ///
 /// @param KBT The target temperature.
 /// @param KBTNOW The current temperature.
@@ -369,7 +369,7 @@ void avVel( cell ***CL,double AVVEL[] ) {
 ///
 /// @brief Function that calculates the global average enstrophy.
 ///
-/// This function returns the global average enstrophy E (mean squared vorticity)
+/// This function returns the global average enstrophy `E` (mean squared vorticity)
 /// by averaging it over all cells.
 ///
 /// @param CL Array of all cells.
