@@ -22,16 +22,17 @@
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
-///
+
 /// @brief A "smart" Pow method that will only call C-math pow if necessary (non-natural y).
 ///
 /// First checks if y is an int and sufficiently small, and if so do an optimised power routine. If not then do just
 /// C-math pow.
 ///
+
 /// @param x any real number.
 /// @param y any real number.
 /// @return x^y
-///
+
 double smrtPow(double x, double y){
 
 	const int yLim = 10; // an arbitrary limit for smart y usage
@@ -46,7 +47,6 @@ double smrtPow(double x, double y){
 	} else return pow(x, y); // otherwise just do C-math pow
 }
 
-///
 /// @brief Check if two doubles are equivalent.
 ///
 /// Checks if two doubles are within a given `TOL`. `TOL` is real number that is defined in definitions.h.
@@ -54,12 +54,11 @@ double smrtPow(double x, double y){
 /// @param x any real number.
 /// @param y any real number.
 /// @return 1 if `x` and `y` are equivalent, 0 otherwise.
-///
+
 int feq(double x,double y) {
 		return fabs(x-y)<=TOL;
 }
 
-///
 /// @brief Check if two doubles are not equivalent.
 ///
 /// Checks if two doubles are further apart than a given `TOL`. `TOL` is real number that is defined in definitions.h.
@@ -68,11 +67,11 @@ int feq(double x,double y) {
 /// @param y any real number.
 /// @return 1 if `x` and `y` are not equivalent, 0 otherwise.
 ///
+
 int fneq(double x,double y) {
 		return fabs(x-y)>=TOL;
 }
 
-///
 /// @brief Evaluates the Levi-Civita tensor.
 ///
 /// Evaluates the Levi-Civita tensor.
@@ -81,7 +80,6 @@ int fneq(double x,double y) {
 /// @param j second index.
 /// @param k third index.
 /// @return The value of the Levi-Civita tensor with indices `i`, `j`, `k`.
-///
 int levicivita( int i,int j,int k ) {
 
 	signed int result;
@@ -95,7 +93,6 @@ int levicivita( int i,int j,int k ) {
 	return result;
 }
 
-///
 /// @brief Takes the dot product of two vectors and returns a scalar.
 ///
 /// Takes the dot product of two vectors and returns a scalar.
@@ -104,7 +101,7 @@ int levicivita( int i,int j,int k ) {
 /// @param y second vector, passed as an array.
 /// @param dimension dimensionality of the vectors.
 /// @return The dot product of `x` and `y`.
-///
+
 double dotprod( double x[], double y[],int dimension ) {
 	int i;
 	double result = 0.;
@@ -114,7 +111,6 @@ double dotprod( double x[], double y[],int dimension ) {
 	return result;
 }
 
-///
 /// @brief Takes the dot product of a matrix to a vector, returning a vector.
 ///
 /// Takes the dot product of a matrix to a vector, returning a vector.
@@ -123,14 +119,13 @@ double dotprod( double x[], double y[],int dimension ) {
 /// @param v Vector.
 /// @param result Output vector.
 /// @param dimension Dimensionality of the operands.
-///
+
 void dotprodMatVec( double M[][3],double v[],double result[],int dimension ) {
 	int i,j;
 	for( i=0; i<dimension; i++ ) result[i] = 0.;
 	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) result[i] += M[i][j]*v[j];
 }
 
-///
 /// @brief Takes the dot product of a vector to a matrix, returning a vector.
 ///
 /// Takes the dot product of a vector to a matrix, returning a vector.
@@ -139,14 +134,13 @@ void dotprodMatVec( double M[][3],double v[],double result[],int dimension ) {
 /// @param M Matrix.
 /// @param result Output vector.
 /// @param dimension Dimensionality of the operands.
-///
+
 void dotprodVecMat( double v[], double M[][3],double result[],int dimension ) {
 	int i,j;
 	for( i=0; i<dimension; i++ ) result[i] = 0.;
 	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) result[i] += v[j] * M[j][i];
 }
 
-///
 /// @brief Takes the dot product of a matrix to another matrix, returning a matrix.
 ///
 /// Takes the dot product of a matrix to another matrix, returning a matrix.
@@ -155,14 +149,13 @@ void dotprodVecMat( double v[], double M[][3],double result[],int dimension ) {
 /// @param B Second matrix.
 /// @param result Output matrix.
 /// @param dimension Dimensionality of the operands.
-///
+
 void dotprodMatMat( double A[][3],double B[][3],double result[][3],int dimension ) {
 	int i,j,k;
 	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) result[i][j] = 0.;
 	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) for( k=0; k<dimension; k++ ) result[i][j] += A[i][k]*B[k][j];
 }
 
-///
 /// @brief Takes the cross product of two 3D vectors and sets it as the third.
 ///
 ///	Requires to be passed 3D vectors, even if in 2D mode. This is due to the output always being a 3D vector.
@@ -170,7 +163,7 @@ void dotprodMatMat( double A[][3],double B[][3],double result[][3],int dimension
 /// @param x First vector.
 /// @param y Second vector
 /// @param result Output vector.
-///
+
 void crossprod( double x[3], double y[3], double result[3] ) {
 	int i;
 	for( i=0; i<_3D; i++ ) result[i]=0.; // init
@@ -180,7 +173,6 @@ void crossprod( double x[3], double y[3], double result[3] ) {
 	result[2] = x[0]*y[1] - x[1]*y[0];
 }
 
-///
 /// @brief Legacy. Old version of the cross product operation.
 ///
 ///	This version was found to be slow (gprof said this and it's calls to levi-civita took >35% runtime!!!!).
@@ -188,7 +180,7 @@ void crossprod( double x[3], double y[3], double result[3] ) {
 /// @param x First vector.
 /// @param y Second vector.
 /// @param result Output vector.
-///
+
 void oldcrossprod( double x[3], double y[3], double result[3] ) {
 	int i,j,k;
 	signed int eps;
@@ -199,7 +191,6 @@ void oldcrossprod( double x[3], double y[3], double result[3] ) {
 	}
 }
 
-///
 /// @brief Finds the outer product of two vectors, returns a matrix.
 ///
 /// Finds the outer product of two vectors, returns a matrix.
@@ -208,14 +199,13 @@ void oldcrossprod( double x[3], double y[3], double result[3] ) {
 /// @param y Second vector.
 /// @param result Output matrix.
 /// @param dimension Dimensionality of the operands.
-///
+
 void outerprod( double x[], double y[], double result[][_3D],int dimension ) {
 	int i,j;
 	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) result[i][j] = 0.;
 	for( i=0; i<dimension; i++ ) for( j=0; j<dimension; j++ ) result[i][j] = x[i]*y[j];
 }
 
-///
 /// @brief Finds the magnitude of the vector, returns scalar value.
 ///
 /// Finds the magnitude of the vector, returns scalar value.
@@ -223,7 +213,7 @@ void outerprod( double x[], double y[], double result[][_3D],int dimension ) {
 /// @param x Input vector.
 /// @param dimension Dimensionality of the vector.
 /// @return Magnitude of the `x` vector.
-///
+
 double length( double x[],int dimension ) {
 	int i;
 	double result = 0.;
@@ -232,14 +222,13 @@ double length( double x[],int dimension ) {
 	return result;
 }
 
-///
 /// @brief Normalizes the input vector.
 ///
 /// Modifies the input vector such that it is normalised.
 ///
 /// @param x Input vector.
 /// @param dimension Dimensionality of the vector.
-///
+
 void norm( double x[],int dimension ) {
 	int i;
 	double l = 0.;
@@ -247,7 +236,6 @@ void norm( double x[],int dimension ) {
 	if( fneq(l,0.0) ) for ( i=0; i<dimension; i++ ) x[i] = x[i] / l;
 }
 
-///
 /// @brief Normalizes the input vector, returning it as a separate vector.
 ///
 /// Normalizes the input vector, returning it as a separate vector.
@@ -255,7 +243,7 @@ void norm( double x[],int dimension ) {
 /// @param xin Input vector.
 /// @param xout Output vector.
 /// @param dimension Dimensionality of the vectors.
-///
+
 void normCopy( double xin[],double xout[],int dimension ) {
 	int i;
 	double l = 0.;
@@ -263,52 +251,50 @@ void normCopy( double xin[],double xout[],int dimension ) {
 	if( fneq(l,0.0) ) for ( i=0; i<dimension; i++ ) xout[i] = xin[i] / l;
 }
 
-///
 /// @brief Finds the unit normal vector (n) to a plane defined by x and y.
 ///  
 ///	 It assumes 3D because even in 2D, the result must be in 3rd dimension.
-///
 /// @param x First input vector.
 /// @param y Second input vector.
 /// @param n Dimensionality of the vectors
-///
+
 void normalplane( double x[3], double y[3], double n[3] ) {
 	crossprod( x,y,n );
 	norm( n,_3D );
 }
-///
+
 /// @brief Gives the vector projection of v onto n (which is most often the normal of a plane-normal compontent)
 ///
 /// @param v input vector to project
 /// @param n input vector which is used for projection to
 /// @param VN output vector projection
 /// @param dimension dimensionality of the vectors
-///
+
 void proj( double v[],double n[],double VN[],int dimension ) {
 	int i;
 	double x;
 	x = dotprod( v,n,dimension );
 	for( i=0; i<dimension; i++ ) VN[i] = x*n[i];
 }
-///
+
 /// @brief Gives the tangential component of the vector
 ///
 /// @param v input vector
 /// @param VN input normal component of the vector
 /// @param VT output tangential component of the vector
 /// @param dimension dimensionality of the vectors
-///
+
 void tang( double v[],double VN[],double VT[],int dimension ) {
 	int i;
 	for( i=0; i<dimension; i++ ) VT[i] = v[i] - VN[i];
 }
-///
+
 /// @brief Returns the cosign of the angle between two vectors
 ///
 /// @param v1 first input vector
 /// @param v2 second input vector
 /// @param dimension dimensionality of the vectors
-///
+
 double cosang( double v1[],double v2[],int dimension ) {
 	double cosa;
 	cosa = dotprod( v1,v2,dimension );
@@ -316,12 +302,12 @@ double cosang( double v1[],double v2[],int dimension ) {
 	cosa /= length( v2,dimension );
 	return cosa;
 }
-///
+
 /// @brief arctan that returns a signed angle
 /// 
 /// @param y first input scalar
 /// @param x second input scalar
-///
+
 double atan2( double y,double x ) {
 	double at=0.0;
 	if( x>0.0 ) at=atan(y/x);
@@ -334,17 +320,17 @@ double atan2( double y,double x ) {
 	//if( at<0.0 )at+=2.0*pi;
 	return at;
 }
-///
+
 /// @brief Finds the Unsigned angle between two vectors, return scalar
 ///
 /// @param v1 first input vector
 /// @param v2 second input vector
 /// @param dimension dimensionality of the vectors
-///
+
 double absAngle( double v1[], double v2[], int dimension ) {
 	return acos( cosang(v1,v2,dimension) );
 }
-///
+
 ///	@brief Finds the SIGNED angle between two vectors
 ///	If not in 3D, need to set to be 3D
 ///	// |A·B| = |A| |B| COS(θ)
@@ -354,7 +340,7 @@ double absAngle( double v1[], double v2[], int dimension ) {
 /// @param v1 first input vector
 /// @param v2 second input vector
 /// @param dimension dimensionality of the vectors
-///
+
 double signedAngle( double v1[], double v2[], int dimension ) {
 	double A[_3D],B[_3D],cross[_3D];
 	double s,c;
@@ -370,13 +356,13 @@ double signedAngle( double v1[], double v2[], int dimension ) {
 	c = dotprod(A,B,dimension);
 	return atan2(s,c);
 }
-///
+
 ///	@brief Calculates the distance between two points
 ///
 /// @param P1 first input point
 /// @param P2 second input point
 /// @param dimension dimensionality of the points
-///
+
 double distpoints( double P1[_3D],double P2[_3D],int dimension ) {
 	double dist = 0.;
 	int i;
@@ -384,14 +370,14 @@ double distpoints( double P1[_3D],double P2[_3D],int dimension ) {
 	for( i=0; i<dimension; i++ ) dist += (P2[i]-P1[i]) * (P2[i]-P1[i]);
 	return sqrt(dist);
 }
-///
+
 ///	@brief Calculates the distance from a point to a surface
 ///
 /// There is still a question regarding planar surfaces
 ///
 /// @param WALL input boundary
 /// @param P input point
-///
+
 double distsurf( bc WALL,double P[_3D] ) {
 	double len = 0.;
 	double dist = 0.;
@@ -404,14 +390,14 @@ double distsurf( bc WALL,double P[_3D] ) {
 	dist = fabs( dist ) / len;
 	return dist;
 }
-///
+
 ///	@brief Calculates the distance from a point to a plane
 ///
 /// @param WALL input boundary
 /// @param x input point x coordinate
 /// @param y input point y coordinate
 /// @param z input point z coordinate
-///
+
 double distplane( bc WALL,double x, double y, double z ) {
 	double len = 0.;
 	double dist = 0.;
@@ -425,33 +411,33 @@ double distplane( bc WALL,double x, double y, double z ) {
 	dist = fabs( dist ) / len;
 	return dist;
 }
-///
+
 ///	@brief Calculates Pythagorean theorem
 ///
 /// @param x input real number
 /// @param y input real number
-///
+
 double pythag( double x, double y ) {
 	return sqrt( x*x + y*y );
 }
-///
+
 ///	@brief Magnitude of x times sign of y
 ///
 /// @param x input real number
 /// @param y input real number
-///
+
 double SIGN( double x,double y ) {
 	if( y>0. ) return fabs(x);
 	else return -1.*fabs(x);
 }
-///
+
 ///	@brief Numerically calculates the moment of inertia of a bc structure.
 ///		WARNING!!! CURRENTLY JUST APPROXIMATES EVERYTHING AS THE CLOSEST ELLIPSOID!!!
 ///
 /// @param body input boudary condition
 /// @param XYZ parameters of the control volume (not in use in this function)
 /// @param dimension dimensionality of the structure
-///
+
 void latticeEstMomInert( bc *body,int XYZ[],int dimension ) {
 	int i,j;
 	for( i=0; i<_3D; i++ ) for( j=0; j<_3D; j++ ) body->I[i][j] = 0.0;
@@ -470,14 +456,14 @@ void latticeEstMomInert( bc *body,int XYZ[],int dimension ) {
 		printf( "Warning: Moment of inertia tensor zero because dimensionality not 3 or 2D." );
 	}
 }
-///
+
 ///	@brief Calculates the moment of inertia of a bc structure.
 /// Formula for it is different depending on the boundary conditions type
 ///
 /// @param body input boudary condition
 /// @param XYZ parameters of the control volume
 /// @param dimension dimensionality of the inputs
-///
+
 void mominert( bc *body,int XYZ[],int dimension ) {
 	int i,j;
 	for( i=0; i<_3D; i++ ) for( j=0; j<_3D; j++ ) body->I[i][j] = 0.0;
@@ -548,14 +534,14 @@ void mominert( bc *body,int XYZ[],int dimension ) {
 		printf( "Warning: Moment of inertia tensor zero because dimensionality not 3 or 2D." );
 	}
 }
-///
+
 ///	@brief This routine numerically estimates the volume of the BC object.
 ///		WARNING!!! CURRENTLY JUST APPROXIMATES EVERYTHING AS THE CLOSEST ELLIPSOID!!!
 ///
 /// @param body input boudary condition
 /// @param XYZ parameters of the control volume
 /// @param dimension dimensionality of the inputs
-///
+
 double latticeEstVol( bc *body,int XYZ[],int dimension ) {
 	double vol = 0.0;
 	if( dimension==_3D ) vol = 4.0*pi*( body->AINV[0]*body->AINV[1]*body->AINV[2]*smrtPow(body->R,3) )/3.0;
@@ -565,7 +551,7 @@ double latticeEstVol( bc *body,int XYZ[],int dimension ) {
 	}
 	return vol;
 }
-///
+
 ///	@brief This routine returns the volume of the BC object
 ///   for dimension=3 and the area for dimension=2
 ///   i.e. it returns the dimension-dimensional volume
@@ -573,7 +559,7 @@ double latticeEstVol( bc *body,int XYZ[],int dimension ) {
 /// @param body input boudary condition
 /// @param XYZ parameters of the control volume
 /// @param dimension dimensionality of the inputs
-///
+
 void dim_vol( bc *body,int XYZ[],int dimension ) {
 	body->VOL = 0.0;
 	if( dimension==_3D ) {
@@ -602,7 +588,7 @@ void dim_vol( bc *body,int XYZ[],int dimension ) {
 		printf( "Warning: Volume zero because dimensionality not 3 or 2D." );
 	}
 }
-///
+
 ///	@brief The random initializers may give a net momentum
 ///   to the system. We do not allow this by doing a
 ///   Galilean transformation to rest frame.
@@ -618,7 +604,7 @@ void dim_vol( bc *body,int XYZ[],int dimension ) {
 /// @param NBC Total number of of boundaries present in the system
 /// @param MDmode The MD coupling mode
 /// @param dimension Dimensions of the system
-///
+
 void galileantrans( particleMPC *pp,bc WALL[],simptr simMD,spec SP[],double KBT,double VEL[],int POP,int NBC,int MDmode,int dimension ) {
 	int i,j;
 	double NET[_3D];		//Net momentum
@@ -658,7 +644,7 @@ void galileantrans( particleMPC *pp,bc WALL[],simptr simMD,spec SP[],double KBT,
 		if(dimension>=_3D) (simMD->atom.items+i)->vz -= NET[2];
 	}
 }
-///
+
 ///	@brief Zeros the components of the positions and
 ///   velocities of objects that are greater
 ///   dimension than the simulation (just paranoid)
@@ -670,7 +656,7 @@ void galileantrans( particleMPC *pp,bc WALL[],simptr simMD,spec SP[],double KBT,
 /// @param NBC Total number of of boundaries present in the system
 /// @param MDmode The MD coupling mode
 /// @param dimension Dimensions of the system
-///
+
 void zeroExtraDims( particleMPC *pp,bc WALL[],simptr simMD,int GPOP,int NBC,int MDmode,int dimension ) {
 	int i;
 	if( dimension<_3D ) {
@@ -702,7 +688,7 @@ void zeroExtraDims( particleMPC *pp,bc WALL[],simptr simMD,int GPOP,int NBC,int 
 		}
 	}
 }
-///
+
 ///	@brief Generic histogram binning algorithm
 ///
 ///  Create a histogram from the values in the input
@@ -712,7 +698,7 @@ void zeroExtraDims( particleMPC *pp,bc WALL[],simptr simMD,int GPOP,int NBC,int 
 /// @param minRange Minimum range of the histogram
 /// @param maxRange Maximum range of the histogram
 /// @param POP Total volume of the system
-///
+
 void histbin( double values[],int hist[BINS],double minRange,double maxRange,int POP ) {
 	int i,bin,binsM1;
 	double invDenom;
@@ -731,7 +717,7 @@ void histbin( double values[],int hist[BINS],double minRange,double maxRange,int
 		else hist[bin]++;
 	}
 }
-///
+
 ///	@brief This routine is the parallel axis theorem.
 ///    It takes a inertia tensor I about the centre
 ///    of mass and calculates the I about a
@@ -742,7 +728,7 @@ void histbin( double values[],int hist[BINS],double minRange,double maxRange,int
 /// @param R input displacement
 /// @param M input mass
 /// @param dimension Dimensions of the input values
-///
+
 void parallelaxis( double I[][_3D],double R[],double M,int dimension ) {
 	int i,j,k;
 
@@ -752,7 +738,7 @@ void parallelaxis( double I[][_3D],double R[],double M,int dimension ) {
 		I[i][j] *= M;
 	}
 }
-///
+
 ///	@brief Operate in the frame of reference of the bc.
 ///    The routine labframe must proceed it.
 ///		
@@ -761,12 +747,12 @@ void parallelaxis( double I[][_3D],double R[],double M,int dimension ) {
 /// @param V input velocity
 /// @param WALL reference to the boundary
 /// @param dimension Dimensions of the input values
-///
+
 void restframe( double V[],bc WALL,int dimension ) {
 	int i;
 	for( i=0; i<dimension; i++ ) V[i] -= WALL.V[i];
 }
-///
+
 ///	@brief Operate in the frame of reference of the bc.
 ///    The routine restframe must preceed it.
 ///		
@@ -775,26 +761,26 @@ void restframe( double V[],bc WALL,int dimension ) {
 /// @param V input velocity
 /// @param WALL reference to the boundary
 /// @param dimension Dimensions of the input values
-///
+
 void labframe( double V[],bc WALL,int dimension ) {
 	int i;
 	for( i=0; i<dimension; i++ ) V[i] += WALL.V[i];
 }
-///
+
 ///	@brief Finds the determinant of a 2x2 matrix
 ///
 ///
 /// @param m input 2x2matrix
-///
+
 double det2x2( double m[_2D][_2D] ) {
 	return m[0][0]*m[1][1] - m[0][1]*m[1][0];
 }
-///
+
 ///	@brief Finds the determinant of a 3x3 matrix
 ///
 ///
 /// @param m input 3x3matrix
-///
+
 double det3x3( double m[_3D][_3D] ) {
 	double c1,c2,c3;
 
@@ -803,7 +789,7 @@ double det3x3( double m[_3D][_3D] ) {
 	c3 = m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
 	return( c1 - c2 + c3);
 }
-///
+
 ///	@brief Finds the determinant of a nxn matrix (not more than 3x3)
 ///    Recursive definition of determinate using expansion by minors
 ///    Stolen from http://paulbourke.net/miscellaneous/determinant/
@@ -813,7 +799,7 @@ double det3x3( double m[_3D][_3D] ) {
 ///
 /// @param a reference to the nxn matrix
 /// @param n dimensionality of the matrix
-///
+
 double determinant( double **a,int n ) {
 	int i,j,j1,j2;
 	double det = 0.;
@@ -848,25 +834,25 @@ double determinant( double **a,int n ) {
 
 	return det;
 }
-///
+
 ///	@brief Finds the trace of the matrix
 ///
 ///
 /// @param a reference to the nxn matrix
 /// @param n dimensionality of the matrix
-///
+
 double trace( double **a,int n ) {
 	int i;
 	double tr=0.;
 	for( i=0; i<n; i++ ) tr+=a[i][i];
 	return tr;
 }
-///
+
 ///	@brief Inverts a 2x2 matrix
 ///
 ///
 /// @param m reference to the 2x2 matrix
-///
+
 void invert2x2( double m[_2D][_2D] ) {
 	double det;
 	double n[_2D][_2D];		//The inverted matrix
@@ -893,14 +879,14 @@ void invert2x2( double m[_2D][_2D] ) {
 		for( i=0; i<_2D; i++ ) for( j=0; j<_2D; j++ ) m[i][j] = n[i][j];
 	}
 }
-///
+
 ///	@brief Returns the i,j cofactor for a 3x3 matrix m
 ///
 ///
 /// @param m reference to the 3x3 matrix
 /// @param i cofactor index
 /// @param j cofactor index
-///
+
 double cofactor3x3( double m[_3D][_3D],int i,int j ) {
 	double a00,a01,a10,a11;
 	int c;
@@ -951,13 +937,13 @@ double cofactor3x3( double m[_3D][_3D],int i,int j ) {
 	}
 	return c * ( a00*a11 - a01*a10 );
 }
-///
+
 ///	@brief Returns the i,j cofactor for a 3x3 matrix
 ///
 ///
 /// @param m_inv reference to the inverted 3x3 matrix
 /// @param m reference to the 3x3 matrix to invert
-///
+
 void invert3x3(double m_inv[_3D][_3D],double m[_3D][_3D]) {
 	double det;
 	int i,j;
@@ -966,7 +952,7 @@ void invert3x3(double m_inv[_3D][_3D],double m[_3D][_3D]) {
 // 	det = determinant( &m[0],3 );
 	for( i=0; i<_3D; i++ )for( j=0; j<_3D; j++ ) m_inv[j][i] = cofactor3x3( m,i,j ) / det;
 }
-///
+
 ///	@brief Calculates the energy, the linear momentum
 ///    and the angular momentum of a point particleMPC
 ///    and an object
@@ -980,7 +966,7 @@ void invert3x3(double m_inv[_3D][_3D],double m[_3D][_3D]) {
 /// @param QB position of the boundary
 /// @param IB tensor of the boundary
 /// @param dimension dimensionality of the input values
-///
+
 void conservation( double VA[],int MA,double QA[],double VB[],int MB,double QB[],double WB[],double IB[_3D][_3D],int dimension ) {
 	int i,j;
 	double E,TE;
@@ -1054,7 +1040,7 @@ void conservation( double VA[],int MA,double QA[],double VB[],int MB,double QB[]
 	printf( "Total Angular Momentum:" );
 	pvec( TL,_3D );
 }
-///
+
 ///	@brief This function calculates W which is used to
 ///	    determine if boundary conditions should be
 ///	    applied to a particleMPC. It is a more generic form of calcW()
@@ -1064,7 +1050,7 @@ void conservation( double VA[],int MA,double QA[],double VB[],int MB,double QB[]
 /// @param WALL input boundary to calculate
 /// @param POS position of the particle
 /// @param dimension dimensionality of the input values
-///
+
 double non4foldSymmCalcW( bc WALL,double POS[], int dimension ) {
 	double terms, W=0.0;
 	int i;
@@ -1111,7 +1097,7 @@ double non4foldSymmCalcW( bc WALL,double POS[], int dimension ) {
 
 	return W;
 }
-///
+
 ///	@brief This function evaluates the surface
 ///   function at the position POS - exactly like calcW
 ///
@@ -1119,7 +1105,7 @@ double non4foldSymmCalcW( bc WALL,double POS[], int dimension ) {
 /// @param WALL input boundary to calculate
 /// @param POS position of the particle
 /// @param dimension dimensionality of the input values
-///
+
 double surf_func( bc WALL,double POS[], int dimension ) {
 	double terms, W=0.0;
 	int i;
@@ -1145,27 +1131,29 @@ double surf_func( bc WALL,double POS[], int dimension ) {
 	}
 	return W;
 }
-///
+
 ///	@brief Find the two eigenvalues for m for a 2x2 matrix
 ///
 ///
 /// @param m reference to the 2x2 matrix
 /// @param eigval output Eigenvalues
-///
+
 void eigenvalues2x2( double **m,double eigval[] ) {
-/*
-    
-*/
 	double det=determinant( m,_2D );
 	double trace=m[0][0]+m[1][1];
 	double sq=sqrt(trace*trace*0.25-det);
 	eigval[0]=trace*0.5 + sq;
 	eigval[1]=trace*0.5 - sq;
 }
+
+///	@brief Find the two eigenvectors (normalized) for m for a 2x2 matrix
+///
+///
+/// @param m reference to the 2x2 matrix
+/// @param eigval reference to the eingenvalue
+/// @param eigvec reference to the output eingenvectors
+
 void eigenvectors2x2( double **m,double eigval[],double eigvec[][_2D] ) {
-/*
-    Find the two eigenvectors (normalized) for m for a 2x2 matrix
-*/
 	if( fneq(m[1][0],0.0) ) {
 		//First eigenvalue
 		eigvec[0][0]=eigval[0]-m[1][1];
@@ -1212,13 +1200,17 @@ void eigenvectors2x2( double **m,double eigval[],double eigvec[][_2D] ) {
 		else printf("Warning: 2D eigensolver failed.\n");
 	}
 }
+
+///	@brief Find the three eigenvalues for m for a 3x3 matrix
+///    MUST BE SYMMETRIC
+///    http://en.wikipedia.org/wiki/Eigenvalue_algorithm#3.C3.973_matrices
+///    and Smith, Communications of the ACM 4 (4): 168, 1961.
+///
+///
+/// @param m reference to the 3x3 matrix
+/// @param eigval reference to the output eingenvalues
+
 void eigenvalues3x3( double **m,double eigval[] ) {
-/*
-    Find the three eigenvalues for m for a 3x3 matrix
-    MUST BE SYMMETRIC
-    http://en.wikipedia.org/wiki/Eigenvalue_algorithm#3.C3.973_matrices
-    and Smith, Communications of the ACM 4 (4): 168, 1961.
-*/
 	int i,j;
 	double B[_3D][_3D];
 	double q,p1,p2,p,ip,r,phi;
@@ -1272,13 +1264,18 @@ void eigenvalues3x3( double **m,double eigval[] ) {
 		eigval[1] = 3.*q - eigval[0] - eigval[2];	// Cuz trace(A) = eig1 + eig2 + eig3
 	}
 }
+
+///	@brief Find the three eigenvectors (normalized) for m for a SYMMETRIC 3x3 matrix
+///    Uses the Cayley-Hamilton theorem from (http://en.wikipedia.org/wiki/Eigenvalue_algorithm#3.C3.973_matrices).
+///    Don't worry about generalized eigenvector stuff for eigenvalue multiplicities greater than 1.
+///    Check if diagonal.
+///
+///
+/// @param m reference to the 3x3 matrix
+/// @param eigval reference to the eingenvalues
+/// @param eigvec reference to the output eingenvectors
+
 void eigenvectors3x3( double **m,double eigval[],double eigvec[][_3D] ) {
-/*
-    Find the three eigenvectors (normalized) for m for a SYMMETRIC 3x3 matrix
-    Uses the Cayley-Hamilton theorem from (http://en.wikipedia.org/wiki/Eigenvalue_algorithm#3.C3.973_matrices).
-    Don't worry about generalized eigenvector stuff for eigenvalue multiplicities greater than 1.
-    Check if diagonal.
-*/
 	int row,col,i,k;
 	double a,b;
 
@@ -1335,12 +1332,19 @@ void eigenvectors3x3( double **m,double eigval[],double eigvec[][_3D] ) {
 	//Normalize
 	for( k=0;k<_3D;k++ ) norm( eigvec[k],_3D );
 }
+
+///	@brief Finds the eigenvalues and vectors of the real, symmetric matrix m by analytical methods
+///    The matrix m is lost.
+///    It becomes the eigenvectors: the kth column of m returns the normalized eigenvector corresponding to eigval[k].
+///
+///		Works only for 1x1, 2x2 and 3x3 everything else will be ignored
+///
+///
+/// @param m reference to the 1x1, 2x2, or 3x3 matrix
+/// @param dimension dimensionality of the matrix
+/// @param eigval output eingenvalues
+
 void solveEigensystem( double **m,int dimension,double eigval[] ) {
-/*
-    Finds the eigenvalues and vectors of the real, symmetric matrix m by analytical methods
-    The matrix m is lost.
-    It becomes the eigenvectors: the kth column of m returns the normalized eigenvector corresponding to eigval[k].
-*/
 	int i,j;
 
 	if( dimension==_2D ) {
@@ -1366,31 +1370,51 @@ void solveEigensystem( double **m,int dimension,double eigval[] ) {
 		exit(EXIT_FAILURE);
 	}
 }
+
+///	@brief Find the derivative of x by a centred derivative
+///
+///
+/// @param xM1 value to find derivative from
+/// @param xP1 value of the center
+/// @param dt time step for derivation
+
 double centredDeriv( double xM1,double xP1,double dt ) {
-/*
-    Find the derivative of x by a centred derivative
-*/
 	double deriv=0.5*(xP1-xM1)/dt;
 	return deriv;
 }
+
+///	@brief Find the derivative of x by a centred derivative (forward)
+///
+///
+/// @param x0 value to find derivative from
+/// @param xP1 value of the center
+/// @param dt time step for derivation
+
 double forwardDeriv( double x0,double xP1,double dt ) {
-/*
-    Find the derivative of x by a centred derivative
-*/
 	double deriv=(xP1-x0)/dt;
 	return deriv;
 }
+
+///	@brief Find the derivative of x by a centred derivative (backward)
+///
+///
+/// @param x0 value to find derivative from
+/// @param xM1 value of the center
+/// @param dt time step for derivation
+
 double backwardDeriv( double x0,double xM1,double dt ) {
-/*
-    Find the derivative of x by a centred derivative
-*/
 	double deriv=(x0-xM1)/dt;
 	return deriv;
 }
+
+///	@brief Find the integral of a discrete function with equal steps in x
+///
+///
+/// @param F value of the input discrete function
+/// @param dx input value step
+/// @param dt input time step
+
 double simps( double F[],double dx,int n ) {
-/*
-    Find the integral of a discrete function with equal steps in x
-*/
 	int i,halfN;
 	double t1=0.0,t2=0.0;
 	halfN=n/2;
@@ -1401,11 +1425,15 @@ double simps( double F[],double dx,int n ) {
 	return dx*(F[0] + t1 + t2 + F[n-1])/3.;
 }
 
+///	@brief Find the standard deviation of the number of particles in each cell
+///    NOTICE: previously s1 was average number per cell but this was erroneous. Should just be sum
+///
+/// @param CL reference to the cell
+/// @param GPOP total population of the entire system
+/// @param XYZ parameters of the control volume
+/// @param XYZ_P1 parameters of the control volume plus one
+
 double stdNum( cell ***CL,int GPOP,int XYZ[3],int XYZ_P1[3] ) {
-/*
-    Find the standard deviation of the number of particles in each cell
-    NOTICE: previously s1 was average number per cell but this was erroneous. Should just be sum
-*/
 	int a,b,c;
 	double std,NC,s2,s1;
 
@@ -1422,13 +1450,17 @@ double stdNum( cell ***CL,int GPOP,int XYZ[3],int XYZ_P1[3] ) {
 	std=sqrt( (NC*s2-s1*s1)/(NC*(NC-1.)) );
 	return std;
 }
+
+///	@brief This routine rotates one vector (vec) about an axis of rotation vector (rotAx) by an angle theta and writes over the vector
+///	 For some reason the rotation appears to shrink vec's magnitude slightly. Therefore rescale.
+///	 NOTICE: rotAx MUST be a UNIT vector so immediately normalized
+///	 NOTICE: that EVEN if this is 2D it MUST be 3D because the cross product cp will be in the perpendicular direction
+///
+/// @param vec reference to the vector to rotate
+/// @param rotAx rederence to the unit vector around which vec returns
+/// @param theta value of the rotation angle
+
 void rodriguesRotation( double vec[],double rotAx[],double theta ) {
-	/*
-	 This routine rotates one vector (vec) about an axis of rotation vector (rotAx) by an angle theta and writes over the vector
-	 For some reason the rotation appears to shrink vec's magnitude slightly. Therefore rescale.
-	 NOTICE: rotAx MUST be a UNIT vector so immediately normalized
-	 NOTICE: that EVEN if this is 2D it MUST be 3D because the cross product cp will be in the perpendicular direction
-	 */
 	int i;
 	double cp[_3D],dp=0.0;
 	double old,new;
@@ -1442,10 +1474,15 @@ void rodriguesRotation( double vec[],double rotAx[],double theta ) {
 	new=length( vec,_3D );
 	for( i=0; i<_3D; i++ ) vec[i]*=(old/new);
 }
+
+///	@brief Just sets a rotation matrix based on angles about the cartesian axes
+///
+/// @param M reference to the matrix to rotate
+/// @param angx x component of the angle to rotate
+/// @param angy y component of the angle to rotate
+/// @param angz z component of the angle to rotate
+
 void setRotMatrix3D( double M[][3],double angx,double angy,double angz ) {
-/*
-   Just sets a rotation matrix based on angles about the cartesian axes
-*/
 	double cosx,sinx,cosy,siny,cosz,sinz;
 	cosx=cos(angx);
 	cosy=cos(angy);
@@ -1464,19 +1501,26 @@ void setRotMatrix3D( double M[][3],double angx,double angy,double angz ) {
 	M[2][1] = -sinx*cosy;
 	M[2][2] = cosx*cosy;
 }
+
+///	@brief  Just sets a rotation matrix based on angles about the cartesian z axis (uses as input a 3x3 array regardless of dimensionality)
+///
+/// @param M reference to the matrix to rotate
+/// @param angz z component of the angle to rotate
+
 void setRotMatrix2D( double M[][3],double angz ) {
-/*
-   Just sets a rotation matrix based on angles about the cartesian z axis (uses as input a 3x3 array regardless of dimensionality)
-*/
-		M[0][0] = cos(angz);
+	M[0][0] = cos(angz);
 	M[0][1] = -sin(angz);
 	M[1][0] = -M[0][1];
 	M[1][1] = M[0][0];
 }
+
+///	@brief Generate the skew-symmetric cross-product matrix needed for the rotation in findRotationMatrix()
+///
+/// @see findRotationMatrix
+/// @param v input vector for generating
+/// @param result output rotation matrix
+
 void skewSymmetricCrossProductMatrix( double *v,double result[][3] ) {
-/*
-    Generate the skew-symmetric cross-product matrix needed for the rotation in findRotationMatrix()
-*/
 	result[0][0]=0.;
 	result[1][1]=0.;
 	result[2][2]=0.;
@@ -1487,10 +1531,18 @@ void skewSymmetricCrossProductMatrix( double *v,double result[][3] ) {
 	result[1][2]=-v[0];
 	result[2][1]=v[0];
 }
+
+///	@brief Find the rotation matrix for the subroutine findRotationMatrix()
+///
+/// @see dotprodMatMat
+/// @see findRotationMatrix
+///
+/// @param rotMat output rotation matrix
+/// @param vx input matrix to rotate
+/// @param c input length of the vector
+/// @param s angle between initial vector and final vector
+
 void rotationMatrix( double rotMat[][3],double vx[][3],double c,double s ) {
-/*
-    Find the rotation matrix for the subroutine findRotationMatrix()
-*/
 	double unity[_3D][_3D],vx2[_3D][_3D];
 	int i,j;
 
@@ -1502,10 +1554,17 @@ void rotationMatrix( double rotMat[][3],double vx[][3],double c,double s ) {
 	dotprodMatMat( vx,vx,vx2,_3D );
 	for( i=0; i<_3D; i++ ) for( j=0; j<_3D; j++ ) rotMat[i][j] = unity[i][j]+vx[i][j]+vx2[i][j]*(1.-c)/s/s;
 }
+
+///	@brief Find the rotation matrix necesary to rotation the original vector parallel to the final vector
+///
+/// @see dotprodMatMat
+/// @see findRotationMatrix
+///
+/// @param rotMat output rotation matrix
+/// @param original reference to the original vector for rotation
+/// @param final reference to the vector after rotation
+
 void findRotationMatrix( double rotMat[][3],double *original,double *final ) {
-/*
-    Find the rotation matrix necesary to rotation the original vector parallel to the final vector
-*/
 	double a[_3D],b[_3D],v[_3D];
 	double vx[_3D][_3D];
 	double s,c;
@@ -1518,10 +1577,18 @@ void findRotationMatrix( double rotMat[][3],double *original,double *final ) {
 	skewSymmetricCrossProductMatrix( v,vx );
 	rotationMatrix( rotMat,vx,c,s );
 }
+
+///	@brief Find the spacial autocorrelation function of director
+///
+/// Used for output purposes
+///
+/// @param CL pointer to the co-ordinates and cell of ecah particle
+/// @param maxXYZ maximum dimensions in control volume
+/// @param XYZ dimensions in control volume
+/// @param avCorr correlation function and energy spectra
+/// @param dimension dimensionality of the input values
+
 void dirdirCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension ) {
-/*
-    Find the spacial autocorrelation function of director
-*/
 	int a,b,c,d;
 	int aa,bb,cc;
 	int cnt[maxXYZ];
@@ -1550,10 +1617,18 @@ void dirdirCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension )
 	//corrINF=avCorr[maxXYZ/2];
 	//for( d=0; d<maxXYZ; d++ ) avCorr[d] = (avCorr[d]-corrINF)/(corr0-corrINF);
 }
+
+///	@brief Find the spacial autocorrelation function of director
+///
+/// Used for output purposes
+///
+/// @param CL pointer to the co-ordinates and cell of ecah particle
+/// @param maxXYZ maximum dimensions in control volume
+/// @param XYZ dimensions in control volume
+/// @param avCorr correlation function and energy spectra
+/// @param dimension dimensionality of the input values
+
 void densdensCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension ) {
-/*
-    Find the spacial autocorrelation function of director
-*/
 	int a,b,c,d;
 	int aa,bb,cc;
 	int cnt[maxXYZ];
@@ -1577,10 +1652,18 @@ void densdensCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension
 		avCorr[d] /= (double) (avCorr[0]?(avCorr[0]):1);
 	}
 }
+
+///	@brief Find the spacial autocorrelation function of scalar order parameter
+///
+/// Used for output purposes
+///
+/// @param CL pointer to the co-ordinates and cell of ecah particle
+/// @param maxXYZ maximum dimensions in control volume
+/// @param XYZ dimensions in control volume
+/// @param avCorr correlation function and energy spectra
+/// @param dimension dimensionality of the input values
+
 void orderorderCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension ) {
-/*
-    Find the spacial autocorrelation function of scalar order parameter
-*/
 	int a,b,c,d;
 	int aa,bb,cc;
 	int cnt[maxXYZ];
@@ -1631,10 +1714,18 @@ void orderorderCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimensi
 // 		avCorr[d] /= (double) (avCorr[0]?(avCorr[0]):1);
 // 	}
 // }
+
+///	@brief Find the spacial autocorrelation function of velocity
+///
+/// Used for output purposes
+///
+/// @param CL pointer to the co-ordinates and cell of ecah particle
+/// @param maxXYZ maximum dimensions in control volume
+/// @param XYZ dimensions in control volume
+/// @param avCorr correlation function and energy spectra
+/// @param dimension dimensionality of the input values
+
 void velvelNormedCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension ) {
-/*
-    Find the spacial autocorrelation function of velocity
-*/
 	int a,b,c,d;
 	int aa,bb,cc;
 	int cnt[maxXYZ];
@@ -1658,10 +1749,18 @@ void velvelNormedCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimen
 		avCorr[d] /= (double) (avCorr[0]?(avCorr[0]):1);
 	}
 }
+
+///	@brief Find the spacial autocorrelation function of velocity
+///
+/// Used for output purposes
+///
+/// @param CL pointer to the co-ordinates and cell of ecah particle
+/// @param maxXYZ maximum dimensions in control volume
+/// @param XYZ dimensions in control volume
+/// @param avCorr correlation function and energy spectra
+/// @param dimension dimensionality of the input values
+
 void vortvortNormedCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension ) {
-/*
-    Find the spacial autocorrelation function of velocity
-*/
 	int a,b,c,d;
 	int aa,bb,cc;
 	double w1[_3D],w2[_3D];
@@ -1692,10 +1791,18 @@ void vortvortNormedCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dim
 		avCorr[d] /= (double) (avCorr[0]?(avCorr[0]):1);
 	}
 }
+
+///	@brief Find the spacial autocorrelation function of velocity
+///
+/// Used for output purposes
+///
+/// @param CL pointer to the co-ordinates and cell of ecah particle
+/// @param maxXYZ maximum dimensions in control volume
+/// @param XYZ dimensions in control volume
+/// @param avCorr correlation function and energy spectra
+/// @param dimension dimensionality of the input values
+
 void velvelCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension ) {
-/*
-    Find the spacial autocorrelation function of velocity
-*/
 	int a,b,c,d;
 	int aa,bb,cc;
 	int cnt[maxXYZ];
@@ -1720,10 +1827,18 @@ void velvelCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension )
 		// avCorr[d] /= (double) (avCorr[0]?(avCorr[0]):1);
 	}
 }
+
+///	@brief Find the spacial autocorrelation function of velocity
+///
+/// Used for output purposes
+///
+/// @param CL pointer to the co-ordinates and cell of ecah particle
+/// @param maxXYZ maximum dimensions in control volume
+/// @param XYZ dimensions in control volume
+/// @param avCorr correlation function and energy spectra
+/// @param dimension dimensionality of the input values
+
 void vortvortCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension ) {
-/*
-    Find the spacial autocorrelation function of velocity
-*/
 	int a,b,c,d;
 	int aa,bb,cc;
 	double w1[_3D],w2[_3D];
@@ -1755,20 +1870,33 @@ void vortvortCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension
 		// avCorr[d] /= (double) (avCorr[0]?(avCorr[0]):1);
 	}
 }
+
+///	@brief Normalize an unnormalized correlation function
+///
+/// Used for output purposes
+///
+/// @param corr pointer to the correlation value
+/// @param maxXYZ maximum dimensions in control volume
+
 void normCorr( double *corr,int maxXYZ ) {
-/*
-    Normalize an unnormalized correlation function
-*/
 	int i;
 	double corr0=0.;
 
 	corr0=corr[0];
 	for( i=0; i<maxXYZ; i++ ) corr[i] = corr[i]/corr0;
 }
+
+///	@brief Transform a spherically symmetric function into its Fourier transform
+///
+/// Used for output purposes
+///
+/// @param f input value of the function
+/// @param F output Fourier transformation
+/// @param rad detailed control volume
+/// @param n input control volume
+/// @param dimension dimensionality of the input values
+
 void FT_spherical( double *f,double *F,double *rad,int n,int dimension ) {
-/*
-    Transform a spherically symmetric function into its Fourier transform
-*/
 	int r,k;
 	double integrand[n],waveNum;
 	double dr,pi2;
@@ -1796,10 +1924,17 @@ void FT_spherical( double *f,double *F,double *rad,int n,int dimension ) {
 		exit(EXIT_FAILURE);
 	}
 }
+
+///	@brief Transform a correlation function into a spectrum
+///
+/// Used for output purposes
+///
+/// @param corr pointer to the correlation value
+/// @param spect pointer to the spectrum value
+/// @param maxXYZ control volume
+/// @param dimension dimensionality of the input values
+
 void FTspectrum( double *corr,double *spect,int maxXYZ,int dimension ) {
-/*
-    Transform a correlation function into a spectrum
-*/
 	int i;
 	double rad[maxXYZ],waveNum,pi2;
 
@@ -1819,10 +1954,14 @@ void FTspectrum( double *corr,double *spect,int maxXYZ,int dimension ) {
 		exit(EXIT_FAILURE);
 	}
 }
+
+///	@brief Check that no component of a vector is NAN or INF
+///
+///
+/// @param vec reference to the vector to check
+/// @param dimension dimensionality of the input values
+
 int checkNAN_vec( double vec[],int dimension ) {
-	/*
-	    Check that no component of a vector is NAN or INF
-	*/
 	int d=0,flag=0;
 	for( d=0; d<dimension; d++ ) {
 		if(isnan( vec[d] )) flag=1;
@@ -1830,10 +1969,16 @@ int checkNAN_vec( double vec[],int dimension ) {
 	}
 	return flag;
 }
+
+///	@brief Check that no position values are NANs or INFs
+///
+///
+/// @param CL reference to the cell
+/// @param XYZ_P1 control volume plus 1
+/// @param pauseFlag bool for waiting for user to press enter
+/// @param dimension dimensionality of the input values
+
 void checkNAN_Q( cell ***CL,int XYZ_P1[3],int pauseFlag,int dimension ) {
-	/*
-	    Check that no position values are NANs or INFs
-	*/
 	int i,j,k,flag,cnt=0;
 	particleMPC *cp;	//Pointer to current item in list
 	//Search each cell for particleMPCs that have left the cell
@@ -1854,10 +1999,17 @@ void checkNAN_Q( cell ***CL,int XYZ_P1[3],int pauseFlag,int dimension ) {
 	}
 	if( cnt>0 && pauseFlag ) wait4u();
 }
+
+///	@brief Check that no velocity values are NANs or INFs
+///
+/// Used for output purposes
+///
+/// @param CL reference to the cell
+/// @param XYZ_P1 control volume plus 1
+/// @param pauseFlag bool for waiting for user to press enter
+/// @param dimension dimensionality of the input values
+
 void checkNAN_V( cell ***CL,int XYZ_P1[3],int pauseFlag,int dimension ) {
-	/*
-	    Check that no velocity values are NANs or INFs
-	*/
 	int i,j,k,flag,cnt=0;
 	particleMPC *cp;	//Pointer to current item in list
 
