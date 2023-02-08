@@ -911,9 +911,10 @@ double determinant( double **a,int n ) {
 ///
 ///	@brief Finds the trace of the matrix
 ///
+/// Computes the trace of the matrix.
 ///
-/// @param a reference to the nxn matrix
-/// @param n dimensionality of the matrix
+/// @param a nxn matrix.
+/// @param n Dimensionality of the matrix.
 ///
 double trace( double **a,int n ) {
 	int i;
@@ -923,10 +924,11 @@ double trace( double **a,int n ) {
 }
 
 ///
-///	@brief Inverts a 2x2 matrix
+///	@brief Inverts a 2x2 matrix.
 ///
+/// Inverts a 2x2 matrix. Outputs to the same matrix.
 ///
-/// @param m reference to the 2x2 matrix
+/// @param m reference to the 2x2 matrix. Directly modifies this matrix.
 ///
 void invert2x2( double m[_2D][_2D] ) {
 	double det;
@@ -956,12 +958,14 @@ void invert2x2( double m[_2D][_2D] ) {
 }
 
 ///
-///	@brief Returns the i,j cofactor for a 3x3 matrix m
+///	@brief Returns the i,j cofactor for a 3x3 matrix `m`.
 ///
+/// Returns the i,j cofactor for a 3x3 matrix `m`.
 ///
-/// @param m reference to the 3x3 matrix
-/// @param i cofactor index
-/// @param j cofactor index
+/// @param m 3x3 matrix.
+/// @param i cofactor index.
+/// @param j cofactor index.
+/// @return cofactor 'i,j' of the matrix.
 ///
 double cofactor3x3( double m[_3D][_3D],int i,int j ) {
 	double a00,a01,a10,a11;
@@ -1015,11 +1019,12 @@ double cofactor3x3( double m[_3D][_3D],int i,int j ) {
 }
 
 ///
-///	@brief Returns the i,j cofactor for a 3x3 matrix
+///	@brief Computes the inverse of a 3x3 matrix.
 ///
+/// Computes the inverse of a 3x3 matrix.
 ///
-/// @param m_inv reference to the inverted 3x3 matrix
-/// @param m reference to the 3x3 matrix to invert
+/// @param m_inv Variable to store the inverse of the matrix.
+/// @param m 3x3 matrix to invert.
 ///
 void invert3x3(double m_inv[_3D][_3D],double m[_3D][_3D]) {
 	double det;
@@ -1031,19 +1036,18 @@ void invert3x3(double m_inv[_3D][_3D],double m[_3D][_3D]) {
 }
 
 ///
-///	@brief Calculates the energy, the linear momentum
-///    and the angular momentum of a point particleMPC
-///    and an object
+///	@brief Ensures if total energy, linear momentum and angular momentum are conserved.
 ///
+/// Does so by printing to terminal. Output method for debugging to ensure conservation is held.
 ///
-/// @param VA velocity of the particle
-/// @param MA mass of the particle
-/// @param QA position of the particle
-/// @param VB velocity of the boundary
-/// @param MB mass of the boundary
-/// @param QB position of the boundary
-/// @param IB tensor of the boundary
-/// @param dimension dimensionality of the input values
+/// @param VA Velocity of the particle.
+/// @param MA Mass of the particle.
+/// @param QA Position of the particle.
+/// @param VB Velocity of the boundary.
+/// @param MB Mass of the boundary.
+/// @param QB Position of the boundary.
+/// @param IB Intertia tensor of the boundary.
+/// @param dimension Dimensionality of the input values.
 ///
 void conservation( double VA[],int MA,double QA[],double VB[],int MB,double QB[],double WB[],double IB[_3D][_3D],int dimension ) {
 	int i,j;
@@ -1120,15 +1124,14 @@ void conservation( double VA[],int MA,double QA[],double VB[],int MB,double QB[]
 }
 
 ///
-///	@brief This function calculates W which is used to
-///	    determine if boundary conditions should be
-///	    applied to a particleMPC. It is a more generic form of calcW()
-///		Non-4-fold symmetries
+///	@brief Evaluates a surface function for a BC for a given position.
 ///
+/// Evaluates a surface function for a BC for a given position. For 4-fold symmetry.
 ///
-/// @param WALL input boundary to calculate
-/// @param POS position of the particle
-/// @param dimension dimensionality of the input values
+/// @param WALL Boundary condition to evaluate surface function for
+/// @param POS Position to evaluate surface function at.
+/// @param dimension Dimensionality of the input values.
+/// @return Value of the surface function.
 ///
 double non4foldSymmCalcW( bc WALL,double POS[], int dimension ) {
 	double terms, W=0.0;
@@ -1178,13 +1181,14 @@ double non4foldSymmCalcW( bc WALL,double POS[], int dimension ) {
 }
 
 ///
-///	@brief This function evaluates the surface
-///   function at the position POS - exactly like calcW
+///	@brief Evaluates a surface function for a BC for a given position.
 ///
+/// This method gives the value of the surface function for a given position. Doesn't require 4-fold symmetry like
+/// non4foldSymmCalcW().
 ///
-/// @param WALL input boundary to calculate
-/// @param POS position of the particle
-/// @param dimension dimensionality of the input values
+/// @param WALL Boundary to evaluate surface function for.
+/// @param POS Position to evaluate surface function at.
+/// @param dimension Dimensionality of the input values.
 ///
 double surf_func( bc WALL,double POS[], int dimension ) {
 	double terms, W=0.0;
@@ -1213,11 +1217,12 @@ double surf_func( bc WALL,double POS[], int dimension ) {
 }
 
 ///
-///	@brief Find the two eigenvalues for m for a 2x2 matrix
+///	@brief Find the two eigenvalues for an for a 2x2 matrix.
 ///
+/// Find the two eigenvalues for an for a 2x2 matrix.
 ///
-/// @param m reference to the 2x2 matrix
-/// @param eigval output Eigenvalues
+/// @param m 2x2 matrix.
+/// @param eigval Output Eigenvalues.
 ///
 void eigenvalues2x2( double **m,double eigval[] ) {
 	double det=determinant( m,_2D );
@@ -1228,12 +1233,13 @@ void eigenvalues2x2( double **m,double eigval[] ) {
 }
 
 ///
-///	@brief Find the two eigenvectors (normalized) for m for a 2x2 matrix
+///	@brief Find the two eigenvectors (normalized) for a 2x2 matrix.
 ///
+/// Find the two eigenvectors (normalized) for a 2x2 matrix.
 ///
-/// @param m reference to the 2x2 matrix
-/// @param eigval reference to the eingenvalue
-/// @param eigvec reference to the output eingenvectors
+/// @param m 2x2 matrix.
+/// @param eigval Eigenvalues of the matrix.
+/// @param eigvec Eigenvectors of the matrix.
 ///
 void eigenvectors2x2( double **m,double eigval[],double eigvec[][_2D] ) {
 	if( fneq(m[1][0],0.0) ) {
