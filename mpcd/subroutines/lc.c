@@ -1,6 +1,6 @@
 ///
 /// @file
-/// @brief Functions needed to include liquid crystal in the MPCD code (either as solvent particles or individual MD rod like particles)
+/// @brief Functions needed to include liquid crystal in the MPCD code (either as solvent particles, or individual MD rod-like particles).
 ///
 ///
 
@@ -28,15 +28,13 @@
 ///
 /// @brief Routine to  generate a random, normalized vector by Maier-Saupe distribution.
 ///
-/// Routine that is called to generate a random normalized vector from a Maier-Saupe distribution.
 /// In this routine, different cases for different dimensions (1D, 2D and 3D) and posible limit cases are identified.
 /// Based on that, respective subroutines are used to generate a vector.
-/// Depending on if BUS=effM*S/KBT is small or large, different functions are called.
-/// For 3D:
-/// When BUS is large then a gaussian approximation for the angle works in 3D (2D is turned off currently);
-/// When BUS is small an expansion of the exponent works in 3D (BUT NOT 2D, unfortunately).
-/// For 1D: the orientation MUST lie on the axis regardless of anything else.
-/// All other cases use the Metropolis algorithm.
+/// Depending on whether BUS=effM*S/KBT is small or large, different functions are called in the 3-D case:
+/// - When BUS is large then a gaussian approximation for the angle works in 3D (2D is turned off currently);
+/// - When BUS is small an expansion of the exponent works in 3D (BUT NOT 2D, unfortunately).
+/// All other cases use the Metropolis algorithm, which is also always used in the 2-D and 1-D case.
+/// For 1D, the orientation MUST lie on the axis regardless of anything else.
 ///
 /// @param DIR The director of the local cell.
 /// @param rotAx The axis that the x-axis must be rotated about compared the local director.
@@ -51,12 +49,6 @@
 /// @see genrand_maierSaupeMetropolis_2D()
 ///
 void genrand_maierSaupe( double DIR[],double rotAx[],double rotAngle,double U[],double KBT,double S,double effM ) {
-	/*
-	 Generate a random, normalized vector by Maier-Saupe distribution
-	 When BUS is large then a gaussian approximation for the angle works in both 2D and 3D
-	 When BUS is small an expansion of the exponent works in 3D (BUT NOT 2D, unfortunately)
-	 All other cases use the Metropolis algorithm
-	*/
 	double BUS=effM*S/KBT;
 	if(DIM==_3D) {
 		if( BUS>BUSMAX ) genrand_maierSaupeGAUSS_3D( rotAx,rotAngle,U,KBT,S,effM );
@@ -78,23 +70,17 @@ void genrand_maierSaupe( double DIR[],double rotAx[],double rotAngle,double U[],
 ///
 /// @brief Generate a random, normalized vector by Maier-Saupe distribution in the large effM*S/KBT limit and 3D.
 ///
-/// The function generated a small random angle around the local director, which is approximated by the Gaussian distribution.
-/// Generated a small random angle around the north-pole/x-axis' then rotate with rotAngle.
-/// This generates a new vector component U.
+/// The function generates a random axis, and performs the Rodrigues rotation algorithm on rotAx using rotAngle. 
+/// The result is stored in U[].
 ///
-/// @param rotAx The axis that the x-axis must be rotated about compared the local director.
-/// @param rotAngle The angle between the x-axis and the local director.
+/// @param rotAx The axis that will be rotated.
+/// @param rotAngle The angle of the rotation.
 /// @param U The vector components generated with this function.
 /// @param KBT The temperature.
 /// @param S  The nematic magnitude of the local cell.
 /// @param effM The molecular field potential (scaled with dimension).
 ///
 void genrand_maierSaupeGAUSS_3D( double rotAx[],double rotAngle,double U[],double KBT,double S,double effM ) {
-	/*
-	 Generate a random, normalized vector by Maier-Saupe distribution in the LARGE effM*S/KBT limit.
-	 This amounts to generating a SMALL random angle, which is approximated by the Gaussian distribution.
-	 Start by doing this 'around the north-pole/x-axis' then rotate
-	*/
 	double std,phi,theta,uz;
 	double newU[_3D]={0.0};
 	int d;
@@ -140,23 +126,17 @@ void genrand_maierSaupeGAUSS_3D( double rotAx[],double rotAngle,double U[],doubl
 /// @brief Generate a random, normalized vector by Maier-Saupe distribution in the large effM*S/KBT limit and 2D.
 ///
 /// This function is currently not in use.
-/// The function generated a small random angle around the local director, which is approximated by the Gaussian distribution.
-/// Generated a small random angle around the north-pole/x-axis' then rotate with rotAngle.
-/// This generates a new vector component U.
+/// It generated a random axis, and performs the Rodrigues rotation algorithm on rotAx using rotAngle. 
+/// The result was stored in U[]. 
 ///
-/// @param rotAx The axis that the x-axis must be rotated about compared the local director.
-/// @param rotAngle The angle between the x-axis and the local director.
+/// @param rotAx The axis around which the rotation will occur. Obtained by cross product of the director field and the x-axis.
+/// @param rotAngle The angle of the rotation.
 /// @param U The vector components generated with this function.
 /// @param KBT The temperature.
 /// @param S  The nematic magnitude of the local cell.
 /// @param effM The molecular field potential (scaled with dimension).
 ///
 void genrand_maierSaupeGAUSS_2D( double rotAx[],double rotAngle,double U[],double KBT,double S,double effM ) {
-	/*
-	 Generate a random, normalized vector by Maier-Saupe distribution in the LARGE effM*S/KBT limit.
-	 This amounts to generating a SMALL random angle, which is approximated by the Gaussian distribution.
-	 Start by doing this 'around the north-pole/x-axis' then rotate
-	*/
 	double std,theta;
 	double newU[_3D]={0.0};
 	int d;
@@ -194,22 +174,18 @@ void genrand_maierSaupeGAUSS_2D( double rotAx[],double rotAngle,double U[],doubl
 	#endif
 }
 ///
-/// @brief Generate a random, normalized vector by Maier-Saupe distribution in the small effM*S/KBT limit and 3D.
+/// @brief Generates a random, normalized vector by Maier-Saupe distribution in the small effM*S/KBT limit and 3D.
 ///
 /// This function uses an expansion around effM*S/KBT to generate a new vector component U.
 ///
-/// @param rotAx The axis that the x-axis must be rotated about compared the local director.
-/// @param rotAngle The angle between the x-axis and the local director.
+/// @param rotAx The axis around which the rotation will occur. Obtained by cross product of the director field and the x-axis.
+/// @param rotAngle The angle of the rotation.
 /// @param U The vector components generated with this function.
 /// @param KBT The temperature.
 /// @param S  The nematic magnitude of the local cell.
 /// @param effM The molecular field potential (scaled with dimension)
 ///
 void genrand_maierSaupeEXP_3D( double rotAx[],double rotAngle,double U[],double KBT,double S,double effM ) {
-	/*
-	 Generate a random, normalized vector by Maier-Saupe distribution in the SMALL effM*S/KBT limit.
-	 Start by generating a random angle 'around the north-pole/x-axis' then rotate
-	*/
 	double BUS,c,R,num,denom,phi,uz;
 	double newU[_3D]={0.0};
 	int d;
@@ -264,24 +240,16 @@ void genrand_maierSaupeEXP_3D( double rotAx[],double rotAngle,double U[],double 
 ///
 /// This function generates a new vector component U, based on the Metropolis algorithm.
 /// The function generates random numbers and see if they are accepted based on the original energy and trial energy (from the random numbers).
-/// Start by doing this 'around the north-pole/x-axis' then rotate.
-/// In 3D can just consider this as the distribution of the x-component.
 ///
 /// @param DIR The director of the local cell.
-/// @param rotAx The axis that the x-axis must be rotated about compared the local director.
-/// @param rotAngle The angle between the x-axis and the local director.
+/// @param rotAx The axis around which the rotation will occur. Obtained by cross product of the director field and the x-axis.
+/// @param rotAngle The angle of the rotation.
 /// @param U The vector components generated with this function.
 /// @param KBT The temperature.
 /// @param S  The nematic magnitude of the local cell.
 /// @param effM The molecular field potential (scaled with dimension)
 ///
 void genrand_maierSaupeMetropolis_3D( double DIR[],double rotAx[],double rotAngle,double U[],double KBT,double S,double effM ) {
-	/*
-	 Generate a random, normalized vector by Maier-Saupe distribution
-	 Do this using a Metropolis algorithm
-	 Start by doing this 'around the north-pole/x-axis' then rotate
-	 In 3D can just consider the distribution of the x-component (in 2D must consider angle)
-	*/
 	double phi,R;
 	double newU[_3D]={0.0};
 	double uz0,w0,uz1,w1,dw;			//orientation along DIR
@@ -291,7 +259,7 @@ void genrand_maierSaupeMetropolis_3D( double DIR[],double rotAx[],double rotAngl
 	int cnt=0;
 
 	for( d=0; d<DIM; d++ ) newU[d]=U[d];
-	//Probability only debends on orienation compared to DIR "x"
+	//Probability only depends on orienation compared to DIR "x"
 	uz0 = dotprod( DIR,U,DIM );
 	//Metropolis Algorithm
 	annealNum=(int)(MCINT+MCSLOPE*effM*S/KBT);
@@ -354,24 +322,17 @@ void genrand_maierSaupeMetropolis_3D( double DIR[],double rotAx[],double rotAngl
 ///
 /// This function generates a new vector component U, based on the Metropolis algorithm.
 /// The function generates random numbers and see if they are accepted based on the original energy and trial energy (from the random numbers).
-/// Start by doing this 'around the north-pole/x-axis' then rotate.
 /// In 2D must consider the distribution of the ANGLE between u and DIR
 ///
 /// @param DIR The director of the local cell.
-/// @param rotAx The axis that the x-axis must be rotated about compared the local director.
-/// @param rotAngle The angle between the x-axis and the local director.
+/// @param rotAx The axis around which the rotation will occur. Obtained by cross product of the director field and the x-axis.
+/// @param rotAngle The angle of the rotation.
 /// @param U The vector components generated with this function.
 /// @param KBT The temperature.
 /// @param S  The nematic magnitude of the local cell.
 /// @param effM The molecular field potential (scaled with dimension).
 ///
 void genrand_maierSaupeMetropolis_2D( double DIR[],double rotAx[],double rotAngle,double U[],double KBT,double S,double effM ) {
-	/*
-	 Generate a random, normalized vector by Maier-Saupe distribution
-	 Do this using a Metropolis algorithm
-	 Start by doing this 'around the north-pole/x-axis' then rotate
-	 In 2D must consider the distribution of the ANGLE between u and DIR (in 3D could just consider x-component)
-	*/
 	double newU[_3D]={0.0};
 	double R,ang0,uz0,w0,ang1,uz1,w1,dw;			//orientation along DIR
 	int i,d,annealNum;
@@ -443,7 +404,7 @@ void genrand_maierSaupeMetropolis_2D( double DIR[],double rotAx[],double rotAngl
 	#endif
 }
 ///
-/// @brief Function to perform the multi-particle orientation collision operation on a single cell.
+/// @brief Perform the multi-particle orientation collision operation on a single cell.
 ///
 /// Does the multi-particle orientation collision in a single cell.
 /// Collision has randomly sampled orientations (which obey the Maier-Saupe distribution) around the local director.
@@ -457,10 +418,6 @@ void genrand_maierSaupeMetropolis_2D( double DIR[],double rotAx[],double rotAngl
 /// @param LC Variable to define if Nematic LC using an isotropic fluid (0), the local nematic order  value (1) or global nematic order value (2).
 ///
 void LCcollision( cell *CL,spec *SP,double KBT,double MFPOT,double dt,double SG,int LC ) {
-/*
-    Does the multi-particle orientation collision
-    --- similar to the Andersen-MPCD version for velocities
-*/
 	int i,id;
 	double DIR[_3D]={0.0},dU[_3D]={0.0};	//The director, the difference in orientation
 	double rotAx[_3D],xaxis[_3D]={0.0},rotAngle;
@@ -554,12 +511,12 @@ void LCcollision( cell *CL,spec *SP,double KBT,double MFPOT,double dt,double SG,
 	}
 }
 ///
-/// @brief Applying a torque on the cell director based on velocity gradients.
+/// @brief Apply a torque on the cell director based on velocity gradients.
 ///
 /// The velocity gradient shears the rods in the cell, applying a torque on them which affects the director of the cell. It is assumed there is no external torque so
 /// the rod rotates due to the shear (hydrodynamical torque).
-/// See Jeffery, G.B.: The motion of ellipsoidal particles immersed in a viscous flow. Proc. R. Soc. A 102, 161 (1922).
-/// Currently uses the Larson rotational rate (Larson pg 280, eq 6-26).
+/// See Jeffery, G.B.: The motion of ellipsoidal particles immersed in a viscous flow. Proc. R. Soc. A 102, 161 (1922), https://doi.org/10.1098/rspa.1922.0078.
+/// Currently uses the Larson rotational rate ('The structure and rheology of complex fluids', Larson, p. 280, eq. 6-26).
 ///
 /// @param CL Class containing cell data (pointed to local cell considered).
 /// @param SP species helper "class" (contains information on mass, etc, of species)
@@ -567,10 +524,6 @@ void LCcollision( cell *CL,spec *SP,double KBT,double MFPOT,double dt,double SG,
 /// @see larsonRotRate()
 ///
 void jefferysTorque( cell *CL,spec *SP,double dt ) {
-/*
-    The velocity gradient shears the rods, applying a torque. It is assumed there is no external torque so
-    the rod rotates due to the shear
-*/
 	int i,id;
 	double CHIHI;			// Susceptibility to shear
 	double tumble;			//Tumbling parameter of nematogens
@@ -622,8 +575,8 @@ void jefferysTorque( cell *CL,spec *SP,double dt ) {
 ///
 /// @brief Calculate the rotation rate of the rod (dudt) and angular velocity (w) using Larson.
 ///
-/// Calculates the rotation rate of the rod (dudt) and angular velocity (w) according to Larson pg 448, eq 10-3 used for the Jefferey torque.
-/// Would be Larson pg 280, eq 6-26 if the tumbling parameter was tumbleParam=(P*P-1.)/(P*P+1.) where P=aspect ratio.
+/// 'The structure and rheology of complex fluids', Larson, p. 448, eq. 10-3 used for the Jefferey torque.
+/// Would be Larson p. 280, eq. 6-26 if the tumbling parameter was tumbleParam=(P*P-1.)/(P*P+1.) where P=aspect ratio.
 /// Velocity gradient tensor E --- first index [i] is on velocity, second [j] on derivative --- E[i][j]= dv[i]/dx[j].
 ///
 /// @param dudt The rotation rate.
@@ -633,13 +586,8 @@ void jefferysTorque( cell *CL,spec *SP,double dt ) {
 /// @param tumbleParam The tumbling parameter.
 ///
 void larsonRotRate(double dudt[],double w[],double u[],double E[_3D][_3D],double tumbleParam) {
-/*
-    The rotation rate of the rod (dudt) and angular velocity (w) according to Larson pg 448, eq 10-3
-    Would be Larson pg 280, eq 6-26 if the tumbling parameter was tumbleParam=(P*P-1.)/(P*P+1.)
-    where P=aspect ratio
-    Velocity gradient tensor E --- first index [i] is on velocity, second [j] on derivative --- E[i][j]= dv[i]/dx[j]
-    Loops done explicitly by hand to save computational time
-*/
+//Loops done explicitly by hand to save computational time
+
 /***FIXME: the below code, while meant to be faster, doesn't given the same results as the original code.***/
 
 // 	int i,j;
@@ -694,13 +642,7 @@ void larsonRotRate(double dudt[],double w[],double u[],double E[_3D][_3D],double
 // 	#endif
 // }
 // void larsonRotRateOLD_AND_SLOW(double dudt[],double w[],double u[],double E[_3D][_3D],double tumbleParam) {
-/*
-    The rotation rate of the rod (dudt) and angular velocity (w) according to Larson pg 448, eq 10-3
-    Would be Larson pg 280, eq 6-26 if the tumbling parameter was tumbleParam=(P*P-1.)/(P*P+1.)
-    where P=aspect ratio
-    Velocity gradient tensor E --- first index [i] is on velocity, second [j] on derivative --- E[i][j]= dv[i]/dx[j]
-*/
-	int i,j,k;
+int i,j,k;
 	double uuuD[_3D],uw[_3D],uD[_3D];
 	double D[_3D][_3D],W[_3D][_3D];
 
@@ -744,7 +686,8 @@ void larsonRotRate(double dudt[],double w[],double u[],double E[_3D][_3D],double
 /// @brief Calculate the rotation rate of the rod (dudt) and angular velocity (w) using Dhont and Briels.
 ///
 /// Currently not in use.
-/// Calculates the rotation rate of the rod (dudt) and angular velocity (w) according to Dhont and Briels pg 25, eq 61 used for the Jefferey torque.
+/// Calculates the rotation rate of the rod (dudt) and angular velocity (w) according to Dhont and Briels,
+/// 'Rod-like Brownian Particles in Shear Flow' ( https://onlinelibrary.wiley.com/doi/10.1002/9783527617067.ch3a ), for the Jefferey torque.
 /// Velocity gradient tensor E --- first index [i] is on velocity, second [j] on derivative --- E[i][j]= dv[i]/dx[j].
 ///
 /// @param dudt The rotation rate.
@@ -753,9 +696,6 @@ void larsonRotRate(double dudt[],double w[],double u[],double E[_3D][_3D],double
 /// @param E The velocity gradient.
 ///
 void brielsRotRate(double dudt[],double w[],double u[],double E[_3D][_3D]) {
-/*
-    The rotation rate of the rod (dudt) and angular velocity (w) according to Dhont and Briels pg 25, eq 61
-*/
 	double t1[_3D];			//Temporary vectors that take various values --- Pay attention
 	//Calculate rate of rotation of orientation
 	dotprodMatVec( E,u,t1,_3D );	//t1=dot( E,u )
@@ -777,7 +717,7 @@ void brielsRotRate(double dudt[],double w[],double u[],double E[_3D][_3D]) {
 /// @brief Calculate the rotation rate of the rod (dudt) and angular velocity (w) using Saintillan.
 ///
 /// Currently not in use.
-/// Calculates the rotation rate of the rod (dudt) and angular velocity (w) according to Saintillan review pg 2, eq 9 used for the Jefferey torque.
+/// Calculates the rotation rate of the rod (dudt) and angular velocity (w) according to Saintillan review ( https://doi.org/10.1146/annurev-fluid-010816-060049 ).
 /// Velocity gradient tensor E --- first index [i] is on velocity, second [j] on derivative --- E[i][j]= dv[i]/dx[j].
 ///
 /// @param dudt The rotation rate.
@@ -787,9 +727,6 @@ void brielsRotRate(double dudt[],double w[],double u[],double E[_3D][_3D]) {
 /// @param tumbleParam The tumbling parameter.
 ///
 void saintillanRotRate(double dudt[],double w[],double u[],double E[_3D][_3D],double tumbleParam) {
-/*
-    The rotation rate of the rod (dudt) and angular velocity (w) according to Saintillan review pg 2, eq 9
-*/
 	int i,j;
 	double t1[_3D],t2[_3D],Ipp[_3D][_3D];
 
@@ -822,9 +759,8 @@ void saintillanRotRate(double dudt[],double w[],double u[],double E[_3D][_3D],do
 	#endif
 }
 ///
-/// @brief subroutine calculates the torque and applied rotation due to the external magnetic field on an MPCD particle.
+/// @brief Calculate the torque and apply rotation due to the external magnetic field on an MPCD particle.
 ///
-/// This subroutine calculates the torque due to the external magnetic field on an MPCD particle and applies the rotation.
 /// Includes a check to see if the angle "swings past" the magnetic field (shouldn't be allowed by overdamped assumption).
 ///
 /// @param pMPC Pointer to specific MPCD particle.
@@ -833,10 +769,6 @@ void saintillanRotRate(double dudt[],double w[],double u[],double E[_3D][_3D],do
 /// @param MAG The external applied field.
 ///
 void magTorque( particleMPC *pMPC,spec *SP,double dt,double MAG[] ) {
-/*
-   This subroutine calculates the torque due to the external magnetic field
-   Include a check to see if the angle "swings past" the magnetic field (shouldn't be allowed by overdamped assumption)
-*/
 	int i,id;
 	double uH,magMAG;
 	double chia,rfc,theta,theta0;
@@ -909,9 +841,7 @@ void magTorque( particleMPC *pMPC,spec *SP,double dt,double MAG[] ) {
 	#endif
 }
 ///
-/// @brief Routine applies the torque due to external magnetic field on all MPCD particles.
-///
-/// This subroutine applies the torque due to external magnetic field on all MPCD particles.
+/// @brief Apply the torque due to external magnetic field on all MPCD particles.
 ///
 /// @param pp pointer to first MPCD particle.
 /// @param species helper "class" (contains information on mass, etc, of species).
@@ -919,18 +849,14 @@ void magTorque( particleMPC *pMPC,spec *SP,double dt,double MAG[] ) {
 /// @param MAG The external applied field.
 ///
 void magTorque_all( particleMPC *pp,spec *SP,double dt,double MAG[] ) {
-/*
-   This subroutine rotates the all orientations towards the external magnetic field
-*/
 	int i;
 	for( i=0; i<GPOP; i++ ) magTorque( (pp+i),SP,dt,MAG );
 }
 
 ///
-/// @brief  This subroutine rotates all the orientations in a given cell towards the external magnetic field.
+/// @brief  Rotate all the orientations in a given cell towards the external magnetic field.
 ///
 /// Currently not in use.
-/// This subroutine rotates all the orientations in a given cell towards the external magnetic field.
 ///
 /// @param CL Class containing cell data (pointed to local cell considered).
 /// @param species helper "class" (contains information on mass, etc, of species).
@@ -938,9 +864,6 @@ void magTorque_all( particleMPC *pp,spec *SP,double dt,double MAG[] ) {
 /// @param MAG The external applied field.
 ///
 void magTorque_CL( cell *CL,spec *SP,double dt,double MAG[] ) {
-/*
-   This subroutine rotates all the orientations in a given cell towards the external magnetic field
-*/
 	int i,id;
 	double nH;
 	double chia,rfc,theta;
@@ -1004,10 +927,7 @@ void magTorque_CL( cell *CL,spec *SP,double dt,double MAG[] ) {
 	}
 }
 ///
-/// @brief This routine finds the average global scalar nematic order of all MPCD particles and returns the scalar order parameter.
-///
-/// This routine finds the average global scalar order parameter of all MPCD particles
-/// and returns  the global scalar order parameter of all MPCD particles.
+/// @brief Find the average global scalar nematic order of all MPCD particles and returns the scalar order parameter.
 ///
 /// @param p Pointer to first MPCD particle.
 /// @param LC Variable to define if Nematic LC using an isotropic fluid (0), the local nematic order  value (1) or global nematic order value (2).
@@ -1015,9 +935,6 @@ void magTorque_CL( cell *CL,spec *SP,double dt,double MAG[] ) {
 /// @return The global scalar order parameter of the MPCD particles.
 ///
 double avOrderParam( particleMPC *p,int LC,double avDIR[] ) {
-/*
-   This routine finds the average global scalar order parameter.
-*/
 	int i,j,k;
 	double **S,eigval[_3D],avS;
 	double U[_3D];
@@ -2579,8 +2496,8 @@ double topoAngleLocal( cell ***CL, int x, int y, int z, double charge){
 /// @param CL Contains cell data at previously defined indices.
 /// @param Output The Q tensor.
 ///
-//FIXME: only works for 2D for now!!!
 void computeQ(cell CL, double output[_2D][_2D]){
+	//FIXME: only works for 2D for now!!!
 	// set up the Q tensor object we plan to return
 	int i, j = 0;
 	for( i = 0; i < DIM; i++) for( j = 0; j < DIM; j++) output[i][j] = 0.0;
