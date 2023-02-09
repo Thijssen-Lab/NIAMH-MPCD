@@ -50,7 +50,7 @@ Good uses for comments are:
 - Explaining the implementation of a complex physics algorithm, an equation, or a particularly technical operation.
 - Adding a citation to explain the source for an equation/ algorithm.
 
-Comments should also be avoided as a preface to methods, immediately post-declaration. These should instead be included as part of the method's [documentation](#documentation).
+Comments should also be avoided as a preface to methods, immediately post-declaration. These should instead be included as part of the method's [documentation](#documentation--documentation-style-guide).
 
 ### Hard-coded Constants         {#hard-coded-constants}
 Hard-coded numerical values should be avoided wherever possible. If you _need_ to use some hard-coded value, check `definitions.h` to see if it (or something similar) is already defined. 
