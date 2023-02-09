@@ -90,7 +90,12 @@ A summary of the key parts are:
 3. **Update the `InputGuide.md` file!** This is especially important, as it is the only concise guide to all inputs!
 
 ### Output Files
-TODO: 
+New output files should use the same header as all other output files. 
+All non-integer numerical values should be written using scientific notation. 
+Columns should be labelled with intuitive variable names and separated by tabs (both header and data). 
+- Fields should redundantly write the time step on each position (with no empty line between time steps), and should iterate through z then y then x coordinates. Output should write 3D even for simulations performed in 2D. 
+- System-wide measurements should write the time on each line. 
+- Histograms should write the time on its own line followed by the bins and associated counts. 
 
 ## Documentation & Documentation Style Guide
 The code uses Doxygen to generate API documentation for the code. 
@@ -109,7 +114,7 @@ The key points used throughout are:
 - There should be an empty "doxygen line" (ie `///`) at the beginning, end, and between `@file`, `@brief`, and details, and parameters.
 
 ### File Example
-```c
+``````
 ///
 /// @file
 ///
@@ -117,11 +122,11 @@ The key points used throughout are:
 ///
 /// A collection of functions for constructing and printing different raw data outputs to .dat files. The types of files produced must be specified in input.json.
 ///
-```
+``````
 - Empty doxygen line between `@file`, `@brief`, and the detailed explanation.
 
 ### Method Example
-```c
+``````
         ...
     }
 }
@@ -139,28 +144,28 @@ The key points used throughout are:
 void shiftBC_MD( double *shift,bc *WALL,particleMD *atom ) {
     ...
 }
-```
+``````
 - Empty line between previous method, and doxygen comment for next method
 - `@param` for each method argument, in the order they appear
 - `@return` if the method returns a value
 - `@see` if there is a method that is strongly related
 
 ### Global Variable Example
-```c
+``````
 /// @brief The dimension of the simulation. Must be 1, 2, or 3.
 int DIM;
-```
+``````
 - `@brief` on the line preceding the variable declaration.
 
 ### Pre-Processor Defines Example
-```c
+``````
 /// @brief Number of bins used for distributions. Best if an odd integer.
 # define BINS 101
-```
+``````
 - `@brief` on the line preceding the define declaration.
 
 ### Struct Example
-```c
+``````
     ...
 } specSwimmer;
 
@@ -177,6 +182,6 @@ typedef struct smono {
 	struct smono *next;			///< Pointer to next particle in cell list.
 	struct smono *previous;		///< Pointer to previous particle in cell list.
 } smono;
-```
+``````
 - Empty line between previous struct, and doxygen comment for next struct.
 - Each member variable should be documented inline with `///<` - the `<` is important!
