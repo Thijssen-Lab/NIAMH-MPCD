@@ -865,7 +865,7 @@ double det3x3( double m[_3D][_3D] ) {
 ///	@brief Finds the determinant of a nxn matrix (n < 3).
 ///
 /// Recursive definition of determinate using expansion by minors. Stolen from
-/// @link http://paulbourke.net/miscellaneous/determinant/ here @endlink.
+/// <a href="http://paulbourke.net/miscellaneous/determinant/">here</a>.
 ///
 /// BUT I HATE passing to a double pointer so I'll just stick to det2x3 and det3x3.
 ///
@@ -1292,7 +1292,7 @@ void eigenvectors2x2( double **m,double eigval[],double eigvec[][_2D] ) {
 ///
 ///	@brief Find the three eigenvalues for m for a 3x3 matrix.
 ///
-/// Uses an algorithm from @link http://en.wikipedia.org/wiki/Eigenvalue_algorithm#3.C3.973_matrices here @endlink .
+/// Uses an algorithm from <a href="http://en.wikipedia.org/wiki/Eigenvalue_algorithm#3.C3.973_matrices ">here</a> .
 /// Also see Smith, Communications of the ACM 4 (4): 168, 1961.
 ///
 /// @param m 3x3 matrix.
@@ -1357,7 +1357,7 @@ void eigenvalues3x3( double **m,double eigval[] ) {
 ///
 ///	@brief Find the three eigenvectors (normalized) for m for a SYMMETRIC 3x3 matrix.
 ///
-/// Uses an algorithm from @link http://en.wikipedia.org/wiki/Eigenvalue_algorithm#3.C3.973_matrices here @endlink .
+/// Uses an algorithm from <a href="http://en.wikipedia.org/wiki/Eigenvalue_algorithm#3.C3.973_matrices ">here</a>.
 /// Also see Smith, Communications of the ACM 4 (4): 168, 1961.
 ///
 /// @param m 3x3 matrix.
