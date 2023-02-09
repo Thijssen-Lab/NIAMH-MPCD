@@ -8,7 +8,7 @@
 ///
 /// The swimmers repulse each other via a Weeks-Chandler-Andersen potential. The monomers are coupled two-by-two with
 /// either FENE, Hookean interaction, or a 6th order potential. More information on those potentials can be found
-/// @link https://doi.org/10.1002/elps.200800673 here@endlink.
+/// @link https://doi.org/10.1002/elps.200800673 here @endlink.
 /// The swimmers can become non-interacting, ie no WCA force between different dimers, if the appropriate tag is turned
 /// on.
 ///
@@ -445,7 +445,7 @@ void swimmerOri( double n[],swimmer *sw ) {
 /// `fcap`.
 ///
 /// To get the force vector this must be multiplied by `vec(r)`. For more details,
-/// @link[https://doi.org/10.1002/elps.200800673] see@endlink.
+/// @link [https://doi.org/10.1002/elps.200800673] see @endlink.
 ///
 /// @param r Distance between two monomers, scaled by their size `sigma` (default value 4, can be changed in the input file).
 /// @param eps Interaction energy. Default value of 1.
@@ -471,7 +471,7 @@ double swimmerWCA( double r,double eps ) {
 ///
 /// The value of `ro` can be changed in the input file. To get the force vector this must be multiplied by `vec(r)`. If
 /// the FENE chain is passed then there is a large "backup" force to pull the monomers together. For more details,
-/// @link https://doi.org/10.1002/elps.200800673 see@endlink.
+/// @link https://doi.org/10.1002/elps.200800673 see @endlink.
 ///
 /// @param r Scaled distance between two halves of a swimmer.
 /// @param k Spring strength.
@@ -524,7 +524,7 @@ double swimmerSpring6( double r,double k ) {
 /// velocity, then the boundary conditions are used to check that the swimmer is still in bounds. The forces (between
 /// the monomer couples) are updated at the new position, the acceleration is calculated from there, and the velocity is
 /// updated again, now to its value at the end of the timestep. For more details,
-/// @link[https://en.wikipedia.org/wiki/Verlet_integration] see@endlink.
+/// @link [https://en.wikipedia.org/wiki/Verlet_integration] see @endlink.
 ///
 /// @param SS Swimmer properties.
 /// @param s List of swimmers. Their positions, velocities, and accelerations will be updated.
@@ -581,10 +581,10 @@ void swimmerVerlet_nonInteracting( specSwimmer SS,swimmer *s,double dt,int sprin
 /// the boundary conditions are used to check that the swimmer is still in bounds. The forces (between the monomer
 /// couples and between each monomers) are updated at the new position, the acceleration is calculated from there, and
 /// the velocity is updated again, now to its value at the end of the timestep. For more details,
-/// @link https://en.wikipedia.org/wiki/Verlet_integration see@endlink.
+/// @link https://en.wikipedia.org/wiki/Verlet_integration see @endlink.
 ///
 /// @param SS Swimmer properties.
-/// @param s List of swimmers. Their positions, velocities, and accelerations will be updated.
+/// @param swimmers List of swimmers. Their positions, velocities, and accelerations will be updated.
 /// @param dt Length of time interval used for integration.
 /// @param springType Tag for the type of spring used. Refer to definition.h for spring list.
 /// @param WALL Boundary conditions, used for a check halfway through the function.
