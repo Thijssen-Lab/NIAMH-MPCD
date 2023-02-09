@@ -660,6 +660,7 @@ void dim_vol( bc *body,int XYZ[],int dimension ) {
 /// @param pp List of all particles in the system.
 /// @param WALL List of all boundaries in the system.
 /// @param simMD MD simulation data.
+/// @param SP Species of MPCD fluid particles
 /// @param KBT Thermal energy.
 /// @param VEL The average speed of the particles in the system.
 /// @param POP Total number of particles in the system.
@@ -864,7 +865,7 @@ double det3x3( double m[_3D][_3D] ) {
 ///	@brief Finds the determinant of a nxn matrix (n < 3).
 ///
 /// Recursive definition of determinate using expansion by minors. Stolen from
-/// @link http://paulbourke.net/miscellaneous/determinant/ here@endlink.
+/// @link http://paulbourke.net/miscellaneous/determinant/ here @endlink.
 ///
 /// BUT I HATE passing to a double pointer so I'll just stick to det2x3 and det3x3.
 ///
@@ -1291,7 +1292,7 @@ void eigenvectors2x2( double **m,double eigval[],double eigvec[][_2D] ) {
 ///
 ///	@brief Find the three eigenvalues for m for a 3x3 matrix.
 ///
-/// Uses an algorithm from @link http://en.wikipedia.org/wiki/Eigenvalue_algorithm#3.C3.973_matrices here@endlink .
+/// Uses an algorithm from @link http://en.wikipedia.org/wiki/Eigenvalue_algorithm#3.C3.973_matrices here @endlink .
 /// Also see Smith, Communications of the ACM 4 (4): 168, 1961.
 ///
 /// @param m 3x3 matrix.
@@ -1356,7 +1357,7 @@ void eigenvalues3x3( double **m,double eigval[] ) {
 ///
 ///	@brief Find the three eigenvectors (normalized) for m for a SYMMETRIC 3x3 matrix.
 ///
-/// Uses an algorithm from @link http://en.wikipedia.org/wiki/Eigenvalue_algorithm#3.C3.973_matrices here@endlink .
+/// Uses an algorithm from @link http://en.wikipedia.org/wiki/Eigenvalue_algorithm#3.C3.973_matrices here @endlink .
 /// Also see Smith, Communications of the ACM 4 (4): 168, 1961.
 ///
 /// @param m 3x3 matrix.
