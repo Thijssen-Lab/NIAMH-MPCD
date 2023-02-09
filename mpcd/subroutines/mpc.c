@@ -2993,7 +2993,7 @@ void multiphaseCollPoint( cell *CL,spec *SP,specSwimmer SS, double KBT,int MDmod
 /// @param CL An MPCD cell. 
 /// @param SP The species-wide information about MPCD particles.
 /// @param SS The species-wide information about swimmers.
-/// @param INCOMmode The technique for making the fluid a non-ideal gas.
+/// @param INCOMPmode The technique for making the fluid a non-ideal gas.
 /// @param MDmode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
 /// @param CLQ The geometric centre of `CL`, the MPCD cell.
 /// @param outP Flag whether or not to output the pressure.
@@ -4077,7 +4077,7 @@ void localMomInertiaTensor( cell *CL,spec *SP,specSwimmer specS ) {
 /// @param CL An MPCD cell (including the linked list of particles in each cell). 
 /// @param SP The species-wide information about MPCD particles.
 /// @param r0 The point about which the rotation occurs.
-/// @param n0 The axis about which the rotation occurs. 
+/// @param n The axis about which the rotation occurs. 
 /// @return Magnitude of the moment of inertia about the given position and axis. 
 ///
 double localMomInertia_SRD( cell CL,spec *SP,double r0[],double n[] ) {
