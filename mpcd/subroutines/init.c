@@ -646,6 +646,7 @@ void openpressure( FILE **f,char dir[],char fname[],char ext[] ) {
 /// @param dir Path to the directory of the Binder cumulant output file.
 /// @param fname Name of the Binder cumulant output file.
 /// @param ext Extension of the Binder cumulant output file.
+/// @param binSize The size of bins.
 ///
 void openbinder( FILE **f,char dir[],char fname[],char ext[],int binSize ) {
 	openBasic( f,dir,fname,ext );
