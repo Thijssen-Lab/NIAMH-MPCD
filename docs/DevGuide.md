@@ -1,7 +1,7 @@
 # Guide for MPCD Developers
 
 ## Contents
-1. [Introduction](#introduction)
+1. [Introduction](#introduction-dev)
 2. [Git/ Github](#git-github)
 3. [Code Style](#code-style)
    - [Comments](#comments)
@@ -19,13 +19,13 @@
    - [Pre-Procesor Example](#pre-procesor-example)
    - [Struct Example](#struct-example)
 
-## Introduction
+## Introduction      {#introduction-dev}
 "[MPCD] is a scientific code, so rules are meant to be broken" --- Tyler Shendruk, 2023
 
 This is a scientific code, so we expect research to take the priority, however we wish that all users are considerate to each other. 
 This is the primary purpose of this document: To set some guidelines for how we can all work together to make the code as clean and easy to use as possible.
 
-## Git/ Github
+## Git/ Github       {#git-github}
 MPCD is hosted on Github, and uses Git for version control. 
 We put this first and foremost to ensure everyone understands the normal process for contributing to the code:
 1. Either make a new branch prefixed by your initials (for Shendruk lab members), or make a fork to your personal Github account (for all others).
@@ -38,11 +38,11 @@ We put this first and foremost to ensure everyone understands the normal process
 5. If you are asked to make corrections as part of your PR, correct them and ask for a re-review. Repeat this process until your changes are approved.
 6. Once approved, your code will be merged into the main repository.
 
-## Code Style
+## Code Style        {#code-style}
 MPCD is a code designed and used by physicists. As such, we do not enforce a strict code style --- The physics and research is _always_ the priority.
 Despite this, remember that the code is used and developed by man people, so we need to keep it clean for each other. As such, there are some general rules we would like to follow:
 
-### Comments
+### Comments         {#comments}
 Comments should be used to explain the code broadly, and should not be used to explain every individual line of code.
 
 Good uses for comments are:
@@ -52,33 +52,33 @@ Good uses for comments are:
 
 Comments should also be avoided as a preface to methods, immediately post-declaration. These should instead be included as part of the method's [documentation](#documentation).
 
-### Hard-coded Constants
+### Hard-coded Constants         {#hard-coded-constants}
 Hard-coded numerical values should be avoided wherever possible. If you _need_ to use some hard-coded value, check `definitions.h` to see if it (or something similar) is already defined. 
 If you still desperately need a new constant, add it as a `#define` pre-processor statement in `definitions.h`.
 
-### Dimensional Constants
+### Dimensional Constants        {#dimensional-constants}
 A particular code-tic that is used throughout the code, is when referring to a dimension (whether it be in an array, checking against a dimension, etc), then you should use the defined `_1D`, `_2D`, or `_3D` pre-processor defines. 
 This is to ensure that it is clear we are referring to a dimension when handling data structures in the code. 
 
 For example:
-```c
+``````
 double vec[_3D]; 
-```
+``````
 makes it clear that we are referring to and intend `vec` to be a 3 dimensional mathematical vector.
 
-### Global Variables
+### Global Variables       {#global-variables}
 Global variables should be avoided wherever possible. 
 If following regular programming practices, you should _not_ require any global variable that isn't already defined. 
 The list of global variables available throughout the code can be seen in `globals.h`.
 
-### Warnings
+### Warnings         {#warnings}
 Try to avoid introducing new warnings into the code, when compiled with the `make` command in the root directory.
 
-## Implementing New Input/ Output Options
+## Implementing New Input/ Output Options       {#implementing-new-input-output-options}
 There may sometimes be a need to implement either new JSON input options for the code, or to add new output files. 
 For both of these, there is a specific process that you must follow in order to ensure consistency between files & inputs.
 
-### JSON Input
+### JSON Input       {#json-input}
 Adding new JSON inputs is the most common of these two tasks you may need to do. 
 This is documented in detail at the end of `/Docs/InputGuide.md`, and the process will not be repeated here to avoid duplication. 
 
@@ -89,7 +89,7 @@ A summary of the key parts are:
    - Arrays, in particular arrays of custom objects, are more complicated. Copy one of the existing arrays in the code and modify it appropriately.
 3. **Update the `InputGuide.md` file!** This is especially important, as it is the only concise guide to all inputs!
 
-### Output Files
+### Output Files        {#output-files}
 New output files should use the same header as all other output files. 
 All non-integer numerical values should be written using scientific notation. 
 Columns should be labelled with intuitive variable names and separated by tabs (both header and data). 
@@ -97,7 +97,7 @@ Columns should be labelled with intuitive variable names and separated by tabs (
 - System-wide measurements should write the time on each line. 
 - Histograms should write the time on its own line followed by the bins and associated counts. 
 
-## Documentation & Documentation Style Guide
+## Documentation & Documentation Style Guide       {#documentation--documentation-style-guide}
 The code uses Doxygen to generate API documentation for the code. 
 As such, each of the following should be documented:
 - All `.c` files, and any `.h` file that is not purely function pre-declarations.
@@ -113,7 +113,7 @@ The key points used throughout are:
 - Everything, except global variables/ member variables, are required to have an `@brief`.
 - There should be an empty "doxygen line" (ie `///`) at the beginning, end, and between `@file`, `@brief`, and details, and parameters.
 
-### File Example
+### File Example        {#file-example}
 ``````
 ///
 /// @file
@@ -125,7 +125,7 @@ The key points used throughout are:
 ``````
 - Empty doxygen line between `@file`, `@brief`, and the detailed explanation.
 
-### Method Example
+### Method Example         {#method-example}
 ``````
         ...
     }
@@ -150,21 +150,21 @@ void shiftBC_MD( double *shift,bc *WALL,particleMD *atom ) {
 - `@return` if the method returns a value
 - `@see` if there is a method that is strongly related
 
-### Global Variable Example
+### Global Variable Example         {#global-variable-example}
 ``````
 /// @brief The dimension of the simulation. Must be 1, 2, or 3.
 int DIM;
 ``````
 - `@brief` on the line preceding the variable declaration.
 
-### Pre-Processor Defines Example
+### Pre-Processor Defines Example         {#pre-procesor-example}
 ``````
 /// @brief Number of bins used for distributions. Best if an odd integer.
 # define BINS 101
 ``````
 - `@brief` on the line preceding the define declaration.
 
-### Struct Example
+### Struct Example         {#struct-example}
 ``````
     ...
 } specSwimmer;
