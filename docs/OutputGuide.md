@@ -1,7 +1,7 @@
 # Guide to MPCD Outputs
 
 ## Contents
-1. [Introduction](#introduction)
+1. [Introduction](#introduction-out)
 2. [Output Tables](#output-tables)
     - [System Information](#system-information)
     - [Scalar Outputs](#scalar-outputs)
@@ -12,7 +12,7 @@
     - [Swimmers](#swimmers)
 
 
-## Introduction
+## Introduction         {#introduction-out}
 
 This is a comprehensive reference guide to MPCD output data files and what one might find in them. 
 
@@ -21,16 +21,16 @@ For MPCD to output data, the corresponding flag must be set to non-zero in the `
 With the exception of `synopsis.dat`, the values in the input are the frequency (in units of MPCD time steps) with which the relevant data will be written to the outputs for the corresponding tag. 
 All outputs are written to `.dat` files, which are uncompressed text files.
 
-## Output Tables
+## Output Tables            {#output-tables}
 
-### System Information
+### System Information          {#system-information}
 
 | Input tag       | Output file      | Description                                                                                                                                                                                                      |
 |-----------------|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `synopsisOut`   | `synopsis.dat`   | Synopsis output. Highly recommended to be on. 1 = on, 0 = off. Provides a detailed documentation of simulation information as the code runs.                                                                     |
 | `checkpointOut` | `checkpoint.dat` | Simulation checkpointing. Provides data for re-populating the system and restarting another simulation from this point. Can be set to be on a physical timer, rather than based on time-step, using an override. |
 
-### Scalar Outputs
+### Scalar Outputs          {#scalar-outputs}
 
 | Input tag        | Output file          | Description                                                             | Outputs                       | Column Headers   |
 |------------------|----------------------|-------------------------------------------------------------------------|-------------------------------|------------------|
@@ -45,7 +45,7 @@ All outputs are written to `.dat` files, which are uncompressed text files.
 | `binderOut`      | `binderCumulant.dat` | Binder cumulant, bin size must be set in `binderBin`                    | Time                          | `t`              |
 |                  |                      |                                                                         | Binder cumulant               | `BinderCumulant` |
 
-### Trajectory Outputs
+### Trajectory Outputs          {#trajectory-outputs}
 | Input tag          | Output file              | Description                                                                              | Outputs                        | Column Headers                                                    |
 |--------------------|--------------------------|------------------------------------------------------------------------------------------|--------------------------------|-------------------------------------------------------------------|
 | `trajOut`          | `detailedSP0.dat`        | Detailed particle trajectories for every particle of species type given by `trajSpecOut` | Time                           | `t`                                                               |
@@ -54,7 +54,7 @@ All outputs are written to `.dat` files, which are uncompressed text files.
 |                    |                          |                                                                                          | Speed                          | \|`V`\|                                                  |
 |                    |                          |                                                                                          | Species velocities             | `UX`,`UY`,`UZ`                                                    |
 
-### Field Outputs
+### Field Outputs           {#field-outputs}
 
 | Input tag          | Output file              | Description                                                                              | Outputs                        | Column Headers                                                    |
 |--------------------|--------------------------|------------------------------------------------------------------------------------------|--------------------------------|-------------------------------------------------------------------|
@@ -116,7 +116,7 @@ All outputs are written to `.dat` files, which are uncompressed text files.
 |                    |                          |                                                                                          | Wave number                    | `k`                                                               |
 |                    |                          |                                                                                          | Enstrophy                      | `Omega`                                                           |
 
-### Histograms
+### Histograms          {#histograms}
 
 | Input tag      | Output file         | Description                                                             | Outputs                    | Column Headers  |
 |----------------|---------------------|-------------------------------------------------------------------------|----------------------------|-----------------|
@@ -142,7 +142,7 @@ All outputs are written to `.dat` files, which are uncompressed text files.
 |                |                     |                                                                         | Bin density                | `stdN`          |
 |                |                     |                                                                         | Bin probability            | `P`             |
 
-### Correlation Functions
+### Correlation Functions           {#correlation-functions}
 
 | Input tag      | Output file          | Description                                              | Outputs           | Column Headers |
 |----------------|----------------------|----------------------------------------------------------|-------------------|----------------|
@@ -162,7 +162,7 @@ All outputs are written to `.dat` files, which are uncompressed text files.
 |                |                      |                                                          | Separation        | `dr`           |
 |                |                      |                                                          | Correlation value | `C`            |
 
-### Swimmers
+### Swimmers            {#swimmers}
 
 | Input tag                 | Output file       | Description                                                               | Outputs                    | Column Headers    |
 |---------------------------|-------------------|---------------------------------------------------------------------------|----------------------------|-------------------|
