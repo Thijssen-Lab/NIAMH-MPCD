@@ -1,7 +1,7 @@
 # Guide to MPCD JSON Input
 
 ## Contents
-1. [Introduction](#introduction)
+1. [Introduction](#introduction-in)
 2. [Tag Tables](#tag-tables)
     - [Main Input Tag Table](#main-input-tag-table)
         - [Overrides](#overrides)
@@ -12,7 +12,7 @@
 3. [Example](#example)
 4. [Guide to adding new input parameters](#guide-to-adding-new-input-parameters)
 
-## Introduction
+## Introduction         {#introduction-in}
 
 This is just meant to be a quick and dirty guide to the new MPCD JSON input system. It is not meant to be a complete reference. For basics on the JSON file format take a look at the tutorial series starting on [this page](https://www.w3schools.com/js/js_json_intro.asp).
 
@@ -40,9 +40,9 @@ We have added support for comments in the JSON by using comment tags.
 If your tag is one of `"c"`, `"comment"`, `"//"`, or `"#"` then it will be ignored by the parser.
 Comment tags can be repeated (despite it being invalid JSON) and not cause issues with the simulation.
 
-## Tag Tables
+## Tag Tables           {#tag-tables}
 
-### Main Input Tag Table
+### Main Input Tag Table            {#main-input-tag-table}
 
 All tags suffixed with "out", unless otherwise specified, take a value representing how frequently (in timesteps) you want that quantity to be dumped to file. 
 
@@ -143,13 +143,13 @@ Tag             | Type          | Default Value | Description
 `magMomSwim`    | double        | 1                  | Magnetic moment/ strength
 `fixDistSwim`   | double        | 0                  | The fixed distance from the wall for `DUMBELL_NEARWALL` mode
 
-#### Overrides
+#### Overrides          {#overrides}
 Override Tag    | Type  | Override param | Description
 ---             |-------|--------------| ---
 `domainWalls`   | int   | `BC`         | This override will add extra BCs to the simulation, on top of the declared ones, on the domain walls. If set to 1, it places PBCs, and if set to 0 it places solid walls. 
 `checkpointTimerOut`| float| `checkpointOut`| This override enables checkpointing, but puts it on a timer. It will checkpoint every X **hours**, where X is specified by this parameter. 
 
-### Species Tag Table
+### Species Tag Table           {#species-tag-table}
 Tag             | Type          | Default Value | Description
 ---             | ---           | ---           | ---
 `mass`          | double        | 1             | Mass of this species of particles. Should **always** be 1 for at least one species since sets mass scale 
@@ -169,12 +169,12 @@ Tag             | Type          | Default Value | Description
 `minActRatio`   | double        | 0             | Minimum ratio of particles (of mean density) of this species to allow activity to be calculated in this cell. If 0, then this is ignored
 `damp`          | double        | 0             | Damping friction to kill hydrodynamics. Between 0 and 1
 
-#### Species Overrides
+#### Species Overrides          {#species-overrides}
 Override Tag    | Type          | Override param| Description
 ---             | ---           | ---           | ---
 `dens`          | double        | `pop`         | This override will set a given species population to correspond to a cell density. This sets pop to the volume of the **whole system** (i.e. volume of the domain, not excluding any excluded regions due to BCs) times this given value
 
-### BC Tag Table
+### BC Tag Table            {#bc-tag-table}
 
 Unlike the previous tags, if you declare a new BC object then there are some tags that **must** be declared. 
 These are noted as NECESSARY in the default value column.
@@ -211,13 +211,13 @@ Tag             | Type          | Default Value | Description
 `mass`          | double        | 1             | Mass of the wall in MPCD units. Should be the same density as the fluid if its displaceable
 `wavy`          | array(double) | [0,0,0]       | Generalized amplitudes and frequencies for wavy-walls. **Must** be 3D
 
-#### BC Overrides
+#### BC Overrides           {#bc-overrides}
 Override Tag    | Type          | Override param| Description
 ---             | ---           | ---           | ---
 `homeotropic`   | int           | `MUN`, `MUT`  | Setting this override with a value of 1 will give the wall homeotropic anchoring conditions
 `planar`        | int           | `MUN`, `MUT`  | Setting this override with a value of 1 will give the wall planar anchoring conditions
 
-## Example
+## Example          {#example}
 Below is an example JSON input file that uses all tags but sets them to the defaults.
 As a reminder, if you wish to use the default value for a tag, you can leave it out of the JSON file, so this is primarily for illustrative purposes.
 
@@ -455,7 +455,7 @@ As a reminder, if you wish to use the default value for a tag, you can leave it 
 }
 ```
 
-## Guide to Adding New Input Parameters
+## Guide to Adding New Input Parameters         {#guide-to-adding-new-input-parameters}
 Adding new parameters needs to be done within /mpcd/subroutines/read.c . 
 
 First, ensure that the parameter you wish to "write to" exists in the code somewhere: 
