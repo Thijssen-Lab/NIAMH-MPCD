@@ -249,7 +249,7 @@ void sumFLOW( cell ***CL ) {
 // To determine if a boundary cuts a cell, a temporary particle assigned to each corner and the routine checks if the corner is inside a boundary. 
 /// This is an approximation --- boundaries with sharp corners may be missed. This is done every time step because boundary walls may be mobile. 
 /// To ensure no-slip, the centre of mass velocity of the cell is weighted towards zero by the Boltzmann distribution (Gaussian components). 
-/// To achieve strong anchoring conditions, by setting the orientation of all the MPCD particle orientations equal to the wall normal at that particle's location. 
+/// To achieve strong anchoring conditions, the orientation of all the MPCD particles is set equal to the wall normal at that particle's location. 
 /// This strengthens anchoring by re-applying orientational boundary conditions (now to the whole cell). 
 /// This is so the collision operator can reassign orientations about the director (preferred by the anchoring), with less deviation (as S = 1 for planar, or close to 1 otherwise).
 /// @param CL All of the MPCD cells. 
@@ -584,7 +584,7 @@ void acc_P( particleMPC *p,double t,double GRAV[] ) {
 /// @brief The streaming step of the algorithm that translates the positions of all MPCD particles.
 ///
 /// This function loops over the global population (`GPOP`) to update all MPCD particle positions.
-/// @param p An MPCD particle. 
+/// @param pp An MPCD particle. 
 /// @param t The time interval for which the MPCD particles translate.
 ///
 void stream_all( particleMPC *pp,double t ) {
@@ -618,15 +618,14 @@ void acc_all( particleMPC *pp,double t,double GRAV[] ) {
 /// However, since bin() sorts the particles into cells by truncating the position into cell indices, it is easier to shift <b>everything else</b> and leave the grid in place. 
 /// So this routine shifts the entire system by the vector SHIFT. 
 /// If `shiftBack` then multiply shift by -1 and shift; otherwise, do the normal shift. 
-//It shifts everything by looping over all MPCD particles (global population `GPOP`), all MD particles, all swimmers (`NS`) and all walls (`NBC`).
+// It shifts everything by looping over all MPCD particles (global population `GPOP`), all MD particles, all swimmers (`NS`) and all walls (`NBC`).
 /// @param SHIFT The random vector everything is shifted by
 /// @param shiftBack A flag for whether the routine does the initial shift (==0) or shifts back (==1). 
 /// @param SRDparticles All the MPCD particles. 
 /// @param WALL All of the walls (boundary conditions) that particles might interact with. 
 /// @param simMD A pointer to the entire MD portion of the simulation.
 /// @param swimmers All the swimmers, including their head and middle monomers. 
-/// @param MDmode The MD coupling mode. 
-//// Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
+/// @param MDmode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
 ///
 void gridShift_all( double SHIFT[],int shiftBack,particleMPC *SRDparticles,bc WALL[],simptr simMD,swimmer swimmers[],int MDmode ) {
 	int i,j;							//Counting variables
@@ -777,8 +776,8 @@ double rewind_trans( double t,double V,double P ) {
 /// This function restores the previous component of a generic velocity vector based on a constant accelearation in that direction by subtracting the displacement. 
 /// That is to say, it rewinds the particle velocity to the previous time step. 
 /// @param t The time interval for which the object is rewound.
-/// @param V The object's acceleration component.
-/// @param P The object's present velocity component.
+/// @param G The object's acceleration component.
+/// @param V The object's present velocity component.
 /// @return The velocity at the previous time step.
 ///
 double rewind_acc(double t,double G,double V){
@@ -907,7 +906,7 @@ void bin( cell ***CL,spec *SP,bc WALL[],double KBT,int LC,int shifted ) {
 /// 
 /// Initial binning loops over all MD particles after they have been first initialized. Particles are placed in MPCD cells by truncating their positions into integers, which give the cell array place. This works because the MPCD cells <b>must</b> have an cell size of `a=1`. 
 /// It is different from binin() only in that it initially bins MD particles.
-/// @param simMD A pointer to the entire MD portion of the simulation.
+/// @param sim A pointer to the entire MD portion of the simulation.
 /// @param CL All of the MPCD cells (including the linked list of particles in each cell). 
 /// @see binin()
 ///
@@ -1081,7 +1080,7 @@ void removelinkMD( particleMD *current,cell *CL ) {
 /// The rotation axis is either random cartesian axis (if `RT==ORTHAXIS`) or about a random axis L (if `RT==ARBAXIS`).
 /// The arbitary axis is chosen randomly for every collision cell and each time step
 /// @param RT Rotation technique (collision operator). 
-/// For SRD, whether to randomly choose a cartesean axis (`ORTHAXIS`) or generate an arbitrarily random direction (`ARBAXIS`).
+/// For SRD, whether to randomly choose a cartesian axis (`ORTHAXIS`) or generate an arbitrarily random direction (`ARBAXIS`).
 /// @param Cos Cosine of the rotation angle.
 /// @param Sin Sine of the rotation angle.
 /// @param V The vector to be rotated. 
@@ -1244,7 +1243,7 @@ void stochrotMPC( cell *CL,int RTECH,double C,double S,double *CLQ,int outP ) {
 }
 
 /// 
-/// @brief Does the Anderson-thermostatted collision that conserves angular momentum. 
+/// @brief Does the Andersen-thermostatted collision. 
 /// 
 /// Invented by Noguchi, Kikuchi and Gompper (https://iopscience.iop.org/article/10.1209/0295-5075/78/10005).
 /// Andersen-thermostatted version of multiparticle collision dynamics (MPCD-AT). 
@@ -1253,7 +1252,7 @@ void stochrotMPC( cell *CL,int RTECH,double C,double S,double *CLQ,int outP ) {
 /// The random velocitities are drawn from Gaussian distribtions (genrand_gaussMB()) and so obey Maxwell-Boltzmann statistics.
 /// The average of the random velocities is then subtracted from all to conserve momentum.
 /// Energy is not conserved; rather the system is thermostatted to `KBT`. 
-/// Also, does not conserve angular momentum. 
+/// Also does not conserve angular momentum. 
 /// @param CL An MPCD cell (including the linked list of particles in each cell). 
 /// @param SP The species-wide information about MPCD particles.
 /// @param SS The species-wide information about swimmers.
@@ -1355,7 +1354,7 @@ void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 }
 
 /// 
-/// @brief Does the Anderson thermostatted collision that conserves angular momentum. 
+/// @brief Does the Andersen thermostatted collision that conserves angular momentum. 
 /// 
 /// Invented by Noguchi, Kikuchi and Gompper (https://iopscience.iop.org/article/10.1209/0295-5075/78/10005).
 /// Andersen-thermostatted version of multiparticle collision dynamics (MPCD-AT) that <b>does</b> conserve angular momentum (MPCD-AT+a). 
@@ -2320,7 +2319,6 @@ void chateAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,int
 /// 
 /// @brief Active dry polar collision operator based on Langevin thermostatted collision. 
 /// 
-/// 
 /// @warning Experimental. Proposed by Shendruk but not published or fully characterized yet. 
 ///
 /// Just like the Vicsek-Andersen version of active-MPCD (vicsekAndersenMPC()) but it is Langevin thermostatted. 
@@ -2675,8 +2673,7 @@ void dipoleAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 /// @param S Sine of the rotation angle.
 /// @param FRICCO Friction coefficient for Langevin thermostat.
 /// @param TimeStep The interval of each MPCD time step in MPCD time units.
-/// @param MDmode The MD coupling mode. 
-//// Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
+/// @param MDmode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
 /// @param LC Flags whether or not the nematic liquid crystal is turned on.
 /// @param RELAX The temperature relaxation time scale.
 /// @param CLQ The geometric centre of `CL`, the MPCD cell.
@@ -2753,8 +2750,7 @@ void MPCcollision( cell *CL,spec *SP,specSwimmer SS,double KBT,int RTECH,double 
 /// @param SS The species-wide information about swimmers.
 /// @param multiphaseMode The interactions between different species that allows phase segregation. 
 /// @param KBT The thermal energy. 
-/// @param MDmode The MD coupling mode. 
-//// Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
+/// @param MDmode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
 /// @param CLQ The geometric centre of `CL`, the MPCD cell.
 /// @param outP Flag whether or not to output the pressure.
 ///
@@ -2783,8 +2779,7 @@ void multiphaseColl( cell *CL,spec *SP,specSwimmer SS,int multiphaseMode, double
 /// @param SP The species-wide information about MPCD particles.
 /// @param SS The species-wide information about swimmers.
 /// @param KBT The thermal energy. 
-/// @param MDmode The MD coupling mode. 
-/// Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
+/// @param MDmode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
 /// @param CLQ The geometric centre of `CL`, the MPCD cell.
 /// @param outP Flag whether or not to output the pressure.
 ///
@@ -2991,7 +2986,7 @@ void multiphaseCollPoint( cell *CL,spec *SP,specSwimmer SS, double KBT,int MDmod
 /// The goal is to make the MPCD fluid less compressible; however, these are all currently experimental. 
 /// In theory, it works equally well with any of the collision operators in MPCcollision(). 
 /// Inspired by J. Chem. Phys. 154, 024105 (2021); https://doi.org/10.1063/5.0037934
-/// This subroutine, simple calls the possible ways to make non-ideal. 
+/// This subroutine simply calls the possible ways to make the fluid non-ideal. 
 /// @see incompSwap()
 /// @see incompAddVirial()
 /// @see incompSubtractDivergence()
@@ -3663,9 +3658,6 @@ void localVCM( double vcm[_3D],cell CL,spec *SP,specSwimmer specS ) {
 /// @see localVCM()
 ///
 void localMPCVCM( double vcm[_3D],cell CL,spec *SP ) {
-/*
-   
-*/
 	int id,i;
 	double summ = 0.0;
 	double mass;
@@ -3748,12 +3740,6 @@ double localMASS( cell CL,spec *SP,specSwimmer specS ) {
 /// @return The local thermal energy of a cell (via equipartition theorem). 
 ///
 double localTEMP( cell CL,spec *SP,specSwimmer specS ) {
-/*
-   This routine calculates the local
-   mass from the particleMPCs listed in
-   the linked list (i.e. assuming
-   localPROP hasn't been called).
-*/
 	int d,id,p = 0;
 	double V[_3D],mass,KBT = 0.0;
 	particleMPC *tmpc;
