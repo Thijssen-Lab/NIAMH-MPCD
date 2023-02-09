@@ -23,7 +23,7 @@ Every parameter in the simulation can be fed in with a corresponding name/value 
 The name, or "tag", uniquely represents each parameter, is case sensitive, but can be given in any order within the json file. 
 
 There are some exceptions to this rule, namely overrides.
-Overrides do not correspond to simulation inpu33t parameters, but instead will override some other behaviour in a helpful manner.
+Overrides do not correspond to simulation input parameters, but instead will override some other behaviour in a helpful manner.
 These are given in their own table, and each override explained in more detail.
 
 If a tag is not specified, then that parameter will assume the default value in the table below --- This means that, with the exception of some parameters used when declaring a BC, you may only need to specify several parameters in your input file.
@@ -157,15 +157,15 @@ Tag             | Type          | Default Value | Description
 `qDist`         | int           | 0             | Initial positional distribution function for the species. See definitions.h for a list
 `vDist`         | int           | 0             | Initial velocity distribution function for the species. See definitions.h for a list
 `oDist`         | int           | 2             | Initial orientation distribution function for the species. See definitions.h for a list
-`interMatr`     | array(double) | [0,...]       | Interaction matrix for this species, against other species. Must be of the same length as the number of species. Default will autopopulate with 0s
+`interMatr`     | array(double) | [0,...]       | Interaction matrix for this species, against other species. **Must** be of the same length as the number of species. Default will autopopulate with 0s
 `rfc`           | double        | 0.01          | Nematogen rotational friction coefficient
 `len`           | double        | 0.007         | Effective rod length (specifically for solid boundary interactions)
 `tumble`        | double        | 2             | Tumbling parameter
 `shearSusc`     | double        | 0.5           | Shear susceptibility
 `magnSusc`      | double        | 0.001         | Magnetic susceptibility
 `act`           | double        | 0.05          | Species activity
-`sigWidth`      | double        | 1.0           | Sigmoid width for activity faloff, specifically for CO#20. **Cannot be 0**
-`sigPos`        | double        | `sigWidth`    | Sigmoid position for activity faloff, specifically for CO#20
+`sigWidth`      | double        | 1.0           | Sigmoid width for activity fall-off, specifically for collision operator #20. **Cannot be 0**
+`sigPos`        | double        | `sigWidth`    | Sigmoid position for activity fall-off, specifically for collision operator #20
 `minActRatio`   | double        | 0             | Minimum ratio of particles (of mean density) of this species to allow activity to be calculated in this cell. If 0, then this is ignored
 `damp`          | double        | 0             | Damping friction to kill hydrodynamics. Between 0 and 1
 
@@ -176,7 +176,7 @@ Override Tag    | Type          | Override param| Description
 
 ### BC Tag Table
 
-Unlike the previous tags, if you declare a new BC object then there are some tags that MUST be declared. 
+Unlike the previous tags, if you declare a new BC object then there are some tags that **must** be declared. 
 These are noted as NECESSARY in the default value column.
 
 Tag             | Type          | Default Value | Description
@@ -184,32 +184,32 @@ Tag             | Type          | Default Value | Description
 `colType`       | int           | 1             | Which BC type do you want to use. See definitions.h for a list
 `phantom`       | int           | 0             | Use phantom particles if 1, 0 otherwise
 `E`             | double        | -1            | Coefficient of restitution
-`Q`             | array(double) | [0,0,0]       | Position of the boundary, MUST be 3D
-`V`             | array(double) | [0,0,0]       | Velocity of the boundary, MUST be 3D
-`O`             | array(double) | [0,0,0]       | Orientation of the boundary about (x,y,z), MUST be 3D
-`L`             | array(double) | [0,0,0]       | Angular velocity of the boundary, MUST be 3D
-`G`             | array(double) | [0,0,0]       | External acceleration (ie, due to gravity) of the boundary, MUST be 3D
-`aInv`          | array(double) | NECESSARY     | Sets the geometry of the surface. Principal semi-axes of the ellipsoid (see SRDClass for explanation). MUST be 3D. If you declare a BC then this MUST be given, or the simulation will not run
-`rotSym`        | array(double) | [4,4]         | Sets rotational symmetry of shapes. Must be of form (a,b)
+`Q`             | array(double) | [0,0,0]       | Position of the boundary, **must** be 3D
+`V`             | array(double) | [0,0,0]       | Velocity of the boundary, **must** be 3D
+`O`             | array(double) | [0,0,0]       | Orientation of the boundary about (x,y,z), **must** be 3D
+`L`             | array(double) | [0,0,0]       | Angular velocity of the boundary, **must** be 3D
+`G`             | array(double) | [0,0,0]       | External acceleration (ie, due to gravity) of the boundary, **must** be 3D
+`aInv`          | array(double) | NECESSARY     | Sets the geometry of the surface. Principal semi-axes of the ellipsoid (see SRDClass for explanation). **Must** be 3D. If you declare a BC then this **must** be given, or the simulation will not run
+`rotSym`        | array(double) | [4,4]         | Sets rotational symmetry of shapes. **Must** be of form (a,b)
 `abs`           | int           | 0             | Flags if each term should be absolute only. 1 = yes, 0 = no
-`P`             | array(double) | NECESSARY     | Sets the geometry of the surface. Must be of form (a,b,c,d). See SRDClass for explanation. If you declare a BC then this MUST be given, or the simulation will not run
-`R`             | double        | NECESSARY     | Sets the geometry of the surface. See SRDClass for explanation. If you declare a BC then this MUST be given, or the simulation will not run
-`DN`            | double        | NECESSARY     | Displacement of the particle in the normal direction. If you declare a BC then this MUST be given, or the simulation will not run
+`P`             | array(double) | NECESSARY     | Sets the geometry of the surface. **Must** be of form (a,b,c,d). See SRDClass for explanation. If you declare a BC then this **must** be given, or the simulation will not run
+`R`             | double        | NECESSARY     | Sets the geometry of the surface. See SRDClass for explanation. If you declare a BC then this **must** be given, or the simulation will not run
+`DN`            | double        | NECESSARY     | Displacement of the particle in the normal direction. If you declare a BC then this **must** be given, or the simulation will not run
 `DT`            | double        | 0             | Displacement of the particle in the tangential direction
 `DVN`           | double        | 0             | Add velocity in the normal direction on contact
 `DVT`           | double        | 0             | Add velocity in the tangential direction on contact
-`DVxyz`         | array(double) | [0,0,0]       | Add velocity in the cartesian directions on contact. Must be 3D
-`MVN`           | double        | NECESSARY     | Multiplies the velocity in the normal direction on contact. If you declare a BC then this MUST be given, or the simulation will not run
-`MVT`           | double        | NECESSARY     | Multiplies the velocity in the tangential direction on contact. If you declare a BC then this MUST be given, or the simulation will not run
+`DVxyz`         | array(double) | [0,0,0]       | Add velocity in the cartesian directions on contact. **Must** be 3D
+`MVN`           | double        | NECESSARY     | Multiplies the velocity in the normal direction on contact. If you declare a BC then this **must** be given, or the simulation will not run
+`MVT`           | double        | NECESSARY     | Multiplies the velocity in the tangential direction on contact. If you declare a BC then this **must** be given, or the simulation will not run
 `MUN`           | double        | 1             | Multiplies the orientation in the normal direction on contact
 `MUT`           | double        | 1             | Multiplies the orientation in the tangential direction on contact
-`MUxyz`         | array(double) | [1,1,1]       | Multiplies the orientation in the cartesian direction on contact. Must be 3D
-`DUxyz`         | array(double) | [0,0,0]       | Add the orientation in the cartesian direction on contact. Must be 3D
+`MUxyz`         | array(double) | [1,1,1]       | Multiplies the orientation in the cartesian direction on contact. **Must** be 3D
+`DUxyz`         | array(double) | [0,0,0]       | Add the orientation in the cartesian direction on contact. **Must** be 3D
 `kbt`           | double        | 1             | Temperature of the wall
 `dsplc`         | int           | 0             | Whether the wall can displace/ is mobile. 0 = no, 1 = yes
 `inv`           | int           | 0             | Whether to invert the bc (ie, multiply the A's by -1). 0 = no, 1 = yes
 `mass`          | double        | 1             | Mass of the wall in MPCD units. Should be the same density as the fluid if its displaceable
-`wavy`          | array(double) | [0,0,0]       | Generalized amplitudes and frequencies for wavy-walls. Must be 3D
+`wavy`          | array(double) | [0,0,0]       | Generalized amplitudes and frequencies for wavy-walls. **Must** be 3D
 
 #### BC Overrides
 Override Tag    | Type          | Override param| Description
@@ -456,7 +456,7 @@ As a reminder, if you wish to use the default value for a tag, you can leave it 
 ```
 
 ## Guide to Adding New Input Parameters
-Adding new parameters needs to be done within /mpcd/subroutines.read.c . 
+Adding new parameters needs to be done within /mpcd/subroutines/read.c . 
 
 First, ensure that the parameter you wish to "write to" exists in the code somewhere: 
 This can be in the inputList struct or a global, but it needs to be accessible and passed to/ from read.c . 
