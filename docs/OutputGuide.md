@@ -5,6 +5,7 @@
 2. [Output Tables](#output-tables)
     - [System Information](#system-information)
     - [Scalar Outputs](#scalar-outputs)
+    - [Trajectory Outputs](#trajectory-outputs)
     - [Field Outputs](#field-outputs)
     - [Histograms](#histograms)
     - [Correlation Functions](#correlation-functions)
@@ -44,15 +45,19 @@ All outputs are written to `.dat` files, which are uncompressed text files.
 | `binderOut`      | `binderCumulant.dat` | Binder cumulant, bin size must be set in `binderBin`                    | Time                          | `t`              |
 |                  |                      |                                                                         | Binder cumulant               | `BinderCumulant` |
 
-### Field Outputs
-
+### Trajectory Outputs
 | Input tag          | Output file              | Description                                                                              | Outputs                        | Column Headers                                                    |
 |--------------------|--------------------------|------------------------------------------------------------------------------------------|--------------------------------|-------------------------------------------------------------------|
 | `trajOut`          | `detailedSP0.dat`        | Detailed particle trajectories for every particle of species type given by `trajSpecOut` | Time                           | `t`                                                               |
 |                    |                          |                                                                                          | X, Y, Z co-ordinates           | `QX`,`QY`,`QZ`                                                    |
 |                    |                          |                                                                                          | Cell velocities                | `VX`,`VY`,`VZ`                                                    |
-|                    |                          |                                                                                          | Speed                          | &#124;`V`&#124;                                                   |
+|                    |                          |                                                                                          | Speed                          | &#x7c;`V`&#x7c;                                                   |
 |                    |                          |                                                                                          | Species velocities             | `UX`,`UY`,`UZ`                                                    |
+
+### Field Outputs
+
+| Input tag          | Output file              | Description                                                                              | Outputs                        | Column Headers                                                    |
+|--------------------|--------------------------|------------------------------------------------------------------------------------------|--------------------------------|-------------------------------------------------------------------|
 | `coarseOut`        | `coarsegrain.dat`        | Coarse grain data (cell velocity, densities, density of each species) field              | Time                           | `t`                                                               |
 |                    |                          |                                                                                          | X, Y, Z co-ordinates           | `QX`,`QY`,`QZ`                                                    |
 |                    |                          |                                                                                          | Centre of mass Velocities      | `VcmX`,`VcmY`,`VcmZ`                                              |
