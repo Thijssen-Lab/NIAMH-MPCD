@@ -1046,6 +1046,7 @@ void invert3x3(double m_inv[_3D][_3D],double m[_3D][_3D]) {
 /// @param VB Velocity of the boundary.
 /// @param MB Mass of the boundary.
 /// @param QB Position of the boundary.
+/// @param WB Angular velocity of the boundary.
 /// @param IB Intertia tensor of the boundary.
 /// @param dimension Dimensionality of the input values.
 ///
@@ -1511,7 +1512,7 @@ double backwardDeriv( double x0,double xM1,double dt ) {
 ///
 /// @param F Value of the input discrete function.
 /// @param dx Input value step.
-/// @param dt Input time step.
+/// @param n Input time step.
 ///
 double simps( double F[],double dx,int n ) {
 	int i,halfN;
