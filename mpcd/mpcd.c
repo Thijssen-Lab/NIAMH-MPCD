@@ -1,3 +1,9 @@
+///
+///@file
+///@brief 
+///
+/// Main loop that relies on subroutines to perform MPCD.
+
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
@@ -59,6 +65,14 @@ By Tyler Shendruk's Research Group
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
+///@brief
+///
+/// Call other functions to implement MPCD.
+///
+/// Declares all the program variable, reads the input file, initializes the system, perform a warm-up loop, then the main loop with checkpoints, before outputting and closing down.
+///
+/// @param argc Number of c argument variables.
+/// @param argv[] Value of each c argument variables.
 int main(int argc, char* argv[]) {
 	/* ****************************************** */
 	/* ****************************************** */
@@ -243,12 +257,12 @@ int main(int argc, char* argv[]) {
 		if(outFlags.SYNOUT == OUT) fprintf( outFiles.fsynopsis,"\nWarmup loop complete\n" );
 	}
 	/* ****************************************** */
-	/* ************** TEMPERAL LOOP ************* */
+	/* ************** TEMPORAL LOOP ************* */
 	/* ****************************************** */
 	#ifdef DBG
-		if( DBUG > DBGRUN ) printf( "\nBegin temperal loop\n" );
+		if( DBUG > DBGRUN ) printf( "Begin temporal loop\n" );
 	#endif
-	if(outFlags.SYNOUT == OUT) fprintf( outFiles.fsynopsis,"\nBegin temperal loop.\n" );
+	if(outFlags.SYNOUT == OUT) fprintf( outFiles.fsynopsis,"\nBegin temporal loop.\n" );
 	// This is the main loop of the SRD program. The temporal loop.
 	starttime=runtime;
 	for( runtime=starttime; runtime<=inputVar.simSteps; runtime++ ) {
@@ -272,9 +286,9 @@ int main(int argc, char* argv[]) {
         }
 	}
 	#ifdef DBG
-		if( DBUG > DBGRUN ) printf( "Temperal loop complete\n" );
+		if( DBUG > DBGRUN ) printf( "Temporal loop complete\n" );
 	#endif
-	if( outFlags.SYNOUT == OUT ) fprintf( outFiles.fsynopsis,"\nTemperal loop complete\n" );
+	if( outFlags.SYNOUT == OUT ) fprintf( outFiles.fsynopsis,"\nTemporal loop complete\n" );
 	/* ****************************************** */
 	/* ****************************************** */
 	/* ****************************************** */

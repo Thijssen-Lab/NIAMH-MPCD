@@ -1,3 +1,11 @@
+///
+/// @file
+///
+/// @brief This file contains methods to implement thermostats, compute averages and energies.
+///
+/// This file contains methods to implement thermostats, compute averages and energies.
+///
+
 # include<stdio.h>
 # include<math.h>
 # include<stdlib.h>
@@ -17,10 +25,31 @@
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
+
+///
+/// @brief Function that calculates the velocity scaling factor g.
+///
+/// This routine calculates the velocity scaling factor g. It can do so
+/// in 4 different ways, depending on which thermostat is being requested
+/// as specified by the input parameter `TSTECH`.
+/// i) No thermostat, at which case g = 1.
+/// ii) Using the velocity scaling as the thermometer.
+/// iii) Using the Berendsen thermostat.
+/// iv) Finally, although not a proper thermostat, this routine can yield
+///     a g that maximizes the velocity vector. Used in combination with
+///     the rotation technique `RTECH = MPCAT`.
+///
+/// @param KBT The target temperature.
+/// @param KBTNOW The current temperature.
+/// @param t MPCD time-step.
+/// @param RELAX Temperature relaxation time scale.
+/// @param TSTECH Integer specifying the thermostat being employed.
+///        0 for no thermostat, 1 for velocity scaling as thermostat,
+///        2 for Berendsen thermostat and 4 for maximum velocity vector.
+/// @see scaleT()
+/// @return The velocity scaling factor g.
+///
 double thermostat( double KBT,double KBTNOW,double t,double RELAX,int TSTECH ) {
-/*
-   This routine calculates the velocity scaling factor,g
-*/
 	double g;
 	//No thermostat used
 	if( TSTECH == NOTHERM ) g = 1.;
@@ -30,11 +59,6 @@ double thermostat( double KBT,double KBTNOW,double t,double RELAX,int TSTECH ) {
 	else if( TSTECH==BEREND ) g = sqrt( 1.+(KBT/KBTNOW-1.)*t/RELAX );
 	else if( TSTECH==MAXV ) {
 		g = sqrt( 1.+(KBT/KBTNOW-1.)*t/RELAX );	//Same as BEREND
-// 		g = sqrt( 1.+(KBT/KBTNOW-1.)*t/RELAX );
-// 		g = 1.+(KBT/KBTNOW-1.)*t/RELAX;
-// 		g = KBT/KBTNOW;
-// 		g = 1.0;
-// 		if( g>10.0 ) printf( "%lf\n",g );
 	}
 	else{
 			printf( "Error:\tThermostat unacceptable.\n" );
@@ -42,10 +66,44 @@ double thermostat( double KBT,double KBTNOW,double t,double RELAX,int TSTECH ) {
 		}
 	return g;
 }
+
+///
+/// @brief Function that calls the thermostat and scales the velocities.
+///
+/// This routine calls the thermostat being requested and scales the velocities of
+/// all MPCD particles and movable boundary conditions (obstacles). There are 5 possible
+/// thermostats. These are:
+/// i) No thermostat, at which case g = 1.
+/// ii) Using the velocity scaling as the thermometer.
+/// iii) Using the Berendsen thermostat, see H.J.C. Berendsen et. al.,
+/// Molecular dynamics with coupling to an external bath. The Journal of Chemical
+/// Physics, 81(8):3684–3690, 1984.
+/// iv) Using the Heyes thermostat.
+/// v) Finally, although not a proper thermostat, this routine can yield
+///     a g that maximizes the velocity vector. Used in combination with
+///     the rotation technique `RTECH = MPCAT`.
+///
+/// @param KBT The target temperature.
+/// @param KBTNOW The current temperature.
+/// @param t MPCD Time-step.
+/// @param RELAX Temperature relaxation time scale.
+/// @param VEL Average velocity.
+/// @param VELNOW Current velocity.
+/// @param TSTECH Integer specifying the thermostat being employed.
+///        0 for no thermostat, 1 for velocity scaling as thermostat,
+///        2 for Berendsen thermostat, 3 for Heyes thermostat and
+///        4 for maximum velocity vector.
+/// @param SP Array of all species.
+/// @param LC Integer specifying LC mode being employed.
+/// @param WALL Return pointer for array of all boundary conditions (obstacles).
+/// @param p Return pointer to first element in array of all MPCD particles.
+/// @param CL Array of all cells.
+/// @see thermostat()
+/// @see heyes_cell()
+/// @note Heyes thermostat is a local one and implemented thorugh heyes_cell(), the rest are global
+/// ones and are called through thermostat().
+///
 void scaleT( double KBT,double KBTNOW,double t,double RELAX,double VEL[],double VELNOW[],int TSTECH,spec SP[],int LC,bc *WALL,particleMPC *p,cell ***CL ) {
-/*
-   This routine calls the thermostat and scales the velocities
-*/
 	int i,j,k;
 	double TSC;	//The velocity scaling factor (commonly lambda)
 
@@ -83,6 +141,22 @@ void scaleT( double KBT,double KBTNOW,double t,double RELAX,double VEL[],double 
 		}
 	}
 }
+
+///
+/// @brief Function that rescales velocities when employing a Heyes thermostat.
+///
+/// This routines rescales the velocities of the particles within an MPCD cell
+/// for a Heyes thermostat. See G. Gompper, T. Ihle, D.M. Kroll, and R.G. Winkler.
+/// Multi-particle collision dynamics: A particle-based mesoscale simulation
+/// approach to the hydrodynamics of complex fluids. Advances in Polymer Science,
+/// pages 1–87. Springer Berlin Heidelberg, 2008.
+///
+/// @param CL An MPCD cell.
+/// @param KBT Target temperature.
+/// @param KBTNOW Current temperature.
+/// @param RELAX Relaxation time scale.
+/// @see scaleT()
+///
 void heyes_cell( cell CL,double KBT,double KBTNOW,double RELAX ) {
 	int d;
 	double sc_fctr;	//Scaling factor
@@ -118,11 +192,21 @@ void heyes_cell( cell CL,double KBT,double KBTNOW,double RELAX ) {
 		}
 	}
 }
+
+///
+/// @brief Function that calculates the temperature out of the total energy.
+///
+/// This routine calculates the temperature by adding up the total energy,
+/// from particles and mobile boundary conditions and employing the
+/// equipartition theorem.
+///
+/// @param pp Pointer to the first element in the array of all MPCD particles.
+/// @param SP Array of all species.
+/// @param WALL Array of all boundary conditions (obstacles).
+/// @param VEL Average velocity.
+/// @return Temperature.
+///
 double TEMP( particleMPC *pp,spec SP[],bc WALL[],double VEL[] ) {
-/*
-   This routine sums the energy to calculate the temperature
-   m*av( v^2 )/2 = dim *KBT / 2
-*/
 	double KBT = 0.;
 	double temp = 0.;
 	int i,j,k,c = 0;
@@ -149,6 +233,19 @@ double TEMP( particleMPC *pp,spec SP[],bc WALL[],double VEL[] ) {
 	KBT /= ( (double)((GPOP+c)*DIM) );
 	return KBT;
 }
+
+///
+/// @brief Function that calculates the total energy of the system.
+///
+/// This function calculates the total energy of the system. It considers
+/// the kinetic energy of all MPCD particles as well as the translational and rotational
+/// energy of all mobile boundary conditions (obstacles).
+///
+/// @param p Pointer to first element in the array of all MPCD particles.
+/// @param pSP Pointer to first element in the array of all species.
+/// @param WALL Array of all boundary conditions (obstacles).
+/// @return The system's total energy.
+///
 double calcE( particleMPC *p,spec *pSP,bc WALL[] ) {
 	double E,TE = 0.;
 	int i,j,k;
@@ -172,10 +269,17 @@ double calcE( particleMPC *p,spec *pSP,bc WALL[] ) {
 	}
 	return TE;
 }
+
+///
+/// @brief Function that calculates a particle's kinetic energy.
+///
+/// This function returns the kinetic energy of a single MPCD particle.
+///
+/// @param p Pointer to the MPCD particle whose energy is being calculated.
+/// @param pSP Pointer to the species of the MPCD particle whose energy is being calculated.
+/// @return The particle's kinetic energy.
+///
 double calcE_MPC( particleMPC *p,spec *pSP ) {
-/*
-   This routine calculates the kinetic energy of a single particle
-*/
 	double E = 0.;
 	int j;
 
@@ -183,10 +287,17 @@ double calcE_MPC( particleMPC *p,spec *pSP ) {
 	E *= 0.5 * (pSP+p->SPID)->MASS;
 	return E;
 }
+
+///
+/// @brief Function that computes the kinetic energy of a boundary condition.
+///
+/// This function returns the kinetic energy (translational + rotational).
+/// of a single mobile boundary condition (obstacle).
+///
+/// @param WALL Pointer to the boundary condition whose energy is being calulated.
+/// @return Energy of the boundary condition (obstacle).
+///
 double calcE_BC( bc *WALL ) {
-/*
-   This routine calculates the energy of a single BC solute
-*/
 	double E=0., TE=0.;
 	int j,k;
 
@@ -204,11 +315,19 @@ double calcE_BC( bc *WALL ) {
 
 	return TE;
 }
+
+///
+/// @brief Function that computes the total potential orientational energy of all nematic particles.
+///
+/// This function returns the sum of the potential orientational energy of all nematic particles.
+/// Since this is a potential energy, this is a negative number.
+///
+/// @param CL Array of all cells.
+/// @param LC Integer specifying type of liquid crystal/
+/// @param MFPOT The liquid crystal mean field potential.
+/// @return Total potential orientational energy.
+///
 double calcE_LC( cell ***CL,int LC,double MFPOT ) {
-/*
-   This routine sums the potential orientational energy of all nematic particles
-   Potential energy so is really negative
-*/
 	double wmf=0.;
 	double S,un,DIR[_3D],u[_3D];
 	particleMPC *tmpc;	//Temporary particleMPC
@@ -230,19 +349,33 @@ double calcE_LC( cell ***CL,int LC,double MFPOT ) {
 	wmf*=MFPOT;
 	return wmf;
 }
+
+///
+/// @brief Function that calculates the average global velocity.
+///
+/// This function computes the average velocity of the system by averaging
+/// over the center of mass velocities of all cells.
+///
+/// @param CL Array of all cells.
+/// @param AVVEL Return pointer for the average global velocity.
+///
 void avVel( cell ***CL,double AVVEL[] ) {
-/*
-   This routine finds the average global scalar order parameter.
-*/
 	int a,b,c,d;
 	for( d=0; d<DIM; d++ ) AVVEL[d]=0.;
 	for( a=0; a<XYZ_P1[0]; a++ ) for( b=0; b<XYZ_P1[1]; b++ ) for( c=0; c<XYZ_P1[2]; c++ ) for( d=0; d<DIM; d++ ) AVVEL[d] += CL[a][b][c].VCM[d];
 	for( d=0; d<DIM; d++ ) AVVEL[d] /= (double)(XYZ[0]*XYZ[1]*XYZ[2]);
 }
+
+///
+/// @brief Function that calculates the global average enstrophy.
+///
+/// This function returns the global average enstrophy `E` (mean squared vorticity)
+/// by averaging it over all cells.
+///
+/// @param CL Array of all cells.
+/// @return Global average enstrophy.
+///
 double avEnstrophy( cell ***CL ) {
-/*
-   This routine finds the global average enstrophy E (mean squared vorticity)
-*/
 	int a,b,c;
 	double w[_3D];
 	double E;

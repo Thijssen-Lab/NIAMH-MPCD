@@ -1,3 +1,11 @@
+///
+/// @file
+///
+/// @brief This file applies boundary conditions (bc) to mpcd particles.
+///
+/// This file applies boundary conditions (bc) to mpcd particles crossing through a boundary.
+///
+
 # include<stdio.h>
 # include<math.h>
 # include<time.h>
@@ -25,12 +33,26 @@
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
+
+///
+/// @brief Calculates a parameter to determine if the particle is inside the boundary.
+///
+/// This routine calculates the `W` parameter which determines whether the particle
+/// has crossed through the boundary or not.  It does this by evaluating the surface
+/// function at the particle position. The values that this parameter can take:
+/// - \f$=0\f$ at the boundary.
+/// - \f$>0\f$ outside the boundary.
+/// - \f$<0\f$ inside the boundary.
+///
+/// @param WALL The boundary.
+/// @param P The individual mpcd particle.
+/// @see calcW_PLANE()
+/// @see calcW_BC()
+/// @see calcWavyW()
+/// @return Returns the inside-boundary check parameter.
+///
 double calcW( bc WALL,particleMPC P ) {
-/*
-   This function calculates W which is used to
-   determine if boundary conditions should be
-   applied to a particleMPC.
-*/
+
 	double terms, W=0.0;
 	int i;
 
@@ -55,11 +77,20 @@ double calcW( bc WALL,particleMPC P ) {
 	}
 	return W;
 }
+
+///
+/// @brief Calculates additions to inside-boundary parameter for wavy walls.
+///
+/// This method calculates corrections to the `W` parameter to account for wavy walls.
+/// The rest of the `W` parameter is calculated in calcW().
+///
+/// @param WALL The boundary.
+/// @param POS The position of the particle.
+/// @param W The W value.
+/// @see calcW()
+/// @return Returns the inside-boundary check parameter.
+///
 double calcWavyW( bc WALL,double POS[], double W ) {
-/*
-   This function calculates additions to W for wavy
-   walls in the calcW function.
-*/
 	double W1=0.0,W2=0.0;
 	int i,flag;
 	//Planes
@@ -101,13 +132,26 @@ double calcWavyW( bc WALL,double POS[], double W ) {
 
 	return WALL.B[0] * cos( WALL.B[1]*W1 ) * cos( WALL.B[2]*W2 );
 }
+
+///
+/// @brief Calculates a parameter to determine if a moving boundary is inside another boundary.
+///
+/// As was the case for calcW(), this routine calculates the `W` parameter which determines whether the moving boundary
+/// has crossed through the static boundary or not.  It does this by evaluating the surface
+/// function at the boundary position. The values that this parameter can take:
+/// - \f$=0\f$ at the boundary.
+/// - \f$>0\f$ outside the boundary.
+/// - \f$<0\f$ inside the boundary.
+///
+/// @param movingWall The mobile boundary.
+/// @param stillWall The static boundary.
+/// @param flagCentre Flag that determines if we are considering the centre of the `movingWall` or the surface.
+/// @see BC_BCcollision()
+/// @see calcW()
+/// @return Returns the inside-boundary check parameter.
+///
 double calcW_BC( bc movingWall,bc stillWall,int flagCentre ) {
-/*
-   This function calculates W which is used to
-   determine if boundary conditions should be
-   applied to a moving BC.
-	 intFlag determines if we are considering the centre of the movingWall or the surface
-*/
+
 	double terms, modR, W=0.0;
 
 	if( feq(stillWall.ROTSYMM[0],4.0) && feq(stillWall.ROTSYMM[1],4.0) ) {
@@ -131,12 +175,25 @@ double calcW_BC( bc movingWall,bc stillWall,int flagCentre ) {
 
 	return W;
 }
-void crosstime( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,double t_step ) {
-/*
-    Calculate when the particleMPC crosses the bc
-    by solving the trajectory equation
 
-*/
+///
+/// @brief Calculates the particle crosstime.
+///
+/// This routine calculates the forward particle crosstime.
+/// Since this particle is found inside the boundary, the particle must have
+/// crossed the boundary before the end of the streaming step.
+/// This method interpolates the path taken by the particle and finds the
+/// time when the particle crossed the boundary.
+///
+/// @param p The individual mpcd particle.
+/// @param WALL The boundary.
+/// @param tc_pos Return pointer for candidate 1 for cross-time.
+/// @param tc_neg Return pointer for candidate 2 for cross-time.
+/// @param t_step The time step interval.
+/// @see crosstimeReverse()
+/// @see secant_time()
+///
+void crosstime( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,double t_step ) {
 	double a=0.0,b=0.0,c=0.0;
 	int i;
 
@@ -171,12 +228,27 @@ void crosstime( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,double t_st
 		*tc_neg = *tc_pos;
 	}
 }
-void crosstimeReverse( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,double t_step ) {
-/*
-    Calculate when the particleMPC crossed the bc
-    by solving the trajectory equation using negative velocity
 
-*/
+///
+/// @brief Calculates the extra time the particle streams since crossing into the boundary.
+///
+/// Since this particle is found inside the boundary, the particle must have
+/// crossed the boundary before the end of the streaming step.
+/// This routine calculates the time after the particle crosses the boundary (tstep - particle crosstime) by
+/// interpolating back the path taken by the particle (time = distance / negative velocity).
+///
+/// @param p The individual mpcd particle.
+/// @param WALL The boundary.
+/// @param tc_pos Return pointer for candidate 1 for reverse cross-time.
+/// @param tc_neg Return pointer for candidate 2 for reverse cross-time.
+/// @param t_step The time step interval.
+/// @see crosstime()
+/// @see secant_time()
+///	@note The two candidate reverse cross-times are the same for planar boundaries and for boundaries using the secant_time() method.
+/// For ellipsoidal boundaries, two solutions emerge from the sign in the quadratic formula.
+///
+void crosstimeReverse( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,double t_step ) {
+
 	double a=0.0,b=0.0,c=0.0;
 	int i;
 
@@ -214,11 +286,24 @@ void crosstimeReverse( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,doub
 		*tc_neg = *tc_pos;
 	}
 }
+
+///
+/// @brief Calculates a parameter to determine if the particle is inside a planar boundary.
+///
+/// This routine calculates the `W` parameter which determines whether the particle
+/// has crossed through the boundary or not.  It does this by evaluating the surface
+/// function at the particle position. The values that this parameter can take:
+/// - \f$=0\f$ at the boundary.
+/// - \f$>0\f$ outside the boundary.
+/// - \f$<0\f$ inside the boundary.
+///
+/// @param WALL The boundary.
+/// @param P The individual mpcd particle.
+/// @see calcW()
+/// @return Returns the inside-boundary check parameter.
+///
 double calcW_PLANE( bc WALL,particleMPC P ) {
-/*
-   This function calculates W like calcW BUT assumes it is a plane
-   i.e. faster
-*/
+
 	double W=0.;
 	int i;
 
@@ -229,7 +314,17 @@ double calcW_PLANE( bc WALL,particleMPC P ) {
 	return W;
 }
 
-
+///
+/// @brief Applies the secant root finding algorithm to calculate the particle crosstime.
+///
+/// Applies the secant root finding algorithm to calculate the particle crosstime.
+///
+/// @param p The individual mpcd particle.
+/// @param WALL The boundary.
+/// @param t_step The time step interval.
+/// @see crosstimeReverse()
+/// @return Particle crosstime.
+///
 double secant_time( particleMPC p,bc WALL,double t_step ) {
 	double Qi[DIM],QiM1[DIM];
 	double ti,tiM1,root;
@@ -275,18 +370,28 @@ double secant_time( particleMPC p,bc WALL,double t_step ) {
 	return root;
 }
 
+///
+/// @brief Shifts the boundary according to periodic boundary conditions.
+///
+/// Shift the position of boundary according to periodic boundary conditions (PBC).
+/// This follows the next steps:
+/// - Finds whether to shift (if the particle - wall separation is closer after a full PBC shift).
+/// - Calculates the shift as the relevant length of the system (x,y or z direction).
+/// - Applies the shift and updates the wall position.
+/// @param shift The amount that the wall shifted.
+/// @param WALL Return pointer to the boundary being shifted.
+/// @param pp The individual particle.
+/// @see shiftbackBC()
+/// @note The shift value is returned through the `shift` variable so that the original
+/// boundary position can be restored later using the shiftbackBC() method.
+///
 void shiftBC( double *shift,bc *WALL,particleMPC *pp ) {
-/*
-     Determines if the BC must be shifted due to the
-     periodicity of the control volume, calculates
-     the shift and shifts the BC.
-*/
+
 	int k;
 
 	// Zero
 	for( k=0; k<DIM; k++ ) shift[k] = 0.0;
 	//Don't shift planar surfaces
-	//if( fneq(WALL->P[0],1.0) && fneq(WALL->P[1],1.0) && fneq(WALL->P[2],1.0) ) {
 	if( fneq(WALL->P[0],1.0) && fneq(WALL->P[1],1.0) ) {
 		for( k=0; k<DIM; k++ ) {
 			// Determine if should shift
@@ -297,6 +402,16 @@ void shiftBC( double *shift,bc *WALL,particleMPC *pp ) {
 		}
 	}
 }
+
+///
+/// @brief Returns the boundary back to original position.
+///
+/// The boundary has been shifted by the periodic boundary conditions previously in shiftBC().
+/// This routine uses the shift value applied previously to return the wall back to the original position.
+/// @param shift The amount that the wall shifted.
+/// @param WALL Return pointer to the boundary being shifted back.
+/// @see shiftBC()
+///
 void shiftbackBC( double *shift,bc *WALL ) {
 /*
      Shifts the BC back.
@@ -304,13 +419,26 @@ void shiftbackBC( double *shift,bc *WALL ) {
 	int i;
 	for( i=0; i<DIM; i++ ) WALL->Q[i] -= shift[i];
 }
+
+///
+/// @brief Rotates the boundary (by rotating the surrounding fluid).
+///
+/// If the boundary has a listed non-zero orientation, then it must be rotated to match that orientation.
+/// This is performed by rotating the surrounding fluid particles (including
+/// positions, velocities and orientations) about the boundary itself.
+/// This routine does the rotation and rotation back by having a sign passed to it.
+///
+/// @param WALL Return pointer to the boundary being rotated.
+/// @param pp Return pointer to the individual particles that will be rotoated.
+/// @param sign The sign multiplier for rotation foward and backwards.
+/// @param LC The flag for the fluid being liquid crystalline.
+/// @see rotateBC()
+/// @see rotatebackBC()
+/// @note The `sign` is negative (so the rotation angle will be negative) for the
+/// forward particle rotation, since it's the particles rather than the boundary being rotated.
+/// Correspondingly the `sign` is positive for the rotation back.
+///
 void MPC_BCrotation( bc *WALL,particleMPC *pp, double sign, int LC ) {
-/*
-     If the BC has some orientation then it must be rotated.
-		 To do this, we rotate the particle's pos, vel, orientation aout the BC surface instead.
-		 This routine does the rotation and rotation back by having a sign passed to it.
-		 See rotateBC() and rotatebackBC()
-*/
 
 	int i;
 	double rotM[_3D][_3D];		//The rotation matrix
@@ -350,36 +478,64 @@ void MPC_BCrotation( bc *WALL,particleMPC *pp, double sign, int LC ) {
 		}
 	}
 }
+
+///
+/// @brief Rotates the boundary according to the boundary orientation.
+///
+/// Applies the forward boundary rotation by instead rotating the particles about the boundary (in the reverse direction).
+///
+/// @param WALL Return pointer to the boundary being rotated.
+/// @param pp Return pointer to the individual particle. being rotated.
+/// @param LC The flag for the fluid being liquid crystalline.
+/// @see MPC_BCrotation()
+/// @see rotatebackBC()
+///
 void rotateBC( bc *WALL,particleMPC *pp, int LC ) {
-/*
-	If the BC has some orientation then it must be rotated.
-	To do this, we rotate the particle's pos, vel, orientation aout the BC surface instead
-	Uses NEGATIVE the angles since the particle is being rotated instead of the BC
-	NOTICE: The current implementation is very wasteful. Every ***particle***
-	is rotated about the centre of each BC.
-	While this is simplest, there are very many particles.
-*/
+
+	// NOTICE: The current implementation is very wasteful. Every ***particle***
+	// is rotated about the centre of each BC.
+	// While this is simplest, there are very many particles.
+
 	if(WALL->REORIENT) MPC_BCrotation( WALL,pp,-1.0,LC );
 }
+
+///
+/// @brief Returns the boundary back to original alignment.
+///
+/// Applies the backwards boundary rotation (or undoes rotations from rotateBC())
+/// by rotating the particles back to original position, velocities and orientations.
+///
+/// @param WALL Return pointer to the boundary being rotated.
+/// @param pp Return pointer to the the individual particle being rotated.
+/// @param LC The flag for the fluid being liquid crystalline.
+/// @see MPC_BCrotation()
+/// @see rotateBC()
+///
 void rotatebackBC( bc *WALL,particleMPC *pp, int LC ) {
-/*
-	Undo a rotateBC()
-*/
 	if(WALL->REORIENT) MPC_BCrotation( WALL,pp,1.0,LC );
 }
-double impulse( double n[],double V[],double U[],double Pv[], double Pu[],double Wv[],double Wu[],double invMv,double invMu,double Iv[][_3D],double Iu[][_3D],double r[],double E ) {
-/*  Determines the magnitude of the impulse
 
-    n=unit vector direction of impulse
-    V=velocity, U = other velocity
-    Pv = centre of mass of v
-    Wv = angular velocity of v
-    invMv = total INVERSE mass of v
-    Iv =  INVERSE moment of inertia tensor of v (particle about r)
-		Iu =  INVERSE moment of inertia tensor of u (BC about r)
-    r = point of contact
-    E = coefficient of restitution E=0->inelastic E=1->elastic
-*/
+///
+/// @brief Calculates the magnitude of the impulse
+///
+/// Calculates the impulse magnitude for the collision of body1 and body2.
+///
+/// @param n Unit vector direction of impulse.
+/// @param V Velocity for body1.
+/// @param U Velocity for body2.
+/// @param Pv Centre of mass of body1.
+/// @param Pu Centre of mass of body2.
+/// @param Wv Angular velocity of body1.
+/// @param Wu Angular velocity of body2.
+/// @param invMv Total inverse mass of body1.
+/// @param invMu Total inverse mass of body2.
+/// @param Iv Inverse moment of inertia tensor of body1.
+/// @param Iu Inverse moment of inertia tensor of body2.
+/// @param r Point of contact.
+/// @param E Coefficient of restitution. E=0 for inelastic, E=1 for elastic.
+/// @return Impulse magnitude.
+///
+double impulse( double n[],double V[],double U[],double Pv[], double Pu[],double Wv[],double Wu[],double invMv,double invMu,double Iv[][_3D],double Iu[][_3D],double r[],double E ) {
 
 	double J, denom;		//The conservation constant and its denominator
 	double Rv[_3D],Ru[_3D];		//Centre wrt point of contact
@@ -419,14 +575,30 @@ double impulse( double n[],double V[],double U[],double Pv[], double Pu[],double
 	J *= -1.*(1. + E)/denom;
 	return J;
 }
+
+///
+/// @brief Applies boundary conditions to particle velocity.
+///
+/// Applies boundary conditions (specific to `WALL`) to particle velocity.
+/// Three types of conditions can be applied:
+/// - mobile boundary: momentum conserving impulse method that updates both particle and boundary velocities.
+/// - static boundary or periodic: applies boundary conditions to
+/// velocity without adjusting velocity of boundary (not momentum conserving).
+/// - thermalized boundary: draws random particle velocities from a thermal distribution.
+///
+/// @param pp Return pointer to the individual particle whose velocity is being updated.
+/// @param WALL Return pointer to the boundary whose velocity is being updated.
+/// @param n The normal vector to the boundary.
+/// @param SP The species-wide information about MPCD particles.
+/// @param KBT Thermal energy.
+/// @see MPC_BCcollision()
+/// @note The boundary condition is assumed to be in a rest frame for this method.
+///
 void velBC( particleMPC *pp,bc *WALL,double n[_3D],spec *SP,double KBT ) {
-/*
-    This subroutine applies the BC transformation to velocity.
-		The BC is assumed to be in a rest frame (slow moving compared to the MPCD particle)
-*/
+
 	double V[_3D],VN[_3D],VT[_3D],VR[_3D],R[_3D],zip[_3D];
 	double IIpart[_3D][_3D],IIwall[_3D][_3D];
-	double IMpart,IMwall;		//Inverse mass
+	double IMpart,IMwall;	//Inverse mass
 	double J=1.;			//Impulse
 	double rand;			//Random number
 	int i,j;
@@ -446,7 +618,7 @@ void velBC( particleMPC *pp,bc *WALL,double n[_3D],spec *SP,double KBT ) {
 	crossprod( WALL->L,R,VR );
 	//Begin Determining the direction of the impulse
 	for( i=0; i<DIM; i++ ) V[i] = pp->V[i] - WALL->V[i] - VR[i];
-	// 	Calculate normal and tangential components of velocity
+	//Calculate normal and tangential components of velocity
 	proj( V,n,VN,DIM );
 	tang( V,VN,VT,DIM );
 
@@ -501,7 +673,7 @@ void velBC( particleMPC *pp,bc *WALL,double n[_3D],spec *SP,double KBT ) {
 		vel_trans( WALL,VN,VT,n );
 		norm( VN,DIM );
 		norm( VT,DIM );
-		// Apply Thermo boundary conditions
+		//Apply Thermo boundary conditions
 		rand = genrand_gaussMB(WALL->KBT,(SP + (pp->SPID))->MASS);
 		for( i=0; i<DIM; i++ ) VT[i] *= rand;
 		rand = genrand_rayleigh( sqrt(WALL->KBT/(SP + (pp->SPID))->MASS) );
@@ -511,11 +683,7 @@ void velBC( particleMPC *pp,bc *WALL,double n[_3D],spec *SP,double KBT ) {
 		//Add the cartesion shift
 		for( i=0; i<DIM; i++ ) V[i] += WALL->DVxyz[i];
 
-		/************************************************************************/
-		/************************************************************************/
 		//Needs a thermostat to be on!
-		/************************************************************************/
-		/************************************************************************/
 		//Move the velocity out of the particle's rest frame and back into the lab frame
 		for( i=0; i<DIM; i++ ) V[i] += WALL->V[i] + VR[i];
 		//Don't because BC not moving during collision - it is paused
@@ -575,11 +743,20 @@ void velBC( particleMPC *pp,bc *WALL,double n[_3D],spec *SP,double KBT ) {
 		else for( i=0; i<_3D; i++) WALL->dL[i] = 0.0; // fallback for 1D
 	}
 }
+
+///
+/// @brief Applies boundary conditions to particle position.
+///
+/// Applies boundary conditions (specific to `WALL`) to particle position.
+///
+/// @param pp Return pointer to the individual particle whose position is shifted.
+/// @param WALL The boundary.
+/// @param n Normal vector to the boundary.
+/// @see MPC_BCcollision()
+/// @note This routine is called for the application of periodic boundary conditions. 
+/// @note This routine does not stream. This is done in MPC_BCcollision().
+///
 void posBC( particleMPC *pp,bc WALL,double n[] ) {
-/*
-    This subroutine applies the BC transformation to position.
-    IT DOES NOT STREAM! THAT IS DONE IN SEPARATE ROUTINE.
-*/
 	double PN[DIM],PT[DIM];
 	int i;
 
@@ -594,10 +771,18 @@ void posBC( particleMPC *pp,bc WALL,double n[] ) {
 	//Combine normal and tangential components
 	for( i=0; i<DIM; i++ ) pp->Q[i] = PN[i] + PT[i];
 }
+///
+/// @brief Applies boundary conditions to the position of another boundary.
+///
+/// In the case of a collision between two boundaries, this routine applies
+/// the boundary condition transformation (specific to `WALL2`) to a second boundary's (`WALL1`) position.
+///
+/// @param WALL1 Return pointer to the first boundary (that has position updated from interaction with `WALL2`).
+/// @param WALL2 Return pointer to the second boundary.
+/// @param n Normal vector to the boundary (of `WALL1`).
+/// @see BC_BCcollision()
+///
 void BCBCpos( bc *WALL1 ,bc *WALL2,double n[] ) {
-/*
-    This subroutine applies the BC transformation to position of another BC.
-*/
 	double PN[DIM],PT[DIM];
 	int i;
 
@@ -612,154 +797,56 @@ void BCBCpos( bc *WALL1 ,bc *WALL2,double n[] ) {
 	//Combine normal and tangential components
 	for( i=0; i<DIM; i++ ) WALL1->Q[i] = PN[i] + PT[i];
 }
-// void BCBCvel( double cp[_3D],bc *W1,bc *W2,double n[_3D],double KBT ) {
-// /*
-//     This subroutine applies the BC transformation of W2 to velocity of W1.
-// */
-// 	double V[_3D],VN[_3D],VT[_3D],VR1[_3D],VR2[_3D],R[_3D];
-// 	double II1[_3D][_3D],II2[_3D][_3D];	//Inverse moment of inertia
-// 	double IM1,IM2;			//Inverse mass
-// 	double J=1.;			//Impulse
-// 	double rand;			//Random number
-// 	int i,j;
-//
-// 	//Zero everything
-// 	for( i=0; i<_3D; i++ ) {
-// 		V[i] = 0.;
-// 		VN[i] = 0.;
-// 		VT[i] = 0.;
-// 		VR1[i] = 0.;
-// 		VR2[i] = 0.;
-// 		R[i] = 0.;
-// 	}
-//
-// 	//Rotational velocities
-// 	for( i=0; i<DIM; i++ ) R[i] = cp[i] - W1->Q[i];
-// 	crossprod( W1->L,R,VR1 );
-// 	for( i=0; i<DIM; i++ ) R[i] = cp[i] - W2->Q[i];
-// 	crossprod( W2->L,R,VR2 );
-//
-// 	//Calculated the total velocity at the contact point
-// 	for( i=0; i<DIM; i++ ) V[i] = W1->V[i] - W2->V[i] + VR1[i] - VR2[i];
-//
-// 	//Calculate normal and tangential components of velocity
-// 	proj( V,n,VN,DIM );
-// 	tang( V,VN,VT,DIM );
-//
-// 	//Calculate inverse mass and moments of inertia
-// 	for( i=0; i<_3D; i++ ) for( j=0; j<_3D; j++ ) {
-// 		II1[i][j] = 0.;
-// 		II2[i][j] = 0.;
-// 	}
-// 	IM1 = 0.;
-// 	IM2 = 0.;
-// 	if ( W1->DSPLC ) {
-// 		invert3x3(II1,W1->I);
-// 		IM1 = 1. / W1->M;
-// 	}
-// 	if ( W2->DSPLC ) {
-// 		invert3x3(II2,W2->I);
-// 		IM2 = 1. / W2->M;
-// 	}
-//
-// 	//The energy/momentum/angular momentum conserving impulse method
-// 	if( W2->COLL_TYPE == BC_IMP ) {
-// 		vel_trans( W2,VN,VT,n );
-// 		//Combine normal and tangential components
-// 		for( i=0; i<DIM; i++ ) V[i] = VN[i] + VT[i];
-// 		//The impulse's direction is the difference between the two (final minus initial)
-// 		for( i=0; i<DIM; i++ ) V[i] -= (W1->V[i] - W2->V[i] + VR1[i] - VR2[i]);
-// 		//Normalize V. We only want the unit vector. Conservation will determine its magnitude
-// 		norm( V,DIM );
-//
-// 		J = impulse( V,W1->V,W2->V,W1->Q,W2->Q,W1->L,W2->L,IM1,IM2,II1,II2,cp,W2->E );
-// 	}
-// 	//The rule method such as bounceback or reflection or periodic which does NOT necesarily conserve momentum
-// 	else if( W2->COLL_TYPE == BC_SURF_RULES ) {
-// 		vel_trans( W2,VN,VT,n );
-// 		//Combine normal and tangential components
-// 		for( i=0; i<DIM; i++ ) V[i] = VN[i] + VT[i];
-// 		//Move the velocity out of the particle's rest frame and back into the lab frame
-// 		for( i=0; i<DIM; i++ ) V[i] += W2->V[i] + VR2[i];
-// 		//Make V the change in momentum instead of the velocity by subtracting the old velocity and times mass
-// 		for( i=0; i<DIM; i++ ) {
-// 			V[i] -= W1->V[i];
-// 			V[i] *= W1->M;
-// 		}
-// 		//Set J=1 because the total change in momentum (i.e. impulse) is in V.
-// 		J = 1.;
-// 	}
-// 	else if( W2->COLL_TYPE == BC_THERMO_SURF ) {
-// 		vel_trans( W2,VN,VT,n );
-// 		norm( VN,DIM );
-// 		norm( VT,DIM );
-// 		// Apply Thermo boundary conditions
-// 		rand = genrand_gauss();
-// 		for( i=0; i<DIM; i++ ) VT[i] *= rand;
-// 		rand = genrand_rayleigh( sqrt(KBT/W1->M ) );
-// 		for( i=0; i<DIM; i++ ) VN[i] *= rand;
-// 		//Combine normal and tangential components
-// 		for( i=0; i<DIM; i++ ) V[i] = VN[i] + VT[i];
-//
-// 		//Move the velocity out of the particle's rest frame and back into the lab frame
-// 		for( i=0; i<DIM; i++ ) V[i] += W2->V[i] + VR2[i];
-// 		//Make V the change in momentum instead of the velocity by subtracting the old velocity and times mass
-// 		for( i=0; i<DIM; i++ ) {
-// 			V[i] -= W1->V[i];
-// 			V[i] *= W1->M;
-// 		}
-// 		//Set J=1 because the total change in momentum (i.e. impulse) is in V.
-// 		J = 1.;
-// 	}
-// 	else if( W2->COLL_TYPE == BC_HALF_RULES ) {
-// 		printf("Error: Rule-based solvent/BC collisions at t/2 not yet operational.\n");
-// 		exit(1);
-// 	}
-// 	else if( W2->COLL_TYPE == BC_THERMO_HALF ){
-// 		printf("Error: Probabilistic solvent/BC collisions at t/2 not yet operational.\n");
-// 		exit(1);
-// 	}
-// 	else {
-// 		printf("Error: Solvent/BC Collision type unrecognized.\n");
-// 		exit(1);
-// 	}
-//
-// 	//Use the impulse to set the velocity of W1
-// 	for( i=0; i<DIM; i++ ) W1->V[i] += V[i] * J * IM1;
-// 	for( i=0; i<DIM; i++ ) VN[i] = cp[i] - W1->Q[i];
-// 	crossprod( VN,V,VT );
-// // 	dotprodmat( VT,II1,VN,_3D );
-// 	dotprodMatVec( II1,VT,VN,_3D );
-// 	for( i=0; i<_3D; i++) W1->L[i] += VN[i] * J;
-//
-// 	//Use the impulse to set the velocity of W2
-// 	if( W2->DSPLC ) {
-// 		for( i=0; i<DIM; i++ ) W2->V[i] -= V[i] * J * IM2;
-// 		for( i=0; i<DIM; i++ ) VN[i] = cp[i] - W2->Q[i];
-// 		crossprod( VN,V,VT );
-// // 		dotprodmat( VT,II2,VN,_3D );
-// 		dotprodMatVec( II2,VT,VN,_3D );
-// 		for( i=0; i<_3D; i++) W2->L[i] -= VN[i] * J;
-// 	}
-// }
+
+///
+/// @brief Transforms the particle's normal and tangential velocity components.
+///
+/// Applies boundary conditions to the particle's normal velocity component and tangential component.
+/// These normal and tangential components were identified in velBC().
+/// The applied boundary conditions include transformations to the magnitude of the velocity,
+/// and flips to the orientation of the velocity at the boundary.
+///
+/// @param WALL The boundary.
+/// @param VN Normal component of the particle's velocity that is being transformed.
+/// @param VT Tangential component of the particle's velocity that is being transformed.
+/// @param norm Normal vector (e.g. to the boundary).
+/// @see velBC()
+///
 void vel_trans( bc *WALL,double VN[],double VT[],double norm[] ) {
-/*
-    Transform the normal and tangential components of velocity
-*/
+
 	int i;
 	for( i=0; i<DIM; i++ ) {
 		VN[i] *= WALL->MVN;
+		// Adding a velocity component (magnitude is DVN) in the normal direction to the boundary
 		VN[i] += WALL->DVN*norm[i];
 		VT[i] *= WALL->MVT;
+		// Since VT has no component normal to the boundary, we add (magnitude of DVT) to all remaining components.
 		VT[i] += WALL->DVT;
 	}
 }
+
+///
+/// @brief Determines the cross time from the two candidates.
+///
+/// The crosstime calculations found two possible times for the particle cross time,
+/// the time when the particle crossed the boundary. This method considers both times
+/// and determines the best choice, taking into consideration:
+/// - the crosstime must be within the start and end of the streaming times.
+/// - if both satisfy this range, then take the smaller of the times.
+///
+/// @param tstep Total streaming time (timestep).
+/// @param tp Candidate crosstime 1.
+/// @param tn Candidate crosstime 2.
+/// @param p Particle index.
+/// @param flag Flag for whether a successful cross time was found.
+/// @see chooseBC()
+/// @return Returns the crosstime.
+/// @note If `flag` returns 1,
+/// then the calculation failed (the particle didn't cross the boundary
+/// between the initial time and the timestep interval).
+///
 double chooseT( double tstep,double tp,double tn,int p,int *flag ) {
-/*
-    This routine choose which of the
-    calculated cross times is the proper
-    one for the collision event
-*/
+
 	double tc=tstep;		//chosen time
 	double zero = -TOL;
 	double step = tstep+TOL;
@@ -788,11 +875,28 @@ double chooseT( double tstep,double tp,double tn,int p,int *flag ) {
 	}
 	return tc;
 }
+
+///
+/// @brief Finds if the particle lies inside the boundary.
+///
+/// This routine finds if any of the particles is inside the boundary. It does this by
+/// calculating `W` (if `W` < 0 then the particle is inside the boundary). In
+/// the process, the boundary is temporarily shifted and rotated if required by
+/// periodic boundary conditions and boundary orientation. If a particle is find to
+/// lie inside the particle, the routine stops while returning the index of the particle
+/// within the boundary and its corresponding W.
+///
+/// @param WALL The boundary.
+/// @param pp Pointer to the first element in the mpcd particle array.
+/// @param chosenW Return pointer to the `W` value (flag) of a particle identified 
+///				   as being within the boundary. If no particle is within a boundary,
+///                it is returned as 1.0.
+/// @param chosenP Return pointer to the index for the particle identified as being inside
+///				   a boundary.
+/// @see BC_MPCcollision()
+///
 void chooseP( bc WALL,particleMPC *pp,double *chosenW,int *chosenP ) {
-/*
-   Check if any of the particles are now inside the BC.
-   Find the particle
- */
+
  	int i;
 	double tempW = 1.0;
 	double shift[DIM];
@@ -814,12 +918,28 @@ void chooseP( bc WALL,particleMPC *pp,double *chosenW,int *chosenP ) {
 		shiftbackBC( shift,&WALL );
 	}
 }
+
+///
+/// @brief Performs the collision event between two boundaries.
+///
+/// If at least one of the boundaries is mobile,
+/// then BC_BCcollision is performed for pairs of boundaries. The `stillWall` may also
+/// be a mobile boundary, but is treated as static for this collision.
+/// This routine does the following:
+/// - Finds if the boundaries overlap (calculating `W` in calcW_BC()).
+/// - Applies boundary conditions to the velocity of the moving boundary (bounce-back or reflection).
+/// - Updates the velocity of the static boundary (treating the collision as an elastic collision).
+/// - Applies position transformations to the moving wall if relevant (periodic boundary conditions).
+///
+/// @param movingWall Return pointer the mobile boundary.
+/// @param stillWall The static boundary.
+/// @param t_step The time step interval.
+/// @param flag Return pointer that flags that the `movingWall` moved this time interval.
+/// @see calcW_BC()
+/// @see BCBCpos()
+///
 void BC_BCcollision( bc *movingWall,bc *stillWall,double t_step,int *flag ) {
-/*
-   Check if movingWall violates stillWall (still wall is not necesarily still - but the moving wall is moving at this part of the code).
-   If so apply collision
-   CURRENTLY ONLY DEALS WITH SPHERES
-*/
+
 	int i;
 	double W;
 	double n[_3D];		//Normal
@@ -965,18 +1085,6 @@ void BC_BCcollision( bc *movingWall,bc *stillWall,double t_step,int *flag ) {
 		#ifdef DBG
 			if( DBUG == DBGBCBC ) printf( "\tAssign new pos.\n" );
 		#endif
-		// //Put particle back where it was if it's a bounce-back wall
-		// if( feq(stillWall->MVN,-1.0) && feq(stillWall->MVT,-1.0) ) {
-		// 	#ifdef DBG
-		// 		if( DBUG == DBGBCBC ) printf( "\tBounce-back so replace\n" );
-		// 	#endif
-		// 	for( i=0; i<DIM; i++ ) movingWall->Q[i] = movingWall->Q_old[i];
-		// }
-		// else{
-		// 	//Only apply the positional BCs if the CENTRE of the particle has passed the other BC
-		// 	W = calcW_BC( *movingWall,*stillWall,1 );
-		// 	if( W<=0.0 ) BCBCpos( movingWall,stillWall,n );
-		// }
 		// PBC
 		if( feq(stillWall->MVN,1.0) && feq(stillWall->MVT,1.0) ) {
 			//Only apply the positional BCs if the CENTRE of the particle has passed the other BC
@@ -1001,13 +1109,40 @@ void BC_BCcollision( bc *movingWall,bc *stillWall,double t_step,int *flag ) {
 		// #endif
 	}
 }
+
+///
+/// @brief Performs the collision event between the moving boundary and particles.
+///
+/// This routine performs the collision event between a boundary in motion and particles.
+/// The following steps are performed:
+/// - Finds if the particle is inside the boundary.
+/// - Rewind the particle to the boundary (in the moving reference frame of the boundary).
+/// - Apply boundary conditions to the particle using MPC_BCcollision().
+///
+/// @param WALL The boundary.
+/// @param BCcurrent The index for the boundary.
+/// @param pp Return pointer to the first element in the MPCD particle array.
+/// @param pSP The species-wide information about MPCD particles.
+/// @param KBT Thermal energy.
+/// @param GRAV Constant acceleration from external force.
+/// @param t_step The time step interval.
+/// @param simMD A pointer to the entire MD portion of the simulation.
+/// @param MDmode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
+/// @param LC The flag for the fluid being liquid crystalline.
+/// @param bcCNT Count for failed particle-boundary interaction.
+/// @param reCNT Count for failed rewind events (particle not able to rewind to boundary).
+/// @param rethermCNT Count for failed rethermalization events.
+/// @see chooseP()
+/// @see timestep()
+/// @see MPC_BCcollision()
+/// @see BC_BCcollision()
+/// @note Particle collisions with other boundaries (after these new transformations are applied) are handled in MPC_BCcollision().
+/// @note Boundary to boundary collisions were handled in BC_BCcollision().
+/// @note The change in velocity for the boundary (due to this BC-particle interaction) is calculated in MPC_BCcollision()
+/// and the impulse to the boundary is applied in timestep().
+///
 void BC_MPCcollision(bc WALL[],int BCcurrent,particleMPC *pp,spec *pSP,double KBT,double GRAV[],double t_step,simptr simMD,int MDmode,int LC,int *bcCNT,int *reCNT,int *rethermCNT) {
-/*
-   This subroutine takes care of all the collision occuring
-   because a BC is translating through SRD particles.
-	 It does so by giving any collided particles negative the BC's velocity, rewinding them and playing them from there.
-   It shouldn't have to worry about collisions with other BCs which were handled in BC_BCcollision()
-*/
+
 	int i;
 	int chosenP=GPOP+1;					//Particle to go with t_min
 	int flag = 1;								//flag for if should keep looping. Loop while 1.
@@ -1095,11 +1230,24 @@ void BC_MPCcollision(bc WALL[],int BCcurrent,particleMPC *pp,spec *pSP,double KB
 		}
 	}
 }
+
+///
+/// @brief Finds if particles are inside any of the boundaries and
+/// returns the relevant boundary and crosstime.
+///
+/// Finds if particles are inside any of the boundaries and
+/// returns the relevant boundary and crosstime.
+///
+/// @param WALL The boundary.
+/// @param currentP Index for the current particle.
+/// @param pp The individual mpcd particle.
+/// @param t_minColl The time for the paricle to go from current position to the collision point (the boundary).
+/// @param chosenW The W value (flag).
+/// @param chosenBC Index for the boundary.
+/// @param t_left The time left for the particle to move.
+/// @see MPC_BCcollision
+///
 void chooseBC( bc WALL[],int currentP,particleMPC *pp,double *t_minColl,double *chosenW,int *chosenBC,double t_left ) {
-/*
-   We must check if the particle is inside any of the BCs
-   This subroutine finds the BC and the time of collision
-*/
 
 	int i,flag;
 	double t1,t2,tc;
@@ -1154,6 +1302,10 @@ void chooseBC( bc WALL[],int currentP,particleMPC *pp,double *t_minColl,double *
 			if( tempW < 0.0 ) {
 				//Calculate crosstime
 				crosstimeReverse( *(pp+currentP),WALL[i],&t1,&t2,t_left );
+				// t1 and t2 calculated in the line above are the times between when
+				// the particle crossed the boundary, and the end time of streaming (tstep).
+				// Convert times to cross-time
+				// (time from start of streaming to when the particle crossed boundary)
 				t1=t_left-t1;
 				t2=t_left-t2;
 				// #ifdef DBG
@@ -1178,11 +1330,35 @@ void chooseBC( bc WALL[],int currentP,particleMPC *pp,double *t_minColl,double *
 		}
 	}
 }
+
+///
+/// @brief Performs the collision event between the particles and boundaries.
+///
+/// Performs the collision event between the particles and boundaries.
+/// This routine follows the steps:
+/// - Find if the particle has streamed into a boundary and find the boundary.
+/// - Rewind the particle to the surface of the boundary.
+/// - Apply the boundary conditions (set by the boundary) to the particle's
+/// velocity, position and orientation.
+/// - Update the time left for streaming, and stream the particle for the remaining time.
+///
+/// @param pp Retrun pointer to the first element in the MPCD particle array.
+/// @param currentP Index for the current particle.
+/// @param WALL The boundary.
+/// @param pSP The species-wide information about MPCD particles.
+/// @param KBT Thermal energy.
+/// @param t_step The time step interval.
+/// @param LC The flag for the fluid being liquid crystalline.
+/// @param bcCNT Count for failed particle-boundary interaction.
+/// @param reCNT Count for failed rewind events (particle not able to rewind to boundary).
+/// @param rethermCNT Count for failed rethermalization events.
+/// @param flagMPConBC The flag for which type of particle-boundary interaction.
+/// @see BC_MPCcollision()
+/// @note The `flagMPConBC` is mostly = 1 (for particle colliding with static boundary),
+/// but the flag = 0 when boundaries collide with the particles (in BC_MPCcollision()).
+/// @note The routine will keep looping over until the particle is clear of the boundaries.
+///
 void MPC_BCcollision( particleMPC *pp,int currentP,bc WALL[],spec *pSP,double KBT,double t_step,int LC,int *bcCNT,int *reCNT,int *rethermCNT, int flagMPConBC ) {
-	/*
-	   This routine does the collision of MPCD particles with a BC
-		 Normal use is flagMPConBC=1 but this routine is also used for BC on MPCD when flagMPConBC=0
-	*/
 	double t_left = t_step;	//time left to move for
 	double t_coll=0.0;			//time to go from current position to the collision point
 	int chosenBC=0;					//BC that the collision occurs with
@@ -1246,7 +1422,7 @@ void MPC_BCcollision( particleMPC *pp,int currentP,bc WALL[],spec *pSP,double KB
 							printf( "\tDistance: %lf\n", distpoints( WALL[chosenBC].Q,(pp+currentP)->Q,DIM ) );
 							printf( "\tNumber of collision attempts %d\n", cnt );
 							if( Wn<-TOL ) {
-								printf("Fuck me too\n");
+								printf("Darn\n");
 								wait4u();
 							}
 						}
@@ -1316,16 +1492,27 @@ void MPC_BCcollision( particleMPC *pp,int currentP,bc WALL[],spec *pSP,double KB
 		if( DBUG==DBGMPCBC  || DBUG==DBGBCMPC ) printf( "\tNumber of collision attempts %d\n", cnt );
 	#endif
 }
+
+///
+/// @brief Finds the normal to the surface.
+///
+/// Entering this routine, the particle is temporarily sitting on the surface.
+/// This method finds the normal to the surface at the particle position. The normal
+/// is found for boundaries of the form ( a(x-h) )^p + (b(y-k))^p + (c(z-l))^p - r =0.
+/// - if p = 1 and 2, specific solutions are applied.
+/// - for all other cases calculate the normal as the gradient of the surface.
+/// - corrections are also applied for wavy walls (calling normalWavy()).
+///
+/// @param n Return pointer to the normal to the surface.
+/// @param WALL The boundary.
+/// @param point The position of the particle.
+/// @param dimension The dimensions of the system
+/// @see normalWavy()
+/// @see normalNon4foldSymm()
+/// @return Returns the normal.
+///
 double *normal( double *n,bc WALL,double *point,int dimension ) {
-	//2D!?
-/*
-   Find the normal to the surface at this point (particleMPC is
-   presently ON surface). We take the gradient of
-   ( a(x-h) )^p + (b(y-k))^p + (c(z-l))^p - r =0
-   since the gradient is equal to the normal. For powers of
-   1 and 2 we take shortcuts and have programmed in the specific
-   solution, for higher powers we use a more general solution
-*/
+
 	int i;
 
 	if( feq(WALL.ROTSYMM[0],4.0) && feq(WALL.ROTSYMM[1],4.0) ) {
@@ -1364,6 +1551,18 @@ double *normal( double *n,bc WALL,double *point,int dimension ) {
 	return n;
 }
 
+///
+/// @brief Finds the normal to the wavy wall surface.
+///
+/// Finds the normal to the wavy wall surface.
+///
+/// @param n Return pointer to the normal to the surface.
+/// @param WALL The boundary.
+/// @param point The position of the particle.
+/// @param dimension The dimensions of the system.
+/// @see normal()
+/// @return Returns the normal.
+///
 double *normalWavy( double *n,bc WALL,double *point,int dimension ) {
 	double W1=0.0,W2=0.0, div;
 	double dw1[3], dw2[3];
@@ -1399,7 +1598,7 @@ double *normalWavy( double *n,bc WALL,double *point,int dimension ) {
 			if ( !feq(WALL.B[1],0.0) ) {
 				dw1[0] = WALL.A[0]*WALL.A[1]*(WALL.Q[1]-point[1])/div;
 				dw1[1] = WALL.A[0]*WALL.A[1]*(point[0]-WALL.Q[0])/div;
-				dw1[2] = 0; 
+				dw1[2] = 0;
 			}
 			if( dimension>2 && !feq(WALL.B[2],0.0) ){
 				dw2[0] = WALL.A[2]*WALL.A[0]*(point[0]-WALL.Q[0])*(point[2]-WALL.Q[2])/(sqrt(div)*(div+pow(WALL.A[2]*(point[2]-WALL.Q[2]),2)));
@@ -1436,12 +1635,21 @@ double *normalWavy( double *n,bc WALL,double *point,int dimension ) {
 	return n;
 }
 
+///
+/// @brief Finding the surface normal for the non 4-fold symmetry boundaries.
+///
+/// Leading into this routine, the particle is located on the boundary.
+/// To find the normal of this boundary (at the particle position),
+/// we take the gradient of the (more complex non 4-fold symmetry form of the) surface.
+///
+/// @param n Return pointer to the normal to the surface.
+/// @param WALL The boundary.
+/// @param point The position of the particle.
+/// @param dimension The dimensions of the system.
+/// @see normal()
+/// @return Returns the normal.
+///
 double *normalNon4foldSymm( double *n,bc WALL,double *point,int dimension ) {
-/*
-   Find the normal to the surface at this point (particleMPC is
-   presently ON surface). We take the gradient of
-   the more complex non 4-fold symmetry form of the BC surfaces
-*/
 	double r,phi,theta;
 	double cosT,sinT,cosP,sinP;
 	double dr,dphi,dtheta;
@@ -1504,19 +1712,36 @@ double *normalNon4foldSymm( double *n,bc WALL,double *point,int dimension ) {
 
 	return n;
 }
+
+///
+/// @brief Applies a hard-coded periodic boundary condition shift to a particle (along a particular axis).
+///
+/// Applies a hardcoded periodic boundary condition shift to a particle (along a particular axis).y
+///
+/// @param pp Return pointer to the individual mpcd particle.
+/// @param axis Cartesian axis.
+/// @note Not currently used but might be useful for testing.
+///
 void rudimentaryPBC( particleMPC *pp,int axis ) {
-	/*
-	   This routine does a "hard" PBC along a given axis
-	*/
+
 	double thisXYZ = (double)XYZ[axis];
 
 	if( pp->Q[axis] < 0.0 ) pp->Q[axis] += thisXYZ;
 	else if( pp->Q[axis] > thisXYZ ) pp->Q[axis] -= thisXYZ;
 }
+
+///
+/// @brief Applies a hard-coded bounce-back wall transformation to the particle's velocity (along a particular axis).
+///
+/// Applies a hardcoded bounce-back wall transformation to the particle's velocity (along a particular axis).
+/// This models (impermeable, no-slip walls).
+///
+/// @param pp Return pointer to the individual mpcd particle being transformed.
+/// @param axis Cartesian axis.
+/// @note Not currently used but might be useful for testing.
+///
 void rudimentaryBBBC( particleMPC *pp,int axis ) {
-	/*
-	   This routine does a "hard-code" bounce-back wall along a given axis (impermiable, no-slip walls above and below)
-	*/
+
 	int d;
 	double thisXYZ = (double)XYZ[axis];
 
@@ -1529,40 +1754,74 @@ void rudimentaryBBBC( particleMPC *pp,int axis ) {
 		for( d=0; d<DIM; d++ ) pp->V[d] *= -1.0;
 	}
 }
+
+///
+/// @brief Applies a hard-coded periodic boundary condition shift to a particle (along all axes).
+///
+/// Applies a hard-coded periodic boundary condition shift to a particle (along all axes).
+///
+/// @param pp Return pointer to ghe individual mpcd particle being shifted.
+/// @note Not currently used but might be useful for testing.
+///
 void rudimentaryPBC_box( particleMPC *pp ) {
-	/*
-	   This routine does a "hard" PBC along a given axis
-	*/
+
 	int d;
 	for( d=0; d<DIM; d++ ) rudimentaryPBC( pp,d );
 }
+
+///
+/// @brief Applies a hard-coded bounce-back wall transformation to the particle's velocity (along all axes).
+///
+/// Applies a hard-coded bounce-back wall transformation to the particle's velocity (along all axes).
+///
+/// @param pp Return pointer to the individual mpcd particle whose velocity is being transformed.
+/// @note Not currently used but might be useful for testing.
+///
 void rudimentaryBBBC_box( particleMPC *pp ) {
-	/*
-	   This routine does a "hard" PBC along a given axis
-	*/
+
 	int d;
 	for( d=0; d<DIM; d++ ) rudimentaryBBBC( pp,d );
 }
+
+///
+/// @brief Applies a hard-coded bounce-back (along x) and periodic boundary condition tranformations (along y and z (if 3D)) for a particle.
+///
+/// Applies a hard-coded bounce-back (along x) and periodic boundary condition tranformations (along y and z (if 3D)) for a particle.
+///
+/// @param pp Return pointer to the individual mpcd particle being modified.
+/// @note Not currently used but might be useful for testing.
+///
 void rudimentaryChannel_x( particleMPC *pp ) {
-	/*
-	   This routine does a "hard-code" BBBC along x and PBC along y and z (if 3D)
-	*/
+
 	rudimentaryBBBC( pp,0 );
 	rudimentaryPBC( pp,1 );
 	if( DIM>=_3D ) rudimentaryPBC( pp,2 );
 }
+///
+/// @brief Applies a hard-coded bounce-back (along y) and periodic boundary condition tranformations (along x and z (if 3D)) for a particle.
+///
+/// Applies a hard-coded bounce-back (along y) and periodic boundary condition tranformations (along x and z (if 3D)) for a particle.
+///
+/// @param pp Return pointer to the individual mpcd particle being modified.
+/// @note Not currently used but might be useful for testing.
+///
 void rudimentaryChannel_y( particleMPC *pp ) {
-	/*
-	   This routine does a "hard-code" BBBC along y and PBC along x and z (if 3D)
-	*/
+
 	rudimentaryBBBC( pp,1 );
 	rudimentaryPBC( pp,0 );
 	if( DIM>=_3D ) rudimentaryPBC( pp,2 );
 }
+
+///
+/// @brief Applies a hard-coded bounce-back (along z (if 3D)) and periodic boundary condition tranformations (along x and y) for a particle.
+///
+/// Applies a hard-coded bounce-back (along z (if 3D)) and periodic boundary condition tranformations (along x and y) for a particle.
+///
+/// @param pp Return pointer to the individual mpcd particle being modified.
+/// @note Not currently used but might be useful for testing.
+///
 void rudimentaryChannel_z( particleMPC *pp ) {
-	/*
-	   This routine does a "hard-code" BBBC along z (if 3D) and PBC along x and y
-	*/
+
 	if( DIM>=_3D ) rudimentaryBBBC( pp,2 );
 	rudimentaryPBC( pp,0 );
 	rudimentaryPBC( pp,1 );

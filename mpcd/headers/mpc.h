@@ -61,7 +61,11 @@ void chateLangevinMPC( cell *CL,spec *SP,double KBT,double FRICCO,double Step,do
 void dipoleAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,int outP );
 void MPCcollision( cell *CL,spec *SP,specSwimmer SS,double KBT,int RTECH,double C,double S,double FRICCO,double TimeStep,int MDmode,int LC,double RELAX,double *CLQ,int outP );
 
-void incompColl( cell *CL,spec *SP,specSwimmer SS,double TimeStep,int MDmode,double *CLQ,int outP );
+void incompColl( cell *CL,spec *SP,specSwimmer SS,int INCOMPmode,int MDmode,double *CLQ,int outP );
+void incompAddVirial( cell *CL,double virialCoB, double virialCoC, double virialCoD, spec *SP,specSwimmer SS );
+void incompSwap( cell *CL,spec *SP,specSwimmer SS );
+void incompSubtractDivergence( cell *CL,spec *SP,specSwimmer SS );
+
 void multiphaseColl( cell *CL,spec *SP,specSwimmer SS,int multiphaseMode,double KBT,int MDmode,double *CLQ,int outP );
 void multiphaseCollPoint( cell *CL,spec *SP,specSwimmer SS, double KBT,int MDmode,double *CLQ,int outP );
 

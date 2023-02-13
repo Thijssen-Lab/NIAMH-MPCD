@@ -56,8 +56,8 @@ clean:
 # 	@echo "	About to perform:  /bin/rm -f $(program) $(objects) "
 	@( /bin/rm -f $(program) $(objects) ./*.out )
 #----------------------------------------------------------------------------------------------------
-.PHONY: doc
-doc:    $(sources)
+.PHONY: docs
+docs:    $(sources)
 	@echo "Building documentation"
-	doxygen doc/Doxyfile
+	doxygen doxyfile
 #----------------------------------------------------------------------------------------------------
