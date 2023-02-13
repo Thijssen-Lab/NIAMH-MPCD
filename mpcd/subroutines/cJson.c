@@ -332,8 +332,8 @@ void dynAllocStr(const char *val, char **toReturn){
 /// @param cJSONRoot The root cJSON object to parse.
 /// @param jsonTag The JSON tag/ name to search for in the object. Case-sensitive.
 /// @param d The default value to return if the tag is not found.
+/// @param toReturn String pointer, acts as a return pointer. Returns the string corresponding to the JSON tag specified.
 /// @param head The head of the linked list containing all JSON tags/ names recognised by MPCD.
-/// @return The parsed value of the string object corresponding to `jsonTag`.
 ///
 void getJObjStr(cJSON *cJSONRoot, const char* jsonTag, const char* d, char **toReturn, linkedList *head){
    pushLL(head, jsonTag); // add jsonTag to head
