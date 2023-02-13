@@ -8,7 +8,7 @@
 ///
 /// The swimmers repulse each other via a Weeks-Chandler-Andersen potential. The monomers are coupled two-by-two with
 /// either FENE, Hookean interaction, or a 6th order potential. More information on those potentials can be found
-/// @link https://doi.org/10.1002/elps.200800673 here@endlink.
+/// <a href="https://doi.org/10.1002/elps.200800673">here</a>.
 /// The swimmers can become non-interacting, ie no WCA force between different dimers, if the appropriate tag is turned
 /// on.
 ///
@@ -444,8 +444,8 @@ void swimmerOri( double n[],swimmer *sw ) {
 /// The force only acts at radii smaller than `rcut`, its strength depends on `eps`, and its magnitude is capped at
 /// `fcap`.
 ///
-/// To get the force vector this must be multiplied by `vec(r)`. For more details,
-/// @link[https://doi.org/10.1002/elps.200800673] see@endlink.
+/// To get the force vector this must be multiplied by `vec(r)`. For more details, see
+/// <a href="https://doi.org/10.1002/elps.200800673">here</a>.
 ///
 /// @param r Distance between two monomers, scaled by their size `sigma` (default value 4, can be changed in the input file).
 /// @param eps Interaction energy. Default value of 1.
@@ -470,8 +470,8 @@ double swimmerWCA( double r,double eps ) {
 /// @brief Calculate the FENE force from the separation `r` scaled by an equilibrium distance `ro`, default value 4.
 ///
 /// The value of `ro` can be changed in the input file. To get the force vector this must be multiplied by `vec(r)`. If
-/// the FENE chain is passed then there is a large "backup" force to pull the monomers together. For more details,
-/// @link https://doi.org/10.1002/elps.200800673 see@endlink.
+/// the FENE chain is passed then there is a large "backup" force to pull the monomers together. For more details, see
+/// <a href="https://doi.org/10.1002/elps.200800673">here</a>.
 ///
 /// @param r Scaled distance between two halves of a swimmer.
 /// @param k Spring strength.
@@ -524,7 +524,7 @@ double swimmerSpring6( double r,double k ) {
 /// velocity, then the boundary conditions are used to check that the swimmer is still in bounds. The forces (between
 /// the monomer couples) are updated at the new position, the acceleration is calculated from there, and the velocity is
 /// updated again, now to its value at the end of the timestep. For more details,
-/// @link[https://en.wikipedia.org/wiki/Verlet_integration] see@endlink.
+/// <a href="https://en.wikipedia.org/wiki/Verlet_integration">here</a>.
 ///
 /// @param SS Swimmer properties.
 /// @param s List of swimmers. Their positions, velocities, and accelerations will be updated.
@@ -580,11 +580,11 @@ void swimmerVerlet_nonInteracting( specSwimmer SS,swimmer *s,double dt,int sprin
 /// The velocity is first updated to its value at the half timestep. The position is updated using this velocity, then
 /// the boundary conditions are used to check that the swimmer is still in bounds. The forces (between the monomer
 /// couples and between each monomers) are updated at the new position, the acceleration is calculated from there, and
-/// the velocity is updated again, now to its value at the end of the timestep. For more details,
-/// @link https://en.wikipedia.org/wiki/Verlet_integration see@endlink.
+/// the velocity is updated again, now to its value at the end of the timestep. For more details, see 
+/// <a href="https://en.wikipedia.org/wiki/Verlet_integration">here</a>.
 ///
 /// @param SS Swimmer properties.
-/// @param s List of swimmers. Their positions, velocities, and accelerations will be updated.
+/// @param swimmers List of swimmers. Their positions, velocities, and accelerations will be updated.
 /// @param dt Length of time interval used for integration.
 /// @param springType Tag for the type of spring used. Refer to definition.h for spring list.
 /// @param WALL Boundary conditions, used for a check halfway through the function.
@@ -686,7 +686,7 @@ void smonoDist( double r[],double *dr,smono m1, smono m2 ) {
 /// Calculate the magnitude of the force between two monomers in the same swimmer, using a spring coupling and a WCA
 /// repulsion.
 ///
-/// See @link https://doi.org/10.1002/elps.200800673 @endlink for more details and definitions.h for the spring types.
+/// See <a href="https://doi.org/10.1002/elps.200800673">here</a> for more details and definitions.h for the spring types.
 ///
 /// @param dr Distance between the monomers. Scaled by sigma for the WCA interaction, and by ro for the spring coupling.
 /// @param SS Swimmer properties.

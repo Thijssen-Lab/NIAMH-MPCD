@@ -24,4 +24,4 @@ Runs/*
 /.idea/*
 
 #doxygen
-doxyout/*
+docs/doxyout/*

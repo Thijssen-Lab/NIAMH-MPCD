@@ -1,7 +1,7 @@
 # Guide to MPCD Outputs
 
 ## Contents
-1. [Introduction](#introduction)
+1. [Introduction](#introduction-out)
 2. [Output Tables](#output-tables)
     - [System Information](#system-information)
     - [Scalar Outputs](#scalar-outputs)
@@ -12,7 +12,7 @@
     - [Swimmers](#swimmers)
 
 
-## Introduction
+## Introduction         {#introduction-out}
 
 This is a comprehensive reference guide to MPCD output data files and what one might find in them. 
 
@@ -21,16 +21,16 @@ For MPCD to output data, the corresponding flag must be set to non-zero in the `
 With the exception of `synopsis.dat`, the values in the input are the frequency (in units of MPCD time steps) with which the relevant data will be written to the outputs for the corresponding tag. 
 All outputs are written to `.dat` files, which are uncompressed text files.
 
-## Output Tables
+## Output Tables            {#output-tables}
 
-### System Information
+### System Information          {#system-information}
 
 | Input tag       | Output file      | Description                                                                                                                                                                                                      |
 |-----------------|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `synopsisOut`   | `synopsis.dat`   | Synopsis output. Highly recommended to be on. 1 = on, 0 = off. Provides a detailed documentation of simulation information as the code runs.                                                                     |
 | `checkpointOut` | `checkpoint.dat` | Simulation checkpointing. Provides data for re-populating the system and restarting another simulation from this point. Can be set to be on a physical timer, rather than based on time-step, using an override. |
 
-### Scalar Outputs
+### Scalar Outputs          {#scalar-outputs}
 
 | Input tag        | Output file          | Description                                                             | Outputs                       | Column Headers   |
 |------------------|----------------------|-------------------------------------------------------------------------|-------------------------------|------------------|
@@ -45,16 +45,16 @@ All outputs are written to `.dat` files, which are uncompressed text files.
 | `binderOut`      | `binderCumulant.dat` | Binder cumulant, bin size must be set in `binderBin`                    | Time                          | `t`              |
 |                  |                      |                                                                         | Binder cumulant               | `BinderCumulant` |
 
-### Trajectory Outputs
+### Trajectory Outputs          {#trajectory-outputs}
 | Input tag          | Output file              | Description                                                                              | Outputs                        | Column Headers                                                    |
 |--------------------|--------------------------|------------------------------------------------------------------------------------------|--------------------------------|-------------------------------------------------------------------|
 | `trajOut`          | `detailedSP0.dat`        | Detailed particle trajectories for every particle of species type given by `trajSpecOut` | Time                           | `t`                                                               |
 |                    |                          |                                                                                          | X, Y, Z co-ordinates           | `QX`,`QY`,`QZ`                                                    |
 |                    |                          |                                                                                          | Cell velocities                | `VX`,`VY`,`VZ`                                                    |
-|                    |                          |                                                                                          | Speed                          | &#x7c;`V`&#x7c;                                                   |
+|                    |                          |                                                                                          | Speed                          | \|`V`\|                                                  |
 |                    |                          |                                                                                          | Species velocities             | `UX`,`UY`,`UZ`                                                    |
 
-### Field Outputs
+### Field Outputs           {#field-outputs}
 
 | Input tag          | Output file              | Description                                                                              | Outputs                        | Column Headers                                                    |
 |--------------------|--------------------------|------------------------------------------------------------------------------------------|--------------------------------|-------------------------------------------------------------------|
@@ -79,13 +79,13 @@ All outputs are written to `.dat` files, which are uncompressed text files.
 |                    |                          |                                                                                          | Q tensor components            | `QXX`,`QXY`...`QZY`,`QZZ`                                         |
 | `qkTensOut`        | `recipOrder.dat`         | Reciprocal Q tensor field                                                                | Time                           | `t`                                                               |
 |                    |                          |                                                                                          | Wave Vectors                   | `K123_X`,`K123_Y`,`K123_Z`                                        |
-|                    |                          |                                                                                          | Squared-modulus of Q tensor    | &#124;`QXX`&#124;`2`,&#124;`QXY`&#124;`2`...,&#124;`QZZ`&#124;`2` |
+|                    |                          |                                                                                          | Squared-modulus of Q tensor    | \|`QXX`\|`2`,\|`QXY`\|`2`...,\|`QZZ`\|`2` |
 | `oriEnOut`         | `enfield.dat`            | Orientational energy field                                                               | X, Y, Z co-ordinates           | `QX`,`QY`,`QZ`                                                    |
 |                    |                          |                                                                                          | Kinetic energy                 | `MPC_kin`                                                         |
 |                    |                          |                                                                                          | Nematic energy                 | `tMPC_nem`                                                        |
 | `colourOut`        | `multiphase.dat`         | Colour/ phi/ species-type field                                                          | Time                           | `t`                                                               |
 |                    |                          |                                                                                          | X, Y, Z co-ordinates           | `QX`,`QY`,`QZ`                                                    |
-|                    |                          |                                                                                          | multiphase                     | `N_0`                                                             |
+|                    |                          |                                                                                          | multiphase                     | `N_0`,`N_1`, ...                                                             |
 | `pressureOut`      | `pressure.dat`           | Pressure field                                                                           | Time                           | `t`                                                               |
 |                    |                          |                                                                                          | X, Y, Z co-ordinates           | `QX`,`QY`,`QZ`                                                    |
 |                    |                          |                                                                                          | Pressure tensor components     | `Pxx`,`Pxy`...`Pzy`,`Pzz`                                         |
@@ -116,7 +116,7 @@ All outputs are written to `.dat` files, which are uncompressed text files.
 |                    |                          |                                                                                          | Wave number                    | `k`                                                               |
 |                    |                          |                                                                                          | Enstrophy                      | `Omega`                                                           |
 
-### Histograms
+### Histograms          {#histograms}
 
 | Input tag      | Output file         | Description                                                             | Outputs                    | Column Headers  |
 |----------------|---------------------|-------------------------------------------------------------------------|----------------------------|-----------------|
@@ -124,13 +124,13 @@ All outputs are written to `.dat` files, which are uncompressed text files.
 |                |                     |                                                                         | Bin velocity               | `V`             |
 |                |                     |                                                                         | Bin probability            | `PX`,`PY`,`PZ`  |
 | `histSpeedOut` | `distSpeed.dat`     | Speed probability distribution                                          | Time                       | `t`             |
-|                |                     |                                                                         | Bin speeds                 | &#124;`V`&#124; |
+|                |                     |                                                                         | Bin speeds                 | \|`V`\| |
 |                |                     |                                                                         | Bin probability            | `P`             |
 | `histVortOut`  | `distVort.dat`      | Vorticity probability distribution in x, y, and z directions            | Time                       | `t`             |
 |                |                     |                                                                         | Bin vorticity              | `W`             |
 |                |                     |                                                                         | Bin probability            | `PX`,`PY`,`PZ`  |
 | `histEnsOut`   | `distEnstrophy.dat` | Enstrophy probability distribution                                      | Time                       | `t`             |
-|                |                     |                                                                         | Bin enstrophy              | &#124;`W`&#124; |
+|                |                     |                                                                         | Bin enstrophy              | \|`w`\| |
 |                |                     |                                                                         | Bin probability            | `P`             |
 | `histDirOut`   | `distDir.dat`       | Director orientation probability distribution in x, y, and z directions | Time                       | `t`             |
 |                |                     |                                                                         | Bin orientation            | `n`             |
@@ -142,7 +142,7 @@ All outputs are written to `.dat` files, which are uncompressed text files.
 |                |                     |                                                                         | Bin density                | `stdN`          |
 |                |                     |                                                                         | Bin probability            | `P`             |
 
-### Correlation Functions
+### Correlation Functions           {#correlation-functions}
 
 | Input tag      | Output file          | Description                                              | Outputs           | Column Headers |
 |----------------|----------------------|----------------------------------------------------------|-------------------|----------------|
@@ -162,7 +162,7 @@ All outputs are written to `.dat` files, which are uncompressed text files.
 |                |                      |                                                          | Separation        | `dr`           |
 |                |                      |                                                          | Correlation value | `C`            |
 
-### Swimmers
+### Swimmers            {#swimmers}
 
 | Input tag                 | Output file       | Description                                                               | Outputs                    | Column Headers    |
 |---------------------------|-------------------|---------------------------------------------------------------------------|----------------------------|-------------------|

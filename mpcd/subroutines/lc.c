@@ -856,7 +856,7 @@ void magTorque( particleMPC *pMPC,spec *SP,double dt,double MAG[] ) {
 /// @brief Apply the torque due to external magnetic field on all MPCD particles.
 ///
 /// @param pp pointer to first MPCD particle.
-/// @param species List of species.
+/// @param SP List of species.
 /// @param dt The rod orientation.
 /// @param MAG The external applied field.
 ///
@@ -1255,7 +1255,7 @@ double binderCumulant( cell ***CL,int L,int LC ) {
 ///
 /// @param pp Pointer to an MPCD particle.
 /// @param SP List of species.
-/// @param Wall Pointer to the considered boundary.
+/// @param WALL Pointer to the considered boundary.
 /// @param n The normal of the boundary.
 ///
 void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
@@ -1371,7 +1371,7 @@ void oriBC( particleMPC *pp,spec *SP,bc *WALL,double n[] ) {
 /// The equal and opposite force to that is the force exerted by MPCD particle on the BC.
 /// The force exerted by the BC is converted into rotational and translational motion of the boundary.
 ///
-/// @param Wall pointer to the considered boundary.
+/// @param WALL pointer to the considered boundary.
 /// @param n The normal of the boundary.
 /// @param U0 The original orientation of the MPCD particle.
 /// @param torqueMPC The torque on the BC caused by the BC exerting a force to reorientate the MPCD.
@@ -2373,7 +2373,7 @@ double topoChargeLocal( cell ***CL, int i, int j, int k){
 /// Takes into account that the director is defined as u=-u.
 ///
 /// @param u A vector (director).
-/// @param u A vector (director).
+/// @param v A vector (director).
 /// @return Returns the (smallest) angle between the two directors.
 ///
 double topoSmallestAngle( double u[], double v[]){
@@ -2455,7 +2455,7 @@ double topoAngleLocal( cell ***CL, int x, int y, int z, double charge){
 /// Currently only works in 2D.
 ///
 /// @param CL Contains cell data at previously defined indices.
-/// @param Output The Q tensor.
+/// @param output The Q tensor.
 ///
 void computeQ(cell CL, double output[_2D][_2D]){
 	//FIXME: only works for 2D for now!!!
