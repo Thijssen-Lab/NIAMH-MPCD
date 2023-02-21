@@ -71,6 +71,7 @@ void densSTDout( FILE *fout,double t,double stdN );
 void avenstrophyout( FILE *fout,double t,double E );
 void binderout( FILE *fout,double t,double UL );
 void flowout( FILE *fout,cell ***CL,int interval );
+void velout( FILE *fout,cell ***CL, double t );
 void solidout( FILE *fout,bc WALL,double t );
 void topoChargeAndDefectsOut( FILE *ftopo,int TOPOOUT,FILE *fdefect,int DEFECTOUT,double t,cell ***CL,double tolD );
 void disclinationTensorOut( FILE *fout,double t,cell ***CL,int LC );

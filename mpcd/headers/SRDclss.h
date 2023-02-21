@@ -282,7 +282,7 @@ typedef struct cell {
 /// All output files are stored within this struct, used as a container for simple passing to functions.
 ///
 typedef struct outputFilesList {
-	FILE *fcoarse,*fflow,*fenergy,*fenergyfield,*fenneighbours;
+	FILE *fcoarse,*fflow,*fvel,*fenergy,*fenergyfield,*fenneighbours;
 	FILE *fsynopsis,*favvel,*forder,*forderQ,*forderQK,*favs,*fdensSTD,*fchckpnt,*fenstrophy,*fmultiphase,*fpressure;
 	FILE *fcorrVV,*fcorrNN,*fcorrWW,*fcorrDD,*fcorrSS,*fcorrPP,*fbinder;
 	FILE *fhistVel,*fhistSpeed,*fhistVort,*fhistEnstr,*fhistDir,*fhistS,*fhistDens;
@@ -307,6 +307,7 @@ typedef struct outputFlagsList {
 	int COAROUT;				///< Flag for if coarse grain is outputted --- json `'coarseOut'`.
 	int AVVELOUT;				///< Flag for if total average velocity is outputted --- json `'avVelOut'`.
 	int FLOWOUT;				///< Flag for if the flow field is outputted --- json `'flowOut'`.
+	int VELOUT;				    ///< Flag for if the velocity field is outputted --- json `'velOut'`.
 	int HISTVELOUT;             ///< Flag for if the velocity distribution is outputted --- json `'histVelOut'`.
     int HISTSPEEDOUT;           ///< Flag for if the speed distribution is outputted --- json `'histSpeedOut'`.
     int HISTVORTOUT;            ///< Flag for if the vorticity distribution is outputted --- json `'histVortOut'`.
