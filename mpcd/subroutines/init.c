@@ -1815,7 +1815,7 @@ void initOutput( char op[],outputFlagsList *outFlag,outputFilesList *outFile,inp
 	if( (outFlag->ENSTROPHYOUT)>=OUT ) openavenstrophy( &(outFile->fenstrophy),op,fileenstrophy,fileextension );
 	//Initialize the flow and velocity field output files
 	if( (outFlag->FLOWOUT)>=OUT ) openflow( &(outFile->fflow),op,fileflow,fileextension );
-	if( (outFlag->VELOUT)>=OUT ) openvel( &(outFile->fvel),op,fileflow,fileextension );
+	if( (outFlag->VELOUT)>=OUT ) openvel( &(outFile->fvel),op,filevel,fileextension );
 	//Initialize the distribution output files
 	if( (outFlag->HISTVELOUT)>=OUT ) openhistVel( &(outFile->fhistVel),op,filehistVel,fileextension );
 	if( (outFlag->HISTSPEEDOUT)>=OUT ) openhistSpeed( &(outFile->fhistSpeed),op,filehistSpeed,fileextension );
