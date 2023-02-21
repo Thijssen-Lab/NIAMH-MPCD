@@ -45,6 +45,8 @@
 # define FFLSH
 // /// @brief Use the legacy Mersenne Twister RNG. Comment out to use the Xoroshiro RNG.
 // # define RNG_MERSENNE
+/// @brief Enable the floating point signal handlers.
+#define FPE
 
 /* ****************************************** */
 /* ************ PROGRAM CONSTANTS *********** */
