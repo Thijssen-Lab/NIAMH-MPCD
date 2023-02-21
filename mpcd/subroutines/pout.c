@@ -1516,6 +1516,7 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 		fprintf( fsynopsis,"Number of species with detailed output: %i\n",out.printSP );
 		fprintf( fsynopsis,"Print coarse data every %i time steps\n",out.COAROUT );
 		fprintf( fsynopsis,"Print flow data: %i\n",out.FLOWOUT );
+        fprintf( fsynopsis,"Print velocity data: %i\n",out.VELOUT );
 		fprintf( fsynopsis,"Print averaged flow data: %i\n",out.AVVELOUT );
 		fprintf( fsynopsis,"Print energy data: %i\n",out.ENOUT );
 		fprintf( fsynopsis,"Print director and scalar order parameter fields: %i\n",out.ORDEROUT );
