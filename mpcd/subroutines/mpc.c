@@ -30,6 +30,7 @@
 # include "../headers/therm.h"
 # include "../headers/swimmers.h"
 # include "../headers/mdbc.h"
+# include "../headers/ctools.h"
 
 # include "../../md/mdsrd.h"
 
@@ -4750,4 +4751,43 @@ void calcPressureColl_postColl( double *relQ,double *dp,double M,double *vel,cel
 	}
 	//Calculate the collisional contribution to the stress
 	for( i=0; i<DIM; i++ ) for( j=0; j<DIM; j++ ) CL->Pc[i][j] += dp[i]*relQ[j];
+}
+
+///
+/// @brief Check if a particular particle has any NaN values.
+///
+/// Checks is particle position, velocity or orientation are NaN. Primarily for debugging purposes. Further checks can
+/// be implemented here if needed.
+///
+/// @param p A particle to check for NaNs.
+///
+void checkParticleNaN(particleMPC p) {
+    // Check position
+    if (isNaNs(p.Q, 3)) {
+        printf("Particle position found to be NaN\n");
+    }
+    // Check velocity
+    if (isNaNs(p.V, 3)) {
+        printf("Particle velocity found to be NaN\n");
+    }
+    // Check orientation
+    if (isNaNs(p.U, 3)) {
+        printf("Particle orientation found to be NaN\n");
+    }
+}
+
+///
+/// @brief Check all particles to see if any particular particle has NaN values.
+///
+/// Checks all particles for NaN values. Calls on checkParticleNaN() to do the actual checking. Primarily for debugging
+/// purposes.
+///
+/// @param p Array of particles to check for NaNs. Assumed to be the SRDparticles array.
+/// @see checkParticleNaN()
+///
+void checkParticlesNaN(particleMPC *SRDparticles) {
+    int i;
+    for (i=0; i < GPOP; i++) {
+        checkParticleNaN(SRDparticles[i]);
+    }
 }

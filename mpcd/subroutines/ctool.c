@@ -63,7 +63,7 @@ int isNaN(double x) {
 /// @return 1 if NaN, 0 if not.
 /// @see isNaN(double x)
 ///
-int isNaN(double *x, int n) {
+int isNaNs(double *x, int n) {
     for (int i=0; i<n; i++) {
         if (isnan(x[i])) {
             printf("NaN detected at index %d.\n",i);
