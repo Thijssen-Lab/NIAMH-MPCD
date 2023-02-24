@@ -33,6 +33,7 @@ By Tyler Shendruk's Research Group
 # include<stdlib.h>
 # include<time.h>
 # include<string.h>
+# include<fenv.h>
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
@@ -107,6 +108,17 @@ int main(int argc, char* argv[]) {
 	outputFilesList outFiles;		//List of output files
 	specSwimmer specS;				//Swimmer's species
 	swimmer *swimmers;				//Swimmers
+
+    /* ****************************************** */
+    /* ****************************************** */
+    /* ****************************************** */
+    /* ************ Prepare Signals ************* */
+    /* ****************************************** */
+    /* ****************************************** */
+    /* ****************************************** */
+    #ifdef FPE
+    feenableexcept(FE_INVALID | FE_OVERFLOW | FE_DIVBYZERO);
+    #endif
 
 	/* ****************************************** */
 	/* ****************************************** */
