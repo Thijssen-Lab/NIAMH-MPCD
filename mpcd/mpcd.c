@@ -117,7 +117,7 @@ int main(int argc, char* argv[]) {
     /* ****************************************** */
     /* ****************************************** */
     #ifdef FPE
-    feenableexcept(FE_INVALID | FE_OVERFLOW);
+    feenableexcept(FE_INVALID | FE_OVERFLOW | FE_DIVBYZERO);
     #endif
 
 	/* ****************************************** */
