@@ -92,6 +92,6 @@ void calcPressureColl_preColl( double *relQ,double *dp,particleMPC *,double *CLQ
 void calcPressureColl_postColl( double *relQ,double *dp,double M,double *vel,cell *CL );
 
 void checkParticleNaN(particleMPC p);
-void checkParticlesNaN(particleMPC *SRDparticles);
+void checkAllParticlesNaN(particleMPC *SRDparticles);
 
 #endif

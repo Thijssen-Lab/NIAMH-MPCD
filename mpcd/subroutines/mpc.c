@@ -4785,7 +4785,7 @@ void checkParticleNaN(particleMPC p) {
 /// @param p Array of particles to check for NaNs. Assumed to be the SRDparticles array.
 /// @see checkParticleNaN()
 ///
-void checkParticlesNaN(particleMPC *SRDparticles) {
+void checkAllParticlesNaN(particleMPC *SRDparticles) {
     int i;
     for (i=0; i < GPOP; i++) {
         checkParticleNaN(SRDparticles[i]);
