@@ -82,13 +82,13 @@ int main(int argc, char* argv[]) {
 	/* ****************************************** */
 	/* ****************************************** */
 	/* ****************************************** */
-	int i,j;						//Counting variables
+	int i=0, j=0;					//Counting variables
 	simptr simMD=NULL;				//The md simulation is a pointer
 	cell ***CL;						//The array of all the cell lists
 	particleMPC *SRDparticles;		//The array of particles
 	spec *SPECIES;					//SPECIES is an array of the population of each species
 	bc *WALL;						//The boundary conditions
-	int starttime,runtime,warmtime;	//Temperal loop counter --- iterations NOT sim time
+	int starttime=0,runtime=0,warmtime=0;	//Temperal loop counter --- iterations NOT sim time
 	//Input
 	inputList inputVar;
 	kinTheory theory;				//Theoretical values based on input
@@ -96,10 +96,13 @@ int main(int argc, char* argv[]) {
 	time_t to,tf,lastCheckpoint;
 	clock_t co,cf;
 	//Simulation variables
-	double KBTNOW;					//Current un-thermostated temperature
-	double AVVEL;					//The average speed
-	double AVS,avDIR[_3D],S4,stdN;	//The average of the scalar order parameter, director and fourth moment
-	double AVV[_3D],AVNOW[_3D];		//The past and current average flow velocities
+	double KBTNOW=0.0;			//Current un-thermostated temperature
+	double AVVEL=0.0;				//The average speed
+	double AVS=0.0,S4=0.0,stdN=0.0;   //The average of the scalar order parameter, director and fourth moment
+	double avDIR[_3D],AVV[_3D],AVNOW[_3D];  //The past and current average flow velocities
+    zerovec(avDIR, _3D); // initialise all elements to zero
+    zerovec(AVV, _3D);
+    zerovec(AVNOW, _3D);
 	//Input/Output
 	int CHCKPNTrcvr = 0;			//Flag for simulation from recovery of checkpoint
 	char ip[500],op[500];			//Path to input and output
