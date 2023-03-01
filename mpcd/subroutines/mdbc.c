@@ -63,7 +63,7 @@ void MD_BCcollision( particleMD *atom,bc WALL[],double KBT,double t_step ) {
 	int cnt = 0;
 	double n[_3D] = {0.,0.,0.};	//Normal to the surface
 	double W, W1 = 0.0;
-	double shift[DIM];
+	double shift[_3D] = {0.,0.,0.};
 	double RX=0.0,RY=0.0,RZ=0.0;
 	double WX=0.0,WY=0.0,WZ=0.0;
 
@@ -153,7 +153,8 @@ void MD_BCcollision( particleMD *atom,bc WALL[],double KBT,double t_step ) {
 void chooseBC_MD( bc WALL[],particleMD *atom,double *t_min,double *chosenW,int *chosenBC,double time,double t_step ) {
 	int i,flag;
 	double t1,t2,tc;
-	double tempW,shift[DIM];
+	double tempW;
+	double shift[_3D] = {0.,0.,0.};
 
 	*t_min = time;
 	*chosenW=1.;
