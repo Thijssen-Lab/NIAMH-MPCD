@@ -175,7 +175,9 @@ void chooseBC_MD( bc WALL[],particleMD *atom,double *t_min,double *chosenW,int *
 			crosstime_MD( atom,WALL[i],&t1,&t2,time );
 			tc = chooseT( t_step,t1,t2,0,&flag );
 			if( flag ) {
-				printf( "Warning: Cross time unacceptable MD: %lf.\n",tc );
+				printf( "Warning: Cross time unacceptable MD: %lf,wall:%d, tempW:%f.\n",tc,i,tempW);
+				printf( "Particle:%d, rx:%f, ry:%f, rz:%f, \n",atom->object,atom->rx,atom->ry,atom->rz);
+				printf( "wx:%f, wy:%f, wz:%f.\n",atom->wx,atom->wy,atom->wz);
 				// exit( 1 );		no need to exit. it is solved by further actions in MD_BCcollision
 			}
 
