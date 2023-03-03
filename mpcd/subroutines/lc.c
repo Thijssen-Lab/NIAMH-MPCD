@@ -898,7 +898,7 @@ void magTorque_CL( cell *CL,spec *SP,double dt,double MAG[] ) {
 	for( i=0; i<_3D; i++ ) mT[i] *= nH;		//Will need to multiply chia
 
 	//Rotate each MPC particles due to the torque on the whole cell
-	if( CL->POPSRD>1 ) {
+	if( CL->POPSRD>0 ) {
 		//Collision of MPC particles
 		tmpc = CL->pp;
 		while( tmpc!=NULL ) {
