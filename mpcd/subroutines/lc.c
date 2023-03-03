@@ -877,6 +877,7 @@ void magTorque_all( particleMPC *pp,spec *SP,double dt,double MAG[] ) {
 ///
 void magTorque_CL( cell *CL,spec *SP,double dt,double MAG[] ) {
 	int i,id;
+	int d;         // Zahra added
 	double nH;
 	double chia,rfc,theta;
 	double mT[_3D],DIR[_3D],w[_3D];
@@ -914,8 +915,34 @@ void magTorque_CL( cell *CL,spec *SP,double dt,double MAG[] ) {
 			for( i=0; i<_3D; i++ ) w[i]*=dt;
 			theta=length(w,_3D);
 			norm(w,_3D);
+
+			// Zahra added this part
+			d=checkNAN_vec( tmpc->U,_3D );
+			if(d!=0) {
+				printf("\n\nWARNING:before rodrigues \n");
+				printf("Position: ");
+				pvec(tmpc->Q,_3D);
+				printf("Velocity: ");
+				pvec(tmpc->V,_3D);
+				printf("Orientation: ");
+				pvec(tmpc->U,_3D);
+			}
+
 			//Do the rotation
 			rodriguesRotation( tmpc->U,w,theta );
+
+			// Zahra added this part
+			d=checkNAN_vec( tmpc->U,_3D );
+			if(d!=0) {
+				printf("\n\nWARNING: after rodrigues\n");
+				printf("Position: ");
+				pvec(tmpc->Q,_3D);
+				printf("Velocity: ");
+				pvec(tmpc->V,_3D);
+				printf("Orientation: ");
+				pvec(tmpc->U,_3D);
+			}
+
 			#ifdef DBG
 				if( DBUG == DBGMAG ) {
 					printf("theta=%lf\n",theta*180./pi);

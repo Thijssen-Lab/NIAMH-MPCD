@@ -1587,6 +1587,10 @@ void rodriguesRotation( double vec[],double rotAx[],double theta ) {
 	for( i=0; i<_3D; i++ ) vec[i] = vec[i]*cos(theta) + cp[i]*sin(theta) + rotAx[i]*dp*(1.0-cos(theta));
 	//Unfortunately, the rotation seems to shrink vec
 	new=length( vec,_3D );
+	if (new == 0){
+		printf("error : new is zero\n");
+	}
+
 	for( i=0; i<_3D; i++ ) vec[i]*=(old/new);
 }
 
