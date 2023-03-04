@@ -70,7 +70,6 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 	particleMPC *pMPC;	//Temporary pointer to MPC particles
 	particleMD *pMD;	//Temporary pointer to MD particles
 	smono *pSW;			//Temporary pointer to swimmer monomers
-	int flag = 0;
 
 	// int flag on whether to compute CM or not
 	int computeCM = (RTECH==RAT) || (LC!=ISOF) || (RTECH==DIPOLE_VCM) || (RTECH==DIPOLE_DIR_SUM) || (RTECH==DIPOLE_DIR_AV);
@@ -208,11 +207,7 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 			if( CL[a][b][c].POPSRD > 1 ) {
 				// Find the tensor order parameter
 				tensOrderParam( &CL[a][b][c],S,LC );				// From the tensor order parameter find eigenvalues and vectors --- S is written over as normalized eigenvectors
-				flag = solveEigensystem( S,DIM,eigval );
-				if (flag){
-					printf("\t Cell [%d,%d,%d]\n",a,b,c);
-					printf("\t popsrd = %d, popmd = %d, popsw= %d\n",CL[a][b][c].POPSRD,CL[a][b][c].POPMD,CL[a][b][c].POPSW);
-				}
+				solveEigensystem( S,DIM,eigval );
 				//The scalar order parameter is the largest eigenvalue which is given first, ie eigval[0]
 				// But can be better approximated (cuz fluctuates about zero) by -2* either of the negative ones (or the average)
 				if(DIM==_3D) CL[a][b][c].S = -1.*(eigval[1]+eigval[2]);
