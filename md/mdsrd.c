@@ -2196,16 +2196,6 @@ real bendNematic (particleMD *p1, particleMD *p2, real dx12, real dy12, real dz1
 			// compute the energy
 			potE  = ks*(1.0-c);
 		}
-
-		//compute the torque magnitude on the segment between the two monomers t = Fr sin(alpha)
-		f1 = sqrt(fx1*fx1 + fy1*fy1 + fz1*fz1); //force magnitude
-		s = sqrt(1-pow( (dx12*fx1 + dy12*fy1 + dz12*fz1) / (f1 * r12), 2)); //sin(alpha)
-		torque = f1*r12*0.5*s;
-
-		m[0] = torque*m[0];
-		m[1] = torque*m[1];
-		m[2] = torque*m[2];
-
 		// Apply the force p1 and p2
 		p1->ax += fx1;
 		p1->ay += fy1;
@@ -2213,8 +2203,20 @@ real bendNematic (particleMD *p1, particleMD *p2, real dx12, real dy12, real dz1
 		p2->ax -= fx1;
 		p2->ay -= fy1;
 		p2->az -= fz1;
-		// Apply the force to the nematic fluid as a local field
-		magTorque_CL( CL,SP,(double)dt,m );
+
+		//compute the torque magnitude on the segment between the two monomers t = Fr sin(alpha)
+		f1 = sqrt(fx1*fx1 + fy1*fy1 + fz1*fz1); //force magnitude
+		if (f1 != 0.0){
+			s = sqrt(1-pow( (dx12*fx1 + dy12*fy1 + dz12*fz1) / (f1 * r12), 2)); //sin(alpha)
+			torque = f1*r12*0.5*s;
+
+			m[0] = torque*m[0];
+			m[1] = torque*m[1];
+			m[2] = torque*m[2];
+
+			// Apply the force to the nematic fluid as a local field
+			magTorque_CL( CL,SP,(double)dt,m );
+		}
 	}
 
 	return potE;
