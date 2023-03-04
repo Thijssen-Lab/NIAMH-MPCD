@@ -308,7 +308,6 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 	int wallindex;							// Index of wall with anchoring acting on a cell
 	double shift[DIM];
 	setGhostAnch = 1; 						// a manual switch to turn on=1 or off=0 the stronger anchoring
-	int flag = 0;
 
 	if (setGhostAnch == 1){
 		// Allocate memory for S
@@ -455,11 +454,7 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 							// Calculate Q tensor
 							tensOrderParam( &CL[a][b][c], S, LC );
 							// Find S
-							flag = solveEigensystem( S,DIM,eigval );
-							if (flag){
-								printf("\t Cell [%d,%d,%d]\n",a,b,c);
-								printf("\t popsrd = %d, popmd = %d, popsw= %d\n",CL[a][b][c].POPSRD,CL[a][b][c].POPMD,CL[a][b][c].POPSW);
-							}
+							solveEigensystem( S,DIM,eigval );
 							if(DIM==_3D) CL[a][b][c].S = -1.*(eigval[1]+eigval[2]);
 							else CL[a][b][c].S = eigval[0];
 							if( CL[a][b][c].S < 1./(1.-DIM) ){
