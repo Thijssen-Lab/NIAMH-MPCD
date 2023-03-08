@@ -729,7 +729,9 @@ void velBC_MD( particleMD *atom,bc *WALL,double n[_3D],double KBT ) {
 /// @see			posBC()
 ///	
 void posBC_MD( particleMD *atom,bc WALL,double n[_3D] ) {
-	double PN[_3D],PT[_3D],temp[_3D];
+	double PN[_3D] = {0.,0.,0.};
+	double PT[_3D] = {0.,0.,0.};
+	double temp[_3D] = {0.,0.,0.};
 	int i;
 
 	temp[0] = atom->rx;
