@@ -906,7 +906,8 @@ void magTorque_CL( cell *CL,spec *SP,double dt,double MAG[] ) {
 			chia = (SP+id)->CHIA;
 			rfc = (SP+id)->RFC;
 			//Update torque on MPC particles
-			for( i=0; i<_3D; i++ ) tmpc->T[i]+=chia*mT[i];	//Torque must always be 3D (needs to be multiplied by particle's susceptibility)
+			//Torque must always be 3D (needs to be multiplied by particle's susceptibility)
+			// for( i=0; i<_3D; i++ ) tmpc->T[i]+=chia*mT[i];		//it's not required!cuz it is balanced!
 			//Calculate change in orientation due to magnetic torque
 			//Angular velocity
 			for( i=0; i<_3D; i++ ) w[i]=chia*mT[i]/rfc;
