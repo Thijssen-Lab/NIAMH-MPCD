@@ -1803,16 +1803,16 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 	}
 	//If DIPOLE_DIR_SUM then use the sum just calculated
 	//If DIPOLE_DIR_AV or DIPOLE_DIR_SIG then use the average value everywhere
-	if( RTECH==DIPOLE_DIR_AV || RTECH==DIPOLE_DIR_SIG) ACT *= nDNST/((double)CL->POPSRD);
+	if( RTECH==DIPOLE_DIR_AV || RTECH==DIPOLE_DIR_SIG) ACT *= nDNST/((double)CL->POP);
 
 	// Now, if using sigmoidal dipole set up a sigmoidal falloff based on the cell population
 	if (RTECH==DIPOLE_DIR_SIG || RTECH==DIPOLE_DIR_SIG_SUM) {
 		// compute average within cell by normalising with cell population
-		sigWidth /= (double)CL->POPSRD;
-		sigPos /= (double)CL->POPSRD;
+		sigWidth /= (double)CL->POP;
+		sigPos /= (double)CL->POP;
 
 		// compute the sigmoidal falloff function
-		double falloffFactor = (1 - tanh( ((double)CL->POPSRD  - nDNST * (1 + sigPos) ) / (nDNST * sigWidth) ) );
+		double falloffFactor = (1 - tanh( ((double)CL->POP  - nDNST * (1 + sigPos) ) / (nDNST * sigWidth) ) );
 		double rescaleFactor = 2;
 
 		// rescale the activity
