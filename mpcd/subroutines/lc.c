@@ -1621,14 +1621,18 @@ void andersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double dt,doubl
 			MASS = tmd->mass;
 			//Position relative to centre of mass
 			relQ[i][0] = tmd->rx - CL->CM[0];
+			relQ[i][1] = tmd->ry - CL->CM[1];
+			relQ[i][2] = tmd->rz - CL->CM[2];
 			diffV[0] = MASS * (tmd->vx - RV[i][0]);
-			if(DIM > _1D){
-				relQ[i][1] = tmd->ry - CL->CM[1];
-				diffV[1] = MASS * (tmd->vy - RV[i][1]);
+			diffV[1] = MASS * (tmd->vy - RV[i][1]);
+			diffV[2] = MASS * (tmd->vz - RV[i][2]);
+			if( DIM < _3D ) {
+				relQ[i][2] = 0.;
+				diffV[2] = 0.;
 			}
-			if( DIM > _2D ){
-				relQ[i][2] = tmd->rz - CL->CM[2];
-				diffV[2] = MASS * (tmd->vz - RV[i][2]);
+			if( DIM < _2D ) {
+				relQ[i][1] = 0.;
+				diffV[1] = 0.;
 			}
 			crossprod( relQ[i],diffV,angmom );
 			for( j=0; j<_3D; j++ ) Llm[j] += angmom[j];
