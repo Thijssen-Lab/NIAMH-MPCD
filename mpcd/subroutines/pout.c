@@ -1784,7 +1784,7 @@ void enfieldout( FILE *fout,cell ***CL,spec *SP,double MFPOT,int LC ) {
 	for( a=0; a<XYZ[0]; a++ ) for( b=0; b<XYZ[1]; b++ ) for( c=0; c<XYZ[2]; c++ ) {
 		wmf=0.;
 		enK=0.;
-		if( CL[a][b][c].POP > 1 ) {
+		if( CL[a][b][c].POPSRD > 1 ) {
 			S = CL[a][b][c].S;
 			for( d=0; d<DIM; d++ ) DIR[d] = CL[a][b][c].DIR[d];
 			tmpc = CL[a][b][c].pp;
@@ -1836,7 +1836,7 @@ void enneighboursout( FILE *fout,double t,cell ***CL,double MFPOT,int LC ) {
 	for( a=0; a<DIM; a++ ) Q[a] = malloc ( DIM * sizeof( *Q[a] ) );
 	for( a=0; a<DIM; a++ ) for( b=0; b<DIM; b++ ) Q[a][b] = 0.0;
 
-	if( LC ) for( a=0; a<XYZ[0]; a++ ) for( b=0; b<XYZ[1]; b++ ) for( c=0; c<XYZ[2]; c++ ) if( CL[a][b][c].POP>1 ) {
+	if( LC ) for( a=0; a<XYZ[0]; a++ ) for( b=0; b<XYZ[1]; b++ ) for( c=0; c<XYZ[2]; c++ ) if( CL[a][b][c].POPSRD>1 ) {
 		//Local values
 		for( d=0; d<DIM; d++ ) local_DIR[d]=CL[a][b][c].DIR[d];
 		local_S=CL[a][b][c].S;
