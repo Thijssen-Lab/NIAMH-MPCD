@@ -2073,7 +2073,7 @@ void topoChargeAndDefectsOut( FILE *ftopo,int TOPOOUT,FILE *fdefect,int DEFECTOU
 		//Output
 		for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) for( k=0; k<XYZ[2]; k++ ) {
 			fprintf( ftopo,"%.2f\t%5d\t%5d\t%5d\t",t,i,j,k );
-			if( CL[i][j][k].POP == 0 ) fprintf( ftopo, "%06.3f\t%12.5e\n", 0.0, 0.0);
+			if( CL[i][j][k].POPSRD == 0 ) fprintf( ftopo, "%06.3f\t%12.5e\n", 0.0, 0.0);
 			else fprintf( ftopo, "%06.3f\t%12.5e\n",topoC[i][j], topoAngle[i][j]);
 		}
 		#ifdef FFLSH
@@ -2249,7 +2249,7 @@ void orderout( FILE *fout,double t,cell ***CL,int LC ) {
 		//Output
 		fprintf( fout,"%.2f\t",t );
 		fprintf( fout,"%5d\t%5d\t%5d\t",i,j,k );
-		if( CL[i][j][k].POP == 0 ) fprintf( fout, "%12.5e\t%12.5e\t%12.5e\t%12.5e\n",0.0,0.0,0.0,0.0 );
+		if( CL[i][j][k].POPSRD == 0 ) fprintf( fout, "%12.5e\t%12.5e\t%12.5e\t%12.5e\n",0.0,0.0,0.0,0.0 );
 		else fprintf( fout, "%12.5e\t%12.5e\t%12.5e\t%12.5e\n",CL[i][j][k].DIR[0],CL[i][j][k].DIR[1],CL[i][j][k].DIR[2],CL[i][j][k].S );
 	}
 	#ifdef FFLSH
@@ -2342,7 +2342,7 @@ void orderQout( FILE *fout,double t,cell ***CL,int LC ) {
 		tensOrderParam( &CL[i][j][k],Q,LC );
 		//Output
 		fprintf( fout,"%5d\t%5d\t%5d\t",i,j,k );
-		if( CL[i][j][k].POP == 0 ) fprintf( fout, "%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\n" ,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0 );
+		if( CL[i][j][k].POPSRD == 0 ) fprintf( fout, "%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\n" ,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0 );
 		else fprintf( fout, "%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\n", Q[0][0],Q[0][1],Q[0][2],Q[1][0],Q[1][1],Q[1][2],Q[2][0],Q[2][1],Q[2][2] );
 	}
 
