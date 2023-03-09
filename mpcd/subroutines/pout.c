@@ -1764,9 +1764,9 @@ void enout( FILE *fout,particleMPC *pp,spec *pSP,bc WALL[],double t,double KBT,d
 }
 
 ///
-/// @brief Outputs orientation interaction energy with neighbouring cells.
+/// @brief Outputs orientation interaction energy and Kinetic energy within a cell.
 ///
-/// This function calculates and prints the average cell orientation interaction energy with neighbouring cells by considering kinetic and nematic contributions.
+/// This function calculates and prints the orientation interaction energy and kinetic energy within a cell.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
 /// @param CL This is a pointer to the co-ordinates and cell of each particle.
