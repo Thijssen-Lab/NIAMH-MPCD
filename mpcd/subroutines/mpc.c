@@ -92,28 +92,6 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 		for( d=0; d<DIM; d++ ) CL[a][b][c].VCM[d] = 0.0;
 		for( d=0; d<NSPECI; d++ ) CL[a][b][c].SP[d] = 0;
 		if (computeCM) for( d=0; d<DIM; d++ ) CL[a][b][c].CM[d] = 0.0;
-
-		//**************************************************//
-		//**************************************************//
-		//TYLER + ZAHRA HACK TO SEARCH FOR NANs IN ORIENTATION
-		if( CL[a][b][c].pp!=NULL ) {
-			pMPC = CL[a][b][c].pp;
-			while(pMPC!=NULL) {
-				//Check if nan
-				d=checkNAN_vec( pMPC->U,_3D );
-				if(d!=0) {
-					printf("\n\nWARNING: cell [%i][%i][%i] contains a SRD particle with bad orientation\n",a,b,c);
-					printf("Position: ");
-					pvec(pMPC->Q,_3D);
-					printf("Velocity: ");
-					pvec(pMPC->V,_3D);
-					printf("Orientation: ");
-					pvec(pMPC->U,_3D);
-				}
-				//Increment link in list
-				pMPC = pMPC->next;
-			}
-		}
 		//**************************************************//
 		//**************************************************//
 
