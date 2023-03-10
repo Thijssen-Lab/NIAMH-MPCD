@@ -1764,9 +1764,9 @@ void enout( FILE *fout,particleMPC *pp,spec *pSP,bc WALL[],double t,double KBT,d
 }
 
 ///
-/// @brief Outputs orientation interaction energy with neighbouring cells.
+/// @brief Outputs orientation interaction energy and Kinetic energy within a cell.
 ///
-/// This function calculates and prints the average cell orientation interaction energy with neighbouring cells by considering kinetic and nematic contributions.
+/// This function calculates and prints the orientation interaction energy and kinetic energy within a cell.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
 /// @param CL This is a pointer to the co-ordinates and cell of each particle.
@@ -1784,7 +1784,7 @@ void enfieldout( FILE *fout,cell ***CL,spec *SP,double MFPOT,int LC ) {
 	for( a=0; a<XYZ[0]; a++ ) for( b=0; b<XYZ[1]; b++ ) for( c=0; c<XYZ[2]; c++ ) {
 		wmf=0.;
 		enK=0.;
-		if( CL[a][b][c].POP > 1 ) {
+		if( CL[a][b][c].POPSRD > 1 ) {
 			S = CL[a][b][c].S;
 			for( d=0; d<DIM; d++ ) DIR[d] = CL[a][b][c].DIR[d];
 			tmpc = CL[a][b][c].pp;
@@ -1836,7 +1836,7 @@ void enneighboursout( FILE *fout,double t,cell ***CL,double MFPOT,int LC ) {
 	for( a=0; a<DIM; a++ ) Q[a] = malloc ( DIM * sizeof( *Q[a] ) );
 	for( a=0; a<DIM; a++ ) for( b=0; b<DIM; b++ ) Q[a][b] = 0.0;
 
-	if( LC ) for( a=0; a<XYZ[0]; a++ ) for( b=0; b<XYZ[1]; b++ ) for( c=0; c<XYZ[2]; c++ ) if( CL[a][b][c].POP>1 ) {
+	if( LC ) for( a=0; a<XYZ[0]; a++ ) for( b=0; b<XYZ[1]; b++ ) for( c=0; c<XYZ[2]; c++ ) if( CL[a][b][c].POPSRD>1 ) {
 		//Local values
 		for( d=0; d<DIM; d++ ) local_DIR[d]=CL[a][b][c].DIR[d];
 		local_S=CL[a][b][c].S;
@@ -2073,7 +2073,7 @@ void topoChargeAndDefectsOut( FILE *ftopo,int TOPOOUT,FILE *fdefect,int DEFECTOU
 		//Output
 		for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) for( k=0; k<XYZ[2]; k++ ) {
 			fprintf( ftopo,"%.2f\t%5d\t%5d\t%5d\t",t,i,j,k );
-			if( CL[i][j][k].POP == 0 ) fprintf( ftopo, "%06.3f\t%12.5e\n", 0.0, 0.0);
+			if( CL[i][j][k].POPSRD == 0 ) fprintf( ftopo, "%06.3f\t%12.5e\n", 0.0, 0.0);
 			else fprintf( ftopo, "%06.3f\t%12.5e\n",topoC[i][j], topoAngle[i][j]);
 		}
 		#ifdef FFLSH
@@ -2249,7 +2249,7 @@ void orderout( FILE *fout,double t,cell ***CL,int LC ) {
 		//Output
 		fprintf( fout,"%.2f\t",t );
 		fprintf( fout,"%5d\t%5d\t%5d\t",i,j,k );
-		if( CL[i][j][k].POP == 0 ) fprintf( fout, "%12.5e\t%12.5e\t%12.5e\t%12.5e\n",0.0,0.0,0.0,0.0 );
+		if( CL[i][j][k].POPSRD == 0 ) fprintf( fout, "%12.5e\t%12.5e\t%12.5e\t%12.5e\n",0.0,0.0,0.0,0.0 );
 		else fprintf( fout, "%12.5e\t%12.5e\t%12.5e\t%12.5e\n",CL[i][j][k].DIR[0],CL[i][j][k].DIR[1],CL[i][j][k].DIR[2],CL[i][j][k].S );
 	}
 	#ifdef FFLSH
@@ -2342,7 +2342,7 @@ void orderQout( FILE *fout,double t,cell ***CL,int LC ) {
 		tensOrderParam( &CL[i][j][k],Q,LC );
 		//Output
 		fprintf( fout,"%5d\t%5d\t%5d\t",i,j,k );
-		if( CL[i][j][k].POP == 0 ) fprintf( fout, "%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\n" ,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0 );
+		if( CL[i][j][k].POPSRD == 0 ) fprintf( fout, "%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\n" ,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0 );
 		else fprintf( fout, "%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\n", Q[0][0],Q[0][1],Q[0][2],Q[1][0],Q[1][1],Q[1][2],Q[2][0],Q[2][1],Q[2][2] );
 	}
 

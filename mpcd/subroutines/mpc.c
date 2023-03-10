@@ -85,10 +85,15 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 
 		//Zero everything for recounting
 		CL[a][b][c].POP = 0;
+		CL[a][b][c].POPSRD = 0;
+		CL[a][b][c].POPSW = 0;
+		CL[a][b][c].POPMD = 0;
 		CL[a][b][c].MASS = 0.0;
 		for( d=0; d<DIM; d++ ) CL[a][b][c].VCM[d] = 0.0;
 		for( d=0; d<NSPECI; d++ ) CL[a][b][c].SP[d] = 0;
 		if (computeCM) for( d=0; d<DIM; d++ ) CL[a][b][c].CM[d] = 0.0;
+		//**************************************************//
+		//**************************************************//
 
 		//Find local values
 		if( CL[a][b][c].pp!=NULL || ( CL[a][b][c].MDpp!=NULL && MDmode==MDinMPC ) || CL[a][b][c].sp!=NULL ) {
@@ -96,7 +101,7 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 			if( CL[a][b][c].pp!=NULL ) {
 				pMPC = CL[a][b][c].pp;
 				while(pMPC!=NULL) {
-					CL[a][b][c].POP ++;
+					CL[a][b][c].POPSRD ++;
 					id = pMPC->SPID;
 					mass = (SP+id)->MASS;
 					CL[a][b][c].MASS += mass;
@@ -116,7 +121,7 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 			if(MDmode==MDinMPC) if( CL[a][b][c].MDpp!=NULL) {
 				pMD = CL[a][b][c].MDpp;
 				while( pMD!=NULL ) {
-					CL[a][b][c].POP ++;
+					CL[a][b][c].POPMD ++;
 					mass = pMD->mass;
 					CL[a][b][c].MASS += mass;
 					V[0] = pMD->vx;
@@ -139,7 +144,7 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 			if( CL[a][b][c].sp!=NULL) {
 				pSW = CL[a][b][c].sp;
 				while( pSW!=NULL ) {
-					CL[a][b][c].POP ++;
+					CL[a][b][c].POPSW ++;
 					if( pSW->HorM ) mass = (double) specS.middM;
 					else mass = (double) specS.headM;
 					CL[a][b][c].MASS += mass;
@@ -160,6 +165,7 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 			CL[a][b][c].VCM[d] /= CL[a][b][c].MASS;
 			if (computeCM) CL[a][b][c].CM[d] /= CL[a][b][c].MASS;
 		}
+		CL[a][b][c].POP = CL[a][b][c].POPSRD + CL[a][b][c].POPSW + CL[a][b][c].POPMD;
 	}
 	//Calculate moment of inertia
 	if( RTECH==RAT || LC!=ISOF ) {
@@ -176,7 +182,7 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 		for( i=0; i<DIM; i++ ) for( d=0; d<DIM; d++ ) S[i][d] = 0.0;
 		// Find the order parameter tensor, the director and the scalar order parameter for each cell
 		for( a=0; a<XYZ_P1[0]; a++ ) for( b=0; b<XYZ_P1[1]; b++ ) for( c=0; c<XYZ_P1[2]; c++ ) {
-			if( CL[a][b][c].POP > 1 ) {
+			if( CL[a][b][c].POPSRD > 1 ) {
 				// Find the tensor order parameter
 				tensOrderParam( &CL[a][b][c],S,LC );				// From the tensor order parameter find eigenvalues and vectors --- S is written over as normalized eigenvectors
 				solveEigensystem( S,DIM,eigval );
@@ -280,7 +286,6 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 	int wallindex;							// Index of wall with anchoring acting on a cell
 	double shift[DIM];
 	setGhostAnch = 1; 						// a manual switch to turn on=1 or off=0 the stronger anchoring
-
 
 	if (setGhostAnch == 1){
 		// Allocate memory for S
@@ -415,7 +420,7 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 						}
 
 						// One particle cell (also manually set)
-						else if ( CL[a][b][c].POP == 1 ){
+						else if ( CL[a][b][c].POPSRD == 1 ){
 							CL[a][b][c].S = 1.0;
 							// Set the director as the orientation of the particle
 							for( k=0; k<DIM; k++ ) CL[a][b][c].DIR[k] = CL[a][b][c].pp->U[k];
@@ -423,11 +428,11 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 						}
 
 						// Curved wall
-						else if (CL[a][b][c].POP > 1){
+						else if (CL[a][b][c].POPSRD > 1){
 							// Calculate Q tensor
 							tensOrderParam( &CL[a][b][c], S, LC );
 							// Find S
-							solveEigensystem( S, DIM, eigval );
+							solveEigensystem( S,DIM,eigval );
 							if(DIM==_3D) CL[a][b][c].S = -1.*(eigval[1]+eigval[2]);
 							else CL[a][b][c].S = eigval[0];
 							if( CL[a][b][c].S < 1./(1.-DIM) ){
@@ -4393,7 +4398,7 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 		#endif
 		for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) {
 			//LC collision algorithm (no collision if only 1 particle in cell)
-			if( CL[i][j][k].POP > 1 ) LCcollision( &CL[i][j][k],SP,in.KBT,in.MFPOT,in.dt,*AVS,in.LC );
+			if( CL[i][j][k].POPSRD > 1 ) LCcollision( &CL[i][j][k],SP,in.KBT,in.MFPOT,in.dt,*AVS,in.LC );
 		}
 		// Magnetic alignment is really part of the collision
 		#ifdef DBG
@@ -4405,7 +4410,7 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 		#endif
 		for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) {
 			//Coupling shear to orientation
-			if( CL[i][j][k].POP > 1 ) jefferysTorque( &CL[i][j][k],SP,in.dt );
+			if( CL[i][j][k].POPSRD > 1 ) jefferysTorque( &CL[i][j][k],SP,in.dt );
 		}
 		#ifdef DBG
 			if (DBUG == DBGTHERM) {
@@ -4549,82 +4554,82 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 			zerovec(WALL[i].dV,DIM);
 			zerovec(WALL[i].dL,_3D);
 		}
-	/* ****************************************** */
-	/* ************* TRANSLATE BCs ************** */
-	/* ****************************************** */
-	#ifdef DBG
-		if( DBUG >= DBGTITLE ) printf( "Translate BCs.\n" );
-	#endif
-	//Save the old position in case a BC-BC collision occurs
-	for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) for( j=0; j<DIM; j++ ) {
-		(WALL+i)->Q_old[j] = (WALL+i)->Q[j];
-		(WALL+i)->O_old[j] = (WALL+i)->O[j];
-	}
-	//Translate each of the BCs --- using velocity from BEFORE MPC_BCcollision()
-	for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) stream_BC( (WALL+i),in.dt );
-	/* ****************************************** */
-	/* *************** ROTATE BCs *************** */
-	/* ****************************************** */
-	#ifdef DBG
-		if( DBUG >= DBGTITLE ) printf( "Spin BCs.\n" );
-	#endif
-	for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) spin_BC( (WALL+i),in.dt );
-	/* ****************************************** */
-	/* ***************** BC-BC ****************** */
-	/* ****************************************** */
-	#ifdef DBG
-		if( DBUG >= DBGTITLE ) printf( "Check BCs Against BCs.\n" );
-	#endif
-	//Check each BC
-	for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) {
-		BC_FLAG = 0;
-		for( j=0; j<NBC; j++ ) if( j != i ) {
-			//Check BC number i for collisions other BCs
-			#ifdef DBG
-				if( DBUG == DBGBCBC ) printf( "BC%d BC%d\n",i,j );
-			#endif
-			BC_BCcollision( WALL+i,WALL+j,in.dt,&BC_FLAG );
-		}
-	}
-	/* ****************************************** */
-	/* ***************** BC-MPCD **************** */
-	/* ****************************************** */
-	// if( BC_FLAG ) {
+		/* ****************************************** */
+		/* ************* TRANSLATE BCs ************** */
+		/* ****************************************** */
 		#ifdef DBG
-			if( DBUG >= DBGTITLE ) printf( "Check BCs Against MPCs after BC-BC collisions.\n" );
+			if( DBUG >= DBGTITLE ) printf( "Translate BCs.\n" );
 		#endif
-		bcCNT=0;
-		reCNT=0;
-		rethermCNT=0;
-		// Check each BC for collisions MPC particles
+		//Save the old position in case a BC-BC collision occurs
+		for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) for( j=0; j<DIM; j++ ) {
+			(WALL+i)->Q_old[j] = (WALL+i)->Q[j];
+			(WALL+i)->O_old[j] = (WALL+i)->O[j];
+		}
+		//Translate each of the BCs --- using velocity from BEFORE MPC_BCcollision()
+		for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) stream_BC( (WALL+i),in.dt );
+		/* ****************************************** */
+		/* *************** ROTATE BCs *************** */
+		/* ****************************************** */
+		#ifdef DBG
+			if( DBUG >= DBGTITLE ) printf( "Spin BCs.\n" );
+		#endif
+		for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) spin_BC( (WALL+i),in.dt );
+		/* ****************************************** */
+		/* ***************** BC-BC ****************** */
+		/* ****************************************** */
+		#ifdef DBG
+			if( DBUG >= DBGTITLE ) printf( "Check BCs Against BCs.\n" );
+		#endif
+		//Check each BC
 		for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) {
-			BC_MPCcollision( WALL,i,SRDparticles,SP,in.KBT,in.GRAV,in.dt,simMD,MDmode,in.LC,&bcCNT,&reCNT,&rethermCNT );
+			BC_FLAG = 0;
+			for( j=0; j<NBC; j++ ) if( j != i ) {
+				//Check BC number i for collisions other BCs
+				#ifdef DBG
+					if( DBUG == DBGBCBC ) printf( "BC%d BC%d\n",i,j );
+				#endif
+				BC_BCcollision( WALL+i,WALL+j,in.dt,&BC_FLAG );
+			}
 		}
+		/* ****************************************** */
+		/* ***************** BC-MPCD **************** */
+		/* ****************************************** */
+		// if( BC_FLAG ) {
+			#ifdef DBG
+				if( DBUG >= DBGTITLE ) printf( "Check BCs Against MPCs after BC-BC collisions.\n" );
+			#endif
+			bcCNT=0;
+			reCNT=0;
+			rethermCNT=0;
+			// Check each BC for collisions MPC particles
+			for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) {
+				BC_MPCcollision( WALL,i,SRDparticles,SP,in.KBT,in.GRAV,in.dt,simMD,MDmode,in.LC,&bcCNT,&reCNT,&rethermCNT );
+			}
+			#ifdef DBG
+				if( DBUG == DBGBCCNT ) if( bcCNT>0 ) printf( "\t%d particles had difficulty with the BCs when the BCs moved (%d rewind events; %d rethermalization events).\n",bcCNT,reCNT,rethermCNT );
+			#endif
+		// }
+		/* ****************************************** */
+		/* ************* APPLY IMPULSE ************** */
+		/* ****************************************** */
 		#ifdef DBG
-			if( DBUG == DBGBCCNT ) if( bcCNT>0 ) printf( "\t%d particles had difficulty with the BCs when the BCs moved (%d rewind events; %d rethermalization events).\n",bcCNT,reCNT,rethermCNT );
+			if( DBUG >= DBGTITLE ) printf( "Impulse on BCs from BC-translations.\n" );
 		#endif
-	// }
-	/* ****************************************** */
-	/* ************* APPLY IMPULSE ************** */
-	/* ****************************************** */
-	#ifdef DBG
-		if( DBUG >= DBGTITLE ) printf( "Impulse on BCs from BC-translations.\n" );
-	#endif
-	//Apply impulse from BC_MPCcollision()
-	for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) {
-		for( j=0; j<DIM; j++ ) (WALL+i)->V[j] += (WALL+i)->dV[j];
-		//THERE SHOULD BE NO dL since BC_MPCcollision() ignores ang mom
-		for( j=0; j<_3D; j++ ) (WALL+i)->L[j] += (WALL+i)->dL[j];
+		//Apply impulse from BC_MPCcollision()
+		for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) {
+			for( j=0; j<DIM; j++ ) (WALL+i)->V[j] += (WALL+i)->dV[j];
+			//THERE SHOULD BE NO dL since BC_MPCcollision() ignores ang mom
+			for( j=0; j<_3D; j++ ) (WALL+i)->L[j] += (WALL+i)->dL[j];
+		}
+		/* ****************************************** */
+		/* ************* ACCELERATE BCs ************* */
+		/* ****************************************** */
+		#ifdef DBG
+			if( DBUG >= DBGTITLE ) printf( "Accelerate BCs.\n" );
+		#endif
+		//Accelerate each of the BCs
+		if( in.GRAV_FLAG ) for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) acc_BC( (WALL+i),in.dt,(WALL+i)->G );
 	}
-	/* ****************************************** */
-	/* ************* ACCELERATE BCs ************* */
-	/* ****************************************** */
-	#ifdef DBG
-		if( DBUG >= DBGTITLE ) printf( "Accelerate BCs.\n" );
-	#endif
-	//Accelerate each of the BCs
-	if( in.GRAV_FLAG ) for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) acc_BC( (WALL+i),in.dt,(WALL+i)->G );
-}
 	/* ****************************************** */
 	/* ***************** RE-BIN ***************** */
 	/* ****************************************** */

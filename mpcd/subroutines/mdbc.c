@@ -63,7 +63,7 @@ void MD_BCcollision( particleMD *atom,bc WALL[],double KBT,double t_step ) {
 	int cnt = 0;
 	double n[_3D] = {0.,0.,0.};	//Normal to the surface
 	double W, W1 = 0.0;
-	double shift[DIM];
+	double shift[_3D] = {0.,0.,0.};
 	double RX=0.0,RY=0.0,RZ=0.0;
 	double WX=0.0,WY=0.0,WZ=0.0;
 
@@ -110,7 +110,6 @@ void MD_BCcollision( particleMD *atom,bc WALL[],double KBT,double t_step ) {
 			posBC_MD( atom,WALL[chosenBC],n );
 			rotatebackBC_MD( &WALL[chosenBC],atom );
 			shiftbackBC( shift,&WALL[chosenBC] );
-
 			//Update the time to stream for
 			time = t_step - t_delta;
 			//Let the BC stream the rest of the way
@@ -154,7 +153,8 @@ void MD_BCcollision( particleMD *atom,bc WALL[],double KBT,double t_step ) {
 void chooseBC_MD( bc WALL[],particleMD *atom,double *t_min,double *chosenW,int *chosenBC,double time,double t_step ) {
 	int i,flag;
 	double t1,t2,tc;
-	double tempW,shift[DIM];
+	double tempW;
+	double shift[_3D] = {0.,0.,0.};
 
 	*t_min = time;
 	*chosenW=1.;
@@ -175,7 +175,9 @@ void chooseBC_MD( bc WALL[],particleMD *atom,double *t_min,double *chosenW,int *
 			crosstime_MD( atom,WALL[i],&t1,&t2,time );
 			tc = chooseT( t_step,t1,t2,0,&flag );
 			if( flag ) {
-				printf( "Warning: Cross time unacceptable MD: %lf.\n",tc );
+				printf( "Warning: Cross time unacceptable MD: %lf,wall:%d, tempW:%f.\n",tc,i,tempW);
+				printf( "Particle:%d, rx:%f, ry:%f, rz:%f, \n",atom->object,atom->rx,atom->ry,atom->rz);
+				printf( "wx:%f, wy:%f, wz:%f.\n",atom->wx,atom->wy,atom->wz);
 				// exit( 1 );		no need to exit. it is solved by further actions in MD_BCcollision
 			}
 
@@ -727,7 +729,9 @@ void velBC_MD( particleMD *atom,bc *WALL,double n[_3D],double KBT ) {
 /// @see			posBC()
 ///	
 void posBC_MD( particleMD *atom,bc WALL,double n[_3D] ) {
-	double PN[_3D],PT[_3D],temp[_3D];
+	double PN[_3D] = {0.,0.,0.};
+	double PT[_3D] = {0.,0.,0.};
+	double temp[_3D] = {0.,0.,0.};
 	int i;
 
 	temp[0] = atom->rx;
@@ -744,8 +748,13 @@ void posBC_MD( particleMD *atom,bc WALL,double n[_3D] ) {
 	}
 	//Combine normal and tangential components
 	atom->rx = PN[0] + PT[0];
-	atom->ry = PN[1] + PT[1];
-	atom->rz = PN[2] + PT[2];
+	if( DIM > _1D ){
+		atom->ry = PN[1] + PT[1];
+	}
+	if( DIM > _2D ){
+		atom->rz = PN[2] + PT[2];
+	}
+	
 }
 
 /* ****************************************** */

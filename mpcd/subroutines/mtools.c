@@ -1286,7 +1286,9 @@ void eigenvectors2x2( double **m,double eigval[],double eigvec[][_2D] ) {
 			eigvec[0][0]=1.0;
 			eigvec[0][1]=0.0;
 		}
-		else printf("Warning: 2D eigensolver failed.\n");
+		else {
+			printf("Warning: 2D eigensolver failed.\n");
+		} 	
 	}
 }
 
@@ -1438,7 +1440,6 @@ void eigenvectors3x3( double **m,double eigval[],double eigvec[][_3D] ) {
 ///
 void solveEigensystem( double **m,int dimension,double eigval[] ) {
 	int i,j;
-
 	if( dimension==_2D ) {
 		double eigvec[dimension][dimension];
 		eigenvalues2x2( m,eigval );
