@@ -1691,7 +1691,7 @@ void findRotationMatrix( double rotMat[][3],double *original,double *final ) {
     zerovec(b, _3D);
     zerovec(v, _3D);
 	double vx[_3D][_3D];
-    zeromat(_3D, _3D, vx); // zero matrix
+    zeromat(_3D, _3D, (double **) vx); // zero matrix
 	double s=0,c=0;
 
 	normCopy(original,a,_3D);

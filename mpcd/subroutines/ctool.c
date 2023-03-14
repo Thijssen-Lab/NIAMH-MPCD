@@ -72,3 +72,33 @@ int isNaNs(double *x, int n) {
     }
     return 0;
 }
+
+///
+/// @brief Function that zeros any vector.
+///
+/// This function sets the component of the receiving vector to 0.
+///
+/// @param VEC The vector whose components will be zeroed.
+/// @param dimension The dimension of VEC.
+///
+void zerovec( double VEC[],int dimension ) {
+    int i;
+    for( i=0; i<dimension; i++ ) VEC[i]=0.0;
+}
+
+///
+/// @brief Function that zeros any matrix.
+///
+/// This function sets the component of the receiving matrix to 0.
+///
+/// @param dim1 The first dimension of the matrix.
+/// @param dim2 The second dimension of the matrix.
+/// @param MAT The matrix whose components will be zeroed. Likely needs matrix to be cast with `(double **)` to work
+///             without warnings.
+///
+void zeromat( int dim1, int dim2, double **MAT) {
+    int i;
+    for( i=0; i<dim1; i++ ) {
+        zerovec( MAT[i],dim2);
+    }
+}

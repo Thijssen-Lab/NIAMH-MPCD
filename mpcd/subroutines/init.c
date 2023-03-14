@@ -924,36 +924,6 @@ double mdensity( bc WALL[],double MASS ) {
 /* ****************************************** */
 /* ****************************************** */
 
-///
-/// @brief Function that zeros any vector.
-///
-/// This function sets the component of the receiving vector to 0.
-///
-/// @param VEC The vector whose components will be zeroed.
-/// @param dimension The dimension of VEC.
-///
-void zerovec( double VEC[],int dimension ) {
-	int i;
-	for( i=0; i<dimension; i++ ) VEC[i]=0.0;
-}
-
-///
-/// @brief Function that zeros any matrix.
-///
-/// This function sets the component of the receiving matrix to 0.
-///
-/// @param dim1 The first dimension of the matrix.
-/// @param dim2 The second dimension of the matrix.
-/// @param MAT The matrix whose components will be zeroed.
-///
-void zeromat( int dim1, int dim2, double MAT[dim1][dim2]) {
-    int i,j;
-    for( i=0; i<dim1; i++ ) {
-        for( j=0; j<dim2; j++ ) {
-            MAT[i][j]=0.0;
-        }
-    }
-}
 
 ///
 /// @brief Function that zeros everything in all the particles.
@@ -963,15 +933,13 @@ void zeromat( int dim1, int dim2, double MAT[dim1][dim2]) {
 /// @param pp Return pointer to the first MPCD particle in the array.
 ///
 void zeroparticles( particleMPC *pp ) {
-	int i,d;
+	int i;
 
 	for( i=0; i<GPOP; i++ ) {
-		for( d=0; d<_3D; d++ ) {
-			(pp+i)->Q[d]=0.0;
-			(pp+i)->V[d]=0.0;
-			(pp+i)->U[d]=0.0;
-			(pp+i)->T[d]=0.0;
-		}
+        zerovec( (pp+i)->Q, _3D );
+        zerovec( (pp+i)->V, _3D );
+        zerovec( (pp+i)->U, _3D );
+        zerovec( (pp+i)->T, _3D );
 	}
 }
 
@@ -986,10 +954,9 @@ void zeroparticles( particleMPC *pp ) {
 /// @param AVS Return pointer to the average scalar order parameter.
 ///
 void zerocnt( double *KBTNOW,double AVNOW[],double *AVS ) {
-	int i;
 	*KBTNOW = 0.;
 	*AVS = 0.;
-	for( i=0; i<_3D; i++ ) AVNOW[i] = 0.;
+    zerovec( AVNOW, _3D );
 }
 
 ///
@@ -1000,8 +967,7 @@ void zerocnt( double *KBTNOW,double AVNOW[],double *AVS ) {
 /// @param HIST Vector histogram being zeroed.
 ///
 void zeroHISTVEC( int HIST[_3D][BINS] ) {
-	int i,j;
-	for( j=0; j<BINS; j++ ) for( i=0; i<_3D; i++ ) HIST[i][j] = 0;
+    zeromat(_3D, BINS, (double **) HIST);
 }
 
 ///
@@ -1012,8 +978,7 @@ void zeroHISTVEC( int HIST[_3D][BINS] ) {
 /// @param HIST Scalar histogram being zeroed.
 ///
 void zeroHISTSCALAR( int HIST[BINS] ) {
-	int j;
-	for( j=0; j<BINS; j++ ) HIST[j] = 0;
+    zerovec( (double *) HIST, BINS);
 }
 
 ///
@@ -1028,7 +993,7 @@ void zeroHISTSCALAR( int HIST[BINS] ) {
 /// @param CL Return pointer to the cell list being zeroed.
 ///
 void zerocell( cell ***CL ) {
-	int i,j,k,l,m;
+	int i,j,k;
 	for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) {
 		CL[i][j][k].POP = 0;
 		CL[i][j][k].POPSRD = 0;
@@ -1036,18 +1001,17 @@ void zerocell( cell ***CL ) {
 		CL[i][j][k].POPMD = 0;
 		CL[i][j][k].MASS = 0.0;
 		CL[i][j][k].S = 0.0;
-		for( l=0; l<_3D; l++ ) {
-			CL[i][j][k].CM[l] = 0.0;
-			CL[i][j][k].VCM[l] = 0.0;
-			CL[i][j][k].FLOW[l] = 0.0;
-			CL[i][j][k].DIR[l] = 0.0;
-			for( m=0; m<_3D; m++ ) {
-				CL[i][j][k].E[l][m] = 0.0;
-				CL[i][j][k].I[l][m] = 0.0;
-				CL[i][j][k].Ps[l][m] = 0.0;
-				CL[i][j][k].Pc[l][m] = 0.0;
-			}
-		}
+
+        zerovec( CL[i][j][k].CM, _3D );
+        zerovec( CL[i][j][k].VCM, _3D );
+        zerovec( CL[i][j][k].FLOW, _3D );
+        zerovec( CL[i][j][k].DIR, _3D );
+
+        zeromat(_3D, _3D, (double **) CL[i][j][k].E);
+        zeromat(_3D, _3D, (double **) CL[i][j][k].I);
+        zeromat(_3D, _3D, (double **) CL[i][j][k].Ps);
+        zeromat(_3D, _3D, (double **) CL[i][j][k].Pc);
+
 		//The list doesn't have anyone in it yet so it doesn't point anywhere
 		CL[i][j][k].pp = NULL;
 		CL[i][j][k].MDpp = NULL;
@@ -1063,9 +1027,7 @@ void zerocell( cell ***CL ) {
 /// @param CL Return pointer to the cell list whose collisional pressure term is being zeroed.
 ///
 void zeroPressureColl( cell *CL ) {
-
-	int l,m;
-	for( l=0; l<DIM; l++ ) for( m=0; m<DIM; m++ ) CL->Pc[l][m] = 0.0;
+    zeromat( DIM, DIM, (double **) CL->Pc);
 }
 
 /* ****************************************** */
