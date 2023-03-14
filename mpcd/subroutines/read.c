@@ -49,7 +49,7 @@ void checkRead( int flag,char failure[],char file[]) {
 ///
 /// @brief LEGACY.
 ///
-void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL,int *MDmode ) {
+void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL,int *MD_mode ) {
 /*
    By reading in the addresses of the variables as
    pointers this function sets the values to what
@@ -133,7 +133,7 @@ void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL
 	read=fscanf( finput,"%ld %s",&(in->seed),STR );
 	checkRead( read,"random seed",inSTR);
 	//Read the MD coupling mode
-	read=fscanf( finput,"%d %s",MDmode,STR );
+	read=fscanf(finput, "%d %s", MD_mode, STR );
 	checkRead( read,"MD coupling",inSTR);
 	//Read the number of MD steps per SRD step
 	read=fscanf( finput,"%d %s",&(in->stepsMD),STR );
@@ -649,7 +649,7 @@ void readbc( char fpath[],bc **WALL ) {
 /// @param SP Pointer to the species list. Expected to be &SP.
 /// @param pSRD Pointer to the particle list. Expected to be &pSRD.
 /// @param CL Pointer to the cell array. Expected to be &CL.
-/// @param MDmode Pointer to the MD mode int flag. Expected to be &MDmode.
+/// @param MD_mode Pointer to the MD mode int flag. Expected to be &MD_mode.
 /// @param WALL Pointer to the boundary condition list. Expected to be &WALL.
 /// @param out Pointer to the object containing output flags (corresponding to legacy printcom.inp). Expected to be &out.
 /// @param runtime Pointer to the current runtime of the simulation. Expected to be &runtime.
@@ -666,7 +666,7 @@ void readbc( char fpath[],bc **WALL ) {
 /// @param specS Pointer to the object containing the swimmer species hyperparameters. Expected to be &specS.
 /// @param sw Pointer to the swimmer list. Expected to be &sw.
 ///
-void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL,int *MDmode,bc **WALL,outputFlagsList *out,int *runtime,int *warmtime,kinTheory *theory,double *AVVEL, double *AVS,double avDIR[_3D],double *S4,double *stdN,double *KBTNOW,double AVV[_3D],double AVNOW[_3D],specSwimmer *specS,swimmer **sw ) {
+void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cell ****CL, int *MD_mode, bc **WALL, outputFlagsList *out, int *runtime, int *warmtime, kinTheory *theory, double *AVVEL, double *AVS, double avDIR[_3D], double *S4, double *stdN, double *KBTNOW, double AVV[_3D], double AVNOW[_3D], specSwimmer *specS, swimmer **sw ) {
 	FILE *finput;
 	int i,j;
 	char STR[100];
@@ -700,7 +700,7 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 	else printf("Warning: Failed to read magnetic field.\n");
 
 
-	if(fscanf( finput,"%d %d",MDmode,&(in->stepsMD) ));	//Read the MD coupling mode
+	if(fscanf(finput, "%d %d", MD_mode, &(in->stepsMD) ));	//Read the MD coupling mode
 	else printf("Warning: Failed to read MD coupling.\n");
 	if(fscanf( finput,"%d %d",&GPOP,&NSPECI ));	//Read the number of MPC particles
 	else printf("Warning: Failed to read total number of particles or number of species.\n");

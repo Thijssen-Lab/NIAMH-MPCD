@@ -1730,7 +1730,7 @@ void dirdirCorr( cell ***CL,int maxXYZ,int XYZ[3],double *avCorr,int dimension )
 	}
 	for( d=0; d<maxXYZ; d++ ) {
 		avCorr[d] /= (double) (cnt[d]?(cnt[d]):1);
-		avCorr[d] /= (double) (avCorr[0]?(avCorr[0]):1); ;
+		avCorr[d] /= (double) (avCorr[0]?(avCorr[0]):1);
 	}
 	//Transformation to make the correlation function go from unity to zero
 	//corr0=1 and corrINF=2/3 ideally

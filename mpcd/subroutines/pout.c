@@ -1107,17 +1107,17 @@ void cellout( cell ***CL ) {
 /// This function outputs the list of all particles co-ordinates and cell information as an array of lists.
 ///
 /// @param CL This is a pointer to the co-ordinates and cell of each particle.
-/// @param XYZ_P1 This is three-dimensional list of particle positions.
+/// @param XYZ_p1 This is three-dimensional list of particle positions.
 /// @see cellout()
 ///
-void listout( cell ***CL,int XYZ_P1[_3D] ) {
+void listout( cell ***CL,int XYZ_p1[_3D] ) {
 	int a,b,c,d;
 	particleMPC *pMPC;
 	particleMD *pMD;
 	smono *pSW;
 
 	printf( "Local properties:\n" );
-	for( a=0; a<XYZ_P1[0]; a++ ) for( b=0; b<XYZ_P1[1]; b++ ) for( c=0; c<XYZ_P1[2]; c++ ) {
+	for( a=0; a < XYZ_p1[0]; a++ ) for(b=0; b < XYZ_p1[1]; b++ ) for(c=0; c < XYZ_p1[2]; c++ ) {
 		d=0;
 		printf( "\tCell [%d,%d,%d]:\n",a,b,c );
 		if( CL[a][b][c].pp != NULL ) {
@@ -2529,7 +2529,7 @@ void spectout( FILE *fout,double spect[],double t ) {
 /// @param in This is the list of inputs from input.json.
 /// @param SP This is the species-wide information about MPC particles.
 /// @param pSRD This is a list of information for all MPC particles.
-/// @param MDmode This is a flag to determine if MD mode is on.
+/// @param MD_mode This is a flag to determine if MD mode is on.
 /// @param WALL This is a pointer to boundary position information.
 /// @param outFlag This is a flag for .dat files to be output.
 /// @param runtime This is the length of time the simulation runs.
@@ -2546,7 +2546,7 @@ void spectout( FILE *fout,double spect[],double t ) {
 /// @param specS This is the swimmer species.
 /// @param sw This is a pointer to the list of swimmers.
 ///
-void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,bc *WALL,outputFlagsList outFlag,int runtime,int warmtime,double AVVEL,double AVS,double avDIR[_3D],double S4,double stdN,double KBTNOW,double AVV[_3D],double AVNOW[_3D],kinTheory theory,specSwimmer specS,swimmer *sw ) {
+void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mode, bc *WALL, outputFlagsList outFlag, int runtime, int warmtime, double AVVEL, double AVS, double avDIR[_3D], double S4, double stdN, double KBTNOW, double AVV[_3D], double AVNOW[_3D], kinTheory theory, specSwimmer specS, swimmer *sw ) {
 	int i,j;
 
 	fprintf( fout,"%d\n",in.simSteps );		//total time (or number of iterations)
@@ -2559,7 +2559,7 @@ void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,b
 	fprintf( fout,"%d %d %d\n",in.noHI,in.inCOMP,in.MULTIPHASE );
 	fprintf( fout,"%lf %lf %lf\n",in.GRAV[0],in.GRAV[1],in.GRAV[2] );		//Acceleration (external force)
 	fprintf( fout,"%lf %lf %lf\n",in.MAG[0],in.MAG[1],in.MAG[2] );			//External magnetic field
-	fprintf( fout,"%d %d\n",MDmode,in.stepsMD );		//MD coupling mode and number of MD steps per SRD step
+	fprintf(fout, "%d %d\n", MD_mode, in.stepsMD );		//MD coupling mode and number of MD steps per SRD step
 	fprintf( fout,"%d %d\n",GPOP,NSPECI);			//Total number of particles and number of species
 
 	fprintf( fout,"%d %d %lf %lf %d %d\n",runtime,warmtime,in.C,in.S,in.GRAV_FLAG,in.MAG_FLAG );
@@ -2622,7 +2622,7 @@ void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,b
 /// @param in This is the list of inputs from input.json.
 /// @param SP This is the species-wide information about MPC particles.
 /// @param pSRD This is a list of information for all MPC particles.
-/// @param MDmode This is a flag to determine if MD mode is on.
+/// @param MD_mode This is a flag to determine if MD mode is on.
 /// @param WALL This is a pointer to boundary position information.
 /// @param outFlag This is a flag for .dat files to be output.
 /// @param runtime This is the length of time the simulation runs.
@@ -2641,7 +2641,7 @@ void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,b
 /// @see checkpoint()
 /// @see openCheckpoint()
 ///
-void runCheckpoint(char op[500],time_t *lastCheckpoint,FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,bc *WALL,outputFlagsList outFlag,int runtime,int warmtime,double AVVEL,double AVS,double avDIR[_3D],double S4,double stdN,double KBTNOW,double AVV[_3D],double AVNOW[_3D],kinTheory theory,specSwimmer specS,swimmer *sw ) {
+void runCheckpoint(char op[500], time_t *lastCheckpoint, FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mode, bc *WALL, outputFlagsList outFlag, int runtime, int warmtime, double AVVEL, double AVS, double avDIR[_3D], double S4, double stdN, double KBTNOW, double AVV[_3D], double AVNOW[_3D], kinTheory theory, specSwimmer specS, swimmer *sw ) {
     // if time-based checkpointing has been enabled, see if a checkpoint needs to be made
     // otherwise return early
     if (outFlag.CHCKPNTTIMER != 0.0) {
@@ -2661,7 +2661,7 @@ void runCheckpoint(char op[500],time_t *lastCheckpoint,FILE *fout,inputList in,s
     #endif
     // normal checkpoint
     openCheckpoint( &(fout),op );
-    checkpoint( fout, in, SP, pSRD, MDmode, WALL, outFlag, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory, specS, sw);
+    checkpoint(fout, in, SP, pSRD, MD_mode, WALL, outFlag, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory, specS, sw);
     fclose( fout );
 }
 
@@ -2687,7 +2687,7 @@ void runCheckpoint(char op[500],time_t *lastCheckpoint,FILE *fout,inputList in,s
 /// @param AVS This is is a pointer to the average scalar order parameter.
 /// @param S4 This is a pointer to the fourth moment of the scalar order parameter.
 /// @param stdN This is the standard deviation of the density.
-/// @param MDmode This is a flag to determine if MD mode is on.
+/// @param MD_mode This is a flag to determine if MD mode is on.
 /// @param outFlag This is a flag for .dat files to be output.
 /// @param outFiles This is the list of output files.
 /// @see solidout()
@@ -2730,7 +2730,7 @@ void runCheckpoint(char op[500],time_t *lastCheckpoint,FILE *fout,inputList in,s
 /// @see pressureout()
 /// @see orderQKout()
 ///
-void outputResults( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr simMD,specSwimmer SS, swimmer swimmers[],double AVNOW[_3D],double AVV[_3D],double avDIR[_3D], int runtime, inputList in, double AVVEL, double KBTNOW,double *AVS,double *S4,double *stdN,int MDmode,outputFlagsList outFlag,outputFilesList outFiles ) {
+void outputResults(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simptr simMD, specSwimmer SS, swimmer swimmers[], double AVNOW[_3D], double AVV[_3D], double avDIR[_3D], int runtime, inputList in, double AVVEL, double KBTNOW, double *AVS, double *S4, double *stdN, int MD_mode, outputFlagsList outFlag, outputFilesList outFiles ) {
 	int a,b,c,i,j;
 	double time_now = runtime*in.dt;					//Simulation time
 	double wmf;
@@ -2756,7 +2756,7 @@ void outputResults( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],sim
 	// Bin swimmer monomers
 	binSwimmers( CL,0 );
 	// Bin MD particles
-	if( MDmode ) binMD( CL );
+	if( MD_mode ) binMD(CL );
 	//Calculate the local properties of each cell (VCM,in.KBT,POPulation,Mass)
 	localPROP( CL,SP,SS,in.RTECH,in.LC );
 	avVel( CL,AVNOW );
@@ -2772,8 +2772,8 @@ void outputResults( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],sim
 		#ifdef DBG
 			if( DBUG > DBGRUN ) printf( "Galilean Transformation to Rest Frame\n" );
 		#endif
-		galileantrans( SRDparticles,WALL,simMD,SP,in.KBT,AVV,GPOP,NBC,MDmode,DIM );
-		zeroExtraDims( SRDparticles,WALL,simMD,GPOP,NBC,MDmode,DIM );
+		galileantrans(SRDparticles, WALL, simMD, SP, in.KBT, AVV, GPOP, NBC, MD_mode, DIM );
+		zeroExtraDims(SRDparticles, WALL, simMD, GPOP, NBC, MD_mode, DIM );
 	}
 	/* ****************************************** */
 	/* *********** AVERAGES and OUTPUT ********** */

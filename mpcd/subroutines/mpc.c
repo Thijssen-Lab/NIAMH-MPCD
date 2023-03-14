@@ -631,9 +631,9 @@ void acc_all( particleMPC *pp,double t,double GRAV[] ) {
 /// @param WALL All of the walls (boundary conditions) that particles might interact with. 
 /// @param simMD A pointer to the entire MD portion of the simulation.
 /// @param swimmers All the swimmers, including their head and middle monomers. 
-/// @param MDmode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
+/// @param MD_mode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
 ///
-void gridShift_all( double SHIFT[],int shiftBack,particleMPC *SRDparticles,bc WALL[],simptr simMD,swimmer swimmers[],int MDmode ) {
+void gridShift_all( double SHIFT[],int shiftBack,particleMPC *SRDparticles,bc WALL[],simptr simMD,swimmer swimmers[],int MD_mode ) {
 	int i,j;							//Counting variables
 	double signedSHIFT[_3D];
 
@@ -650,7 +650,7 @@ void gridShift_all( double SHIFT[],int shiftBack,particleMPC *SRDparticles,bc WA
 		 if (shiftBack == 0 && SRDparticles[i].Q[j] > XYZ[j] && SRDparticles[i].Q[j] <= XYZ[j] + signedSHIFT[j] )	SRDparticles[i].Q[j] -= XYZ[j];
 		 else if (shiftBack == 1 && SRDparticles[i].Q[j] < 0.0 && SRDparticles[i].Q[j] >= signedSHIFT[j] ) SRDparticles[i].Q[j] += XYZ[j];
 	 }
-	if( MDmode == MDinMPC) for( i=0; i<(simMD->atom.n); i++ ) {
+	if(MD_mode == MDinMPC) for(i=0; i < (simMD->atom.n); i++ ) {
 		(simMD->atom.items+i)->rx += signedSHIFT[0];
 		if( DIM>=_2D ) (simMD->atom.items+i)->ry += signedSHIFT[1];
 		if( DIM>=_3D ) (simMD->atom.items+i)->rz += signedSHIFT[2];
@@ -1913,7 +1913,7 @@ void langevinROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 		crossprod( W,relQ[i],angterm );
 		a = (MASS - FRICCO * Step * 0.5) / (MASS + 0.5 * FRICCO * Step);
 		b = sqrt( FRICCO*Step ) / ( MASS + 0.5 * FRICCO * Step );
-		for( j=0; j<DIM; j++ ) tmpc->V[j] = VCM[j] + a * (tmpc->V[j]-VCM[j]) + b * (WN[i][j] - WNS[j]) - DV[i][j] + angterm[j];;
+		for( j=0; j<DIM; j++ ) tmpc->V[j] = VCM[j] + a * (tmpc->V[j]-VCM[j]) + b * (WN[i][j] - WNS[j]) - DV[i][j] + angterm[j];
 		//Pressure term
 		if( outP ) calcPressureColl_postColl( relQ[i],dp[i],MASS,tmpc->V,CL );
 		//Increment link in list
@@ -2679,7 +2679,7 @@ void dipoleAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 /// @param S Sine of the rotation angle.
 /// @param FRICCO Friction coefficient for Langevin thermostat.
 /// @param TimeStep The interval of each MPCD time step in MPCD time units.
-/// @param MDmode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
+/// @param MD_mode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
 /// @param LC Flags whether or not the nematic liquid crystal is turned on.
 /// @param RELAX The temperature relaxation time scale.
 /// @param CLQ The geometric centre of `CL`, the MPCD cell.
@@ -2706,11 +2706,11 @@ void dipoleAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 /// @see chateAndersenMPC()
 /// @see chateLangevinMPC()
 ///
-void MPCcollision( cell *CL,spec *SP,specSwimmer SS,double KBT,int RTECH,double C,double S,double FRICCO,double TimeStep,int MDmode,int LC,double RELAX,double *CLQ,int outP ) {
+void MPCcollision(cell *CL, spec *SP, specSwimmer SS, double KBT, int RTECH, double C, double S, double FRICCO, double TimeStep, int MD_mode, int LC, double RELAX, double *CLQ, int outP ) {
 	particleMD *tmd;	//Temporary particleMD
 
 	tmd = CL->MDpp;
-	if (MDmode==MPCinMD) CL->MDpp=NULL;
+	if (MD_mode == MPCinMD) CL->MDpp=NULL;
 	if( outP ) zeroPressureColl( CL );
 	//Liquid Crystal
 	if( LC!=ISOF ) {
@@ -2740,7 +2740,7 @@ void MPCcollision( cell *CL,spec *SP,specSwimmer SS,double KBT,int RTECH,double 
 		}
 	}
 	if( outP ) normPressureColl( CL,TimeStep );
-	if (MDmode==MPCinMD) CL->MDpp=tmd;
+	if (MD_mode == MPCinMD) CL->MDpp=tmd;
 }
 
 /// 
@@ -2756,11 +2756,11 @@ void MPCcollision( cell *CL,spec *SP,specSwimmer SS,double KBT,int RTECH,double 
 /// @param SS The species-wide information about swimmers.
 /// @param multiphaseMode The interactions between different species that allows phase segregation. 
 /// @param KBT The thermal energy. 
-/// @param MDmode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
+/// @param MD_mode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
 /// @param CLQ The geometric centre of `CL`, the MPCD cell.
 /// @param outP Flag whether or not to output the pressure.
 ///
-void multiphaseColl( cell *CL,spec *SP,specSwimmer SS,int multiphaseMode, double KBT,int MDmode,double *CLQ,int outP ) {
+void multiphaseColl(cell *CL, spec *SP, specSwimmer SS, int multiphaseMode, double KBT, int MD_mode, double *CLQ, int outP ) {
 /*
     THIS IS WHERE KIRA SHOULD ADD HER NEW BIT!!!
 */
@@ -2768,7 +2768,7 @@ void multiphaseColl( cell *CL,spec *SP,specSwimmer SS,int multiphaseMode, double
 		printf("Error: Multiphase interaction not yet implemented.\nTo be implemented by Kira");
 		exit( 1 );
 	}
-	else if( multiphaseMode==MPHPOINT ) multiphaseCollPoint( CL,SP,SS,KBT,MDmode,CLQ,outP );
+	else if( multiphaseMode==MPHPOINT ) multiphaseCollPoint(CL, SP, SS, KBT, MD_mode, CLQ, outP );
 	else {
 		printf( "Error: Multiphase interaction  technique unacceptable.\n" );
 		exit( 1 );
@@ -2785,11 +2785,11 @@ void multiphaseColl( cell *CL,spec *SP,specSwimmer SS,int multiphaseMode, double
 /// @param SP The species-wide information about MPCD particles.
 /// @param SS The species-wide information about swimmers.
 /// @param KBT The thermal energy. 
-/// @param MDmode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
+/// @param MD_mode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
 /// @param CLQ The geometric centre of `CL`, the MPCD cell.
 /// @param outP Flag whether or not to output the pressure.
 ///
-void multiphaseCollPoint( cell *CL,spec *SP,specSwimmer SS, double KBT,int MDmode,double *CLQ,int outP ) {
+void multiphaseCollPoint(cell *CL, spec *SP, specSwimmer SS, double KBT, int MD_mode, double *CLQ, int outP ) {
 	int i,j,k,id;
 	int mixedCell=0;
 	double N,NSP[NSPECI];			//Number of each type
@@ -3000,11 +3000,11 @@ void multiphaseCollPoint( cell *CL,spec *SP,specSwimmer SS, double KBT,int MDmod
 /// @param SP The species-wide information about MPCD particles.
 /// @param SS The species-wide information about swimmers.
 /// @param INCOMPmode The technique for making the fluid a non-ideal gas.
-/// @param MDmode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
+/// @param MD_mode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
 /// @param CLQ The geometric centre of `CL`, the MPCD cell.
 /// @param outP Flag whether or not to output the pressure.
 ///
-void incompColl( cell *CL,spec *SP,specSwimmer SS,int INCOMPmode,int MDmode,double *CLQ,int outP ) {
+void incompColl(cell *CL, spec *SP, specSwimmer SS, int INCOMPmode, int MD_mode, double *CLQ, int outP ) {
 	if(INCOMPmode==INCOMPSWAP) incompSwap( CL,SP,SS );
 	else if(INCOMPmode==INCOMPVIRIAL) incompAddVirial( CL,7.0,49.0,343.0,SP,SS );
 	else if(INCOMPmode==INCOMPSUB) incompSubtractDivergence( CL,SP,SS );
@@ -4264,11 +4264,11 @@ void cellVelSet( cell *CL,double vel[3] ) {
 /// @param KBTNOW The current thermal energy (not the thermostats target temperature). 
 /// @param AVS  The average global scalar order parameter from the nematic Q-tensor.
 /// @param runtime The number of iterations that timestep will ultimately be looped over. 
-/// @param MDmode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
+/// @param MD_mode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
 /// @param outFlags The complete list of what is being outputted as results. 
 /// @param outFiles The complete list of pointers to output files. 
 ///
-void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr simMD,specSwimmer *SS,swimmer swimmers[],double AVNOW[_3D],double AVV[_3D],double avDIR[_3D],inputList in,double *KBTNOW, double *AVS,int runtime,int MDmode,outputFlagsList outFlags,outputFilesList outFiles ) {
+void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simptr simMD, specSwimmer *SS, swimmer swimmers[], double AVNOW[_3D], double AVV[_3D], double avDIR[_3D], inputList in, double *KBTNOW, double *AVS, int runtime, int MD_mode, outputFlagsList outFlags, outputFilesList outFiles ) {
 
 	int i,j,k;						//Counting variables
 	double RSHIFT[_3D];				//Random vector to positively shift all components of the simulation
@@ -4299,9 +4299,9 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 	/* ************* INTEGRATE MD *************** */
 	/* ****************************************** */
 	#ifdef DBG
-		if( DBUG >= DBGTITLE && MDmode != noMD ) printf( "Integrate MD.\n" );
+		if( DBUG >= DBGTITLE && MD_mode != noMD ) printf("Integrate MD.\n" );
 	#endif
-	if( MDmode ) integrateMD(simMD,MDmode,in.stepsMD,SRDparticles,WALL,SP,GPOP,NBC,CL);
+	if( MD_mode ) integrateMD(simMD, MD_mode, in.stepsMD, SRDparticles, WALL, SP, GPOP, NBC, CL);
 	/* ****************************************** */
 	/* *********** INTEGRATE SWIMMER ************ */
 	/* ****************************************** */
@@ -4337,7 +4337,7 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 		//Generate random shift
 		ranshift( RSHIFT,in.GALINV,DIM );
 		//Shift entire system by RSHIFT
-		gridShift_all( RSHIFT,0,SRDparticles,WALL,simMD,swimmers,MDmode );
+		gridShift_all(RSHIFT, 0, SRDparticles, WALL, simMD, swimmers, MD_mode );
 	}
 	/* ****************************************** */
 	/* ******************* BIN ****************** */
@@ -4350,7 +4350,7 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 	// Bin swimmer monomers
 	binSwimmers( CL,1 );
 	// Bin MD particles
-	if( MDmode ) binMD( CL );
+	if( MD_mode ) binMD(CL );
 	/* ****************************************** */
 	/* ************** PRE-COLLISION ************* */
 	/* ****************************************** */
@@ -4440,15 +4440,15 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 		CLQ[0]=i+0.5;
 		CLQ[1]=j+0.5;
 		CLQ[2]=k+0.5;
-		if( CL[i][j][k].POP > 1 ) MPCcollision( &CL[i][j][k],SP,*SS,in.KBT,in.RTECH,in.C,in.S,in.FRICCO,in.dt,MDmode,in.LC,in.TAU,CLQ,outPressure );
+		if( CL[i][j][k].POP > 1 ) MPCcollision(&CL[i][j][k], SP, *SS, in.KBT, in.RTECH, in.C, in.S, in.FRICCO, in.dt, MD_mode, in.LC, in.TAU, CLQ, outPressure );
 	}
 	// Apply the multiphase interactions
 	if( in.MULTIPHASE != MPHOFF && NSPECI>1 ) {
-		for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) if( CL[i][j][k].POP > 1 ) multiphaseColl( &CL[i][j][k],SP,*SS,in.MULTIPHASE,in.KBT,MDmode,CLQ,outPressure );
+		for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) if( CL[i][j][k].POP > 1 ) multiphaseColl(&CL[i][j][k], SP, *SS, in.MULTIPHASE, in.KBT, MD_mode, CLQ, outPressure );
 	}
 	// Apply the incompressibility correction
 	if( in.inCOMP != INCOMPOFF ) {
-		for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) if( CL[i][j][k].POP > 1 ) incompColl( &CL[i][j][k],SP,*SS,in.inCOMP,MDmode,CLQ,outPressure );
+		for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) if( CL[i][j][k].POP > 1 ) incompColl(&CL[i][j][k], SP, *SS, in.inCOMP, MD_mode, CLQ, outPressure );
 	}
 	// Brownian thermostat (no hydrodynamic interactions -scramble velocities)
 	if( in.noHI == HIOFF ) scramble( SRDparticles );
@@ -4502,7 +4502,7 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 			if( DBUG >= DBGTITLE ) printf( "Shift Grid Back.\n" );
 		#endif
 		//Shift entire system by back
-		gridShift_all( RSHIFT,1,SRDparticles,WALL,simMD,swimmers,MDmode );
+		gridShift_all(RSHIFT, 1, SRDparticles, WALL, simMD, swimmers, MD_mode );
 	}
 	/* ****************************************** */
 	/* ********** APPLY SWIMMER DIPOLE ********** */
@@ -4519,7 +4519,7 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 	#ifdef DBG
 		if( DBUG >= DBGTITLE ) printf( "Translate MPC particles.\n" );
 	#endif
-	if( MDmode != MPCinMD ) stream_all( SRDparticles,in.dt );
+	if(MD_mode != MPCinMD ) stream_all(SRDparticles, in.dt );
 	/* ****************************************** */
 	/* ******************* BCs ****************** */
 	/* ****************************************** */
@@ -4603,7 +4603,7 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 			rethermCNT=0;
 			// Check each BC for collisions MPC particles
 			for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) {
-				BC_MPCcollision( WALL,i,SRDparticles,SP,in.KBT,in.GRAV,in.dt,simMD,MDmode,in.LC,&bcCNT,&reCNT,&rethermCNT );
+				BC_MPCcollision(WALL, i, SRDparticles, SP, in.KBT, in.GRAV, in.dt, simMD, MD_mode, in.LC, &bcCNT, &reCNT, &rethermCNT );
 			}
 			#ifdef DBG
 				if( DBUG == DBGBCCNT ) if( bcCNT>0 ) printf( "\t%d particles had difficulty with the BCs when the BCs moved (%d rewind events; %d rethermalization events).\n",bcCNT,reCNT,rethermCNT );
@@ -4641,7 +4641,7 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 	// Bin swimmer monomers
 	binSwimmers( CL,0 );
 	// Bin MD particles
-	if( MDmode ) binMD( CL );
+	if( MD_mode ) binMD(CL );
 	//Recalculate localPROP to ensure updated cell properties
 	localPROP( CL,SP,*SS,in.RTECH,in.LC );
 	/* ****************************************** */
