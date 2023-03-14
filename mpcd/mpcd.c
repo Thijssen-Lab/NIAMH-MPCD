@@ -101,9 +101,7 @@ int main(int argc, char* argv[]) {
 	double AVVEL=0.0;				//The average speed
 	double AVS=0.0,S4=0.0,stdN=0.0;   //The average of the scalar order parameter, director and fourth moment
 	double avDIR[_3D],AVV[_3D],AVNOW[_3D];  //The past and current average flow velocities
-    zerovec(avDIR, _3D); // initialise all elements to zero
-    zerovec(AVV, _3D);
-    zerovec(AVNOW, _3D);
+    zerovec_v(3, _3D, avDIR, AVV, AVNOW); // initialise to zero
 	//Input/Output
 	int CHCKPNTrcvr = 0;			//Flag for simulation from recovery of checkpoint
 	char ip[500],op[500];			//Path to input and output
