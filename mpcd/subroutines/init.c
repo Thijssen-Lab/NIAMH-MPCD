@@ -938,6 +938,24 @@ void zerovec( double VEC[],int dimension ) {
 }
 
 ///
+/// @brief Function that zeros any matrix.
+///
+/// This function sets the component of the receiving matrix to 0.
+///
+/// @param dim1 The first dimension of the matrix.
+/// @param dim2 The second dimension of the matrix.
+/// @param MAT The matrix whose components will be zeroed.
+///
+void zeromat( int dim1, int dim2, double MAT[dim1][dim2]) {
+    int i,j;
+    for( i=0; i<dim1; i++ ) {
+        for( j=0; j<dim2; j++ ) {
+            MAT[i][j]=0.0;
+        }
+    }
+}
+
+///
 /// @brief Function that zeros everything in all the particles.
 ///
 /// This functios zeros all parameters for all MPCD particles.

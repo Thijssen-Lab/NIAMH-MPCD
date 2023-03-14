@@ -33,6 +33,7 @@ By Tyler Shendruk's Research Group
 # include<stdlib.h>
 # include<time.h>
 # include<string.h>
+#define _GNU_SOURCE // required for fenv
 # include<fenv.h>
 /* ****************************************** */
 /* ****************************************** */

@@ -14,6 +14,7 @@
    These functions are used to initialize the program
 */
 void zerovec( double VEC[],int dimension );
+void zeromat( int dim1, int dim2, double MAT[dim1][dim2]);
 void zero_bc_var( double *tfrac,double *tdiff,int *g );
 void zerocnt( double *KBTNOW,double AVNOW[],double *AVS );
 void zeroHISTVEC( int HIST[_3D][BINS] );
