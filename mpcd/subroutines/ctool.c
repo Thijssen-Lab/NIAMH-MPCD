@@ -5,6 +5,7 @@
 
 # include<stdio.h>
 # include<math.h>
+# include <stdarg.h>
 
 /* ****************************************** */
 /* ****************************************** */
@@ -91,8 +92,8 @@ void zerovec( double VEC[],int dimension ) {
 ///
 /// This function sets the component of the receiving matrix to 0.
 ///
-/// @param dim1 The first dimension of the matrix.
-/// @param dim2 The second dimension of the matrix.
+/// @param dim1 The first dimension of the matrix (ie, mat[dim1][dim2]).
+/// @param dim2 The second dimension of the matrix (ie, mat[dim1][dim2]).
 /// @param MAT The matrix whose components will be zeroed. Likely needs matrix to be cast with `(double **)` to work
 ///             without warnings.
 ///
@@ -101,4 +102,50 @@ void zeromat( int dim1, int dim2, double **MAT) {
     for( i=0; i<dim1; i++ ) {
         zerovec( MAT[i],dim2);
     }
+}
+
+///
+/// @brief Variadic version of zerovec
+///
+/// This function will set all vectors following the `dim` param to zero.
+/// Ex: `zerovec_v(3, _3D, vec1, vec2, vec3);` will set the 3 3D vectors to zero.
+///
+/// @param count The number of vectors you are zero'ing.
+/// @param dim The dimension of the vectors.
+/// @param ... All vectors to be zeroed, cast as `double *`, and seperated by commas.
+/// @see zerovec
+///
+void zerovec_v(int count, int dim, ...) {
+    int i;
+
+    va_list ap;
+    va_start(ap, dim);
+    for (i=0; i<count; i++) {
+        double *vec = va_arg(ap, double *);
+        zerovec(vec, dim);
+    }
+    va_end(ap);
+}
+///
+/// @brief Variadic version of zeromat
+///
+/// This function will set all matrices following the `dim2` param to zero. Works similarly to zerovec_v
+///
+/// @param count The number of matrices you are zero'ing.
+/// @param dim1 The first dimension of the matrices (ie, mat[dim1][dim2]).
+/// @param dim2 The second dimension of the matrices (ie, mat[dim1][dim2]).
+/// @param ... All matrices to be zeroed, cast as `double **`, and seperated by commas.
+/// @see zeromat
+/// @see zerovec_v
+///
+void zeromat_v(int count, int dim1, int dim2, ...) {
+    int i;
+
+    va_list ap;
+    va_start(ap, dim2);
+    for (i=0; i<count; i++) {
+        double **mat = va_arg(ap, double **);
+        zeromat(dim1, dim2, mat);
+    }
+    va_end(ap);
 }
