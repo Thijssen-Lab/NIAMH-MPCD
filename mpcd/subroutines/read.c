@@ -1196,13 +1196,16 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 	//Allocate memory for the cells
 	//Allocate rows (x first)
-	*CL = (cell***) malloc( XYZ_P1[0] * sizeof( cell** ) );
+//	*CL = (cell***) malloc( XYZ_P1[0] * sizeof( cell** ) );
+	*CL = calloc( XYZ_P1[0], sizeof( cell** ) );
 	//For each x-element allocate the y columns
 	for( i=0; i<XYZ_P1[0]; i++ ) {
-		(*CL)[i] = (cell**) malloc( XYZ_P1[1] * sizeof( cell* ) );
+//		(*CL)[i] = (cell**) malloc( XYZ_P1[1] * sizeof( cell* ) );
+		(*CL)[i] = calloc( XYZ_P1[1], sizeof( cell* ) );
 		//For each y-element allocate the z columns
 		for( j=0; j<XYZ_P1[1]; j++ ) {
-			(*CL)[i][j] = (cell*) malloc( XYZ_P1[2] * sizeof( cell ) );
+//			(*CL)[i][j] = (cell*) malloc( XYZ_P1[2] * sizeof( cell ) );
+			(*CL)[i][j] = calloc( XYZ_P1[2], sizeof( cell ) );
 		}
 	}
 
@@ -1549,7 +1552,8 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 		if (oldBCNo > 0) { // if wall already exists then realloc
 			(*WALL) = (bc*) realloc(*WALL, NBC * sizeof(bc)); // realloc mem
 		} else { // otherwise need to malloc
-			(*WALL) = (bc*) malloc(NBC * sizeof(bc)); // malloc mem
+//			(*WALL) = (bc*) malloc(NBC * sizeof(bc)); // malloc mem
+			(*WALL) = calloc(NBC, sizeof(bc)); // malloc mem
 		}
 
 		//set up PBCs on the xy plane based on the domain dimensions
