@@ -1686,10 +1686,13 @@ void rotationMatrix( double rotMat[][3],double vx[][3],double c,double s ) {
 /// @see findRotationMatrix()
 ///
 void findRotationMatrix( double rotMat[][3],double *original,double *final ) {
-	double a[_3D],b[_3D],v[_3D];
+	int i;
+    double a[_3D],b[_3D],v[_3D];
     zerovec_v(_3D, 3, a, b, v);
 	double vx[_3D][_3D];
-    zeromat(_3D, _3D, (double **) vx); // zero matrix
+    for (i=0; i<_3D; i++) {
+        zerovec(vx[i], _3D);
+    }
 	double s=0,c=0;
 
 	normCopy(original,a,_3D);

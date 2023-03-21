@@ -967,7 +967,10 @@ void zerocnt( double *KBTNOW,double AVNOW[],double *AVS ) {
 /// @param HIST Vector histogram being zeroed.
 ///
 void zeroHISTVEC( int HIST[_3D][BINS] ) {
-    zeromat(_3D, BINS, (double **) HIST);
+    int i;
+    for (i=0; i < _3D; i++) {
+        zerovec( (double *) HIST[i], BINS);
+    }
 }
 
 ///
@@ -993,7 +996,7 @@ void zeroHISTSCALAR( int HIST[BINS] ) {
 /// @param CL Return pointer to the cell list being zeroed.
 ///
 void zerocell( cell ***CL ) {
-	int i,j,k;
+	int i,j,k,l;
 	for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) {
 		CL[i][j][k].POP = 0;
 		CL[i][j][k].POPSRD = 0;
@@ -1007,10 +1010,12 @@ void zerocell( cell ***CL ) {
         zerovec( CL[i][j][k].FLOW, _3D );
         zerovec( CL[i][j][k].DIR, _3D );
 
-        zeromat(_3D, _3D, (double **) CL[i][j][k].E);
-        zeromat(_3D, _3D, (double **) CL[i][j][k].I);
-        zeromat(_3D, _3D, (double **) CL[i][j][k].Ps);
-        zeromat(_3D, _3D, (double **) CL[i][j][k].Pc);
+        for (l=0; l<_3D; l++) { // zero matrices
+            zerovec( CL[i][j][k].E[l], _3D );
+            zerovec( CL[i][j][k].I[l], _3D );
+            zerovec( CL[i][j][k].Ps[l], _3D );
+            zerovec( CL[i][j][k].Pc[l], _3D );
+        }
 
 		//The list doesn't have anyone in it yet so it doesn't point anywhere
 		CL[i][j][k].pp = NULL;
@@ -1027,7 +1032,10 @@ void zerocell( cell ***CL ) {
 /// @param CL Return pointer to the cell list whose collisional pressure term is being zeroed.
 ///
 void zeroPressureColl( cell *CL ) {
-    zeromat( DIM, DIM, (double **) CL->Pc);
+    int i;
+    for (i=0; i<DIM; i++) {
+        zerovec( CL->Pc[i], DIM );
+    }
 }
 
 /* ****************************************** */
