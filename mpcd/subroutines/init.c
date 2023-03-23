@@ -1335,7 +1335,7 @@ int checkplaceMPC( int i,particleMPC *pp,spec SP[],bc WALL[] ) {
 		for( k=0; k<_3D; k++ ) shift[k] = 0.;
 		shiftBC( shift,&WALL[j],(pp+i) );
 		rotateBC( &WALL[j],(pp+i),0 );
-		WALL[j].W = calcW( WALL[j],*(pp+i) );
+        WALL[j].W = calcW( WALL[j],*(pp+i) );
 		rotatebackBC( &WALL[j],(pp+i),0 );
 		shiftbackBC( shift,&WALL[j] );
 		//If W<=0 then the particleMPC is inside an obstacle and must be replaced

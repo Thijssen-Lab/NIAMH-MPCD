@@ -885,8 +885,8 @@ double determinant( double **a,int n ) {
 	else if( n==3 ) {
 		det = 0.;
 		for( j1=0; j1<n; j1++ ) {
-			m = malloc((n-1)*sizeof(double *));
-			for( i=0; i<n-1; i++ ) m[i] = malloc((n-1)*sizeof(double));
+			m = calloc((n-1), sizeof(double *));
+			for( i=0; i<n-1; i++ ) m[i] = calloc((n-1), sizeof(double));
 			for( i=0; i<n-1; i++ ) for( j=0; j<n-1; j++ ) m[i][j] =0.0;
 			for( i=1; i<n; i++ ) {
 				j2 = 0;

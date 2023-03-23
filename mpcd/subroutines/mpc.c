@@ -177,8 +177,8 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 	// Find the order parameter tensor, the director and the scalar order parameter
 	if( LC!=ISOF || RTECH==CHATE || RTECH==CHATE_MPCAT || RTECH==CHATE_LANG || RTECH==DIPOLE_VCM || RTECH==DIPOLE_DIR_SUM || RTECH==DIPOLE_DIR_AV ) {
 		//Allocate memory for S
-		S = malloc ( DIM * sizeof( *S ) );
-		for( i=0; i<DIM; i++ ) S[i] = malloc ( DIM * sizeof( *S[i] ) );
+		S = calloc ( DIM, sizeof( *S ) );
+		for( i=0; i<DIM; i++ ) S[i] = calloc ( DIM, sizeof( *S[i] ) );
 		for( i=0; i<DIM; i++ ) for( d=0; d<DIM; d++ ) S[i][d] = 0.0;
 		// Find the order parameter tensor, the director and the scalar order parameter for each cell
 		for( a=0; a<XYZ_P1[0]; a++ ) for( b=0; b<XYZ_P1[1]; b++ ) for( c=0; c<XYZ_P1[2]; c++ ) {
@@ -289,8 +289,8 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 
 	if (setGhostAnch == 1){
 		// Allocate memory for S
-		S = malloc ( DIM * sizeof( *S ) );
-		for( i=0; i<DIM; i++ ) S[i] = malloc ( DIM * sizeof( *S[i] ) );
+		S = calloc ( DIM, sizeof( *S ) );
+		for( i=0; i<DIM; i++ ) S[i] = calloc ( DIM, sizeof( *S[i] ) );
 		for( i=0; i<DIM; i++ ) for( d=0; d<DIM; d++ ) S[i][d] = 0.0;
 	}
 

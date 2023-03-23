@@ -401,7 +401,7 @@ void printVersionSummary( ) {
 	printf( "Version 55\n\t2D-FFF simulations keep crashing!!!\n\t1) Tried just doing a floating bead with no MPCD particles - crashed.\n\t\tAdded a check to BC_MPCcollision() for the rare case when a BC doesn't collide with ANY MPCD particles\n\t2) Looked at BCs moving with no particles.\n" );
 	printf( "\t\tThings worked until BC collided with another, nonplanar BC\n\t\tFaulty IF() statement fixed\n\t3) Added gain in angular momentum when collide with wall or other BC\n\t4) Put in MPCd particles with no flow but strong gravity downward - still had crashes." );
 	printf( "\n\t\t The BC eventually 'broke through' the bottom wall. Once y<radius then the bead stopped moving in x.\n\t\tThe velocity kept fluctuating but the position was stuck in the wall\n\t\tBy checking whether the movingWall was approaching or receding from the stillWall was able to help\n\t\tBUT sometimes not enough\n" );
-	printf( "\t5) If a moving BC is still violating a stillBC after the transformation then just let it stream out for as many timesteps as necessary.\n\t\tThis passes all the tests that I throw at it.\n" );
+	printf( "\t5) If a moving BC is still violating a stillBC after the transformation then just let it stream out for as many timesteps as necessary.\n\t\tThis passes all the tests_mpcd that I throw at it.\n" );
 	printf( "Version 54\n\tAdded DVxyz[3] to BCs. In this way, a specific region of space can drive flow. This is needed for David's project.\n" );
 	printf( "Version 53\n\tMoving BCs were getting stuck in walls. I finally got it! I was forgetting to to sum VN and VT in BC_BCcollision()\n\tPlus, I added a couple more output notes to synopsis.dat to let me know where in the program, the code gets stuck if it does\n" );
 	printf( "Version 52\n\tStill restructuring the BC-BC collisions\n\tBCtrans_collision() now replaced with BC_BCcollision() followed by BC_MPCcollision()\n\t\t- therefore, delete BCtrans_collision() and BConBC()\n\tAlso - editted out resetting i=0 in if(tc < t_min) in chooseP()\n" );
@@ -1832,8 +1832,8 @@ void enneighboursout( FILE *fout,double t,cell ***CL,double MFPOT,int LC ) {
 
 	sumWMF=0.;
 	//Allocate memory for tensor order parameter Q
-	Q = malloc ( DIM * sizeof( *Q ) );
-	for( a=0; a<DIM; a++ ) Q[a] = malloc ( DIM * sizeof( *Q[a] ) );
+	Q = calloc ( DIM, sizeof( *Q ) );
+	for( a=0; a<DIM; a++ ) Q[a] = calloc ( DIM, sizeof( *Q[a] ) );
 	for( a=0; a<DIM; a++ ) for( b=0; b<DIM; b++ ) Q[a][b] = 0.0;
 
 	if( LC ) for( a=0; a<XYZ[0]; a++ ) for( b=0; b<XYZ[1]; b++ ) for( c=0; c<XYZ[2]; c++ ) if( CL[a][b][c].POPSRD>1 ) {
@@ -1995,8 +1995,9 @@ void binderout( FILE *fout,double t,double UL ) {
 /// @see outputResults()
 ///
 void flowout( FILE *fout,cell ***CL,int interval, double t) {
-	int h,i,j,k;
+	int h=0,i=0,j=0,k=0;
 	double av[_3D];
+    zerovec(av, _3D);
 	// for( i=0; i<_3D; i++ ) av[i] = 0.0;
 	double dint = (double)interval;
 
@@ -2198,11 +2199,11 @@ void disclinationTensorOut( FILE *fout,double t,cell ***CL,int LC ) {
 	double **Q,**D;
 
 	//Allocate memory for tensor order parameter Q and disclination tensor D
-	Q = malloc ( _3D * sizeof( *Q ) );
-	D = malloc ( _3D * sizeof( *D ) );
+	Q = calloc ( _3D, sizeof( *Q ) );
+	D = calloc ( _3D, sizeof( *D ) );
 	for( i=0; i<_3D; i++ ) {
-		Q[i] = malloc ( _3D * sizeof( *Q[i] ) );
-		D[i] = malloc ( _3D * sizeof( *D[i] ) );
+		Q[i] = calloc ( _3D, sizeof( *Q[i] ) );
+		D[i] = calloc ( _3D, sizeof( *D[i] ) );
 	}
 	//Zero
 	for( i=0; i<_3D; i++ ) for( j=0; j<_3D; j++ ) {
@@ -2331,8 +2332,8 @@ void orderQout( FILE *fout,double t,cell ***CL,int LC ) {
 	double **Q;
 
 	//Allocate memory for tensor order parameter Q
-	Q = malloc ( _3D * sizeof( *Q ) );
-	for( i=0; i<_3D; i++ ) Q[i] = malloc ( _3D * sizeof( *Q[i] ) );
+	Q = calloc ( _3D, sizeof( *Q ) );
+	for( i=0; i<_3D; i++ ) Q[i] = calloc ( _3D, sizeof( *Q[i] ) );
 	for( i=0; i<_3D; i++ ) for( j=0; j<_3D; j++ ) Q[i][j] = 0.0;
 
 	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) for( k=0; k<XYZ[2]; k++ ) {

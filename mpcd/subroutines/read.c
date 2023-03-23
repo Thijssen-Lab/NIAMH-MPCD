@@ -143,7 +143,7 @@ void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL
 	read=fscanf( finput,"%d %s",&NSPECI,STR );
 	checkRead( read,"number of species",inSTR);
 	//Allocate the needed amount of memory for the species SP
-	(*SP) = (spec*) malloc( NSPECI * sizeof( spec ) );
+	(*SP) = (spec*) calloc( NSPECI, sizeof( spec ) );
 	for( i=0; i<NSPECI; i++ ) {
 		//Read the species' mass
 		read=fscanf( finput,"%lf %s",&MF,STR );
@@ -204,17 +204,17 @@ void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL
 	//Total Number of particleMPCs
 	GPOP = 0;
 	for( i=0; i<NSPECI; i++ ) GPOP += (*SP+i)->POP;
-	(*pSRD) = (particleMPC*) malloc( GPOP * sizeof( particleMPC ) );
+	(*pSRD) = (particleMPC*) calloc( GPOP, sizeof( particleMPC ) );
 
 	//Allocate memory for the cells
 	//Allocate rows (x first)
-	*CL = (cell***) malloc( XYZ_P1[0] * sizeof( cell** ) );
+	*CL = (cell***) calloc( XYZ_P1[0], sizeof( cell** ) );
 	//For each x-element allocate the y columns
 	for( i=0; i<XYZ_P1[0]; i++ ) {
-		(*CL)[i] = (cell**) malloc( XYZ_P1[1] * sizeof( cell* ) );
+		(*CL)[i] = (cell**) calloc( XYZ_P1[1], sizeof( cell* ) );
 		//For each y-element allocate the z columns
 		for( j=0; j<XYZ_P1[1]; j++ ) {
-			(*CL)[i][j] = (cell*) malloc( XYZ_P1[2] * sizeof( cell ) );
+			(*CL)[i][j] = (cell*) calloc( XYZ_P1[2], sizeof( cell ) );
 		}
 	}
 
@@ -627,7 +627,7 @@ void readbc( char fpath[],bc **WALL ) {
 	read=fscanf( fbc,"%d %s",&NBC,STR );
 	checkRead( read,"bc",inSTR);
 	//Allocate the needed amount of memory for the boundary conditions WALLs
-	(*WALL) = (bc*) malloc( NBC * sizeof( bc ) );
+	(*WALL) = (bc*) calloc( NBC, sizeof( bc ) );
 	//Read the parameters for each of the BCs
 	for( i=0; i<NBC; i++ ) bcin( fbc,(*WALL+i),inSTR );
 	//Determine if any BCs are periodic boundaries
@@ -725,7 +725,7 @@ void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cel
 	else printf("Warning: Failed to read histogram output.\n");
 
 	//Allocate the needed amount of memory for the species SP
-	(*SP) = (spec*) malloc( NSPECI * sizeof( spec ) );
+	(*SP) = (spec*) calloc( NSPECI, sizeof( spec ) );
 	for( i=0; i<NSPECI; i++ ) {
 		if(fscanf( finput,"%lf %i %i %i %i %lf %lf %lf %lf %lf %lf %lf %lf %lf",&((*SP+i)->MASS), &((*SP+i)->POP), &((*SP+i)->QDIST), &((*SP+i)->VDIST), &((*SP+i)->ODIST), &((*SP+i)->RFC), &((*SP+i)->LEN), &((*SP+i)->TUMBLE), &((*SP+i)->CHIHI), &((*SP+i)->CHIA), &((*SP+i)->ACT), &((*SP+i)->SIGWIDTH), &((*SP+i)->SIGPOS), &((*SP+i)->DAMP) ));	//Read the species' mass
 		else printf("Warning: Failed to read species %i.\n",i);
@@ -742,17 +742,17 @@ void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cel
 		printf("Warning: GPOP does not match sum of species populations.\n");
 		GPOP=j;
 	}
-	(*pSRD) = (particleMPC*) malloc( GPOP * sizeof( particleMPC ) );
+	(*pSRD) = (particleMPC*) calloc( GPOP, sizeof( particleMPC ) );
 
 	//Allocate memory for the cells
 	//Allocate rows (x first)
-	*CL = (cell***) malloc( XYZ_P1[0] * sizeof( cell** ) );
+	*CL = (cell***) calloc( XYZ_P1[0], sizeof( cell** ) );
 	//For each x-element allocate the y columns
 	for( i=0; i<XYZ_P1[0]; i++ ) {
-		(*CL)[i] = (cell**) malloc( XYZ_P1[1] * sizeof( cell* ) );
+		(*CL)[i] = (cell**) calloc( XYZ_P1[1], sizeof( cell* ) );
 		//For each y-element allocate the z columns
 		for( j=0; j<XYZ_P1[1]; j++ ) {
-			(*CL)[i][j] = (cell*) malloc( XYZ_P1[2] * sizeof( cell ) );
+			(*CL)[i][j] = (cell*) calloc( XYZ_P1[2], sizeof( cell ) );
 		}
 	}
 	//Read the BCs
@@ -788,7 +788,7 @@ void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cel
 	else printf("Warning: Failed to read swimmer-type variables.\n");
 
 	//Allocate the memory for the swimmers
-	(*sw) = (swimmer*) malloc( NS * sizeof( swimmer ) );
+	(*sw) = (swimmer*) calloc( NS, sizeof( swimmer ) );
 
 	for( i=0; i<NS; i++ ) {
 		if(fscanf( finput,"%d %lf %lf %lf %d %d %lf %lf %lf %lf %lf\n", &((*sw+i)->RT), &((*sw+i)->n0[0]), &((*sw+i)->n0[1]), &((*sw+i)->n0[2]), &((*sw+i)->timeCNT), &((*sw+i)->timeRND), &((*sw+i)->ro), &((*sw+i)->iro), &((*sw+i)->sig), &((*sw+i)->isig), &((*sw+i)->k) ));
@@ -1106,7 +1106,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 		NSPECI = cJSON_GetArraySize(arrSpecies); // get the number of species
 
 		//Allocate the needed amount of memory for the species SP
-		(*SP) = (spec*) malloc( NSPECI * sizeof( spec ) );
+		(*SP) = (spec*) calloc( NSPECI, sizeof( spec ) );
 		for (i = 0; i < NSPECI; i++) { // loop through the species
 			cJSON *objElem = cJSON_GetArrayItem(arrSpecies, i); // get the species object
 
@@ -1165,7 +1165,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 		//		note this is just copied from the above code w lines changed
 		NSPECI = 1;
 
-		(*SP) = (spec*) malloc( NSPECI * sizeof( spec ) );
+		(*SP) = (spec*) calloc( NSPECI, sizeof( spec ) );
 		for (i = 0; i < NSPECI; i++) { // loop through the species
 			// now get first set of primitives
 			(*SP+i)->MASS = 1; // mass
@@ -1192,7 +1192,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	//Total Number of particleMPCs
 	GPOP = 0;
 	for( i=0; i<NSPECI; i++ ) GPOP += (*SP+i)->POP;
-	(*pSRD) = (particleMPC*) malloc( GPOP * sizeof( particleMPC ) );
+	(*pSRD) = (particleMPC*) calloc( GPOP, sizeof( particleMPC ) );
 
 	//Allocate memory for the cells
 	//Allocate rows (x first)
@@ -1266,7 +1266,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 		NBC = cJSON_GetArraySize(arrBC); // get the number of BCs
 
 		//Allocate the needed amount of memory for the BCs
-		(*WALL) = (bc*) malloc( NBC * sizeof( bc ) );
+		(*WALL) = (bc*) calloc( NBC, sizeof( bc ) );
 		for (i = 0; i < NBC; i++) { // loop through the BCs
 			cJSON *objElem = cJSON_GetArrayItem(arrBC, i); // get the BC object
 			bc *currWall = (*WALL + i); // get the pointer to the BC we want to write to
@@ -1716,7 +1716,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	specS->fixDist = getJObjDou(jObj, "fixDistSwim", 0, jsonTagList); // fixDist
 
 	//Allocate the memory for the swimmers
-	(*sw) = (swimmer*) malloc( NS * sizeof( swimmer ) );
+	(*sw) = (swimmer*) calloc( NS, sizeof( swimmer ) );
 
 	////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////

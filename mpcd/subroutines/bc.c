@@ -53,8 +53,8 @@
 ///
 double calcW( bc WALL,particleMPC P ) {
 
-	double terms, W=0.0;
-	int i;
+	double terms=0.0f, W=0.0f;
+	int i=0;
 
 	if( feq(WALL.ROTSYMM[0],4.0) && feq(WALL.ROTSYMM[1],4.0) ) {
 		for( i=0; i<DIM; i++ ) {
