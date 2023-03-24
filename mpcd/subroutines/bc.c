@@ -45,6 +45,7 @@
 /// - \f$<0\f$ inside the boundary.
 ///
 /// @param WALL The boundary.
+/// @note For this routine to work as intended, then the WALL parameter must have A, Q, ROTSYMM, ABS, P, and B set!
 /// @param P The individual mpcd particle.
 /// @see calcW_PLANE()
 /// @see calcW_BC()
