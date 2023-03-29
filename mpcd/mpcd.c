@@ -35,6 +35,7 @@ By Tyler Shendruk's Research Group
 # include<string.h>
 #define _GNU_SOURCE // required for fenv
 # include<fenv.h>
+# include<signal.h>
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
@@ -119,7 +120,11 @@ int main(int argc, char* argv[]) {
     /* ****************************************** */
     /* ****************************************** */
     #ifdef FPE
+    #ifdef __linux__
     feenableexcept(FE_INVALID | FE_OVERFLOW | FE_DIVBYZERO);
+    #else
+    printf("Floating point exception handling is only supported on Linux.\n);
+    #endif
     #endif
 
 	/* ****************************************** */
