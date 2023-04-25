@@ -1707,8 +1707,8 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	specS->sig = getJObjDou(jObj, "sigSwim", 4, jsonTagList); // sig
 	specS->eps = getJObjDou(jObj, "epsSwim", 1, jsonTagList); // eps
 	specS->dep = getJObjDou(jObj, "depSwim", 0, jsonTagList); // tag for depletion interaction
-	specS->range = getJObjDou(jObj, "rangeSwim", 0, jsonTagList); // depletion interaction range
-	specS->depth = getJObjDou(jObj, "depthSwim", 0, jsonTagList); // depletion interaction depth
+	specS->range = getJObjDou(jObj, "rangeSwim", 1.5, jsonTagList); // depletion interaction range
+	specS->depth = getJObjDou(jObj, "depthSwim", 10, jsonTagList); // depletion interaction depth
 	specS->runTime = getJObjDou(jObj, "runTSwim", 0, jsonTagList); // runTime
 	specS->tumbleTime = getJObjDou(jObj, "tumTSwim", 0, jsonTagList); // tumbleTime
 	specS->shrinkTime = getJObjDou(jObj, "shrTSwim", 2, jsonTagList); // shrinkTime

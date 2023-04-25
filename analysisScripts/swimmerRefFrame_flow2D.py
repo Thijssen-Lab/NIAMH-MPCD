@@ -61,9 +61,9 @@ suffix='.mp4'
 ### Initialize
 ###########################################################
 if flowtag==0:
-  flowFieldName="%s/flowfield.dat"%dataPath
+  velFieldName="%s/flowfield.dat"%dataPath
 if flowtag==1:
-  flowFieldName="%s/velfield.dat"%dataPath
+  velFieldName="%s/velfield.dat"%dataPath
 swimmerName="%s/swimmers.dat"%dataPath
 if avdim=='x':
   dim=0
@@ -119,7 +119,7 @@ for x in range(rotSize):
 ### Read the data for min/max
 ###########################################################
 print( 'Read file for min/max ...' )
-velFile = open(flowFieldName,"r")
+velFile = open(velFieldName,"r")
 swimFile = open(swimmerName,"r")
 minV=99999999999999.0
 maxV=0.0
@@ -143,7 +143,11 @@ while velFile:
   if( len(line)!= 70):
     break
   else:
-    t,Qx,Qy,Qz,Vx,Vy,Vz = line.split("\t",6)
+    splitLines = line.split()
+    if len(splitLines) == 6:
+      Qx,Qy,Qz,Vx,Vy,Vz = line.split("\t",6)
+    elif len(splitLines) == 7:
+      t,Qx,Qy,Qz,Vx,Vy,Vz = line.split("\t",7)
     XYZ[0][int(Qx)][int(Qy)][int(Qz)] = float(Qx) + 0.5
     XYZ[1][int(Qx)][int(Qy)][int(Qz)] = float(Qy) + 0.5
     XYZ[2][int(Qx)][int(Qy)][int(Qz)] = float(Qz) + 0.5
