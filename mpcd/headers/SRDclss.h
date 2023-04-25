@@ -435,7 +435,10 @@ typedef struct specSwimmer {
     double iro;				    ///< Inverse spring separation.
 	double sig;                 ///< Lennard Jones sigma (monomer diameter) --- json `'sigSwim'`.
     double isig;			    ///< Inverse Lennard Jones sigma.
-	double eps;					///< Lennerd Jones interaction energy --- json `'epsSwim'`.
+	double eps;					///< Lennard Jones interaction energy --- json `'epsSwim'`.
+	int dep;					///< Tag for the depletion interaction --- json `'depSwim'`.
+	double range;				///< AO potential range --- json `'rangeSwim'`.
+	double depth;				///< AO potential depth --- json `'depthSwim'`.
 	double runTime;             ///< Average run time in units of  MPCD time steps (dt) --- json `'runTSwim'`.
     double tumbleTime;	        ///< Average tumble time in units of  MPCD time steps (dt) --- json `'tumTSwim'`.
 	int shrinkTime;				///< Set time to shrink/extend in units of  MPCD time steps (dt) --- json `'shrTSwim'`.

@@ -1506,6 +1506,9 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 		fprintf( fsynopsis,"\tSpring separation: %lf\n",SS.ro );
 		fprintf( fsynopsis,"\tLJ sigma: %lf\n",SS.sig );
 		fprintf( fsynopsis,"\tLJ energy: %lf\n",SS.eps );
+		if(SS.dep==0){fprintf( fsynopsis," --- No short range attractive potential.\n" ); }
+		if(SS.dep==1) {fprintf( fsynopsis," --- AO potential turned on.\n" );fprintf( fsynopsis,"\tAO potential depth: %lf\n",SS.depth );fprintf( fsynopsis,"\tAO potential range: %lf\n",SS.range );}
+		if(SS.dep==2) {fprintf( fsynopsis," --- Square attractive potential turned on.\n" );fprintf( fsynopsis,"\t Square potential depth: %lf\n",SS.depth );fprintf( fsynopsis,"\t Square potential range: %lf\n",SS.range ); }
 		fprintf( fsynopsis,"\tAverage run time: %lf\n",SS.runTime );
 		fprintf( fsynopsis,"\tAverage tumble time: %lf\n",SS.tumbleTime );
 		fprintf( fsynopsis,"\tMagnetic moment strength: %lf\n",SS.MAGMOM );
@@ -2630,7 +2633,8 @@ void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,b
 
 	//Swimmers
 	fprintf( fout,"%d %d %d %d %d %d %lf %lf %d %d\n", NS,specS.TYPE, specS.QDIST, specS.ODIST, specS.headM, specS.middM, specS.iheadM, specS.imiddM, specS.HSPid, specS.MSPid );
-	fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %d %lf\n", specS.FS, specS.TS, specS.DS, specS.sizeShrink, specS.springShrink, specS.fixDist, specS.k, specS.ro, specS.iro, specS.sig, specS.isig, specS.eps, specS.runTime, specS.tumbleTime, specS.shrinkTime, specS.MAGMOM );
+	fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %d %lf %lf %lf %lf %d %lf\n", specS.FS, specS.TS, specS.DS, specS.sizeShrink, specS.springShrink, specS.fixDist, specS.k, specS.ro, specS.iro, specS.sig, specS.isig, specS.eps, specS.dep, specS.range, specS.depth, specS.runTime, specS.tumbleTime, specS.shrinkTime, specS.MAGMOM );
+
 
 	for( i=0; i<NS; i++ ) {
 		fprintf( fout,"%d %lf %lf %lf %d %d %lf %lf %lf %lf %lf\n",(sw+i)->RT,(sw+i)->n0[0],(sw+i)->n0[1],(sw+i)->n0[2],(sw+i)->timeCNT,(sw+i)->timeRND,(sw+i)->ro,(sw+i)->iro,(sw+i)->sig,(sw+i)->isig,(sw+i)->k );
