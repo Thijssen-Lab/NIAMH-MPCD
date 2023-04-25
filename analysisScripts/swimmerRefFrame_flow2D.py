@@ -32,6 +32,7 @@ rotAx=int(sys.argv[12])		#0=just shift the swimmer to the centre; 1=it aligned i
 myAspect=sys.argv[13]		#'auto' - reshapes into square graph or 'equal' keeps whatever aspect ratio the true values
 makeAni=int(sys.argv[14])	#0=just make the average (no animation); 1=make animation too
 keepFrames=int(sys.argv[15])	#0=don't keep (delete) frames; 1=keep frames
+flowtag=int(sys.argv[16]) #0=flow field (time averaged); 1=velocity field (instantaneous)
 
 ###########################################################
 ### Set arguments
@@ -59,7 +60,10 @@ suffix='.mp4'
 ###########################################################
 ### Initialize
 ###########################################################
-velFieldName="%s/flowfield.dat"%dataPath
+if flowtag==0:
+  flowFieldName="%s/flowfield.dat"%dataPath
+if flowtag==1:
+  flowFieldName="%s/velfield.dat"%dataPath
 swimmerName="%s/swimmers.dat"%dataPath
 if avdim=='x':
   dim=0
@@ -115,7 +119,7 @@ for x in range(rotSize):
 ### Read the data for min/max
 ###########################################################
 print( 'Read file for min/max ...' )
-velFile = open(velFieldName,"r")
+velFile = open(flowFieldName,"r")
 swimFile = open(swimmerName,"r")
 minV=99999999999999.0
 maxV=0.0
@@ -136,10 +140,10 @@ n=-1
 while velFile:
   i=i+1
   line = velFile.readline()
-  if( len(line)!= 57):
+  if( len(line)!= 70):
     break
   else:
-    Qx,Qy,Qz,Vx,Vy,Vz = line.split("\t",6)
+    t,Qx,Qy,Qz,Vx,Vy,Vz = line.split("\t",6)
     XYZ[0][int(Qx)][int(Qy)][int(Qz)] = float(Qx) + 0.5
     XYZ[1][int(Qx)][int(Qy)][int(Qz)] = float(Qy) + 0.5
     XYZ[2][int(Qx)][int(Qy)][int(Qz)] = float(Qz) + 0.5
@@ -367,10 +371,17 @@ swimFile.close()
 if(makeAni):
     print( "\tAnimating ..." )
     plt.close("all")
-    if rotAx:
+    if flowtag==0:
+      if rotAx:
+        name='%s/swimmerFlowField_refFrameRotated_animation%s'%(dataPath,suffix)
+      else:
+        name='%s/swimmerFLowField_RefFrameCentred_animation%s'%(dataPath,suffix)
+    if flowtag==1:
+      if rotAx:
         name='%s/swimmerVelField_refFrameRotated_animation%s'%(dataPath,suffix)
-    else:
+      else:
         name='%s/swimmerVelField_RefFrameCentred_animation%s'%(dataPath,suffix)
+    
     myCommand="rm %s"%name
     call(myCommand,shell=True)
     myCommand = "ffmpeg -f image2 -r %d"%(framerate)+" -i frame%04d.png"+" -vcodec %s -b %dk -r %d %s"%(codec,bitrate,framerate,name)
@@ -407,9 +418,15 @@ xlabel(r'$%s$'%labX, fontsize = FS)
 ylabel(r'$%s$'%labY, fontsize = FS)
 #plt.axis(xmax=xyzSize[0], xmin=0, ymax=xyzSize[1], ymin=0)
 plt.axis(xmax=rotSize, xmin=0, ymax=rotSize, ymin=0)
-if rotAx:
+if flowtag==0:
+  if rotAx:
+    name='%s/swimmerFlowField_refFrameRotated_av.pdf'%(dataPath)
+  else:
+    name='%s/swimmerFLowField_RefFrameCentred_av.pdf'%(dataPath)
+if flowtag==1:
+  if rotAx:
     name='%s/swimmerVelField_refFrameRotated_av.pdf'%(dataPath)
-else:
+  else:
     name='%s/swimmerVelField_RefFrameCentred_av.pdf'%(dataPath)
 savefig( name )
 show()
