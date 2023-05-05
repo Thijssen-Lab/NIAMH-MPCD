@@ -272,7 +272,7 @@ As a reminder, if you wish to use the default value for a tag, you can leave it 
     "coarseOut":        0,
     "flowOut":          0,
     "velOut":           0,
-    "swFlowOut":           0,
+    "swFlowOut":        0,
     "avVelOut":         0,
     "dirSOut":          0,
     "qTensOut":         0,

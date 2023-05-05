@@ -271,6 +271,7 @@ typedef struct cell {
 	double VCM[3];		        ///< Centre of mass velocity of the cell.
 	double DIR[3];		        ///< Director of the cell (average orientation).
 	double FLOW[3];		        ///< Centre of mass velocity of the cell averaged over FLOWOUT time steps.
+	double SWFLOW[3];			///< Centre of mass velocity of the cell in the first swimmer's reference frame, averaged over SWFLOWOUT time steps.
 	double Ps[3][3];		    ///< Streaming part of the local instantaneous stress tensor.
 	double Pc[3][3];		    ///< Collisional part of the local instantaneous stress tensor.
 

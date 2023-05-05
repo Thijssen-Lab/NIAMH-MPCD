@@ -248,6 +248,25 @@ void sumFLOW( cell ***CL ) {
 }
 
 /// 
+/// @brief This routine calculates the rolling-average local flow in each cell, centered around the first swimmer.
+///
+/// The function loops over all cells and adds the current (pre-calculated) local velocity (in `DIM` dimensions) of each cell to a running sum.
+/// The sum will become a time-window-averaged flow velocity and will be outputted by flowout().  
+/// The
+/// @param CL All of the MPCD cells.
+/// @param sw All of the swimmer information.
+/// @see flowout()
+///
+void sumSWFLOW( cell ***CL, swimmer sw ) {
+	int a,b,c,d;
+	//CONVERSION TO SW FRAME (i,j,k)
+	//CHECK WITH COUNTER THAT YOU GET EVERY CELL FULL AND NONE EMPTY
+	// for( a=0; a<XYZ_P1[0]; a++ ) for( b=0; b<XYZ_P1[1]; b++ ) for( c=0; c<XYZ_P1[2]; c++ ) for( d=0; d<DIM; d++ ) {
+	// 	CL[a][b][c].FLOW[d] += CL[a][b][c].VCM[d];
+	// }
+}
+
+/// 
 /// @brief This routine adds the effect of phantom MPCD particles to the centre of mass. 
 /// 
 /// Then this routine operates (to fill cell up with ghost particles, or apply strong anchoring). 
@@ -4647,10 +4666,13 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 	/* ****************************************** */
 	/* ********** SAVE SOME PROPERTIES ********** */
 	/* ****************************************** */
-		//Build the flow profile by summing over everytime step and averaging after FLOWOUT iterations
-	if( outFlags.FLOWOUT>=OUT && !in.warmupSteps) {
+	//Build the flow profile by summing over everytime step and averaging after FLOWOUT or SWFLOWOUT iterations
+	if( (outFlags.FLOWOUT>=OUT || outFlags.SWFLOWOUT>=OUT) && !in.warmupSteps ) {
 		localFLOW( CL,SP );
-		sumFLOW( CL );
+		//The 'lab frame' flowout
+		if( outFlags.FLOWOUT>=OUT ) sumFLOW( CL );
+		//The first swimmer 'frame' averaged swflowout
+		if( outFlags.SWFLOWOUT>=OUT && NS>0 ) sumSWFLOW( CL, swimmers[0]);
 	}
 }
 
