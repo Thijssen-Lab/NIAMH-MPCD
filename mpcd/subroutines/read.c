@@ -1551,9 +1551,9 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			// handle population related overrides
 			double cellDens = getJObjDou(objElem, "dens", -1, jsonTagList);
 			if (cellDens < 0){ // if cellDens is invalid
-				(*SP+i)->POP = getJObjInt(objElem, "pop", XYZ[0]*XYZ[1]*XYZ[2]*20, jsonTagList); // pop
+				(*SP+i)->POP = getJObjInt(objElem, "pop", (int)(VOL*20), jsonTagList); // pop 
 			} else { // otherwise, set population using per cell density
-				(*SP+i)->POP = XYZ[0]*XYZ[1]*XYZ[2]*cellDens;
+				(*SP+i)->POP = (int)(VOL*cellDens);
 			}
 
 			(*SP+i)->QDIST = getJObjInt(objElem, "qDist", 0, jsonTagList); // qDist
@@ -1604,7 +1604,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 		for (i = 0; i < NSPECI; i++) { // loop through the species
 			// now get first set of primitives
 			(*SP+i)->MASS = 1; // mass
-			(*SP+i)->POP = XYZ[0]*XYZ[1]*XYZ[2]*20; // pop
+			(*SP+i)->POP = (int)(VOL*20); // pop
 			(*SP+i)->QDIST = 0; // qDist
 			(*SP+i)->VDIST = 0; // vDist
 			(*SP+i)->ODIST = 2; // oDist

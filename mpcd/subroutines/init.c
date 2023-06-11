@@ -926,7 +926,6 @@ double accessibleVolume( bc WALL[] ) {
 	}
 	AV=1.0-((double)fails)/((double)N);
 	AV*=CV;
-	printf("Fails=%lf\nN=%d\nControl volume=%lf\nAccessible volume=%lf\n",fails,N,CV,AV);
 	return AV;
 }
 
@@ -1153,7 +1152,8 @@ void initvar( unsigned long *seed,time_t *to,clock_t *co,int *runtime,int *warmt
 		mominert( &WALL[i],XYZ,DIM );
 	}
 
-	nDNST = ndensity(  );
+	nDNST = ndensity( );
+	printf("Number density=%lf\n",nDNST);
 	mDNST = mdensity( *sumM );
 	for( i=0; i<DIM; i++ ) MAG[i]/=(nDNST);//Want torque per unit volume so divide field by number density
 	//Zero everything in the cell lists
