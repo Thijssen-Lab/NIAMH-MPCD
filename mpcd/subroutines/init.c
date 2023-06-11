@@ -912,11 +912,15 @@ double accessibleVolume( bc WALL[] ) {
 	#ifdef DBG
 		if( DBUG >= DBGINIT ) printf("\tNumerically integrating accessible volume\n");
 	#endif
+
 	CV =(double)( XYZ[0] * XYZ[1] * XYZ[2] );
 	N = (int)(numMC*CV);
 	fails=0;
+	//Loop of attempts for Monte Carlo volume integration
 	for( i=0; i<N; i++ ) {
+		// Randomly place the particle in the control volume
 		for( d=0; d<DIM; d++ ) pMPC.Q[d] = genrand_real( ) * XYZ[d];
+		// Check if position is allowed
 		check=0;
 		for( j=0; j<NBC; j++ ) {
 			W = calcW( WALL[j],pMPC );
@@ -924,6 +928,7 @@ double accessibleVolume( bc WALL[] ) {
 		}
 		if( check ) fails++;
 	}
+	//Use number of fails to numerically estimate the accessible volume
 	AV=1.0-((double)fails)/((double)N);
 	AV*=CV;
 	return AV;
@@ -1153,7 +1158,6 @@ void initvar( unsigned long *seed,time_t *to,clock_t *co,int *runtime,int *warmt
 	}
 
 	nDNST = ndensity( );
-	printf("Number density=%lf\n",nDNST);
 	mDNST = mdensity( *sumM );
 	for( i=0; i<DIM; i++ ) MAG[i]/=(nDNST);//Want torque per unit volume so divide field by number density
 	//Zero everything in the cell lists
