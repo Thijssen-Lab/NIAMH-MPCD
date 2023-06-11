@@ -1423,6 +1423,8 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 		fprintf( fsynopsis,"Dimensionality: %i\n",DIM );
 		fprintf( fsynopsis,"System dimensions: (%i,%i,%i)\n",XYZ[0],XYZ[1],XYZ[2] );
 		fprintf( fsynopsis,"Volume accessible to MPCD particles: %lf\n",VOL );
+		fprintf( fsynopsis,"Particle Number Density: %lf\n",nDNST );
+		fprintf( fsynopsis,"Mass Density: %lf\n",mDNST );
 		fprintf( fsynopsis,"Rotation technique: %i\n",in.RTECH );
 		fprintf( fsynopsis,"Nematic Liquid Crystal: ");
 		if(in.LC) fprintf( fsynopsis,"YES\n" );
@@ -2596,7 +2598,7 @@ void checkpoint( FILE *fout,inputList in,spec *SP,particleMPC *pSRD,int MDmode,b
 	fprintf( fout,"%d %d\n",GPOP,NSPECI);			//Total number of particles and number of species
 
 	fprintf( fout,"%d %d %lf %lf %d %d\n",runtime,warmtime,in.C,in.S,in.GRAV_FLAG,in.MAG_FLAG );
-	fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", theory.MFP, theory.VISC, theory.THERMD, theory.SDIFF, theory.SPEEDOFSOUND, theory.sumM, AVVEL, AVS, avDIR[0], avDIR[1], avDIR[2], S4, stdN, nDNST, mDNST, VOL );
+	fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", theory.MFP, theory.VISC, theory.THERMD, theory.SDIFF, theory.SPEEDOFSOUND, theory.sumM, AVVEL, AVS, avDIR[0], avDIR[1], avDIR[2], S4, stdN, nDNST, mDNST, VOL );
 	fprintf( fout,"%lf %lf %lf %lf %lf %lf\n",AVV[0], AVV[1], AVV[2], AVNOW[0], AVNOW[1], AVNOW[2] );
 
 	//Output variables
