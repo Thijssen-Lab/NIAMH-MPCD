@@ -363,7 +363,7 @@ void avVel( cell ***CL,double AVVEL[] ) {
 	int a,b,c,d;
 	for( d=0; d<DIM; d++ ) AVVEL[d]=0.;
 	for( a=0; a<XYZ_P1[0]; a++ ) for( b=0; b<XYZ_P1[1]; b++ ) for( c=0; c<XYZ_P1[2]; c++ ) for( d=0; d<DIM; d++ ) AVVEL[d] += CL[a][b][c].VCM[d];
-	for( d=0; d<DIM; d++ ) AVVEL[d] /= (double)(XYZ[0]*XYZ[1]*XYZ[2]);
+	for( d=0; d<DIM; d++ ) AVVEL[d] /= VOL;
 }
 
 ///
@@ -387,7 +387,7 @@ double avEnstrophy( cell ***CL ) {
 		w[2]=(CL[a][b][c].E[1][0] - CL[a][b][c].E[0][1]);
 		E += dotprod( w,w, _3D );
 	}
-	E /= (XYZ[0]*XYZ[1]*XYZ[2]);
+	E /= VOL;
 	E *= 0.5;
 	return E;
 }

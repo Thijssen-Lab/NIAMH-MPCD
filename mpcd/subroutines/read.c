@@ -15,6 +15,7 @@
 # include "../headers/globals.h"
 # include "../headers/pout.h"
 # include "../headers/mtools.h"
+# include "../headers/init.h"
 # include "../headers/cJson.h"
 
 /* ****************************************** */
@@ -1527,6 +1528,9 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
         out->CHCKPNT = 1; // just set this as a flag to enable behaviour
         out->CHCKPNTTIMER = checkPointTimer;
     }
+
+	// Numerically determine the accessible volume for the fluid, given these BCs
+	VOL = accessibleVolume( (*WALL) );
 
 	// 3. Species //////////////////////////////////////////////////////////////
 	// scroll up to void readin() to see better descriptions & definitions for these

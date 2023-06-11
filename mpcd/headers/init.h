@@ -33,6 +33,7 @@ void replacePos_WithCheck( particleMPC *pp,bc WALL[] );
 int checkplace( int IN,particleMPC *pp,spec SP[],bc WALL[],simptr simMD,int MDmode );
 
 void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double *SPEEDOFSOUND,double RA,double FRICCO,double KBT,double dt,double sumM,int RTECH,int SYNOUT,FILE *fsynopsis );
+double accessibleVolume( bc WALL[] );
 double ndensity( bc WALL[] );
 double mdensity( bc WALL[],double MASS );
 

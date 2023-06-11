@@ -2408,7 +2408,7 @@ void orderQKout( FILE *fout,double t,particleMPC pMPC[],cell ***CL,int LC ) {
 	double waveNum[_3D],K123[_3D],Kprime[_3D],k3;
 	double U[_3D],pos[_3D],kr,ckr,skr;
 	double c1=1./((double)DIM-1.);
-	double c2=((double)XYZ[0]*XYZ[1]*XYZ[2])/((double)GPOP);
+	double c2=VOL/((double)GPOP);
 	double fDIM=(double)DIM;
 	c2*=c2;
 
@@ -2832,7 +2832,7 @@ void outputResults( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],sim
 			for( a=0; a<XYZ[0]; a++ ) for( b=0; b<XYZ[1]; b++ ) for( c=0; c<XYZ[2]; c++ ) {
 				for( i=0; i<_3D; i++ ) for( j=0; j<_3D; j++ ) avGradVel[i][j] += CL[a][b][c].E[i][j];
 			}
-			for( i=0; i<_3D; i++ ) for( j=0; j<_3D; j++ ) avGradVel[i][j] /= (double)(XYZ[0]*XYZ[1]*XYZ[2]);
+			for( i=0; i<_3D; i++ ) for( j=0; j<_3D; j++ ) avGradVel[i][j] /= VOL;
 			avveloutWithGradVel( outFiles.favvel,time_now,AVNOW,KBTNOW,avGradVel );
 		}
 		//Enstrophy
@@ -2967,7 +2967,7 @@ void outputHist( cell ***CL,int runtime, inputList in,outputFlagsList outFlag,ou
 	double time_now = runtime*in.dt;
 	double myVec[_3D];													//Velocity (etc) actual values for every MPCD cell
 	double maxRange;														//Maximum for range for histograms
-	int nc=XYZ[0]*XYZ[1]*XYZ[2];
+	int nc=VOL;
 	int hist[_3D][BINS];												//Velocity (etc) histogram for each of the D3 components
 	double myValues[_3D][XYZ[0]*XYZ[1]*XYZ[2]];	//Velocity (etc) actual values for every MPCD cell
 
