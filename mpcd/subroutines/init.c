@@ -914,7 +914,7 @@ double accessibleVolume( bc WALL[] ) {
 	#endif
 
 	CV =(double)( XYZ[0] * XYZ[1] * XYZ[2] );
-	N = (int)(numMC*CV);
+	N = (int)(NUMMC * CV);
 	fails=0;
 	//Loop of attempts for Monte Carlo volume integration
 	for( i=0; i<N; i++ ) {

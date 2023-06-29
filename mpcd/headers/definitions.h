@@ -323,7 +323,7 @@
 /// @brief Monte Carlo setting. Interval between Monte Carlo steps.
 # define MCINT 5
 /// @brief Number of pseudo-particles per MPCD used to calculate the accessible volume by Monte Carlo integration. 
-# define numMC 1000
+# define NUMMC 1000
 
 /* ****************************************** */
 /* **************** Swimmers **************** */
