@@ -249,6 +249,7 @@ typedef struct particleMD {				// a particle					double		 float
     int		object;						// object id (for viewer)			 4			 4
     struct  particleMD *prev, *next;		// previous and next monomer		 8			 8
     struct  particleMD *prevSRD, *nextSRD;	// previous and next monomer for SRD binning	 8			 8
+    real    dipole;                     // dipole magnitude                  8           4 (?)
 } particleMD;	 							// TOTAL						   240
 
 
@@ -522,6 +523,7 @@ typedef struct simulation {		 		// a simulation
     int			polyM[PS];				///< number of polymer chains
     int			polyN[PS];				///< number of monomers per chain
 	real			monoCharge[PS];			///< charge of each monomer
+    int         chunkN[PS];             ///< number of alternating dipole 'chunks' per polymer
 
 	// charges
 	int			qLayout[QS];  			///< where to put the charges (e.g., SURFACE, TYPE_FLUID, ...)
@@ -564,6 +566,7 @@ typedef struct simulation {		 		// a simulation
     real  		Efield[PC];				///< external electric field
     real  		overlapMin;				///< min initial distance between atoms
     real  		overlapMinMonomer;		///< min initial distance between monomers
+    real        dipole;                 ///< dipole activity strength
 
     // atom type parameters
     real		rhoType[TC];			///< dimensionless density of particles
