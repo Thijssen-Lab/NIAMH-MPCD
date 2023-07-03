@@ -225,6 +225,10 @@ void SetupParameters (simptr sim)
 				INTG_PARAM (sim, qCharge),
 				INTG_PARAM (sim, qNumber),
 
+				// dipoles
+				INTG_PARAM (sim, dChunks),
+				REAL_PARAM (sim, dStrength),
+
 				// data collection
 				INTG_PARAM (sim, nStep),
 				INTG_PARAM (sim, stepAvg),
@@ -370,6 +374,7 @@ void SetupNewWorld (simptr sim)
 	// setup particle lists
 	SetupPolymerList  (sim);
 	SetupChargeList   (sim);
+	//SetupDipoleList   (sim); //??????
 // 	SetupNeighborList (sim);
 	SetupAnchorList   (sim);
 	SetupFeneList	  (sim);
@@ -430,6 +435,7 @@ void SetupCheckpointWorld (simptr sim)
 	// setup particle lists
 	SetupPolymerList  (sim);
 	SetupChargeList   (sim);
+	//SetupDipoleList   (sim);
 // 	SetupNeighborList (sim);
 	SetupAnchorList   (sim);
 	SetupFeneList	  (sim);
@@ -1592,6 +1598,54 @@ void InitCharges (simptr sim)
 	}
 	LOG ("Successfully built charges\n");
 
+}
+
+
+/// Initializes dipoles. Extensile or contractile dipoles are attributed 
+/// according to the number of chunks provided, and the dipole type/sign of the
+/// first chunk/monomer (i.e. positive or negative)
+///
+/// @param		sim a pointer to a simulation structure 
+/// @return 	void 
+
+//================================================================================
+void InitDipoles (simptr sim)
+// OR void SetupDipoleList (simptr sim)
+//================================================================================
+{
+	int			i, nAtom, nPolymer, nMonomer, lenChunk, ifState;
+	particleMD	*atom;
+	real 		dStrength;
+	int 		dChunks;
+	
+	// local sim variables
+	atom  = sim->atom.items;
+	nAtom = sim->atom.n;
+	dStrength = sim->dStrength;
+	dChunks = sim->dChunks;
+
+	// number of monomers - doing as in SetupFeneList
+	nMonomer = sim->polyN[0];
+	nPolymer = sim->polyM[0];
+	
+	// report
+	LOG ("Initializing particle dipoles\n");
+
+	// number of monomers per chunk
+	lenChunk = nMonomer / dChunks;
+
+	// set dipoles according to whether extensile or contractile chunk
+	for (i=0; i<nAtom; i++) {
+		ifState = (i/lenChunk)%2;
+		// if an "even" chunk
+		if (ifState = 0) {
+			atom[i].dipole = dStrength;
+		}
+		// if n "odd" chunk then other type of dipole
+		else {
+			atom[i].dipole = -dStrength;
+		}
+	}
 }
 
 

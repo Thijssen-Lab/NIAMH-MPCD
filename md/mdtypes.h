@@ -249,7 +249,7 @@ typedef struct particleMD {				// a particle					double		 float
     int		object;						// object id (for viewer)			 4			 4
     struct  particleMD *prev, *next;		// previous and next monomer		 8			 8
     struct  particleMD *prevSRD, *nextSRD;	// previous and next monomer for SRD binning	 8			 8
-    real    dipole;                     // dipole magnitude                  8           4 (?)
+    real    dipole;                     // dipole magnitude, with sign       8           4 (?)
 } particleMD;	 							// TOTAL						   240
 
 
@@ -523,8 +523,7 @@ typedef struct simulation {		 		// a simulation
     int			polyM[PS];				///< number of polymer chains
     int			polyN[PS];				///< number of monomers per chain
 	real			monoCharge[PS];			///< charge of each monomer
-    int         chunkN[PS];             ///< number of alternating dipole 'chunks' per polymer
-
+    
 	// charges
 	int			qLayout[QS];  			///< where to put the charges (e.g., SURFACE, TYPE_FLUID, ...)
 	int			qDensityKind[QS];		///< kind of density provided (e.g., BULK, SURFACE, ...)
@@ -532,6 +531,10 @@ typedef struct simulation {		 		// a simulation
 	real		qSpread[QS];			///< spacing factor for SURFACE charges
 	int			qCharge[QS];			///< the charge in units of the elementary charge
 	int			qNumber[QS];			///< the number of charges to put (will be compounded with density)
+
+    // dipoles
+    int         dChunks;                ///< number of alternating dipole 'chunks' per polymer
+    real        dStrength;              ///< dipole strength of each monomer, with sign for extensile or contractile
 
 	// layout quantities
     int			nPore;					///< number of sites in capillary pore
