@@ -324,7 +324,7 @@ void sumSWFLOW( cell ***CL, swimmer *sw , specSwimmer *ss) {
 	// dotprodMatVec(rotMatrix,&ori,&res,3);
 
 	// Translates then rotates everything, before rewrapping
-	for( a=0; a<XYZ_P1[0]; a++ ) for( b=0; b<XYZ_P1[1]; b++ ) for( c=0; c<XYZ_P1[2]; c++ ) {
+	for( a=0; a<XYZ[0]; a++ ) for( b=0; b<XYZ[1]; b++ ) for( c=0; c<XYZ[2]; c++ ) {
 
 		i2=a+center[0];j2=b+center[1];k2=c+center[2];
 		if (i2>=XYZ[0]) i2-=XYZ[0];
@@ -383,6 +383,11 @@ void sumSWFLOW( cell ***CL, swimmer *sw , specSwimmer *ss) {
 			// CL[a][b][c].SWFLOW[0] += CL[I][J][K].VCM[d]*rotMatrix[0][d];
 			// CL[a][b][c].SWFLOW[1] += CL[I][J][K].VCM[d]*rotMatrix[1][d];
 			// CL[a][b][c].SWFLOW[2] += CL[I][J][K].VCM[d]*rotMatrix[2][d];
+			printf("Dimension %d\n",d);
+			printf("abc:%d/%d/%d:::::%lf",a,b,c,CL[a][b][c].VCM[d]);
+			printf("\nAND\n");
+			printf("IJK:%d/%d/%d:::::%lf",I,J,K,CL[I][J][K].VCM[d]);
+			printf("\n\n\n");
 			CL[I][J][K].SWFLOW[0] += CL[a][b][c].VCM[d]*rotMatrix[0][d];
 			CL[I][J][K].SWFLOW[1] += CL[a][b][c].VCM[d]*rotMatrix[1][d];
 			CL[I][J][K].SWFLOW[2] += CL[a][b][c].VCM[d]*rotMatrix[2][d];
