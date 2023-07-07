@@ -1853,6 +1853,7 @@ void initOutput( char op[],outputFlagsList *outFlag,outputFilesList *outFile,inp
 	//Initialize the flow and velocity field output files
 	if( (outFlag->FLOWOUT)>=OUT ) openflow( &(outFile->fflow),op,fileflow,fileextension );
 	if( (outFlag->VELOUT)>=OUT ) openvel( &(outFile->fvel),op,filevel,fileextension );
+	//Initialize the flowfield around the first swimmer
 	if( (outFlag->SWFLOWOUT)>=OUT ) openswflow( &(outFile->fswflow),op,fileswflow,fileextension );
 	//Initialize the distribution output files
 	if( (outFlag->HISTVELOUT)>=OUT ) openhistVel( &(outFile->fhistVel),op,filehistVel,fileextension );

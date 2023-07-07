@@ -79,7 +79,7 @@ Tag             | Type          | Default Value | Description
 `trajSpecOut`   | int           | 0             | Which number of species whose detailed trajectories to output
 `coarseOut`     | int           | 0             | Coarse grain data (cell velocity, densities, density of each species) field
 `flowOut`       | int           | 0             | Flow field averaged between output times
-`velOut`        | int           | 0             | Instantaneous velocity field.
+`velOut`        | int           | 0             | Instantaneous velocity field
 `swFlowOut`     | int           | 0             | Flow field averaged between output times, in the first bacteria's reference frame
 `avVelOut`      | int           | 0             | Total average MPCD velocity. System-averaged single value
 `dirSOut`       | int           | 0             | Director and scalar order parameter fields
@@ -134,7 +134,7 @@ Tag             | Type          | Default Value | Description
 `dsSwim`        | double        | 1                  | Dipole strength
 `tsSwim`        | double        | 0                  | Magnitude of swimmer torque
 `sizeShrinkSwim`| double        | 0.1                | How much do LJ sigma ro shrink when tumbling
-`springShrinkSwim`| double        | 0.1                | How much the spring constant is shrunk when tumbling
+`springShrinkSwim`| double        | 0.1              | How much the spring constant is shrunk when tumbling
 `kSwim`         | double        | 30                 | Spring constant
 `roSwim`        | double        | 4                  | Spring seperation
 `sigSwim`       | double        | 4                  | Diameter approx sigma

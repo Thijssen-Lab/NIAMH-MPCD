@@ -2046,10 +2046,10 @@ void velout( FILE *fout,cell ***CL, double t) {
 }
 
 ///
-/// @brief Outputs flow field data calculated from cell velocities.
+/// @brief Outputs flow field around the first swimmer, with a 'hijack' method described in sumSWFLOW().
 ///
-/// This function computes the centre of mass velocity in the `x`,`y`, and `z` directions for each cell, as well as the average velocity.
-/// The sum of all centre of mass velocities are computed into an average in the `x`, `y`, and `z` directions.
+/// This function computes the average of the centre-of-mass velocity of located at each grid position relative to the first swimmer.
+/// Depending on swimmer orientation, cells will contain more or less information, especially at the corners: a weight is given to counter this effect.
 /// The centre of mass velocities and averages are printed to the output file.
 ///
 /// @param fout This is a pointer to the output .dat file name to be produced.
@@ -2057,15 +2057,15 @@ void velout( FILE *fout,cell ***CL, double t) {
 /// @param interval This is the time interval used for normalisation.
 /// @param t This is the time step.
 /// @see outputResults()
+/// @see sumSWFLOW()
 ///
 void swflowout( FILE *fout,cell ***CL,int interval, double t) {
 	int h,i,j,k;
 	double av[_3D];
-	// for( i=0; i<_3D; i++ ) av[i] = 0.0;
+	for( i=0; i<_3D; i++ ) av[i] = 0.0;
 
 	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) for( k=0; k<XYZ[2]; k++ ) {
-	// for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) {
-		if (CL[i][j][k].SWFLOW[3]>0.0) for( h=0; h<DIM; h++ ) av[h] = CL[i][j][k].SWFLOW[h]/CL[i][j][k].SWFLOW[3];		//Normalize the sum to get the average
+		if (CL[i][j][k].SWFLOW[3]>0.0) for( h=0; h<DIM; h++ ) av[h] = CL[i][j][k].SWFLOW[h]/CL[i][j][k].SWFLOW[3];		//Normalize the sum to get the average, with weights contained in SWFLOW[3]
 		else for( h=0; h<DIM; h++ ) av[h] = 0.0;
 		fprintf( fout,"%12.5e\t", t); // print time
 		fprintf( fout, "%5d\t%5d\t%5d\t",i,j,k );

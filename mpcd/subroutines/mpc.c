@@ -251,8 +251,9 @@ void sumFLOW( cell ***CL ) {
 /// @brief This routine calculates the rolling-average local flow in each cell, centered around the first swimmer.
 ///
 /// The function loops over all cells and adds the current (pre-calculated) local velocity (in `DIM` dimensions) of each cell to a running sum.
-/// The sum will become a time-window-averaged flow velocity and will be outputted by flowout().  
-/// The
+/// The sum will become a time-window-averaged flow velocity and will be outputted by swflowout().  
+/// This is done by hijacking the cell structure: the local velocity in question does not correspond to the cell where SWFLOW is stored, but to the cell which holds the same position in a grid centered around the first swimmer.
+/// This results in some cells receiving more information than others: this is corrected by SWFLOW[3].
 /// @param CL All of the MPCD cells.
 /// @param sw The first swimmer's information.
 /// @param ss The global information of the swimmers.
@@ -279,7 +280,7 @@ void sumSWFLOW( cell ***CL, swimmer *sw , specSwimmer *ss) {
 	norm(ori,_3D);
 	findRotationMatrix( rotMatrix, ori, finalOrientation);
 
-	// Translates then rotates everything, before rewrapping
+	// Translates and rewraps, then stores the translated velocity field in the last three slots in SWFLOW (SWFLOW[4],SWFLOW[5],SWFLOW[6]).
 	for( a=0; a<XYZ[0]; a++ ) for( b=0; b<XYZ[1]; b++ ) for( c=0; c<XYZ[2]; c++ ) {
 
 		i=a+center[0];j=b+center[1];k=c+center[2];
@@ -290,7 +291,6 @@ void sumSWFLOW( cell ***CL, swimmer *sw , specSwimmer *ss) {
 		if (j<0) j+=XYZ[1];
 		if (k>=XYZ[2]) k-=XYZ[2];
 		if (k<0) k+=XYZ[2];
-
 		I=(int)i;J=(int)j;K=(int)k;
 
 		for (d=0;d<DIM;d++){
@@ -299,12 +299,12 @@ void sumSWFLOW( cell ***CL, swimmer *sw , specSwimmer *ss) {
 		}
 	}
 
+	// Rotating and rewrapping the cell indices, before rotating the velocity vectors themselves
 	for( a=0; a<XYZ[0]; a++ ) for( b=0; b<XYZ[1]; b++ ) for( c=0; c<XYZ[2]; c++ ) {
 
 		for (d=0;d<3; d++) center[d]=XYZ[d]*0.5;
 
-		i2=a-center[0];j2=b-center[1];k2=c-center[2];
-		
+		i2=a-center[0];j2=b-center[1];k2=c-center[2];		
 		i=rotMatrix[0][0]*i2+rotMatrix[0][1]*j2+rotMatrix[0][2]*k2+center[0];
 		j=rotMatrix[1][0]*i2+rotMatrix[1][1]*j2+rotMatrix[1][2]*k2+center[1];
 		k=rotMatrix[2][0]*i2+rotMatrix[2][1]*j2+rotMatrix[2][2]*k2+center[2];
@@ -326,8 +326,7 @@ void sumSWFLOW( cell ***CL, swimmer *sw , specSwimmer *ss) {
 			CL[I][J][K].SWFLOW[1] += CL[a][b][c].SWFLOW[w]*rotMatrix[1][d];
 			CL[I][J][K].SWFLOW[2] += CL[a][b][c].SWFLOW[w]*rotMatrix[2][d];
 		}
-		CL[I][J][K].SWFLOW[3] += 1.0; // EXPLAIN WHATS GOING ON
-     	//MAKE CLEAR THAT WE HIJACK THE CELL
+		CL[I][J][K].SWFLOW[3] += 1.0; // Counter that keeps track of how many time each grid point corresponds to another grid point.
 	}
 }
 
