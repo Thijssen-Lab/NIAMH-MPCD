@@ -569,7 +569,6 @@ typedef struct simulation {		 		// a simulation
     real  		Efield[PC];				///< external electric field
     real  		overlapMin;				///< min initial distance between atoms
     real  		overlapMinMonomer;		///< min initial distance between monomers
-    real        dipole;                 ///< dipole activity strength
 
     // atom type parameters
     real		rhoType[TC];			///< dimensionless density of particles

@@ -4280,7 +4280,7 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 	#ifdef DBG
 		if ( DBUG >= DBGSTEPS ) {
 			if( in.warmupSteps ) printf( "\nBegin warmup time step %i. Simulation time = %lf\n",runtime,runtime*in.dt );
-			else printf( "\nBegin time step %i. Simulation time = %lf\n",runtime,runtime*in.dt );
+			//else printf( "\nBegin time step %i. Simulation time = %lf\n",runtime,runtime*in.dt );
 		}
 	#endif
 	//Zero counters

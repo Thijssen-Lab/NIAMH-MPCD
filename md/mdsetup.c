@@ -56,9 +56,10 @@
 simptr SetupSimulation (int argc, char *argv[])
 //================================================================================
 {
+	printf("i am in SetupSimulation (in mdsetup, from mpcd.c)\n");
 	simptr 		sim;
 	simoptions	options;
-
+	printf("simptr defined\n");
 	// MPI
 	#ifdef MPI
 	int  		i, nproc, rank;
@@ -69,7 +70,8 @@ simptr SetupSimulation (int argc, char *argv[])
 
 	// allocate memory for the simulation information
 	sim = (simptr) mycalloc (1, sizeof(simulation));
-
+	printf("memory allocated\n");
+	printf("sim size is %lu \n", sizeof(simulation));
 	// default options
 	options.setupType = SIMOPT_SETUP_NEW;
 
@@ -97,11 +99,14 @@ simptr SetupSimulation (int argc, char *argv[])
 		#endif
 
 		// setup the simulation parameters
-		SetupParameters (sim);
+		printf("going to try and set up sim parameters\n");
 
+		SetupParameters (sim);
+		printf("have managed to set up sim parameters!\n");
 
 		// setup simulation world
 		SetupNewWorld (sim);
+		printf("have set up new world! this is as far as commments go for now\n");
 
 		// report
 		LOG ("START of main simulation loop\n");
@@ -165,6 +170,7 @@ simptr SetupSimulation (int argc, char *argv[])
 /// the local array paramList. Calls the function ReadParameters() to handle
 /// the actual scanning of the input.
 ///
+	// !!!!! STUCK AT STEP BELOW !!!!!
 /// @param		sim a pointer to a simulation structure
 /// @return		void
 /// @warning	Parameters added here must also be added to the sim
@@ -175,6 +181,7 @@ void SetupParameters (simptr sim)
 //================================================================================
 {
 	int   		n;
+	printf("inside setupparameters\n");
 	simparam 	param[] = {
 
 				// physical characteristics
@@ -252,10 +259,13 @@ void SetupParameters (simptr sim)
 				HEXA_PARAM (sim, groupThermDPD),
 				REAL_PARAM (sim, eta)
 	};
-
+	printf("before computing number of parameters\n");
 	// compute the number of parameters
+	printf("simparam size %lu \n",sizeof(simparam));
+	printf("param size %lu\n",sizeof(param));
+	
 	n = sizeof(param)/sizeof(simparam);
-
+	printf("n size %d \n",n);
 	// read the n parameters
 	ReadParameters (sim->inputFile, param, n, "#parameter:", "#end-header");
 
@@ -290,11 +300,15 @@ void SetupNewWorld (simptr sim)
 	// set initial simulation phase
 	sim->phase = 1;
 	while (sim->nStep[sim->phase] <= 0) sim->phase++;
+	printf("line 303\n");
 
 	// set label, working directory, and data files
 	SetSimLabel	(sim->label, sim->pid);
+	printf("line 307\n");
 	SetWorkingDir  (sim->outputDir, sim->label);
+	printf("line 309\n");
 	SetupDataFiles (sim);
+	printf("line 311\n");
 
 	// report
 	LOG ("--------------------------------------------------------------\n");
@@ -302,13 +316,13 @@ void SetupNewWorld (simptr sim)
 
 	// initialize the random number generator
 	SetupRandomGenerator (sim);
-
+	printf("line 319\n");
 	// set the LJ cutoff and shift for WCA potential
 	if (sim->rCut == CUTOFF_WCA) {
 		sim->rCut = pow (2, 1.0/6.0);
 		sim->ljShift = 1;
 	}
-
+	printf("line 325\n");
 	// LATTICE dependent settings
 	switch (sim->lattice) {
 		case LATT_FCC:
@@ -320,6 +334,7 @@ void SetupNewWorld (simptr sim)
 		default:
 			error (ELATTICE);
 	}
+	printf("line 337\n");
 
 	// GEOMETRY depedent settings
 	switch (sim->geometry) {
@@ -342,20 +357,20 @@ void SetupNewWorld (simptr sim)
 		default:
 			error (EGEOMETRY);
 	}
-
+	printf("line 360\n");
 	// calculate the initial lattice spacing
 	sim->dLattice = pow( (sim->nAtomCell/ (sim->rho?sim->rho:1.) ), (1.0/3.0) ) / sqrt(2.0);
-
+	printf("line 363\n");
 	// set the box size from rho and the specified number of unit cells
 	for (i=0; i<DIM_MD; i++) {
 // 		box[i]	 = sim->unitCells[i] / pow (sim->rho/sim->nAtomCell, 1.0/3.0);
 		box[i]	 = sim->unitCells[i] * pow( (sim->nAtomCell/ (sim->rho?sim->rho:1.) ), (1.0/3.0) );
 		boxHalf[i] = 0.5 * box[i];
 	}
-
+	printf("line 370\n");
 	// set the bulk volume;
 	sim->poreVolume = box[x_]*box[y_]*box[z_];
-
+	printf("line 373\n");
 	// report
 	LOG ("  %-20s = %g\n",   "rCut",		 sim->rCut);
 	LOG ("  %-20s = %g\n",   "ljShiftE",	 sim->ljShift);
@@ -367,38 +382,42 @@ void SetupNewWorld (simptr sim)
 
 	// setup step counter lists
 	SetupStepCounters (sim);
-
+	printf("line 385\n");
 	// setup particles
 	SetupParticles (sim);
-
+	printf("line 388\n");
 	// setup particle lists
 	SetupPolymerList  (sim);
+	printf("line 391\n");
 	SetupChargeList   (sim);
 	//SetupDipoleList   (sim); //??????
 // 	SetupNeighborList (sim);
+	printf("line 395\n");
 	SetupAnchorList   (sim);
+	printf("line 397\n");
 	SetupFeneList	  (sim);
+	printf("line 399\n");
 	SetupBendList	  (sim);
-
+	printf("line 401\n");
 	// setup groups
 	SetupGroups (sim);
-
+	printf("line 404\n");
 	// setup measurements
 	SetupMeasurements (sim);
-
+	printf("line 407\n");
 	// jiggle and relax particle positions
 //	JiggleParticles (sim);
 	RelaxParticles  (sim);
-
+	printf("line 411\n");
 	// set simulation time
 	sim->tNow = 0;
 
 	// start simulation phase
 	SimulationPhaseReset (sim);
-
+	printf("line 417\n");
 	// print initial scenes
 	VMDPrint (sim, sim->scenes);
-
+	printf("line 419\n");
 	// report
 	LOG ("Simulation is ready to start\n");
 	LOG ("--------------------------------------------------------------\n");
@@ -542,6 +561,9 @@ void SetupParticles (simptr sim)
 
 	// initialize particle velocities
 	InitVelocities (sim);
+
+	// initialize dipoles
+	InitDipoles (sim);
 
 	// report
 	LOG ("Particle initialization complete\n");
@@ -1613,7 +1635,7 @@ void InitDipoles (simptr sim)
 // OR void SetupDipoleList (simptr sim)
 //================================================================================
 {
-	int			i, nAtom, nPolymer, nMonomer, lenChunk, ifState;
+	int			i, nAtom, nPolymer, nMonomer, lenChunk, checker, maxN;
 	particleMD	*atom;
 	real 		dStrength;
 	int 		dChunks;
@@ -1636,14 +1658,21 @@ void InitDipoles (simptr sim)
 
 	// set dipoles according to whether extensile or contractile chunk
 	for (i=0; i<nAtom; i++) {
-		ifState = (i/lenChunk)%2;
-		// if an "even" chunk
-		if (ifState = 0) {
-			atom[i].dipole = dStrength;
+		checker = (i/lenChunk)%2;	// for whether even or odd chunk
+		// any remainders will have strength zero dipole
+		maxN = lenChunk * dChunks;
+		if (i <= maxN) {
+			// if an "even" chunk
+			if (checker == 0) {
+				atom[i].dipole = dStrength;
+			}
+			// if n "odd" chunk then other type of dipole
+			else {
+				atom[i].dipole = -dStrength;
+			}
 		}
-		// if n "odd" chunk then other type of dipole
 		else {
-			atom[i].dipole = -dStrength;
+			atom[i].dipole = 0.f;
 		}
 	}
 }
@@ -2143,11 +2172,13 @@ void SetupMeasurements (simptr sim)
 
 	// reset properties accumulators
 	AccumProperties (sim, ACTION_RESET);
-
+	printf("line 2175\n");
 	// setup measurement related lists
 	SetupHistograms (sim);
+	printf("line 2178\n");
 // 	SetupScenes		(sim);
 	SetupVMD		(sim);
+	printf("line 2181\n");
 }
 
 
