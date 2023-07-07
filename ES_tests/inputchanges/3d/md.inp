@@ -37,7 +37,7 @@
 # parameter:	stepRelax		= 0
 #
 # parameter:    dStrength       = 1.5
-# parameter:    dChunks         = 2
+# parameter:    dChunks         = 3
 #
 # ----------------------------------------------------------------------------------------------------
 # particle types:

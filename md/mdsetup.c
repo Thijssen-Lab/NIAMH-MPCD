@@ -1644,7 +1644,9 @@ void InitDipoles (simptr sim)
 	atom  = sim->atom.items;
 	nAtom = sim->atom.n;
 	dStrength = sim->dStrength;
+	printf("dStrength read in is %f\n", dStrength);
 	dChunks = sim->dChunks;
+	printf("dChunks read in is %d\n", dChunks);
 
 	// number of monomers - doing as in SetupFeneList
 	nMonomer = sim->polyN[0];
@@ -1655,13 +1657,19 @@ void InitDipoles (simptr sim)
 
 	// number of monomers per chunk
 	lenChunk = nMonomer / dChunks;
-
+	printf("lenChunk is %d\n", lenChunk);
+	maxN = lenChunk * dChunks;
+	printf("maxN should be 10, is %d\n", maxN);
+	if (dChunks>nAtom){
+		printf("You have asked for more chunks than there are atoms! \nI am going to crash!\n");
+	}
 	// set dipoles according to whether extensile or contractile chunk
 	for (i=0; i<nAtom; i++) {
 		checker = (i/lenChunk)%2;	// for whether even or odd chunk
+		printf("checker should be zero or one %d\n", checker);
 		// any remainders will have strength zero dipole
-		maxN = lenChunk * dChunks;
-		if (i <= maxN) {
+		
+		if (i < maxN) {
 			// if an "even" chunk
 			if (checker == 0) {
 				atom[i].dipole = dStrength;
@@ -1674,6 +1682,8 @@ void InitDipoles (simptr sim)
 		else {
 			atom[i].dipole = 0.f;
 		}
+		printf("atom %d dipole is ", i);
+		printf("strength %f\n", atom[i].dipole);
 	}
 }
 

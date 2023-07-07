@@ -37,7 +37,7 @@
 # parameter:	stepRelax		= 0
 #
 # parameter:    dStrength       = 1.5
-# parameter:    dChunks         = 2
+# parameter:    dChunks         = 1
 #
 # ----------------------------------------------------------------------------------------------------
 # particle types:
@@ -73,7 +73,7 @@
 # parameter:	polySpread		= (0.0)
 # parameter:	monoCharge		= (0)
 # parameter:	polyM			= (1)
-# parameter:	polyN			= (10)
+# parameter:	polyN			= (11)
 #
 #
 # ---------------------------------------------------------------------------------------------------
