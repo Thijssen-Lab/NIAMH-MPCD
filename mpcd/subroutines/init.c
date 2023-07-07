@@ -1037,6 +1037,7 @@ void zeroHISTSCALAR( int HIST[BINS] ) {
 /// This includes: population, mass, scalar order parameter, center of mass, velocity of center
 /// of mass, flow velocity, director, velocity gradient tensor, moment of inertia, streaming and
 /// collisional parts of the stress tensor.
+/// This should only be used in the beginning.
 /// Pointers to the first SRD, MD and swimmer particles are set to NULL.
 ///
 /// @param CL Return pointer to the cell list being zeroed.
@@ -1055,6 +1056,7 @@ void zerocell( cell ***CL ) {
 			CL[i][j][k].VCM[l] = 0.0;
 			CL[i][j][k].FLOW[l] = 0.0;
 			CL[i][j][k].SWFLOW[l] = 0.0;
+			CL[i][j][k].SWFLOW[l+4] = 0.0;
 			CL[i][j][k].DIR[l] = 0.0;
 			for( m=0; m<_3D; m++ ) {
 				CL[i][j][k].E[l][m] = 0.0;
@@ -1063,6 +1065,7 @@ void zerocell( cell ***CL ) {
 				CL[i][j][k].Pc[l][m] = 0.0;
 			}
 		}
+		CL[i][j][k].SWFLOW[3] = 0.0;
 		//The list doesn't have anyone in it yet so it doesn't point anywhere
 		CL[i][j][k].pp = NULL;
 		CL[i][j][k].MDpp = NULL;

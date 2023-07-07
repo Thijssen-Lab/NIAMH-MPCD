@@ -2061,17 +2061,16 @@ void velout( FILE *fout,cell ***CL, double t) {
 void swflowout( FILE *fout,cell ***CL,int interval, double t) {
 	int h,i,j,k;
 	double av[_3D];
-	for( i=0; i<_3D; i++ ) av[i] = 0.0;
+	// for( i=0; i<_3D; i++ ) av[i] = 0.0;
 
 	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) for( k=0; k<XYZ[2]; k++ ) {
 	// for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) {
-		if (CL[i][j][k].SWFLOW[3]>0) for( h=0; h<DIM; h++ ) av[h] = CL[i][j][k].SWFLOW[h]/CL[i][j][k].SWFLOW[3];		//Normalize the sum to get the average
+		if (CL[i][j][k].SWFLOW[3]>0.0) for( h=0; h<DIM; h++ ) av[h] = CL[i][j][k].SWFLOW[h]/CL[i][j][k].SWFLOW[3];		//Normalize the sum to get the average
 		else for( h=0; h<DIM; h++ ) av[h] = 0.0;
 		fprintf( fout,"%12.5e\t", t); // print time
 		fprintf( fout, "%5d\t%5d\t%5d\t",i,j,k );
 		fprintf( fout, "%12.5e\t%12.5e\t%12.5e\n",av[0],av[1],av[2] );
-		for( h=0; h<4; h++ ) CL[i][j][k].SWFLOW[h] = 0.0;		//Reset sum
-
+		for( h=0; h<7; h++ ) CL[i][j][k].SWFLOW[h] = 0.0;		//Reset sum
 	}
 	#ifdef FFLSH
 		fflush(fout);

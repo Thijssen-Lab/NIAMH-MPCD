@@ -259,100 +259,55 @@ void sumFLOW( cell ***CL ) {
 /// @see swflowout()
 ///
 void sumSWFLOW( cell ***CL, swimmer *sw , specSwimmer *ss) {
-	int a,b,c,d;
-	int ct=0;
-	double h[3]={0,0,0},q[3]={0,0,0};
-	double i,j,k,i2,j2,k2,norm=0,res[3]={0,0,0};
+	int a,b,c,d,w;
+	double i,j,k,i2,j2,k2;
 	int I,J,K;
-	double ori[3]={0,0,0},center[3]={0.0,0.0,0.0},finalOrientation[3]={1,0,0};
-	double theta=0.0,phi=0.0;
-	int zeros[XYZ_P1[0]][XYZ_P1[1]][XYZ_P1[2]];//={0};
-	double rotMatrix[3][3]={{0.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,0.0}},rotMatrix2[3][3]={{0.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,0.0}};
-
-	for( a=0; a<XYZ_P1[0]; a++ ) for( b=0; b<XYZ_P1[1]; b++ ) for( c=0; c<XYZ_P1[2]; c++ ) zeros[a][b][c]=0;
-
-	// double vec[3]={(rand() % 20)/10+0.1,(rand() % 20)/10,(rand() % 20)/10},vec2[3]={0,0,0},res[3]={0,0,0},rr=vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2];
-	// for (int i=0;i<3; i++)
-	// {
-	// 	vec[i]=vec[i]/sqrt(rr);
-	// 	vec2[i]=vec[i];
-	// }
-	// if (vec[1]!=0 || vec[2]!=0){
-	// // findRotationMatrix( rotMatrix, &vec, &finalOrientation);
-	// // dotprodMatVec(rotMatrix,&vec,&res,3);}
-	// findRotationMatrix( rotMatrix, vec, finalOrientation);
-	// dotprodMatVec(rotMatrix,vec,res,3);}
-	// for (int i=0;i<3; i++) printf("%f",vec2[i]);
-	// for (int i=0;i<3; i++) printf("%f",res[i]);
-
-	// // double a1=0,a2=0;
-	// // for (int i=0;i<3; i++) a1=a1+vec2[i]*vec2[i];
-	// // a1=sqrt(a1);
-	// // printf("%f",a1);
-	// // for (int i=0;i<3; i++) a2=a2+res[i]*res[i];
-	// // a2=sqrt(a2);
-	// // printf("%f",a2);
+	double ori[3]={0.0,0.0,0.0},center[3]={0.0,0.0,0.0},finalOrientation[3]={1.0,0.0,0.0};
+	double rotMatrix[3][3]={{0.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,0.0}};
 
 	// Find the orientation of the first swimmer, and the necessary translation to place its hydrodynamic center at the point (0,0,0)
-	for (int i=0;i<3; i++) 
+	for (d=0;d<3; d++) 
 	{
-		// ori[i]=sw->H.Q[i]-sw->M.Q[i]; center[i]=sw->M.Q[i];// center[i]=sw[0].H.Q[i]/2-sw[0].M.Q[i]/2-ori[i]*ss->DS;
-		ori[i]=sw[0].H.Q[i]-sw[0].M.Q[i];center[i]=(XYZ[i]-sw[0].M.Q[i]-sw[0].H.Q[i])/2;
-		h[i]=sw[0].M.Q[i];
-		if (ori[i]>XYZ[i]/2) ori[i]=ori[i]-XYZ[i];
-		if (ori[i]<-XYZ[i]/2) ori[i]=ori[i]+XYZ[i];
+		ori[d]=sw[0].H.Q[d]-sw[0].M.Q[d];
+		if (ori[d]>0.5*XYZ[d]) ori[d]=ori[d]-XYZ[d];
+		else if (ori[d]<-0.5*XYZ[d]) ori[d]=ori[d]+XYZ[d];
+		center[d]=0.25*sw[0].M.Q[d]+0.25*sw[0].H.Q[d]+0.5*(sw[0].M.Q[d]-ori[d]*ss->DS);
+		center[d]=0.5*XYZ[d]-center[d];
 	}
 
 	// Find the matrix that places the swimmer's orientation along the x axis
-	norm=sqrt(ori[0]*ori[0]+ori[1]*ori[1]+ori[2]*ori[2]);
-	for (int i=0; i<3; i++) ori[i]=ori[i]/norm;
+	norm(ori,_3D);
 	findRotationMatrix( rotMatrix, ori, finalOrientation);
-	findRotationMatrix( rotMatrix2, finalOrientation, ori);
-
-	// theta=atan2(sqrt(ori[0]*ori[0]+ori[1]*ori[1]),ori[2]);phi=atan2(ori[1],ori[0]);
-	// Could just apply rotations here
-	// double rotM={{}}
-
-	// double q=0;
-
-	// for (int i=0; i<3; i++)
-	// {
-	// 	q=rotMatrix[i][0]*ori[0]+rotMatrix[i][1]*ori[1]+rotMatrix[i][2]*ori[2];
-	// 	// q=rotMatrix[0][i]*ori[0]+rotMatrix[1][i]*ori[1]+rotMatrix[2][i]*ori[2];
-	// 	printf("%f",q);
-	// }
-	// dotprodMatVec(rotMatrix,&ori,&res,3);
 
 	// Translates then rotates everything, before rewrapping
 	for( a=0; a<XYZ[0]; a++ ) for( b=0; b<XYZ[1]; b++ ) for( c=0; c<XYZ[2]; c++ ) {
 
-		i2=a+center[0];j2=b+center[1];k2=c+center[2];
-		if (i2>=XYZ[0]) i2-=XYZ[0];
-		if (i2<0) i2+=XYZ[0];
-		if (j2>=XYZ[1]) i2-=XYZ[1];
-		if (j2<0) j2+=XYZ[1];
-		if (k2>=XYZ[2]) k2-=XYZ[2];
-		if (k2<XYZ[2]) k2+=XYZ[2];
-		// norm=sqrt(i2*i2+j2*j2+k2*k2);
-		// i2=i2/norm;j2=j2/norm;k2=k2/norm;
+		i=a+center[0];j=b+center[1];k=c+center[2];
 
-		for (int i=0;i<3; i++) center[i]=(sw[0].M.Q[i]+sw[0].H.Q[i])*0.5;
+		if (i>=XYZ[0]) i-=XYZ[0];
+		if (i<0) i+=XYZ[0];
+		if (j>=XYZ[1]) j-=XYZ[1];
+		if (j<0) j+=XYZ[1];
+		if (k>=XYZ[2]) k-=XYZ[2];
+		if (k<0) k+=XYZ[2];
+
+		I=(int)i;J=(int)j;K=(int)k;
+
+		for (d=0;d<DIM;d++){
+			w=d+4;
+			CL[I][J][K].SWFLOW[w]=CL[a][b][c].VCM[d];
+		}
+	}
+
+	for( a=0; a<XYZ[0]; a++ ) for( b=0; b<XYZ[1]; b++ ) for( c=0; c<XYZ[2]; c++ ) {
+
+		for (d=0;d<3; d++) center[d]=XYZ[d]*0.5;
+
+		i2=a-center[0];j2=b-center[1];k2=c-center[2];
 		
 		i=rotMatrix[0][0]*i2+rotMatrix[0][1]*j2+rotMatrix[0][2]*k2+center[0];
 		j=rotMatrix[1][0]*i2+rotMatrix[1][1]*j2+rotMatrix[1][2]*k2+center[1];
 		k=rotMatrix[2][0]*i2+rotMatrix[2][1]*j2+rotMatrix[2][2]*k2+center[2];
-
-		// How about the opposite?
-
-		// finalOrientation[0]=a;finalOrientation[1]=b;finalOrientation[2]=c;
-		// norm=sqrt(finalOrientation[0]*finalOrientation[0]+finalOrientation[1]*finalOrientation[1]+finalOrientation[2]*finalOrientation[2]);
-		// for (int i=0; i<3; i++) finalOrientation[i]=finalOrientation[i]/norm;
-
-		// dotprodMatVec(rotMatrix2,&finalOrientation,&res,3);
-		
-		// ori[0]=a;ori[1]=b;ori[2]=c;
-		// dotprodMatVec(rotMatrix,&ori,&res,3);
-		// ori[0]=ori[0]+center[0];ori[1]=ori[1]+center[1];ori[2]=ori[2]+center[2];
 
 		// Rewrapping
 		while (i>=XYZ[0])i=i-XYZ[0];
@@ -362,43 +317,18 @@ void sumSWFLOW( cell ***CL, swimmer *sw , specSwimmer *ss) {
 		while (k>=XYZ[2])k=k-XYZ[2];
 		while (k<0)k=k+XYZ[2];
 
-		I=round(i);J=round(j);K=round(k);
+		I=(int)i;J=(int)j;K=(int)k;
 
-		// if (zeros[I][J][K]==1)
-		// {
-		// 	if (abs(I-i)>abs(J-j) && abs(K-k)<abs(I-i))I=I-(I-i)/abs(I-i);
-		// 	if (abs(I-i)<abs(J-j) && abs(K-k)<abs(J-j))J=J-(J-j)/abs(J-j);
-		// 	if (abs(I-i)<abs(K-k) && abs(J-j)<abs(K-k))K=K-(K-k)/abs(K-k);
-		// }
-
-		if (zeros[I][J][K]==1){ct=ct+1;}
-		// ct=ct+1;
-
-		zeros[I][J][K]=1;
-
-		// dotprodMatVec(rotMatrix,&CL[I][J][K].VCM,&CL[a][b][c].SWFLOW,3);
-
-		for ( d=0; d<3; d++ )
+		for ( d=0; d<DIM; d++ )
 		{
-			// CL[a][b][c].SWFLOW[0] += CL[I][J][K].VCM[d]*rotMatrix[0][d];
-			// CL[a][b][c].SWFLOW[1] += CL[I][J][K].VCM[d]*rotMatrix[1][d];
-			// CL[a][b][c].SWFLOW[2] += CL[I][J][K].VCM[d]*rotMatrix[2][d];
-			printf("Dimension %d\n",d);
-			printf("abc:%d/%d/%d:::::%lf",a,b,c,CL[a][b][c].VCM[d]);
-			printf("\nAND\n");
-			printf("IJK:%d/%d/%d:::::%lf",I,J,K,CL[I][J][K].VCM[d]);
-			printf("\n\n\n");
-			CL[I][J][K].SWFLOW[0] += CL[a][b][c].VCM[d]*rotMatrix[0][d];
-			CL[I][J][K].SWFLOW[1] += CL[a][b][c].VCM[d]*rotMatrix[1][d];
-			CL[I][J][K].SWFLOW[2] += CL[a][b][c].VCM[d]*rotMatrix[2][d];
+			w=d+4;
+			CL[I][J][K].SWFLOW[0] += CL[a][b][c].SWFLOW[w]*rotMatrix[0][d];
+			CL[I][J][K].SWFLOW[1] += CL[a][b][c].SWFLOW[w]*rotMatrix[1][d];
+			CL[I][J][K].SWFLOW[2] += CL[a][b][c].SWFLOW[w]*rotMatrix[2][d];
 		}
 		CL[I][J][K].SWFLOW[3] += 1.0; // EXPLAIN WHATS GOING ON
-
-		//MAKE CLEAR THAT WE HIJACK THE CELL
+     	//MAKE CLEAR THAT WE HIJACK THE CELL
 	}
-
-
-	// printf("%d",ct);
 }
 
 /// 
