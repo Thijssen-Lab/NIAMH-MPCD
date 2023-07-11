@@ -63,17 +63,21 @@ if not os.path.isfile(file):
 file=open(file,"r")
 for i in range(11):
 	buff=file.readline()
+	# reads all lines up to after randomSeed
 buff=file.readline().split('=')[-1].replace('(','').replace(')','').split(',')
+# reads dimensions of system
 for i in range(3):
 	xyzSize[i] = int(buff[i])
 	if (xyzSize[i] == 0) :
 		xyzSize[i] += 1
 for i in range(5):
 	buff=file.readline()
+	# reads params lattice to dt
 buff=buff.split('=')
 dtMD=float(buff[-1])
-for i in range(56):
+for i in range(59):
 	buff=file.readline()
+	# reads remaining lines
 buff=file.readline().split()
 monoN=int(buff[-1].replace('(','').replace(')',''))
 monoNF=float(monoN)

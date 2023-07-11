@@ -1632,10 +1632,9 @@ void InitCharges (simptr sim)
 
 //================================================================================
 void InitDipoles (simptr sim)
-// OR void SetupDipoleList (simptr sim)
 //================================================================================
 {
-	int			i, nAtom, nPolymer, nMonomer, lenChunk, checker, maxN;
+	int			n, nn, i, nAtom, nPolymer, nMonomer, lenChunk, checker, maxN;
 	particleMD	*atom;
 	real 		dStrength;
 	int 		dChunks;
@@ -1648,7 +1647,7 @@ void InitDipoles (simptr sim)
 	dChunks = sim->dChunks;
 	printf("dChunks read in is %d\n", dChunks);
 
-	// number of monomers - doing as in SetupFeneList
+	// number of monomers, and need to consider multiple polymer chains
 	nMonomer = sim->polyN[0];
 	nPolymer = sim->polyM[0];
 	
@@ -1663,27 +1662,32 @@ void InitDipoles (simptr sim)
 	if (dChunks>nAtom){
 		printf("You have asked for more chunks than there are atoms! \nI am going to crash!\n");
 	}
+	
 	// set dipoles according to whether extensile or contractile chunk
-	for (i=0; i<nAtom; i++) {
-		checker = (i/lenChunk)%2;	// for whether even or odd chunk
-		printf("checker should be zero or one %d\n", checker);
-		// any remainders will have strength zero dipole
+	for (i=0; i<nPolymer; i++){
+		nn = i*nMonomer;
+		for (n=nn; n<nn+nMonomer; n++) {
+			checker = (n/lenChunk)%2;	// for whether even or odd chunk
+			printf("checker should be zero or one %d\n", checker);
+			// any remainders will have strength zero dipole
 		
-		if (i < maxN) {
-			// if an "even" chunk
-			if (checker == 0) {
-				atom[i].dipole = dStrength;
+			if (n < maxN) {
+				// if an "even" chunk
+				if (checker == 0) {
+					atom[n].dipole = dStrength;
+				}	
+				// if n "odd" chunk then other type of dipole
+				else {
+					atom[n].dipole = -dStrength;
+				}
 			}
-			// if n "odd" chunk then other type of dipole
 			else {
-				atom[i].dipole = -dStrength;
+				atom[n].dipole = 0.f;
 			}
+			printf("for polymer %d, ", i+1);
+			printf("atom %d dipole is ", n+1);
+			printf("strength %f\n", atom[n].dipole);
 		}
-		else {
-			atom[i].dipole = 0.f;
-		}
-		printf("atom %d dipole is ", i);
-		printf("strength %f\n", atom[i].dipole);
 	}
 }
 
