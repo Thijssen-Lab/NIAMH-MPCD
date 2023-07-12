@@ -170,7 +170,6 @@ simptr SetupSimulation (int argc, char *argv[])
 /// the local array paramList. Calls the function ReadParameters() to handle
 /// the actual scanning of the input.
 ///
-	// !!!!! STUCK AT STEP BELOW !!!!!
 /// @param		sim a pointer to a simulation structure
 /// @return		void
 /// @warning	Parameters added here must also be added to the sim

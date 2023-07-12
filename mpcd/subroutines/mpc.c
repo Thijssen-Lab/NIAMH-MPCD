@@ -3658,10 +3658,63 @@ void localVCM( double vcm[_3D],cell CL,spec *SP,specSwimmer specS ) {
 /// then finds the plane and applies a kick to all the MPCD particles in the cell either away from
 /// or towards the plane, depending on if extensile or contractile.
 /// @param simMD A pointer to the entire MD portion of the simulation.
-/// @param CL One specific MPCD cell.
+/// @param CL An MPCD cell (including the linked list of particles in each cell). 
 /// @param SP The species-wide information about MPCD particles.
+///
 void activeMD(simptr simMD, cell ***CL, spec *SP ) {
-	;
+	int i, j, nAtom;
+	double normprev, normnext;
+	double MDloc[_3D], prevloc[_3D], nextloc[_3D], vecprev[_3D], vecnext[_3D], tangent[_3D];  // stuff to calc plane
+	double pW;  //The particle's pW for passing the plane
+	bc PLANE;  //The plane that cuts the cell in half
+	particleMPC *tmpc;
+	particleMD	*atoms;
+	
+	atoms  = simMD->atom.items;
+	nAtom = simMD->atom.n;
+
+	for (i=1; i<(nAtom)-1; i++) {
+		// find location of MD particle(s) in question
+		// there is probably a more concise way of doing this
+		MDloc[0] = atoms[i].rx;
+		MDloc[1] = atoms[i].ry;
+		MDloc[2] = atoms[i].rz;
+		prevloc[0] = atoms[i-1].rx;
+		prevloc[1] = atoms[i-1].ry;
+		prevloc[2] = atoms[i-1].rz;
+		nextloc[0] = atoms[i-1].rx;
+		nextloc[1] = atoms[i-1].ry;
+		nextloc[2] = atoms[i-1].rz;
+		for (j=0; j<=_3D; j++) {
+			vecprev[j] = MDloc[j]-prevloc[j];
+			vecnext[j] = nextloc[j]-MDloc[j];
+		}
+		// get tangent of backbone at MD particle
+		normprev = sqrt(pow(vecprev[0],2) + pow(vecprev[1],2)+pow(vecprev[2],2));
+		normnext = sqrt(pow(vecnext[0],2) + pow(vecnext[1],2)+pow(vecnext[2],2));
+		for (j=0; j<=_3D; j++) {
+			vecprev[j] = vecprev[j]/normprev;
+			vecnext[j] = vecnext[j]/normnext;
+			tangent[j] = vecprev[j]+vecnext[j];
+		}
+
+		// check
+		printf("tangent for atom %d ", i+1);
+		printf("is %f, ", tangent[0]);
+		printf("%f, ", tangent[1]);
+		printf("%f\n", tangent[2]);
+
+		// identify which MPCD cell it's in
+
+		// find plane - line 1775 in lc.c
+
+		// loop through MPCD particles
+
+			// give a kick according to which side of plane - dipole AndersenROT_LC
+	}
+
+	// do same for first and last
+
 }
 
 /// 
