@@ -3682,9 +3682,9 @@ void activeMD(simptr simMD, cell ***CL, spec *SP ) {
 		prevloc[0] = atoms[i-1].rx;
 		prevloc[1] = atoms[i-1].ry;
 		prevloc[2] = atoms[i-1].rz;
-		nextloc[0] = atoms[i-1].rx;
-		nextloc[1] = atoms[i-1].ry;
-		nextloc[2] = atoms[i-1].rz;
+		nextloc[0] = atoms[i+1].rx;
+		nextloc[1] = atoms[i+1].ry;
+		nextloc[2] = atoms[i+1].rz;
 		for (j=0; j<=_3D; j++) {
 			vecprev[j] = MDloc[j]-prevloc[j];
 			vecnext[j] = nextloc[j]-MDloc[j];
@@ -4518,7 +4518,7 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 	}
 
 	// Apply the MD active dipoles
-	if( MDmode && fabs(simMD->dStrength)>=TOL ) {
+	if( MDmode && fabs(simMD->dStrength)>=TOL && runtime<10) {
 		activeMD(simMD, CL, SP );
 	}
 
