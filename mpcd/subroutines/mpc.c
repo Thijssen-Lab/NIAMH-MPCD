@@ -3651,6 +3651,19 @@ void localVCM( double vcm[_3D],cell CL,spec *SP,specSwimmer specS ) {
 	for( i=0; i<DIM; i++ ) vcm[i] /= (summ ? summ : 1.);
 }
 
+///
+/// @brief This routine applies force dipoles from active MD particles onto the MPCD particles.
+///
+/// The function loops over all MD particles and finds their location and backbone tangent. It
+/// then finds the plane and applies a kick to all the MPCD particles in the cell either away from
+/// or towards the plane, depending on if extensile or contractile.
+/// @param simMD A pointer to the entire MD portion of the simulation.
+/// @param CL One specific MPCD cell.
+/// @param SP The species-wide information about MPCD particles.
+void activeMD(simptr simMD, cell ***CL, spec *SP ) {
+	;
+}
+
 /// 
 /// @brief This routine calculates the centre of mass velocity of the MPCD particles in a single cell or bin.
 ///
@@ -4450,6 +4463,12 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 	if( in.inCOMP != INCOMPOFF ) {
 		for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) if( CL[i][j][k].POP > 1 ) incompColl( &CL[i][j][k],SP,*SS,in.inCOMP,MDmode,CLQ,outPressure );
 	}
+
+	// Apply the MD active dipoles
+	if( MDmode && fabs(simMD->dStrength)>=TOL ) {
+		activeMD(simMD, CL, SP );
+	}
+
 	// Brownian thermostat (no hydrodynamic interactions -scramble velocities)
 	if( in.noHI == HIOFF ) scramble( SRDparticles );
 	//Calculate average

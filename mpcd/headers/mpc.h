@@ -69,6 +69,8 @@ void incompSubtractDivergence( cell *CL,spec *SP,specSwimmer SS );
 void multiphaseColl( cell *CL,spec *SP,specSwimmer SS,int multiphaseMode,double KBT,int MDmode,double *CLQ,int outP );
 void multiphaseCollPoint( cell *CL,spec *SP,specSwimmer SS, double KBT,int MDmode,double *CLQ,int outP );
 
+void activeMD(simptr simMD, cell ***CL, spec *SP);
+
 void localVCM( double vcm[_3D],cell CL,spec *SP,specSwimmer specS );
 void localMPCVCM( double vcm[_3D],cell CL,spec *SP );
 double localMASS( cell CL,spec *SP,specSwimmer specS );
