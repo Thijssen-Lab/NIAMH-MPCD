@@ -3662,7 +3662,7 @@ void localVCM( double vcm[_3D],cell CL,spec *SP,specSwimmer specS ) {
 /// @param SP The species-wide information about MPCD particles.
 ///
 void activeMD(simptr simMD, cell ***CL, spec *SP ) {
-	int i, j, nAtom;
+	int i, j, nAtom, cx, cy, cz;
 	double normprev, normnext;
 	double MDloc[_3D], prevloc[_3D], nextloc[_3D], vecprev[_3D], vecnext[_3D], tangent[_3D];  // stuff to calc plane
 	double pW;  //The particle's pW for passing the plane
@@ -3705,11 +3705,21 @@ void activeMD(simptr simMD, cell ***CL, spec *SP ) {
 		printf("%f\n", tangent[2]);
 
 		// identify which MPCD cell it's in
-
+		cx = int(MDloc[0]);
+		cy = int(MDloc[1]);
+		cz = int(MDloc[2]);
+		// then use like CL[cx][cy][cz].pp
 		// find plane - line 1775 in lc.c
 
 		// loop through MPCD particles
-
+		if(CL[cx][cy][cz].pp!=NULL) {
+			tmpc = CL[cx][cy][cz].pp;
+			while( tmpc!=NULL ) {
+				
+				//Increment link in list
+				tmpc = tmpc->next;
+			}
+		}	
 			// give a kick according to which side of plane - dipole AndersenROT_LC
 	}
 
