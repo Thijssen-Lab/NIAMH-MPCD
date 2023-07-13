@@ -3658,22 +3658,26 @@ void localVCM( double vcm[_3D],cell CL,spec *SP,specSwimmer specS ) {
 /// then finds the plane and applies a kick to all the MPCD particles in the cell either away from
 /// or towards the plane, depending on if extensile or contractile.
 /// @param simMD A pointer to the entire MD portion of the simulation.
-/// @param CL An MPCD cell (including the linked list of particles in each cell). 
+/// @param CL ALL cells. 
 /// @param SP The species-wide information about MPCD particles.
 ///
-void activeMD(simptr simMD, cell ***CL, spec *SP ) {
-	int i, j, nAtom, cx, cy, cz;
-	double normprev, normnext;
-	double MDloc[_3D], prevloc[_3D], nextloc[_3D], vecprev[_3D], vecnext[_3D], tangent[_3D];  // stuff to calc plane
+void activeMD(simptr simMD, cell ***CL, spec *SP, inputList in) {
+	int i, m, j, k, nAtom, cx, cy, cz, N_cl, id;
+	double normprev, normnext, normtan, pmOne;
+	double MDloc[_3D], prevloc[_3D], nextloc[_3D], vecprev[_3D], vecnext[_3D], tangent[_3D];  // stuff to calc plane and velocity
 	double pW;  //The particle's pW for passing the plane
+	double force; // the dipole 'force'(=dt*d/m) on one mpcd particle, will be a constant for each cell. delta_v = 'force'/mass
+	double dt, deltaV;
+	float dipole;
 	bc PLANE;  //The plane that cuts the cell in half
 	particleMPC *tmpc;
 	particleMD	*atoms;
 	
 	atoms  = simMD->atom.items;
 	nAtom = simMD->atom.n;
+	dt = in.dt;
 
-	for (i=1; i<(nAtom)-1; i++) {
+	for (i=0; i<nAtom; i++) {
 		// find location of MD particle(s) in question
 		// there is probably a more concise way of doing this
 		MDloc[0] = atoms[i].rx;
@@ -3685,17 +3689,35 @@ void activeMD(simptr simMD, cell ***CL, spec *SP ) {
 		nextloc[0] = atoms[i+1].rx;
 		nextloc[1] = atoms[i+1].ry;
 		nextloc[2] = atoms[i+1].rz;
-		for (j=0; j<=_3D; j++) {
-			vecprev[j] = MDloc[j]-prevloc[j];
-			vecnext[j] = nextloc[j]-MDloc[j];
+		
+		// get tangent of backbone at MD particle, and normalise it
+		
+		if (i==0) {
+			for (j=0; j<_3D; j++) {
+			tangent[j] = nextloc[j]-MDloc[j];
+			}
 		}
-		// get tangent of backbone at MD particle
-		normprev = sqrt(pow(vecprev[0],2) + pow(vecprev[1],2)+pow(vecprev[2],2));
-		normnext = sqrt(pow(vecnext[0],2) + pow(vecnext[1],2)+pow(vecnext[2],2));
-		for (j=0; j<=_3D; j++) {
-			vecprev[j] = vecprev[j]/normprev;
-			vecnext[j] = vecnext[j]/normnext;
-			tangent[j] = vecprev[j]+vecnext[j];
+		else if (i==nAtom) {
+			for (j=0; j<_3D; j++) {
+			tangent[j] = MDloc[j]-prevloc[j];
+			}
+		}
+		else {
+			for (j=0; j<_3D; j++) {
+				vecprev[j] = MDloc[j]-prevloc[j];
+				vecnext[j] = nextloc[j]-MDloc[j];
+			}
+			normprev = sqrt(pow(vecprev[0],2) + pow(vecprev[1],2)+pow(vecprev[2],2));
+			normnext = sqrt(pow(vecnext[0],2) + pow(vecnext[1],2)+pow(vecnext[2],2));
+			for (j=0; j<_3D; j++) {
+				vecprev[j] = vecprev[j]/normprev;
+				vecnext[j] = vecnext[j]/normnext;
+				tangent[j] = vecprev[j]+vecnext[j];
+			}
+		}
+		normtan = sqrt(pow(tangent[0],2) + pow(tangent[1],2)+pow(tangent[2],2));
+		for (j=0; j<_3D; j++) {
+			tangent[j] = tangent[j]/normtan;
 		}
 
 		// check
@@ -3705,25 +3727,84 @@ void activeMD(simptr simMD, cell ***CL, spec *SP ) {
 		printf("%f\n", tangent[2]);
 
 		// identify which MPCD cell it's in
-		cx = int(MDloc[0]);
-		cy = int(MDloc[1]);
-		cz = int(MDloc[2]);
+		cx = (int)MDloc[0];
+		cy = (int)MDloc[1];
+		cz = (int)MDloc[2];
 		// then use like CL[cx][cy][cz].pp
-		// find plane - line 1775 in lc.c
 
-		// loop through MPCD particles
+		// find const 'force' on each MPCD particle from the MD in this cell
+		dipole = atoms[i].dipole;
+		N_cl = CL[cx][cy][cz].POPSRD;
+		force = dt*dipole/N_cl;
+
+		// Think these need introduced here rather than at the very start because looking at one cell rather than all
+		double AV[CL[cx][cy][cz].POP][DIM];	//Active velocities
+		double AS[DIM];			//Sum of active velocities
+		// Zero arrays
+		for( k=0;k<CL[cx][cy][cz].POP;k++ ) for( j=0;j<_3D;j++ ) {
+			AV[k][j] = 0.;
+		}
+		for( j=0;j<_3D;j++ ) {
+			AS[j]=0.;
+		}
+
+		// find plane - line 1775 in lc.c
+		// Define the plane normal to the backbone tangent at the MD particle position
+		for( k=0;k<4;k++ ) PLANE.P[k]=1;
+		PLANE.INV=0;
+		PLANE.ABS=0;
+		PLANE.R=0.0;
+		PLANE.ROTSYMM[0]=4.0;
+		PLANE.ROTSYMM[1]=4.0;
+		// Normal is TANGENT
+		for( k=0; k<DIM; k++ ) PLANE.A[k] = tangent[k];
+		// Position is MD PARTICLE POSITION
+		for( k=0; k<DIM; k++ ) PLANE.Q[k] = MDloc[k];
+		
+		if(CL[cx][cy][cz].pp!=NULL) {
+			tmpc = CL[cx][cy][cz].pp;
+			// loop through MPCD particles
+			m = 0;// counter for momentum conservation bits
+			while( tmpc!=NULL ) {
+				// give a kick according to which side of plane - dipole AndersenROT_LC
+				// Check which side of the plane
+				pW = calcW( PLANE,*tmpc );
+				if( pW<=0 ) pmOne=-1.;
+				else pmOne=1.;
+
+				// change in velocity to be applied according to species mass
+				id = tmpc->SPID;
+				deltaV = force/(double)(SP+id)->MASS; //think this is correct way of getting mass?
+				
+				// apply the change (hopefully). In direction of tangent, away from (or towards) plane.
+				for( k=0; k<DIM; k++ ){
+					tmpc->V[k] += tangent[k]*deltaV*pmOne;
+				}
+				
+				// stuff for momentum conservation
+				for( j=0; j<DIM; j++ ) AV[m][j] = tmpc->V[j];
+				for( j=0; j<DIM; j++ ) AS[j] += AV[m][j]*(double)(SP+id)->MASS;
+				m++;
+				// Increment link in list
+				tmpc = tmpc->next;
+			}
+		}
+		// find net momentum
+		for( j=0; j<DIM; j++ ) AS[j] = AS[j]/N_cl; // is this correct?
+
+		// subtract net momentum from all mpcd if non-zero - new loop
 		if(CL[cx][cy][cz].pp!=NULL) {
 			tmpc = CL[cx][cy][cz].pp;
 			while( tmpc!=NULL ) {
-				
-				//Increment link in list
+				for (j=0; j<DIM; j++){
+					tmpc->V[j] -= AS[j]/(double)(SP+id)->MASS;
+				}
+				// Increment link in list
 				tmpc = tmpc->next;
 			}
 		}	
-			// give a kick according to which side of plane - dipole AndersenROT_LC
+			
 	}
-
-	// do same for first and last
 
 }
 
@@ -4529,7 +4610,7 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 
 	// Apply the MD active dipoles
 	if( MDmode && fabs(simMD->dStrength)>=TOL && runtime<10) {
-		activeMD(simMD, CL, SP );
+		activeMD(simMD, CL, SP, in );
 	}
 
 	// Brownian thermostat (no hydrodynamic interactions -scramble velocities)
