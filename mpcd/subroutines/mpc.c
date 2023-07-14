@@ -3810,7 +3810,7 @@ void activeMD(simptr simMD, cell ***CL, spec *SP, inputList in) {
 				// change in velocity to be applied according to species mass
 				id = tmpc->SPID;
 				deltaV = force/(double)(SP+id)->MASS; //think this is correct way of getting mass?
-				printf("vel kick: %f\n",deltaV);
+				//printf("vel kick: %f\n",deltaV);
 				// apply the change (hopefully). In direction of tangent, away from (or towards) plane.
 				for( k=0; k<DIM; k++ ){
 					tmpc->V[k] += tangent[k]*deltaV*pmOne;
