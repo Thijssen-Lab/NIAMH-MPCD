@@ -3750,12 +3750,12 @@ void activeMD(simptr simMD, cell ***CL, spec *SP, inputList in) {
 		//}
 
 		// check
-		printf("tangent for atom %d ", i+1);
-		printf("is %f, ", tangent[0]);
-		printf("%f, ", tangent[1]);
-		if (DIM>2){
-			printf("%f\n", tangent[2]);
-		}
+		//printf("tangent for atom %d ", i+1);
+		//printf("is %f, ", tangent[0]);
+		//printf("%f, ", tangent[1]);
+		//if (DIM>2){
+		//	printf("%f\n", tangent[2]);
+		//}
 
 		// identify which MPCD cell it's in
 		cx = (int)MDloc[0];
@@ -3810,7 +3810,7 @@ void activeMD(simptr simMD, cell ***CL, spec *SP, inputList in) {
 				// change in velocity to be applied according to species mass
 				id = tmpc->SPID;
 				deltaV = force/(double)(SP+id)->MASS; //think this is correct way of getting mass?
-				
+				printf("vel kick: %f\n",deltaV);
 				// apply the change (hopefully). In direction of tangent, away from (or towards) plane.
 				for( k=0; k<DIM; k++ ){
 					tmpc->V[k] += tangent[k]*deltaV*pmOne;
@@ -4473,7 +4473,7 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 	#ifdef DBG
 		if ( DBUG >= DBGSTEPS ) {
 			if( in.warmupSteps ) printf( "\nBegin warmup time step %i. Simulation time = %lf\n",runtime,runtime*in.dt );
-			//else printf( "\nBegin time step %i. Simulation time = %lf\n",runtime,runtime*in.dt );
+			else printf( "\nBegin time step %i. Simulation time = %lf\n",runtime,runtime*in.dt );
 		}
 	#endif
 	//Zero counters
@@ -4645,7 +4645,7 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 	}
 
 	// Apply the MD active dipoles
-	if( MDmode && fabs(simMD->dStrength)>=TOL && runtime<10) {
+	if( MDmode && fabs(simMD->dStrength)>=TOL) {
 		activeMD(simMD, CL, SP, in );
 	}
 
