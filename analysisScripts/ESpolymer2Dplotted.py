@@ -114,7 +114,8 @@ print("dipoles: ", dipoles)
 MDMPCD=int(0.1/dtMD)                             # number of MD timesteps per MPCD timestep
 dirSOut=int(outMD/MDMPCD)        				 # the frequency of mpcd output 
 
-nemName=mpcdDataPath+'/directorfield.dat'
+nemName=mpcdDataPath+'/velfield.dat'
+sName=mpcdDataPath+'/directorfield.dat'
 print( '\tFinding vmd.vtf ...' )
 check=0
 t=0
@@ -177,6 +178,10 @@ for i in range(13):
 	#toss header
 	line = nemFile.readline()
 	#print line
+sFile = open(sName, "r")
+for i in range(13):
+	#toss header
+	line = sFile.readline()
 polyFile = open(polyName,"r")
 j=0
 while True:
@@ -203,7 +208,7 @@ while nemFile:
 		break
 	else:
 		if j>=start:
-			t,Qx,Qy,Qz,Vx,Vy,Vz,s = line.split("\t",8)
+			t,Qx,Qy,Qz,Vx,Vy,Vz = line.split("\t",7)
 			XYZ[0][int(Qx)][int(Qy)][int(Qz)] = float(Qx)
 			XYZ[1][int(Qx)][int(Qy)][int(Qz)] = float(Qy)
 			XYZ[2][int(Qx)][int(Qy)][int(Qz)] = float(Qz)
@@ -211,6 +216,14 @@ while nemFile:
 			DIR[1][int(Qx)][int(Qy)][int(Qz)] = float(Vy)
 			DIR[2][int(Qx)][int(Qy)][int(Qz)] = float(Vz)
 			# S[int(Qx)][int(Qy)][int(Qz)] = float(s)
+			#S[int(Qx)][int(Qy)] = float(s)
+	# read S from director field
+	lineS = sFile.readline()
+	if(not lineS):
+		break
+	else:
+		if j>=start:
+			a,aa,b,bb,cc,dd,e,s = lineS.split("\t",8)
 			S[int(Qx)][int(Qy)] = float(s)
 
 	if i==xyzSize[0]*xyzSize[1]*xyzSize[2]:
