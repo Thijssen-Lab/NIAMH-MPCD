@@ -18,6 +18,8 @@ print( "Arguments:" )
 for arg in sys.argv:
 	print( "\t" + arg )
 mpcdDataPath = sys.argv[1]		# Path to directory containing MPCD data (input.json, md.inp, directorfield.dat, folder for vmd file)
+vel_vor = sys.argv[2] # string 
+
 ###########################################################
 ### Initialize
 ###########################################################
@@ -31,6 +33,11 @@ finish = 999999999		# Finish after this number
 qx = 0.5
 qy = 0.5
 
+vel_vor.lower()
+if not (vel_vor == 'vel' or vel_vor == 'vor'):
+    print("has to be 'vel' or 'vor'")
+    exit()
+
 ###########################################################
 ### Format and style
 ###########################################################
@@ -39,7 +46,7 @@ plt.style.use('shendrukGroupStyle')
 # Use our custom colours
 import shendrukGroupFormat as ed
 # Colour map to use
-myMap=ed.plasma
+myMap=ed.deepsea
 # Adjust line width
 myLW=1.0
 
@@ -135,11 +142,11 @@ MDperMPCD=dirSOut/outMD_in_MPCD_iterations
 ### Initialize
 ###########################################################
 XYZ = zeros(shape=(3,xyzSize[0],xyzSize[1],xyzSize[2]),dtype=float)
-DIR = zeros(shape=(3,xyzSize[0],xyzSize[1],xyzSize[2]),dtype=float)
-# S = zeros(shape=(xyzSize[0],xyzSize[1],xyzSize[2]),dtype=float)
-
-## for plotting scalar field using imshow
+VEL = zeros(shape=(3,xyzSize[0],xyzSize[1],xyzSize[2]),dtype=float)
+V = zeros(shape=(2,xyzSize[0],xyzSize[1]),dtype=float)
 S = zeros(shape=(xyzSize[0],xyzSize[1]),dtype=float)
+X = zeros(shape=(xyzSize[0],xyzSize[1]),dtype=float)
+Y = zeros(shape=(xyzSize[0],xyzSize[1]),dtype=float)
 
 if(projection=='x' or projection=='X'):
 	projDim=0
@@ -161,13 +168,6 @@ else:
 	exit()
 POLY = zeros(shape=(3,monoN),dtype=float)
 
-# Setup figure object
-tight_layout()
-fig,ax = plt.subplots()
-#Create the colorbar
-CS3 = imshow(zeros(shape=(xySize[0],xySize[1]),dtype=float), cmap=myMap, vmin=0, vmax=1, extent=[0,xySize[0],0,xySize[1]])
-cb = fig.colorbar(CS3)
-cb.ax.set_ylabel(r'$S$', fontsize = FS)
 ###########################################################
 ### Read the data for animation
 ###########################################################
@@ -178,10 +178,6 @@ for i in range(13):
 	#toss header
 	line = nemFile.readline()
 	#print line
-sFile = open(sName, "r")
-for i in range(13):
-	#toss header
-	line = sFile.readline()
 polyFile = open(polyName,"r")
 j=0
 while True:
@@ -212,20 +208,12 @@ while nemFile:
 			XYZ[0][int(Qx)][int(Qy)][int(Qz)] = float(Qx)
 			XYZ[1][int(Qx)][int(Qy)][int(Qz)] = float(Qy)
 			XYZ[2][int(Qx)][int(Qy)][int(Qz)] = float(Qz)
-			DIR[0][int(Qx)][int(Qy)][int(Qz)] = float(Vx)
-			DIR[1][int(Qx)][int(Qy)][int(Qz)] = float(Vy)
-			DIR[2][int(Qx)][int(Qy)][int(Qz)] = float(Vz)
+			VEL[0][int(Qx)][int(Qy)][int(Qz)] = float(Vx)
+			VEL[1][int(Qx)][int(Qy)][int(Qz)] = float(Vy)
+			VEL[2][int(Qx)][int(Qy)][int(Qz)] = float(Vz)
 			# S[int(Qx)][int(Qy)][int(Qz)] = float(s)
 			#S[int(Qx)][int(Qy)] = float(s)
-	# read S from director field
-	lineS = sFile.readline()
-	if(not lineS):
-		break
-	else:
-		if j>=start:
-			a,aa,b,bb,cc,dd,e,s = lineS.split("\t",8)
-			S[int(Qx)][int(Qy)] = float(s)
-
+	
 	if i==xyzSize[0]*xyzSize[1]*xyzSize[2]:
 		# Read polymer
 		line = polyFile.readline()
@@ -250,6 +238,24 @@ while nemFile:
 			for i in range(monoN):
 				cm[d]+=POLY[d][i]
 			cm[d]/=float(monoN)
+		# Calculate speed/vorticity
+		z=int(cm[2])
+		for x in range(xyzSize[0]):
+			for y in range(xyzSize[1]):
+				X[x][y]=XYZ[0][x][y][z]
+				Y[x][y]=XYZ[1][x][y][z]
+				for d in range(2):
+					V[d][x][y]=VEL[d][x][y][z]
+		if(vel_vor=='vel'):
+			for x in range(xyzSize[0]):
+				for y in range(xyzSize[1]):
+					S[x][y]=sqrt(VEL[0][x][y][z]**2+VEL[1][x][y][z]**2+VEL[2][x][y][z]**2)
+		if(vel_vor=='vor'):
+			for x in range(xyzSize[0]):
+				for y in range(xyzSize[1]):
+					# S[x][y]=VORTICITY CALC
+					exit()
+     
 		j=j+1
 		if j>finish:
 			break
@@ -257,40 +263,18 @@ while nemFile:
 		# Save frame
 		n=n+1
 		print( "\t\tPlot frame %d"%(n) )
+		# Setup figure object
+		tight_layout()
+		fig,ax = plt.subplots()
 		plt.cla()
-		if(projDim==0):
-			x=int(cm[0])
-			for y in range(xyzSize[1]):
-				for z in range(xyzSize[2]):
-					if( S[x][y][z]>0.05 ):
-						yline=[ XYZ[1][x][y][z]-c*DIR[1][x][y][z],XYZ[1][x][y][z]+c*DIR[1][x][y][z] ]
-						zline=[ XYZ[2][x][y][z]-c*DIR[2][x][y][z],XYZ[2][x][y][z]+c*DIR[2][x][y][z] ]
-						plot( yline,zline,color=myMap(S[x][y][z],1),linewidth=myLW )
-			for k in range(monoN-1):
-				if(fabs(POLY[1][k]-POLY[1][k+1])<0.5*xyzSize[1] and fabs(POLY[2][k]-POLY[2][k+1])<0.5*xyzSize[2]):
-					plot( [POLY[1][k],POLY[1][k+1]],[POLY[2][k],POLY[2][k+1]],color='k',linewidth=2 )
-		elif(projDim==1):
-			y=int(cm[1])
-			for x in range(xyzSize[0]):
-				for z in range(xyzSize[2]):
-					if( S[x][y][z]>0.05 ):
-						xline=[ XYZ[0][x][y][z]-c*DIR[0][x][y][z],XYZ[0][x][y][z]+c*DIR[0][x][y][z] ]
-						zline=[ XYZ[2][x][y][z]-c*DIR[2][x][y][z],XYZ[2][x][y][z]+c*DIR[2][x][y][z] ]
-						plot( xline,zline,color=myMap(S[x][y][z],1),linewidth=myLW )
-			for k in range(monoN-1):
-				if(fabs(POLY[0][k]-POLY[0][k+1])<0.5*xyzSize[0] and fabs(POLY[2][k]-POLY[2][k+1])<0.5*xyzSize[2]):
-					plot( [POLY[0][k],POLY[0][k+1]],[POLY[2][k],POLY[2][k+1]],color='k',linewidth=2 )
-		elif(projDim==2):
-			z=int(cm[2])
-			for x in range(xyzSize[0]):
-				for y in range(xyzSize[1]):
-					# if( S[x][y][z]>0.05 ):
-					if( S[x][y]>0.05 ):
-						xline=[ XYZ[0][x][y][z]-c*DIR[0][x][y][z],XYZ[0][x][y][z]+c*DIR[0][x][y][z] ]
-						yline=[ XYZ[1][x][y][z]-c*DIR[1][x][y][z],XYZ[1][x][y][z]+c*DIR[1][x][y][z] ]
-						# plot( xline,yline,color=myMap(S[x][y][z],1),linewidth=myLW )
-						plot( xline,yline,color="white",linewidth=myLW )
-			imshow(S.T,cmap=myMap,origin='lower',vmin=0,vmax=1)
+		if(projDim==2):
+			quiver( X,Y,V[0],V[1] )
+			CS3 = imshow(S.T,cmap=myMap,origin='lower')
+			cb = fig.colorbar(CS3)
+			if(vel_vor=='vel'):
+				cb.ax.set_ylabel(r'$v$', fontsize = FS)
+			else:
+				cb.ax.set_ylabel(r'$/omega$', fontsize = FS)
 			# circle = Circle((cm[j-1][0],cm[j-1][1]),radius = 0.5, facecolor = "none", edgecolor = "black",zorder =1)
 			# if (j-1>0):
 			# 	for k in range(j-1):
@@ -305,6 +289,7 @@ while nemFile:
 					plot([POLY[0][k]],[POLY[1][k]], 'bo', markersize=5)
 				else:
 					plot([POLY[0][k]],[POLY[1][k]], 'ko', markersize=5)
+			fig.canvas.draw()
 		"""
 		# Save the instantaneous or current velocity field frame
 		# Save frame
@@ -316,8 +301,8 @@ while nemFile:
 			for y in range(xyzSize[1]):
 				for z in range(xyzSize[2]):
 					if( S[x][y][z]>0.05 ):
-						yline=[ XYZ[1][x][y][z]-c*DIR[1][x][y][z],XYZ[1][x][y][z]+c*DIR[1][x][y][z] ]
-						zline=[ XYZ[2][x][y][z]-c*DIR[2][x][y][z],XYZ[2][x][y][z]+c*DIR[2][x][y][z] ]
+						yline=[ XYZ[1][x][y][z]-c*VEL[1][x][y][z],XYZ[1][x][y][z]+c*VEL[1][x][y][z] ]
+						zline=[ XYZ[2][x][y][z]-c*VEL[2][x][y][z],XYZ[2][x][y][z]+c*VEL[2][x][y][z] ]
 						plot( yline,zline,color=myMap(S[x][y][z],1),linewidth=myLW )
 			for k in range(monoN-1):
 				if(fabs(POLY[1][k]-POLY[1][k+1])<0.5*xyzSize[1] and fabs(POLY[2][k]-POLY[2][k+1])<0.5*xyzSize[2]):
@@ -335,8 +320,8 @@ while nemFile:
 			for x in range(xyzSize[0]):
 				for z in range(xyzSize[2]):
 					if( S[x][y][z]>0.05 ):
-						xline=[ XYZ[0][x][y][z]-c*DIR[0][x][y][z],XYZ[0][x][y][z]+c*DIR[0][x][y][z] ]
-						zline=[ XYZ[2][x][y][z]-c*DIR[2][x][y][z],XYZ[2][x][y][z]+c*DIR[2][x][y][z] ]
+						xline=[ XYZ[0][x][y][z]-c*VEL[0][x][y][z],XYZ[0][x][y][z]+c*VEL[0][x][y][z] ]
+						zline=[ XYZ[2][x][y][z]-c*VEL[2][x][y][z],XYZ[2][x][y][z]+c*VEL[2][x][y][z] ]
 						plot( xline,zline,color=myMap(S[x][y][z],1),linewidth=myLW )
 			for k in range(monoN-1):
 				if(fabs(POLY[0][k]-POLY[0][k+1])<0.5*xyzSize[0] and fabs(POLY[2][k]-POLY[2][k+1])<0.5*xyzSize[2]):
@@ -356,8 +341,8 @@ while nemFile:
 				for y in range(xyzSize[1]):
 					# if( S[x][y][z]>0.05 ):
 					if( S[x][y]>0.05 ):
-						xline=[ XYZ[0][x][y][z]-c*DIR[0][x][y][z],XYZ[0][x][y][z]+c*DIR[0][x][y][z] ]
-						yline=[ XYZ[1][x][y][z]-c*DIR[1][x][y][z],XYZ[1][x][y][z]+c*DIR[1][x][y][z] ]
+						xline=[ XYZ[0][x][y][z]-c*VEL[0][x][y][z],XYZ[0][x][y][z]+c*VEL[0][x][y][z] ]
+						yline=[ XYZ[1][x][y][z]-c*VEL[1][x][y][z],XYZ[1][x][y][z]+c*VEL[1][x][y][z] ]
 						# plot( xline,yline,color=myMap(S[x][y][z],1),linewidth=myLW )
 						plot( xline,yline,color="white",linewidth=myLW )
 			imshow(S.T,cmap=myMap,origin='lower',vmin=0,vmax=1)
