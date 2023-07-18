@@ -46,7 +46,10 @@ plt.style.use('shendrukGroupStyle')
 # Use our custom colours
 import shendrukGroupFormat as ed
 # Colour map to use
-myMap=ed.deepsea
+if (vel_vor == 'vel'):
+	myMap=ed.deepsea
+else:
+    myMap=ed.bombpops
 # Adjust line width
 myLW=1.0
 
@@ -250,12 +253,48 @@ while nemFile:
 			for x in range(xyzSize[0]):
 				for y in range(xyzSize[1]):
 					S[x][y]=sqrt(VEL[0][x][y][z]**2+VEL[1][x][y][z]**2+VEL[2][x][y][z]**2)
-		if(vel_vor=='vor'):
-			for x in range(xyzSize[0]):
-				for y in range(xyzSize[1]):
-					# S[x][y]=VORTICITY CALC
-					exit()
-     
+		if(vel_vor=='vor'): #stolenish from swimmerTraj_fields2D.py
+			dx=1.0
+			dy=1.0
+			# corners both x and y are forward or reverse derivatives
+			#0,0
+			vydx=(V[1][1][0]-V[1][0][0])/dx
+			vxdy=(V[0][0][1]-V[0][0][0])/dy
+			S[0][0]=vydx-vxdy
+			#N,0
+			vydx=(V[1][-1][0]-V[1][-2][0])/dx
+			vxdy=(V[0][-1][0]-V[0][-1][1])/dy
+			S[-1][0]=vydx-vxdy
+			#N,N
+			vydx=(V[1][-1][-1]-V[1][-2][-1])/dx
+			vxdy=(V[0][-1][-1]-V[0][-1][-2])/dy
+			S[-1][-1]=vydx-vxdy
+			#0,N
+			vydx=(V[1][1][-1]-V[1][0][-1])/dx
+			vxdy=(V[0][0][-1]-V[0][0][-2])/dy
+			S[0][-1]=vydx-vxdy
+   
+			# edges are forward or reverse with centred derivatives
+			for x in range(1, xyzSize[0]-1):
+				vydx=0.5*(V[1][x+1][0]-V[1][x-1][0])/dx
+				vxdy=(V[0][x][-1]-V[0][x][0])
+				vydx=0.5*(V[1][x+1][-1]-V[1][x-1][-1])/dx
+				vxdy=(V[0][x][-1]-V[0][x][-2])/dy
+				S[x][-1] =vydx-vxdy
+			for y in range(1,xyzSize[1]-1):
+				vydx=(V[1][1][y]-V[1][0][y])/dx
+				vxdy=0.5*(V[0][0][y+1]-V[0][0][y-1])/dy
+				S[0][y] =vydx-vxdy
+				vydx=(V[1][-1][y]-V[1][-2][y])/dx
+				vxdy=0.5*(V[0][-1][y+1]-V[0][-1][y-1])/dy
+				S[-1][y] =vydx-vxdy
+   
+			#The bulk is all centred derivatives
+			for x in range(1,xyzSize[0]-1):
+				for y in range(1,xyzSize[1]-1):
+					vydx=0.5*(V[1][x+1][y]-V[1][x-1][y])/dx
+					vxdy=0.5*(V[0][x][y+1]-V[0][x][y-1])/dy
+					S[x][y] =vydx-vxdy
 		j=j+1
 		if j>finish:
 			break
@@ -274,7 +313,7 @@ while nemFile:
 			if(vel_vor=='vel'):
 				cb.ax.set_ylabel(r'$v$', fontsize = FS)
 			else:
-				cb.ax.set_ylabel(r'$/omega$', fontsize = FS)
+				cb.ax.set_ylabel(r'$\omega$', fontsize = FS)
 			# circle = Circle((cm[j-1][0],cm[j-1][1]),radius = 0.5, facecolor = "none", edgecolor = "black",zorder =1)
 			# if (j-1>0):
 			# 	for k in range(j-1):
@@ -284,9 +323,9 @@ while nemFile:
 					plot( [POLY[0][k],POLY[0][k+1]],[POLY[1][k],POLY[1][k+1]],color='black',linewidth=2,zorder=2 )
 			for k in range(monoN):
 				if(dipoles[k]>0.000001):
-					plot([POLY[0][k]],[POLY[1][k]], 'or', markersize=5)
+					plot([POLY[0][k]],[POLY[1][k]], 'o', color='tab:orange', markersize=5)
 				elif(dipoles[k]<-0.000001):
-					plot([POLY[0][k]],[POLY[1][k]], 'bo', markersize=5)
+					plot([POLY[0][k]],[POLY[1][k]], 'o', color='m', markersize=5)
 				else:
 					plot([POLY[0][k]],[POLY[1][k]], 'ko', markersize=5)
 			fig.canvas.draw()
