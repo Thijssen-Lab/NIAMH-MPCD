@@ -323,9 +323,15 @@ while nemFile:
 					plot( [POLY[0][k],POLY[0][k+1]],[POLY[1][k],POLY[1][k+1]],color='black',linewidth=2,zorder=2 )
 			for k in range(monoN):
 				if(dipoles[k]>0.000001):
-					plot([POLY[0][k]],[POLY[1][k]], 'o', color='tab:orange', markersize=5)
+					if(vel_vor=='vel'):
+						plot([POLY[0][k]],[POLY[1][k]], 'o', color='tab:orange', markersize=5)
+					else:
+						plot([POLY[0][k]],[POLY[1][k]], 'o', color='r', markersize=5)
 				elif(dipoles[k]<-0.000001):
-					plot([POLY[0][k]],[POLY[1][k]], 'o', color='m', markersize=5)
+					if(vel_vor=='vel'):
+						plot([POLY[0][k]],[POLY[1][k]], 'o', color='m', markersize=5)
+					else:
+						plot([POLY[0][k]],[POLY[1][k]], 'o', color='b', markersize=5)
 				else:
 					plot([POLY[0][k]],[POLY[1][k]], 'ko', markersize=5)
 			fig.canvas.draw()
@@ -419,7 +425,10 @@ while nemFile:
 		axis('off')
 		grid(False)
 		subplots_adjust(left=0, bottom=0, right=1, top=1)
-		name='frame%04d.png'%(n)
+		if(vel_vor=='vel'):
+			name='velframe%04d.png'%(n)
+		else:
+			name='vorframe%04d.png'%(n)
 		savefig( name, format='png', dpi=600, bbox_inches='tight')
 		i=0
 
@@ -430,10 +439,17 @@ polyFile.close()
 ### Animate data
 ###########################################################
 # print( "\tAnimating ..." )
-name='2DPolymerProj_animation%s'%suffix
+if vel_vor=='vel':
+	name='velocity_animation%s'%suffix
+else:
+    name='vorticity_animation%s'%suffix
+#name='2DPolymerProj_animation%s'%suffix
 myCommand="rm %s"%name
 call(myCommand,shell=True)
-myCommand = "ffmpeg -f image2 -r %d"%(framerate)+" -i frame%04d.png"+" -vcodec %s -b %dk -r %d %s"%(codec,bitrate,framerate,name)
+if(vel_vor=='vel'):
+    myCommand = "ffmpeg -f image2 -r %d"%(framerate)+" -i velframe%04d.png"+" -vcodec %s -b %dk -r %d %s"%(codec,bitrate,framerate,name)
+else:
+    myCommand = "ffmpeg -f image2 -r %d"%(framerate)+" -i vorframe%04d.png"+" -vcodec %s -b %dk -r %d %s"%(codec,bitrate,framerate,name)
 call(myCommand,shell=True)
 if not keepFrames:
 	myCommand="rm frame*.png"
