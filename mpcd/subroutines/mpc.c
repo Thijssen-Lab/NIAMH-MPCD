@@ -1343,8 +1343,12 @@ void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 	tmd = CL->MDpp;
 	while( tmd!=NULL ) {
 		tmd->vx = CL->VCM[0] + RV[i][0] - RS[0];
-		tmd->vy = CL->VCM[1] + RV[i][1] - RS[1];
-		tmd->vz = CL->VCM[2] + RV[i][2] - RS[2];
+		if( DIM > _1D){
+			tmd->vy = CL->VCM[1] + RV[i][1] - RS[1];
+		}
+		if(DIM > _2D){
+			tmd->vz = CL->VCM[2] + RV[i][2] - RS[2];
+		}
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
