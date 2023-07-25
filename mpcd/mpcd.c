@@ -321,7 +321,15 @@ int main(int argc, char* argv[]) {
             // compute particle updates per second (PUPS)
             int mpcUpdates = (inputVar.simSteps+inputVar.warmupSteps) * GPOP; // total # of mpc particle updates
             int mpcPUPS = mpcUpdates / cpuTime; // mpc particle updates per second
-            printf("MPCD Particle Updates Per Second: %d PUPS\n\n", mpcPUPS);
+
+            // convert PUPS to KPUPS or MPUPs if necessary
+            if (mpcPUPS > 1000000) {
+                printf("\tMPCD Particle Updates Per Second: %.1f MPUPS\n\n", (float) mpcPUPS/1000000);
+            } else if (mpcPUPS > 1000) {
+                printf("\tMPCD Particle Updates Per Second: %.1f KPUPS\n\n", (float) mpcPUPS/1000);
+            } else {
+                printf("\tMPCD Particle Updates Per Second: %d PUPS\n\n", mpcPUPS);
+            }
             //NOTE: This doesn't take MD into account
         }
 	#endif
