@@ -314,8 +314,16 @@ int main(int argc, char* argv[]) {
 	tf = time( NULL );
 	cf = clock( );
 	#ifdef DBG
-		if( DBUG >= DBGINIT ) printf( "Wall compuation time: %e sec\nCPU compuation time:  %e CPUsec\n\n",(float)(tf
-			-to),(float) (cf-co)/CLOCKS_PER_SEC );
+		if( DBUG >= DBGINIT ) {
+            float cpuTime = (float) (cf-co)/CLOCKS_PER_SEC;
+            printf( "Wall compuation time: %e sec\nCPU compuation time:  %e CPUsec\n",(float)(tf-to), cpuTime );
+
+            // compute particle updates per second (PUPS)
+            int mpcUpdates = (inputVar.simSteps+inputVar.warmupSteps) * GPOP; // total # of mpc particle updates
+            int mpcPUPS = mpcUpdates / cpuTime; // mpc particle updates per second
+            printf("MPCD Particle Updates Per Second: %d PUPS\n\n", mpcPUPS);
+            //NOTE: This doesn't take MD into account
+        }
 	#endif
 	if( outFlags.SYNOUT ) {
 		fprintf( outFiles.fsynopsis, "\nWall compuation time: %e sec\nCPU compuation time:  %e CPUsec\n\n",(float)(tf-to),(float) (cf-co)/CLOCKS_PER_SEC );
