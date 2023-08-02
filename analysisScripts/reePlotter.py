@@ -73,7 +73,7 @@ def myfunc():
 
     fig,ax = plt.subplots(1)
     #plt.plot(time, reeav)
-    figdir = '/home/s1954660/Desktop/summer/analysis/endToEndVsTime'
+    figdir = '/home/s1954660/Desktop/summer/analysis/endToEndVsTime/'
     activity,chunks = gyrationTensor_2D.read(cwd)
     figname=str(figdir+"endToEnd_a"+str(activity)+"_c"+str(chunks)+".pdf")
     ed.errorbar_fill(np.asarray(time,dtype=float),reeav,yerr=reestd) #probs calculate an error
