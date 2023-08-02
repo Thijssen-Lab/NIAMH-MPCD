@@ -189,7 +189,7 @@ while nemFile:
 			# S[int(Qx)][int(Qy)][int(Qz)] = float(s)
 			S[int(Qx)][int(Qy)] = float(s)
 
-	if i==xyzSize[0]*xyzSize[1]*xyzSize[2]:
+	if i==xyzSize[0]*xyzSize[1]*xyzSize[2]: #because polymer only read once per sweep of field
 		# Read polymer
 		line = polyFile.readline()
 		line = polyFile.readline()

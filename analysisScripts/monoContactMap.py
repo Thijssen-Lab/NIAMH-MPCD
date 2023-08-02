@@ -1,4 +1,5 @@
 from matplotlib import pyplot as plt
+import matplotlib.colors as colors
 from pylab import *
 from numpy import ma
 from subprocess import call
@@ -22,7 +23,7 @@ for arg in sys.argv:
 mdinpDataPath = sys.argv[1]		# Path to directory containing mdinp data (input.json, md.inp)
 act = sys.argv[2]
 chunks = sys.argv[3]
-thresh = 3
+thresh = 3		# HAVE BEEN CHANGING TO 2 FOR LOGARITHMIC TO MAKE LESS NOISY CAREFUL!!!
 
 ###########################################################
 ### Format and style
@@ -151,13 +152,15 @@ for i in range(20):
 		map+=tempmap
 	polyFile.close()
 
-map=map/norm(map)
+prob=map/norm(map)
 # Setup figure object
 tight_layout()
 fig,ax = plt.subplots()
 plt.cla()
-CS3 = imshow(map.T,cmap=myMap,origin='lower')
+CS3 = imshow(prob.T, cmap=myMap,origin='lower')
+#CS3 = ax.pcolor(prob.T, norm=colors.LogNorm(), cmap=myMap)
 cb = fig.colorbar(CS3)
+#cb.ax.set_ylabel(r'Probablitiy of monomers being in contact (logarithmic)', fontsize = FS)
 cb.ax.set_ylabel(r'Probablitiy of monomers being in contact', fontsize = FS)
 axis('off')
 grid(False)
