@@ -74,10 +74,10 @@ def myfunc():
     fig,ax = plt.subplots(1)
     #plt.plot(time, reeav)
     figdir = '/home/s1954660/Desktop/summer/analysis/endToEndVsTime'
-    figname=str(figdir+"endToEnd_a"+str(act)+"_c"+str(chunks)+".pdf")
+    activity,chunks = gyrationTensor_2D.read(cwd)
+    figname=str(figdir+"endToEnd_a"+str(activity)+"_c"+str(chunks)+".pdf")
     ed.errorbar_fill(np.asarray(time,dtype=float),reeav,yerr=reestd) #probs calculate an error
-    act,chunks = gyrationTensor_2D.read(cwd)
-    title = str("End to end distance averaged over 20 runs, with standard devation. Act: "+str(act)+". Chunks: "+str(chunks)+".")
+    title = str("End to end distance averaged over 20 runs, with standard devation. Act: "+str(activity)+". Chunks: "+str(chunks)+".")
     ax.set_title(title, fontsize=13)
     ax.set_xlabel(r"Time (simulation timesteps)",fontsize=FS)
     ax.set_ylabel(r"Average end to end distance (simulation cells)",fontsize=FS)
