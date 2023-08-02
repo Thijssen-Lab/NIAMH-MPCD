@@ -57,7 +57,7 @@ def myfunc():
         for j in range(200):
             tline = tfile.readline()
             t, curv, std = tline.split()
-            temptime.append(float(t))
+            temptime.append(500*float(t))
             tempcurvT.append(float(curv))
         time = temptime
         curvT.append(tempcurvT)
