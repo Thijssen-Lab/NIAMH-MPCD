@@ -92,7 +92,8 @@ def myfunc():
     outfile.close()    
     # plot 2!!! figs, pos here
     fig,ax = plt.subplots(1)
-    figname = str(cwd+"/curvL_a"+str(act)+"_c"+str(chunks)+".pdf")
+    figdir = '/home/s1954660/Desktop/summer/analysis/curvPos'
+    figname = str(figdir+"/curvL_a"+str(act)+"_c"+str(chunks)+".pdf")
     ed.errorbar_fill(np.asarray(pos,dtype=float),curvLav,yerr=Lstd)
     title = str("Curvature at each monomer index. Act: "+str(act)+", chunks: "+str(chunks))
     ax.set_title(title, fontsize=13)
@@ -102,7 +103,8 @@ def myfunc():
     plt.close(fig)
     # now time one
     fig,ax = plt.subplots(1)
-    figname = str(cwd+"/curvT_a"+str(act)+"_c"+str(chunks)+".pdf")
+    figdir = '/home/s1954660/Desktop/summer/analysis/curvTime'
+    figname = str(figdir+"/curvT_a"+str(act)+"_c"+str(chunks)+".pdf")
     ed.errorbar_fill(np.asarray(time,dtype=float),curvTav,yerr=Tstd)
     title = str("Average curvature over time. Act: "+str(act)+", chunks: "+str(chunks))
     ax.set_title(title, fontsize=13)
@@ -123,10 +125,11 @@ else: #same but over all params (?!)
         #go through activities
         actdirlist = os.listdir(datedir)
         for act in actdirlist:
-            actdir = os.path.join(datedir, act)
-            #go through chunks
-            chunkdirlist = os.listdir(actdir)
-            for chunk in chunkdirlist:
-                chunkdir = os.path.join(actdir, chunk)
-                os.chdir(chunkdir)
-                myfunc()
+            if 'act' in act:
+                actdir = os.path.join(datedir, act)
+                #go through chunks
+                chunkdirlist = os.listdir(actdir)
+                for chunk in chunkdirlist:
+                    chunkdir = os.path.join(actdir, chunk)
+                    os.chdir(chunkdir)
+                    myfunc()
