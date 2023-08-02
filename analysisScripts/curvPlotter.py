@@ -23,9 +23,10 @@ import shendrukGroupFormat as ed
 # Colour map to use
 myMap=ed.plasma
 FS=20
-test = True
+test = False
 
-if test == True: #does for only one act/chunk rather than all
+#if test == True: #does for only one act/chunk rather than all
+def myfunc():
     cwd = os.getcwd() #should be within a chunk
     time = []
     curvT = []
@@ -110,5 +111,22 @@ if test == True: #does for only one act/chunk rather than all
     plt.savefig(figname,format='pdf', dpi = 'figure')
     plt.close(fig)
 
+if test == True:
+    myfunc()
+
 else: #same but over all params (?!)
-    quit()
+    # start in folder cluster01
+    clustdir = os.getcwd()
+    datedirlist = os.listdir(clustdir)
+    for date in datedirlist: #go through date folders
+        datedir = os.path.join(clustdir, date)
+        #go through activities
+        actdirlist = os.listdir(datedir)
+        for act in actdirlist:
+            actdir = os.path.join(datedir, act)
+            #go through chunks
+            chunkdirlist = os.listdir(actdir)
+            for chunk in chunkdirlist:
+                chunkdir = os.path.join(actdir, chunk)
+                os.chdir(chunkdir)
+                myfunc()
