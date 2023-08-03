@@ -121,12 +121,12 @@ def func(mdDataPath, xyz0, xyz1, numMono):
 
     fig,ax = plt.subplots(1)
     plt.cla()
-    chemograph = imshow(curvature.T,cmap=myMap, origin='lower')
+    chemograph = imshow(curvature,cmap=myMap, origin='lower', aspect='auto')
     cb=fig.colorbar(chemograph)
     cb.ax.set_ylabel(r"Curvature, $\kappa$",fontsize=FS)
     xlabel(r"Monomer index",fontsize=FS)
-    ylabel(r"time, $t_{\mbox{mpcd}}$",fontsize=FS)
+    ylabel(r"time, $t_{\mbox{mpcd}}$/500",fontsize=FS)
     plt.savefig(mdDataPath+"/chemo_curv.pdf",format='pdf', dpi = 'figure')
     plt.close(fig)
     
-func()
+#func(os.getcwd(), 100, 100, 24)

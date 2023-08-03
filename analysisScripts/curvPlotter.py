@@ -32,7 +32,7 @@ def myfunc():
     curvT = []
     pos = []
     curvL = []
-    for i in range(1,21):
+    for i in range(1,21): #assuming 20 repeats
         temptime = []
         tempcurvT = []
         temppos = []
