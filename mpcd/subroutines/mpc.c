@@ -2326,8 +2326,12 @@ void chateAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,int
 	tmd = CL->MDpp;
 	while( tmd!=NULL ) {
 		tmd->vx = VCM[0] + RV[i][0] - RS[0];
-		tmd->vy = VCM[1] + RV[i][1] - RS[1];
-		tmd->vz = VCM[2] + RV[i][2] - RS[2];
+		if( DIM > _1D){
+			tmd->vy = VCM[1] + RV[i][1] - RS[1];
+		}
+		if( DIM > _2D){
+			tmd->vz = VCM[2] + RV[i][2] - RS[2];
+		}
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -2429,8 +2433,12 @@ void vicsekLangevinMPC( cell *CL,spec *SP,double KBT,double FRICCO,double Step,d
 		a = (MASS - FRICCO * Step * 0.5) / (MASS + 0.5 * FRICCO * Step);
 		b = sqrt( FRICCO*Step ) / ( MASS + 0.5 * FRICCO * Step );
 		tmd->vx = VCM[0] + a * (tmd->vx-VCM[0]) + b * (WN[i][0] - WNS[0]);
-		tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]);
-		tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]);
+		if( DIM > _1D){
+			tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]);
+		}
+		if( DIM > _2D){
+			tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]);
+		}
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -2535,8 +2543,12 @@ void chateLangevinMPC( cell *CL,spec *SP,double KBT,double FRICCO,double Step,do
 		a = (MASS - FRICCO * Step * 0.5) / (MASS + 0.5 * FRICCO * Step);
 		b = sqrt( FRICCO*Step ) / ( MASS + 0.5 * FRICCO * Step );
 		tmd->vx = VCM[0] + a * (tmd->vx-VCM[0]) + b * (WN[i][0] - WNS[0]);
-		tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]);
-		tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]);
+		if( DIM > _1D){
+			tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]);
+		}
+		if( DIM > _2D){
+			tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]);
+		}
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -2666,8 +2678,12 @@ void dipoleAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 	tmd = CL->MDpp;
 	while( tmd!=NULL ) {
 		tmd->vx = CL->VCM[0] + RV[i][0] - RS[0];
-		tmd->vy = CL->VCM[1] + RV[i][1] - RS[1];
-		tmd->vz = CL->VCM[2] + RV[i][2] - RS[2];
+		if( DIM > _1D){
+			tmd->vy = CL->VCM[1] + RV[i][1] - RS[1];
+		}
+		if( DIM > _2D){
+			tmd->vz = CL->VCM[2] + RV[i][2] - RS[2];
+		}
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
