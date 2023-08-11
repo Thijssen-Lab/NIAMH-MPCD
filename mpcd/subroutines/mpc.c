@@ -1685,8 +1685,12 @@ void langevinMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 		a = (MASS - FRICCO * Step * 0.5) / (MASS + 0.5 * FRICCO * Step);
 		b = sqrt( FRICCO*Step ) / ( MASS + 0.5 * FRICCO * Step );
 		tmd->vx = VCM[0] + a * (tmd->vx-VCM[0]) + b * (WN[i][0] - WNS[0]);
-		tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]);
-		tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]);
+		if( DIM > _1D ){
+			tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]);
+		}
+		if(DIM > _2D){
+			tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]);
+		}
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
