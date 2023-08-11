@@ -2213,8 +2213,12 @@ void vicsekAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 	tmd = CL->MDpp;
 	while( tmd!=NULL ) {
 		tmd->vx = VCM[0] + RV[i][0] - RS[0];
-		tmd->vy = VCM[1] + RV[i][1] - RS[1];
-		tmd->vz = VCM[2] + RV[i][2] - RS[2];
+		if( DIM > _1D){
+			tmd->vy = VCM[1] + RV[i][1] - RS[1];
+		}
+		if( DIM > _2D){
+			tmd->vz = VCM[2] + RV[i][2] - RS[2];
+		}
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
