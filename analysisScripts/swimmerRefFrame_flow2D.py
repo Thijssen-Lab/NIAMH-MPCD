@@ -136,10 +136,10 @@ n=-1
 while velFile:
   i=i+1
   line = velFile.readline()
-  if( len(line)!= 57):
+  if( len(line)!= 70):
     break
   else:
-    Qx,Qy,Qz,Vx,Vy,Vz = line.split("\t",6)
+    t,Qx,Qy,Qz,Vx,Vy,Vz = line.split("\t",7)
     XYZ[0][int(Qx)][int(Qy)][int(Qz)] = float(Qx) + 0.5
     XYZ[1][int(Qx)][int(Qy)][int(Qz)] = float(Qy) + 0.5
     XYZ[2][int(Qx)][int(Qy)][int(Qz)] = float(Qz) + 0.5
