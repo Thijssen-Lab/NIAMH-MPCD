@@ -272,7 +272,8 @@ void sumSWFLOW( cell ***CL, swimmer *sw , specSwimmer *ss) {
 		ori[d]=sw[0].H.Q[d]-sw[0].M.Q[d];
 		if (ori[d]>0.5*XYZ[d]) ori[d]=ori[d]-XYZ[d];
 		else if (ori[d]<-0.5*XYZ[d]) ori[d]=ori[d]+XYZ[d];
-		center[d]=0.25*sw[0].M.Q[d]+0.25*sw[0].H.Q[d]+0.5*(sw[0].M.Q[d]-ori[d]*ss->DS);
+		center[d]=0.25*sw[0].M.Q[d]+0.25*sw[0].H.Q[d]-0.5*(sw[0].M.Q[d]-ori[d]*ss->DS);
+		center[d]=sw[0].M.Q[d]-ori[d]*ss->DS;
 		center[d]=0.5*XYZ[d]-center[d];
 	}
 
