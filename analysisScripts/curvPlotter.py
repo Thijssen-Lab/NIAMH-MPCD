@@ -74,7 +74,7 @@ def myfunc():
     
     # write out 
     # Position one first
-    act,chunks = gyrationTensor_2D.read(cwd)
+    bend,act,chunks = gyrationTensor_2D.read(cwd)
     name = str(cwd+"/curvL_a"+str(act)+"_c"+str(chunks)+".dat")
     outfile = open(name, 'w')
     outfile.write("Average curvature at each monomer position with 20 repeats\n")
@@ -84,7 +84,7 @@ def myfunc():
     outfile.close()
     # Now time one
     name = str(cwd+"/curvT_a"+str(act)+"_c"+str(chunks)+".dat")
-    outfile = open(cwd+"/endToEnd.dat", 'w')
+    outfile = open(name, 'w')
     outfile.write("Average curvature with time, also averaged over 20 repeats \n")
     outfile.write("time\tcurv\tstd\tsterr\n")
     for t in range(len(time)):
@@ -93,9 +93,9 @@ def myfunc():
     # plot 2!!! figs, pos here
     fig,ax = plt.subplots(1)
     figdir = '/home/s1954660/Desktop/summer/analysis/curvPos'
-    figname = str(figdir+"/curvL_a"+str(act)+"_c"+str(chunks)+".pdf")
+    figname = str(figdir+"/curvL_b"+str(bend)+"_c"+str(chunks)+".pdf")
     ed.errorbar_fill(np.asarray(pos,dtype=float),curvLav,yerr=Lstd)
-    title = str("Curvature at each monomer index. Act: "+str(act)+", chunks: "+str(chunks))
+    title = str("Curvature at each monomer index. Bend: "+str(bend)+", chunks: "+str(chunks))
     ax.set_title(title, fontsize=13)
     ax.set_xlabel(r"Monomer index",fontsize=FS)
     ax.set_ylabel(r"Average curvature",fontsize=FS)
@@ -104,9 +104,9 @@ def myfunc():
     # now time one
     fig,ax = plt.subplots(1)
     figdir = '/home/s1954660/Desktop/summer/analysis/curvTime'
-    figname = str(figdir+"/curvT_a"+str(act)+"_c"+str(chunks)+".pdf")
+    figname = str(figdir+"/curvT_b"+str(bend)+"_c"+str(chunks)+".pdf")
     ed.errorbar_fill(np.asarray(time,dtype=float),curvTav,yerr=Tstd)
-    title = str("Average curvature over time. Act: "+str(act)+", chunks: "+str(chunks))
+    title = str("Average curvature over time. Bend: "+str(bend)+", chunks: "+str(chunks))
     ax.set_title(title, fontsize=13)
     ax.set_xlabel(r"Time (simulation timesteps)",fontsize=FS)
     ax.set_ylabel(r"Average curvature",fontsize=FS)
@@ -119,17 +119,17 @@ if test == True:
 else: #same but over all params (?!)
     # start in folder cluster01
     clustdir = os.getcwd()
-    datedirlist = os.listdir(clustdir)
-    for date in datedirlist: #go through date folders
-        datedir = os.path.join(clustdir, date)
+    #datedirlist = os.listdir(clustdir)
+    #for date in datedirlist: #go through date folders
+    #    datedir = os.path.join(clustdir, date)
         #go through activities
-        actdirlist = os.listdir(datedir)
-        for act in actdirlist:
-            if 'act' in act:
-                actdir = os.path.join(datedir, act)
-                #go through chunks
-                chunkdirlist = os.listdir(actdir)
-                for chunk in chunkdirlist:
-                    chunkdir = os.path.join(actdir, chunk)
-                    os.chdir(chunkdir)
-                    myfunc()
+    actdirlist = os.listdir(clustdir)
+    for act in actdirlist:
+        if 'act' in act:
+            actdir = os.path.join(clustdir, act)
+            #go through chunks
+            chunkdirlist = os.listdir(actdir)
+            for chunk in chunkdirlist:
+                chunkdir = os.path.join(actdir, chunk)
+                os.chdir(chunkdir)
+                myfunc()

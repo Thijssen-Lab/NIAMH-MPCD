@@ -4,6 +4,7 @@ from numpy import ma
 from subprocess import call
 from numpy import linalg as LA
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
+import matplotlib.colors as colors
 import os
 import csv
 import sys
@@ -24,7 +25,7 @@ FS=20
 ###########################################################
 ### Read arguments
 ###########################################################
-def func(mdDataPath, xyz0, xyz1, numMono):
+def func(mdDataPath, xyz0, xyz1, numMono,log):
     xyz=np.zeros( 2,dtype=int )
 	#print( "Arguments:" )
 	#for arg in sys.argv:
@@ -121,12 +122,24 @@ def func(mdDataPath, xyz0, xyz1, numMono):
 
     fig,ax = plt.subplots(1)
     plt.cla()
-    chemograph = imshow(curvature,cmap=myMap, origin='lower', aspect='auto')
+    if log==True:
+        chemograph = ax.pcolor(curvature,norm=colors.LogNorm(),cmap=myMap)
+    else:
+        chemograph = ax.pcolor(curvature,cmap=myMap)
+    #chemograph = imshow(curvature,cmap=myMap, origin='lower', aspect='auto')
     cb=fig.colorbar(chemograph)
-    cb.ax.set_ylabel(r"Curvature, $\kappa$",fontsize=FS)
+    #cb.ax.set_ylabel(r"Curvature, $\kappa$",fontsize=FS)
+    if log==True:
+        cb.ax.set_ylabel(r"Curvature, $\kappa$ - LOGARITHMIC",fontsize=FS)
+    else:
+        cb.ax.set_ylabel(r"Curvature, $\kappa$",fontsize=FS)
     xlabel(r"Monomer index",fontsize=FS)
     ylabel(r"time, $t_{\mbox{mpcd}}$/500",fontsize=FS)
-    plt.savefig(mdDataPath+"/chemo_curv.pdf",format='pdf', dpi = 'figure')
+    if log==True:
+        plt.savefig(mdDataPath+"/LOGchemo_curv.pdf",format='pdf', dpi = 'figure')
+    else:
+        plt.savefig(mdDataPath+"/chemo_curv.pdf",format='pdf', dpi = 'figure')
     plt.close(fig)
-    
-#func(os.getcwd(), 100, 100, 24)
+ 
+#log=False   
+#func(os.getcwd(), 100, 100, 24,log)

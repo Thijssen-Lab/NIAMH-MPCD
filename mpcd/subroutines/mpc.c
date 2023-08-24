@@ -3693,6 +3693,7 @@ void activeMD(simptr simMD, cell ***CL, spec *SP, inputList in) {
 	int i, j, k, nAtom, cx, cy, cz, N_cl, id;
 	double pmOne;
 	double MDloc[_3D], prevloc[DIM], nextloc[DIM], vecprev[DIM], vecnext[DIM], tangent[DIM];  // stuff to calc plane and velocity
+	double mpcdCM[DIM];
 	double pW;  //The particle's pW for passing the plane
 	double force; // the dipole 'force'(=dt*d/m) on one mpcd particle, will be a constant for each cell. delta_v = 'force'/mass
 	double dt, deltaV;
@@ -3805,6 +3806,7 @@ void activeMD(simptr simMD, cell ***CL, spec *SP, inputList in) {
 		//}
 		for( j=0;j<DIM;j++ ) {
 			AS[j]=0.;
+			mpcdCM[j]=0.;
 		}
 
 		// find plane - line 1775 in lc.c
@@ -3818,7 +3820,10 @@ void activeMD(simptr simMD, cell ***CL, spec *SP, inputList in) {
 		// Normal is TANGENT
 		for( k=0; k<DIM; k++ ) PLANE.A[k] = tangent[k];
 		// Position is cell COM
-		for( k=0; k<DIM; k++ ) PLANE.Q[k] = CL[cx][cy][cz].CM[k];
+		// ONLY TAKE INTO ACCOUNT MPCD PARTICLES NOT MD AS WELL
+
+		localCM_SRD(CL[cx][cy][cz],SP,mpcdCM); //i think that's how this works??
+		for( k=0; k<DIM; k++ ) PLANE.Q[k] = mpcdCM[k];
 		
 		if(CL[cx][cy][cz].pp!=NULL) {
 			tmpc = CL[cx][cy][cz].pp;
@@ -3853,7 +3858,7 @@ void activeMD(simptr simMD, cell ***CL, spec *SP, inputList in) {
 				tmpc = tmpc->next;
 			}
 		}
-		// find net momentum
+		// find net momentum - divided by N because then shared between all particles
 		for( j=0; j<DIM; j++ ) AS[j] = AS[j]/N_cl; // is this correct?
 
 		// subtract net momentum from all mpcd if non-zero - new loop

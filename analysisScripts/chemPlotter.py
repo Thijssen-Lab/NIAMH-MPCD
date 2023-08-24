@@ -27,10 +27,10 @@ test = False
 # change following as appropriate - should probs try and make this more sophisticated
 repeats = 20
 numMono = 24
-outT = 200
+outT = 200 #will be 4000 later
 x = 100 #xdim of system
 y = 100
-log = True
+log = False
 
 def myfunc():
     cwd = os.getcwd()
@@ -38,7 +38,7 @@ def myfunc():
     for i in range(1,repeats+1):
         path = str(cwd+"/result"+str(i))
         os.chdir(path)
-        chemoCurv.func(path, x, y, numMono)
+        chemoCurv.func(path, x, y, numMono,log)
         name = path+'/chemo-curv.dat'
         file = open(name, "r")
         # toss headers
@@ -56,10 +56,10 @@ def myfunc():
     imErr = imStd/np.sqrt(np.shape(image3D)[0])
     
     # write out
-    act, chunks = gyrationTensor_2D.read(cwd)
+    bend,act, chunks = gyrationTensor_2D.read(cwd)
     name = str(cwd+"/chemCurv_a"+str(act)+"_c"+str(chunks)+".dat")
     outfile = open(name, 'w')
-    outfile.write("Average curvature for each time and monomer index with 20 repeats")
+    outfile.write("Average curvature for each time and monomer index with 20 repeats\n")
     outfile.write("time\tindex\tcurv\tstd\tsterr\n")
     for t in range(outT):
         for j in range(numMono):
@@ -77,7 +77,8 @@ def myfunc():
     if log==True:
         chemograph = ax.pcolor(image2D,norm=colors.LogNorm(),cmap=myMap)
     else:
-        chemograph = imshow(image2D,cmap=myMap, origin='lower', aspect='auto')
+        chemograph = ax.pcolor(image2D,cmap=myMap)
+        #chemograph = imshow(image2D,cmap=myMap, origin='lower', aspect='auto')
     cb=fig.colorbar(chemograph)
     if log==True:
         cb.ax.set_ylabel(r"Average Curvature, $\kappa$ - LOGARITHMIC",fontsize=FS)
@@ -95,17 +96,17 @@ if test==True:
 else:
     # start in folder cluster01
     clustdir = os.getcwd()
-    datedirlist = os.listdir(clustdir)
-    for date in datedirlist: #go through date folders
-        datedir = os.path.join(clustdir, date)
+    #datedirlist = os.listdir(clustdir)
+    #for date in datedirlist: #go through date folders
+    #    datedir = os.path.join(clustdir, date)
         #go through activities
-        actdirlist = os.listdir(datedir)
-        for act in actdirlist:
-            if 'act' in act:
-                actdir = os.path.join(datedir, act)
-                #go through chunks
-                chunkdirlist = os.listdir(actdir)
-                for chunk in chunkdirlist:
-                    chunkdir = os.path.join(actdir, chunk)
-                    os.chdir(chunkdir)
-                    myfunc()
+    actdirlist = os.listdir(clustdir)
+    for act in actdirlist:
+        if 'act' in act:
+            actdir = os.path.join(clustdir, act)
+            #go through chunks
+            chunkdirlist = os.listdir(actdir)
+            for chunk in chunkdirlist:
+                chunkdir = os.path.join(actdir, chunk)
+                os.chdir(chunkdir)
+                myfunc()
