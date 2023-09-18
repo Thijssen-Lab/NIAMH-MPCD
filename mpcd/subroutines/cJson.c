@@ -359,14 +359,15 @@ void getJObjStr(cJSON *cJSONRoot, const char* jsonTag, const char* d, char **toR
 /// - 1: Error opening the file
 /// - 2: Error allocating memory for the string
 /// - 3: Error reading the file
-///
+///x
 /// @param inFile The file pointer to be read from.
 /// @param fileStr A string that will contain the contents of the file. Expecting to be passed an object of form
 /// `&myStr`.
 /// @return Returns 0 if successful, otherwise returns a pseudo-error code.
 ///
 int getFileStr(char* inFile, char** fileStr){
-   printf("Reading file %s \n", inFile);
+
+	// printf("Reading file %s \n", inFile);
    
    FILE *fptr;
    // read file in with basic error checking
