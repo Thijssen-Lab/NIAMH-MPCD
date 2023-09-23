@@ -4266,7 +4266,7 @@ void cellVelSet( cell *CL,double vel[3] ) {
 /// @param outFlags The complete list of what is being outputted as results. 
 /// @param outFiles The complete list of pointers to output files. 
 ///
-void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simptr simMD, specSwimmer *SS, swimmer swimmers[], double AVNOW[_3D], double AVV[_3D], double avDIR[_3D], inputList in, double *KBTNOW, double *AVS, int runtime, int MD_mode, outputFlagsList outFlags, outputFilesList outFiles ) {
+void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simptr simMD, specSwimmer *SS, swimmer swimmers[], double AVNOW[_3D], double AVV[_3D], double avDIR[_3D], inputList in, double *KBTNOW, double *AVS, int runtime, int MD_mode, outputFlagsList outFlags, outputFilesList outFiles,int wmd ) {
 
 	int i,j,k,l;					//Counting variables
 	double RSHIFT[_3D];				//Random vector to positively shift all components of the simulation
@@ -4302,7 +4302,7 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 	#ifdef DBG
 		if( DBUG >= DBGTITLE && MD_mode != noMD ) printf("Integrate MD.\n" );
 	#endif
-	if( MD_mode ) integrateMD(simMD, MD_mode, in.stepsMD, SRDparticles, WALL, SP, GPOP, NBC, CL);
+	if( MD_mode && wmd) integrateMD(simMD, MD_mode, in.stepsMD, SRDparticles, WALL, SP, GPOP, NBC, CL);
 	/* ****************************************** */
 	/* *********** INTEGRATE SWIMMER ************ */
 	/* ****************************************** */

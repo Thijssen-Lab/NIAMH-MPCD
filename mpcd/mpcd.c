@@ -110,6 +110,7 @@ int main(int argc, char* argv[]) {
 	outputFilesList outFiles;		//List of output files
 	specSwimmer specS;				//Swimmer's species
 	swimmer *swimmers;				//Swimmers
+	int WMD = 0;					// if MD works during warmup of mpcd
 
     /* ****************************************** */
     /* ****************************************** */
@@ -252,11 +253,14 @@ int main(int argc, char* argv[]) {
 		if(outFlags.SYNOUT == OUT) fprintf( outFiles.fsynopsis,"\nBegin warmup loop.\n" );
 		// This is the main loop of the SRD program. The temporal loop. 
 		starttime=warmtime;
+		if(simMD->warmupMD){
+			WMD = 1;
+		}
 		for( warmtime=starttime; warmtime<=inputVar.warmupSteps; warmtime++ ) {
 			/* ****************************************** */
 			/* ***************** UPDATE ***************** */
 			/* ****************************************** */
-			timestep( CL, SRDparticles, SPECIES, WALL, simMD, &specS, swimmers, AVNOW, AVV, avDIR, inputVar, &KBTNOW, &AVS, warmtime, MDmode, outFlags, outFiles );
+			timestep( CL, SRDparticles, SPECIES, WALL, simMD, &specS, swimmers, AVNOW, AVV, avDIR, inputVar, &KBTNOW, &AVS, warmtime, MDmode, outFlags, outFiles ,WMD);
 			/* ****************************************** */
 			/* *************** CHECKPOINT *************** */
 			/* ****************************************** */
@@ -279,11 +283,12 @@ int main(int argc, char* argv[]) {
 	if(outFlags.SYNOUT == OUT) fprintf( outFiles.fsynopsis,"\nBegin temporal loop.\n" );
 	// This is the main loop of the SRD program. The temporal loop.
 	starttime=runtime;
+	WMD = 1;
 	for( runtime=starttime; runtime<=inputVar.simSteps; runtime++ ) {
 		/* ****************************************** */
 		/* ***************** UPDATE ***************** */
 		/* ****************************************** */
-		timestep( CL, SRDparticles, SPECIES, WALL, simMD, &specS, swimmers, AVNOW, AVV, avDIR, inputVar, &KBTNOW, &AVS, runtime, MDmode, outFlags, outFiles );
+		timestep( CL, SRDparticles, SPECIES, WALL, simMD, &specS, swimmers, AVNOW, AVV, avDIR, inputVar, &KBTNOW, &AVS, runtime, MDmode, outFlags, outFiles,WMD );
 		/* ****************************************** */
 		/* ***************** OUTPUT ***************** */
 		/* ****************************************** */

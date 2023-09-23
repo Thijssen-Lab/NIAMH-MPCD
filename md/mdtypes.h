@@ -643,7 +643,7 @@ typedef struct simulation {		 		// a simulation
     paramptr	param;		 			///< pointer to a list of all parameters
     int			nParam;					///< number of simulation parameters
 	int			randomSeed;				///< Random number generator seed
-
+    int			warmupMD;				///< = 0 No, = 1 yes
     // program information
     pid_t		pid;			 		///< process id of the simulation
     real		version;		 		///< version of the program

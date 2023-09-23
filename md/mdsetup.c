@@ -179,6 +179,7 @@ void SetupParameters (simptr sim)
 
 				// physical characteristics
 				INTG_PARAM (sim, randomSeed),
+				INTG_PARAM (sim, warmupMD),
 				REAL_PARAM (sim, unitCells),
 				INTG_PARAM (sim, lattice),
 				INTG_PARAM (sim, geometry),
