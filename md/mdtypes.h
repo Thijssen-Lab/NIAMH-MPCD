@@ -131,9 +131,11 @@ extern int snprintf (char *__restrict __s, size_t __maxlen, __const char *__rest
 #define	LAYOUT_PLATES				4
 #define	LAYOUT_CYLINDER			5
 // Tyler added the following
-#define	LAYOUT_ROD				6
+#define	LAYOUT_RODX				6
+// Zahra added the following
+#define	LAYOUT_RODY				7
 // Karolina added the following
-#define	LAYOUT_U				7
+#define	LAYOUT_U				8
 
 // atom types (index)
 #define TYPE_WALL				0
