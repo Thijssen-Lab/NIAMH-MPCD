@@ -1096,6 +1096,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	} else MDmode = mdCoupleMode; // otherwise set MD to correct coupling mode to enable it
 
 	in->stepsMD = getJObjInt(jObj, "stepsMD", 20, jsonTagList); // stepsMD
+    in->MFPLAYERH = getJObjInt(jObj, "mfpLayerH", 0, jsonTagList); // mfpLayerH
 
 	// 2. Species //////////////////////////////////////////////////////////////
 	// scroll up to void readin() to see better descriptions & definitions for these
