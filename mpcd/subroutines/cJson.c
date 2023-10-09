@@ -35,7 +35,7 @@ char* commentTags[] = {"c", "comment", "//", "#"};
 /// @param head A pointer to the head of the linked list. Expected to be a `NULL` pointer passed as `&head`.
 ///
 void initLL(linkedList **head){
-   *head = (linkedList*) malloc(sizeof(linkedList));
+   *head = (linkedList*) calloc(1, sizeof(linkedList));
    (*head)->next = NULL;
    dynAllocStr("", &((*head)->str)); // fill w blank string
 }
@@ -117,7 +117,7 @@ void pushLL(linkedList * head, const char* val){
    }
 
    // alloc and add to end
-   curr->next = (linkedList*) malloc(sizeof(linkedList));
+   curr->next = (linkedList*) calloc(1, sizeof(linkedList));
    dynAllocStr(val, &curr->next->str);
    curr->next->next = NULL;
 }
@@ -359,14 +359,15 @@ void getJObjStr(cJSON *cJSONRoot, const char* jsonTag, const char* d, char **toR
 /// - 1: Error opening the file
 /// - 2: Error allocating memory for the string
 /// - 3: Error reading the file
-///
+///x
 /// @param inFile The file pointer to be read from.
 /// @param fileStr A string that will contain the contents of the file. Expecting to be passed an object of form
 /// `&myStr`.
 /// @return Returns 0 if successful, otherwise returns a pseudo-error code.
 ///
 int getFileStr(char* inFile, char** fileStr){
-   printf("Reading file %s \n", inFile);
+
+	// printf("Reading file %s \n", inFile);
    
    FILE *fptr;
    // read file in with basic error checking
