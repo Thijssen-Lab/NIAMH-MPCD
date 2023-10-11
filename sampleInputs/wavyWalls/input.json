@@ -11,7 +11,7 @@
     [
         {
             "mass":         1,
-            "pop":          50000,
+            "dens":         20,
             "qDist":        0,
             "vDist":        0,
             "oDist":        1,
