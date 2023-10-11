@@ -11,34 +11,53 @@ from subprocess import call
 import sys
 import os
 import json
+import argparse
 
 from defectHandler import getDefectData
 
 ###########################################################
-### Plots 2D velocity field averaging over user defined direction
+### Set up argsparse
 ###########################################################
+parser = argparse.ArgumentParser(description='Flow field rendering script.')
+parser.add_argument("dataname", type=str, help="Path to the data (should be "
+                                               "flowfield.dat)")
+parser.add_argument("inputname", type=str, help="Path to input .json file")
+parser.add_argument("start", type=int, help="Starting timestep for averaging")
+parser.add_argument("finish", type=int, help="Finishing timestep for averaging")
+parser.add_argument("--qx", type=int, help="Only show every qx arrow in x",
+                    default=1)
+parser.add_argument("--qy", type=int, help="Only show every qy arrow in y",
+                    default=1)
+parser.add_argument("avdim", type=str, help="Dimension to average over")
+parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'",
+                    default="auto")
+parser.add_argument("-k", "--keepFrames", type=int,
+                    help="0=don't keep (delete) frames; 1=keep frames",
+                    default=0)
+parser.add_argument("-p", "--savePDF", type=int,
+                    help="1 saves transparent pdfs for papers, 0 for none",
+                    default=0)
+parser.add_argument("-d", "--defectData", type=str,
+                    help="Path to defect data (if any)", default="")
+args = parser.parse_args()
 
 ###########################################################
 ### Read arguments
 ###########################################################
-print( "Arguments:" )
-for arg in sys.argv:
-    print( "\t" + arg )
-dataName = sys.argv[1]		  # path to the data (flowfield.dat)
-inputName = sys.argv[2]			# Input json file to read inputs
-start = int(sys.argv[3])		# Average after this number
-finish = int(sys.argv[4])		# Average before this number
-qx = int(sys.argv[5])		    # Only show every qx arrow in x
-qy = int(sys.argv[6])		    # Only show every qy arrow in y
-avdim = sys.argv[7]			    # Dimension to average over
-myAspect=sys.argv[8]		    # 'auto' - reshapes into square graph or 'equal' keeps whatever aspect ratio the true values
-keepFrames=int(sys.argv[9])	# 0=don't keep (delete) frames; 1=keep frames
-savePDF=int(sys.argv[10])   # 1 for saving transparent pdfs (for papers), 0 for none
-defectData = ""             # If you are simulating a nematic and have defect positions, you can plot them over the field
-try:
-	defectData = sys.argv[11]	# Name of the defect data ("" if no defect data)
-except:
-	print("\tNo defect data found")
+print("Arguments:")
+for arg, value in vars(args).items():
+	print(f"\t{arg}: {value}")
+dataName = args.dataname
+inputName = args.inputname
+start = args.start
+finish = args.finish
+qx = args.qx
+qy = args.qy
+avdim = args.avdim
+myAspect = args.myAspect
+keepFrames = args.keepFrames
+savePDF = args.savePDF
+defectData = args.defectData
 
 ###########################################################
 ### Format and style

@@ -9,23 +9,50 @@ from pylab import *
 from subprocess import call
 import os
 import json
+import argparse
+
+###########################################################
+### Set up argparse
+###########################################################
+parser = argparse.ArgumentParser(
+  description='Animate swimmers and 2D fields, averaging over user defined '
+              'direction.')
+parser.add_argument('dataPath', type=str, help="Path to the data")
+parser.add_argument('inputName', type=str,
+                    help="Input json file to read inputs")
+parser.add_argument('start', type=int, help="Average after this number")
+parser.add_argument('finish', type=int, help="Average before this number")
+parser.add_argument("--qx", type=int, help="Only show every qx arrow in x",
+                    default=1)
+parser.add_argument("--qy", type=int, help="Only show every qy arrow in y",
+                    default=1)
+parser.add_argument('avdim', type=str, help="Dimension to average over")
+parser.add_argument('fieldType', type=str,
+                    help="Field type: 'vel', 'vort' or 'nem' for velocity, "
+                         "vorticity or director field, respectively")
+parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'",
+                    default="auto")
+parser.add_argument("-k", "--keepFrames", type=int,
+                    help="0=don't keep (delete) frames; 1=keep frames",
+                    default=0)
+args = parser.parse_args()
 
 ###########################################################
 ### Read arguments
 ###########################################################
-print( "Arguments:" )
-for arg in sys.argv:
-  print( "\t" + arg )
-dataPath = sys.argv[1]		  # Name of the data
-inputName = sys.argv[2]			# Input json file to read inputs
-start = int(sys.argv[3])		# Average after this number
-finish = int(sys.argv[4])		# Average before this number
-qx = int(sys.argv[5])   		# Only show every qx arrow in x
-qy = int(sys.argv[6])		    # Only show every qy arrow in y
-avdim = sys.argv[7]			    # Dimension to average over
-fieldType = sys.argv[8]		  # fieldType can be "vel", "vort" or "nem" for velocity, vorticity or director field, respectively
-myAspect=sys.argv[9]    		#'auto' - reshapes into square graph or 'equal' keeps whatever aspect ratio the true values
-keepFrames=int(sys.argv[10])	#0=don't keep (delete) frames; 1=keep frames
+print("Arguments:")
+for arg, value in vars(args).items():
+	print(f"\t{arg}: {value}")
+dataPath = args.dataPath
+inputName = args.inputName
+start = args.start
+finish = args.finish
+qx = args.qx
+qy = args.qy
+avdim = args.avdim
+fieldType = args.fieldType
+myAspect = args.myAspect
+keepFrames = args.keepFrames
 
 ###########################################################
 ### Style/formating stuff

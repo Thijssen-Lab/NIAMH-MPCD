@@ -1,5 +1,6 @@
 """
 	Probability density rendering script.
+	To average histograms of scalar values since histogram range fluctuates.
 
 	Created by Tyler Shendruk
 """
@@ -8,24 +9,43 @@ from pylab import *
 from subprocess import call
 from scipy import integrate
 import os
+import argparse
 
 ###########################################################
-### To average histograms of scalar values since histogram range fluctuates
+### Set up argsparse
 ###########################################################
+parser = argparse.ArgumentParser(description='Probability density rendering '
+											 'script.')
+parser.add_argument('dataName', type=str,
+					help="Path to data (should be a histogram output for a "
+						 "scalar quantity)")
+parser.add_argument('xaxis', type=str,
+					help="x axis label --- What is this the histogram of?")
+parser.add_argument("start", type=int, help="Starting timestep for averaging")
+parser.add_argument("finish", type=int, help="Finishing timestep for averaging")
+parser.add_argument("-m", "--makeMovie", type=int, default=0,
+					help="Whether or not to animate temporal data (0 or 1)")
+parser.add_argument("-k", "--keepFrames", type=int,
+                    help="0=don't keep (delete) frames; 1=keep frames",
+                    default=0)
+parser.add_argument("-a", "--plotAv", type=int,
+					help="Whether or not to plot average (0 or 1)",
+					default=0)
+args = parser.parse_args()
 
 ###########################################################
 ### Read arguments
 ###########################################################
-print( "Arguments:" )
-for arg in sys.argv:
-	print( "\t" + arg )
-dataName = sys.argv[1]			# Name of the data (should be a histogram output for a scalar quantity)
-xaxis = sys.argv[2]				# What is this the histogram of?
-start = int(sys.argv[3])		# Average after this number
-finish = int(sys.argv[4])		# Average before this number
-makeMovie = int(sys.argv[5])	# Whether or not to animate temporal data
-keepFrames =int(sys.argv[6])	#0=don't keep (delete) frames; 1=keep frames
-plotAv = int(sys.argv[7])		# Whether or not to plot average
+print("Arguments:")
+for arg, value in vars(args).items():
+	print(f"\t{arg}: {value}")
+dataName = args.dataName
+xaxis = args.xaxis
+start = args.start
+finish = args.finish
+makeMovie = args.makeMovie
+keepFrames = args.keepFrames
+plotAv = args.plotAv
 
 ###########################################################
 ### Assumed arguments that a user could change

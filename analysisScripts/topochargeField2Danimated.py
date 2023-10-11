@@ -5,32 +5,53 @@ from mpl_toolkits.mplot3d import axes3d
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import os
 import json
+import argparse
 
 ###########################################################
-### Plots 2D averaging over user defined direction
+### Set up argparse
 ###########################################################
+parser = argparse.ArgumentParser(description='Topological charge field rendering '
+											 'script.')
+parser.add_argument("directorData", type=str, help="Path to the director data")
+parser.add_argument("topoData", type=str, help="Path to the topological charge "
+											   "data")
+parser.add_argument("inputname", type=str, help="Path to input .json file")
+parser.add_argument("start", type=int, help="Starting timestep for averaging")
+parser.add_argument("finish", type=int, help="Finishing timestep for averaging")
+parser.add_argument("--qx", type=int, help="Only show every qx arrow in x",
+                    default=1)
+parser.add_argument("--qy", type=int, help="Only show every qy arrow in y",
+                    default=1)
+parser.add_argument("avdim", type=str, help="Dimension to 'slice' over")
+parser.add_argument("-c", "--length", type=float,
+					help="Length of director lines", default=0.5)
+parser.add_argument("-d", "--deflength", type=float,
+					help="Length of nematic pointer lines", default=1.5)
+parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'",
+                    default="auto")
+parser.add_argument("-k", "--keepFrames", type=int,
+                    help="0=don't keep (delete) frames; 1=keep frames",
+                    default=0)
+args = parser.parse_args()
 
 ###########################################################
 ### Read arguments
 ###########################################################
-print( "Arguments:" )
-for arg in sys.argv:
-	print( "\t" + arg )
-if(len(sys.argv) != 13): #check for correct number of arguments to be idiot proof
-	print("Error: This script expects 12 arguments but got %d.\nTerminating\n"%(len(sys.argv)-1))
-	quit()
-directorData = sys.argv[1]		# Name of the field data
-topoData = sys.argv[2]			# Name of the topo data
-inputName = sys.argv[3]			# Input json file to read inputs
-start = int(sys.argv[4])		# Average after this number
-finish = int(sys.argv[5])		# Average before this number
-qx = int(sys.argv[6])			# Only show every qx arrow in x
-qy = int(sys.argv[7])			# Only show every qy arrow in y
-avdim = sys.argv[8]				# Dimension to average over
-c = float(sys.argv[9])			#Length of director lines approx 0.5
-c1 = float(sys.argv[10])		#Length of nematic pointer lines, should be about 3x the director line length
-myAspect=sys.argv[11]			#'auto' - reshapes into square graph or 'equal' keeps whatever aspect ratio the true values
-keepFrames=int(sys.argv[12])	#0=don't keep (delete) frames; 1=keep frames
+print("Arguments:")
+for arg, value in vars(args).items():
+	print(f"\t{arg}: {value}")
+directorData = args.directorData
+topoData = args.topoData
+inputName = args.inputname
+start = args.start
+finish = args.finish
+qx = args.qx
+qy = args.qy
+avdim = args.avdim
+c = args.length
+c1 = args.deflength
+myAspect = args.myAspect
+keepFrames = args.keepFrames
 
 ###########################################################
 ### Format and style
