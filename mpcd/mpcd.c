@@ -258,9 +258,11 @@ int main(int argc, char* argv[]) {
 		if(outFlags.SYNOUT == OUT) fprintf( outFiles.fsynopsis,"\nBegin warmup loop.\n" );
 		// This is the main loop of the SRD program. The temporal loop. 
 		starttime=warmtime;
-		if(simMD->warmupMD){
-			WMD = 1;
-		}
+        if (simMD != NULL) {
+            if(simMD->warmupMD){
+                WMD = 1;
+            }
+        }
 		for( warmtime=starttime; warmtime<=inputVar.warmupSteps; warmtime++ ) {
 			/* ****************************************** */
 			/* ***************** UPDATE ***************** */
