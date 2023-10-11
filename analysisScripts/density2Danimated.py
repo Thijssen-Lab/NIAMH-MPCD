@@ -8,34 +8,54 @@ from pylab import *
 from subprocess import call
 import os
 import json
+import argparse
 
 from defectHandler import getDefectData
 
 ###########################################################
-### Plots 2D averaging over user defined direction
+### Set up argsparse
 ###########################################################
+parser = argparse.ArgumentParser(description='Density field rendering script.')
+parser.add_argument("dataname", type=str, help="Path to the data (should be "
+											   "coarsegrain.dat)")
+parser.add_argument("inputname", type=str, help="Path to input .json file")
+parser.add_argument("start", type=int, help="Starting timestep for averaging")
+parser.add_argument("finish", type=int, help="Finishing timestep for averaging")
+parser.add_argument("sliceDim", type=str,
+					help="Dimension to 'slice' over for averaging")
+parser.add_argument("sliceIndex", type=int,
+					help="Index of the plane to be sliced for averaging")
+parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'",
+					default='auto')
+parser.add_argument("-k", "--keepFrames", type=int,
+					help="0=don't keep (delete) frames; 1=keep frames",
+					default=0)
+parser.add_argument("-N", "--normalise", type=int,
+					help="Normalise the colourbar (1) or not (0)", default=0)
+parser.add_argument("-p", "--savePDF", type=int,
+					help="1 saves transparent pdfs for papers, 0 for none",
+					default=0)
+parser.add_argument("-d", "--defectData", type=str,
+					help="Path to defect data (if any)", default="")
+args = parser.parse_args()
 
 ###########################################################
 ### Read arguments
 ###########################################################
-print( "Arguments:" )
-for arg in sys.argv:
-	print( "\t" + arg )
-dataName = sys.argv[1]			# Name of the data (should be coarsegrain.dat)
-inputName = sys.argv[2]			# Input json file to read inputs
-start = int(sys.argv[3])		# Average after this number
-finish = int(sys.argv[4])		# Average before this number
-sliceDim = sys.argv[5]			# Dimension to average over
-sliceIndex = int(sys.argv[6])	# Plane to be sliced
-myAspect=sys.argv[7]			#'auto' - reshapes into square graph or 'equal' keeps whatever aspect ratio the true values
-keepFrames=int(sys.argv[8])		#0=don't keep (delete) frames; 1=keep frames
-normalise=int(sys.argv[9])		#normalise the population (for the cbar) or no
-savePDF=int(sys.argv[10])		# 1 for saving transparent pdfs (for papers), 0 for none
-defectData = ""         		# If you are simulating a nematic and have defect positions, you can plot them over the field
-try:
-	defectData = sys.argv[11]	# Name of the defect data ("" if no defect data)
-except:
-	print("\tNo defect data found")
+print("Arguments:")
+for arg, value in vars(args).items():
+	print(f"\t{arg}: {value}")
+dataName = args.dataname
+inputName = args.inputname
+start = args.start
+finish = args.finish
+sliceDim = args.sliceDim
+sliceIndex = args.sliceIndex
+myAspect = args.myAspect
+keepFrames = args.keepFrames
+normalise = args.normalise
+savePDF = args.savePDF
+defectData = args.defectData
 
 ###########################################################
 ### Format and style
