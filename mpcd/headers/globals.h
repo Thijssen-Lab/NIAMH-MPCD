@@ -37,11 +37,9 @@ int NSPECI;
 int NBC;
 /// @brief The total number of swimmers in the simulation.
 int NS;
-/// @brief The volume accessible to the simulation fluid.
-double VOL;
-/// @brief The particle number density of the simulation fluid. Found using the volume VOL determined by Monte Carlo.
+/// @brief The particle number density of the simulation fluid. Found using control volume `XYZ` and so will not be precise with complex BCs.
 double nDNST;
-/// @brief The mass density of the simulation fluid. Found using the volume VOL determined by Monte Carlo. 
+/// @brief The mass density of the simulation fluid. Found using control volume `XYZ` and so will not be precise with complex BCs.
 double mDNST;
 
 /// @brief The x, y, z dimensions of the control volume.
