@@ -322,8 +322,6 @@
 # define MCSLOPE 0.1
 /// @brief Monte Carlo setting. Interval between Monte Carlo steps.
 # define MCINT 5
-/// @brief Number of pseudo-particles per MPCD used to calculate the accessible volume by Monte Carlo integration. 
-# define NUMMC 1000
 
 /* ****************************************** */
 /* **************** Swimmers **************** */

@@ -890,77 +890,46 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 }
 
 ///
-/// @brief Function that calculates the volume accessible to the fluid particles.
+/// @brief Function that calculates the fluid number density.
 ///
-/// This function calculates the volume available to the particles. 
-/// It does so using a Monte Carlo volume integration.
+/// This function calculates the number density of the fluid, either per unit area (2D) or volume (3D).
+/// The volume occupied by boundary conditions, such as colloids, is excluded from the calculation.
 ///
 /// @param WALL Array of the system's boundary conditions.
-/// @return The accessible volume.
-///
-double accessibleVolume( bc WALL[] ) {
-/*
-   Calculates the number density of the fluid.
-   Either per unit volume or area
-*/
-	int i,j,d,N;
-	int check;			//Count number of failed BCs for each particle
-	double CV,AV;		//CV=control volume; AV=accessible volume
-	double fails,W;		//Count number of failed attempts and W for checking BCs
-	particleMPC pMPC;	//Temporary pointer to fake MPC particle
-
-	#ifdef DBG
-		if( DBUG >= DBGINIT ) printf("\tNumerically integrating accessible volume\n");
-	#endif
-
-	CV =(double)( XYZ[0] * XYZ[1] * XYZ[2] );
-	N = (int)(NUMMC * CV);
-	fails=0;
-	//Loop of attempts for Monte Carlo volume integration
-	for( i=0; i<N; i++ ) {
-		// Randomly place the particle in the control volume
-		for( d=0; d<DIM; d++ ) pMPC.Q[d] = genrand_real( ) * XYZ[d];
-		// Check if position is allowed
-		check=0;
-		for( j=0; j<NBC; j++ ) {
-			W = calcW( WALL[j],pMPC );
-			if( W<0.0 ) check++;
-		}
-		if( check ) fails++;
-	}
-	//Use number of fails to numerically estimate the accessible volume
-	AV=1.0-((double)fails)/((double)N);
-	AV*=CV;
-	return AV;
-}
-
-///
-/// @brief Function that calculates the fluid number density.
-///
-/// This function calculates the number density of the fluid, either per unit area (2D) or volume (3D).
-/// The volume must already have been calculated.
-///
 /// @return The fluid number density.
 ///
-double ndensity(  ) {
+double ndensity( bc WALL[] ) {
 /*
    Calculates the number density of the fluid.
    Either per unit volume or area
 */
-	return ((double)GPOP)/VOL;
+	int i;
+	double V;	//The control volume.
+	double D;	//The number density
+	V = (double)( XYZ[0] * XYZ[1] * XYZ[2] );
+	for( i=0; i<NBC; i++ ) V -= WALL[i].VOL;
+	D = GPOP / V;
+	return D;
 }
 
 ///
 /// @brief Function that calculates the fluid number density.
 ///
 /// This function calculates the number density of the fluid, either per unit area (2D) or volume (3D).
-/// The volume must already have been calculated.
+/// The volume occupied by boundary conditions, such as colloids, is excluded from the calculation.
 ///
+/// @param WALL Array of the system's boundary conditions.
 /// @param MASS The system total mass.
 /// @return The fluid mass density.
 ///
-double mdensity( double MASS ) {
-	return MASS / VOL;
+double mdensity( bc WALL[],double MASS ) {
+	int i;
+	double V;	//The control volume.
+	double D;	//The mass density
+	V = (double)( XYZ[0] * XYZ[1] * XYZ[2] );
+	for( i=0; i<NBC; i++ ) V -= WALL[i].VOL;
+	D = MASS / V;
+	return D;
 }
 
 /* ****************************************** */
@@ -1145,8 +1114,8 @@ void initvar( unsigned long *seed,time_t *to,clock_t *co,int *runtime,int *warmt
 		mominert( &WALL[i],XYZ,DIM );
 	}
 
-	nDNST = ndensity( );
-	mDNST = mdensity( *sumM );
+	nDNST = ndensity( WALL );
+	mDNST = mdensity( WALL,*sumM );
 	for( i=0; i<DIM; i++ ) MAG[i]/=(nDNST);//Want torque per unit volume so divide field by number density
 	//Zero everything in the cell lists
 	zerocell( CL );
@@ -2120,4 +2089,3 @@ void initializeRecovery(cell ***CL, particleMPC *SRDparticles, spec SP[], specSw
 	if(SYNOUT == OUT) fprintf(fsynopsis,"\nMPCD particles binned for first time.\n" );
 	localPROP( CL,SP,specS,RTECH,LC );
 }
-

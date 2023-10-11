@@ -10,7 +10,6 @@
 # include<stdlib.h>
 
 # include "../headers/definitions.h"
-# include "../headers/globals.h"
 # include "../headers/SRDclss.h"
 # include "../headers/pout.h"
 # include "../headers/ctools.h"
@@ -1543,7 +1542,7 @@ double stdNum( cell ***CL,int GPOP,int XYZ[3],int XYZ_P1[3] ) {
 	int a,b,c;
 	double std,NC,s2,s1;
 
-	NC=VOL;
+	NC=(double) XYZ[0]*XYZ[1]*XYZ[2];
 	//Average number density (cell size always a=1)
 	// s1=((double) GPOP)/NC;
 	// Sum
