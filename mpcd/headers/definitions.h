@@ -190,6 +190,8 @@
 # define LCL 1
 /// @brief Liquid crystal setting. Nematic LC using the global S value.
 # define LCG 2
+/// @brief Value for bacterial simulations. Used different collision operators than LC.
+# define BCT 3
 
 /* ****************************************** */
 /* ******** HYDRODYNAMIC INTERACTIONS ******* */

@@ -12,7 +12,6 @@
    These functions are the routines that deal
    with the liquid crystal component of the algorithm
 */
-
 void LCcollision( cell *CL,spec *SP,double KBT,double MFPOT,double dt,double SG,int LC );
 
 void addToTensOrderParam( particleMPC *pMPC,double **S );

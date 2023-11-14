@@ -1671,7 +1671,7 @@ void checkSim( FILE *fsynopsis,int SYNOUT,inputList in,spec *SP,bc *WALL,specSwi
 			}
 		}
 	}
-	if( !( in.LC==ISOF || in.LC==LCL || in.LC==LCG) ){
+	if( !( in.LC==ISOF || in.LC==LCL || in.LC==LCG || in.LC==BCT) ){
 		printf( "Error: Unrecognized value of LC=%d.\n",in.LC );
 		exit( 1 );
 	}

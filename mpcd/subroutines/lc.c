@@ -433,9 +433,9 @@ void LCcollision( cell *CL,spec *SP,double KBT,double MFPOT,double dt,double SG,
 	double MFPOT_scaled=MFPOT*0.5*(double)DIM;
 	particleMPC *tmpc;		//Temporary particleMPC
 
-	if( LC==LCL ) S=CL->S;		//Use the local scalar order parameter in collision
+	if( LC==LCL || LC==BCT ) S=CL->S;		//Use the local scalar order parameter in collision
 	else if( LC==LCG ) S=SG;	//Use the global scalar order parameter in collision
-	else{
+	else {
 		printf( "Error: Unexpected value of LC=%d in LCcolloision().\n",LC );
 		exit( 1 );
 	}
@@ -502,6 +502,12 @@ void LCcollision( cell *CL,spec *SP,double KBT,double MFPOT,double dt,double SG,
 					pvec( tmpc->U,DIM );
 				}
 			#endif
+			//Bacterial part of the collision
+			if (LC == BCT) {
+				if (dotprod(tmpc->U, dU, DIM) < 0) {
+					for(i=0; i<DIM; i++) tmpc->U[i]*=-1;
+				}
+			}
 			//Calculate rate of change of orientation
 			for( i=0; i<DIM; i++ ) dU[i]=(tmpc->U[i]-dU[i])/dt;
 			//Calculate angular velocity (save in torque for now)
