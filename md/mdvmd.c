@@ -306,7 +306,7 @@ void VMDFunction (void *simvoid, sceneptr s, int action)
 				}
 
 				// print the atom
-				fprintf (s->stream, "%d %.6G %.6G %.6G", i, r.c1, r.c2, r.c3);
+				fprintf (s->stream, "%d %.6G %.6G %.6G %.6G %.6G %.6G", i, r.c1, r.c2, r.c3, p1->vx, p1->vy, p1->vz);
 // 				// print link if there is one
 // 				if (p1->next) {
 // 					p1 = p1->next;
