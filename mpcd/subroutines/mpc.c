@@ -1505,7 +1505,7 @@ void andersenROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 		if( outP ) calcPressureColl_preColl( relQP[i],dp[i],tmpc,CLQ );
 		for( j=0; j<DIM; j++ ) RV[i][j] = genrand_gaussMB( KBT,MASS );
 		for( j=0; j<DIM; j++ ) RS[j] += MASS*RV[i][j];
-		for( j=0; j<DIM; j++ ) DV[i][j] = ((SP+id)->DAMP)*(CL->VCM[j])/((double)CL->POP);
+		for( j=0; j<DIM; j++ ) DV[i][j] = ((SP+id)->DAMP)*(CL->VCM[j]);
 		tmpc = tmpc->next;
 		i++;
 	}
