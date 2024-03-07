@@ -4302,7 +4302,13 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 	#ifdef DBG
 		if( DBUG >= DBGTITLE && MD_mode != noMD ) printf("Integrate MD.\n" );
 	#endif
-	if( MD_mode && wmd) integrateMD(simMD, MD_mode, in.stepsMD, SRDparticles, WALL, SP, GPOP, NBC, CL);
+	if(MD_mode && wmd){
+		if(wmd == FREE_WARMUP){
+			integrateMD(simMD, MD_mode, in.stepsMD, SRDparticles, WALL, SP, GPOP, NBC, CL);
+		}else if(wmd == PINNED_WARMUP){
+			integrateMD_Pinned(simMD, MD_mode, in.stepsMD, SRDparticles, WALL, SP, GPOP, NBC, CL);
+		}
+	}
 	/* ****************************************** */
 	/* *********** INTEGRATE SWIMMER ************ */
 	/* ****************************************** */

@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
 	outputFilesList outFiles;		//List of output files
 	specSwimmer specS;				//Swimmer's species
 	swimmer *swimmers;				//Swimmers
-	int WMD = 0;					// if MD works during warmup of mpcd
+	int WMD = 0;					// flag to decide if MD integrates during warmup of mpcd
 
     /* ****************************************** */
     /* ****************************************** */
@@ -260,7 +260,7 @@ int main(int argc, char* argv[]) {
 		starttime=warmtime;
         if (simMD != NULL) {
             if(simMD->warmupMD){
-                WMD = 1;
+                WMD = simMD->warmupMD ;
             }
         }
 		for( warmtime=starttime; warmtime<=inputVar.warmupSteps; warmtime++ ) {
@@ -290,12 +290,11 @@ int main(int argc, char* argv[]) {
 	if(outFlags.SYNOUT == OUT) fprintf( outFiles.fsynopsis,"\nBegin temporal loop.\n" );
 	// This is the main loop of the SRD program. The temporal loop.
 	starttime=runtime;
-	WMD = 1;
 	for( runtime=starttime; runtime<=inputVar.simSteps; runtime++ ) {
 		/* ****************************************** */
 		/* ***************** UPDATE ***************** */
 		/* ****************************************** */
-		timestep( CL, SRDparticles, SPECIES, WALL, simMD, &specS, swimmers, AVNOW, AVV, avDIR, inputVar, &KBTNOW, &AVS, runtime, MDmode, outFlags, outFiles,WMD );
+		timestep( CL, SRDparticles, SPECIES, WALL, simMD, &specS, swimmers, AVNOW, AVV, avDIR, inputVar, &KBTNOW, &AVS, runtime, MDmode, outFlags, outFiles,FREE_WARMUP );
 		/* ****************************************** */
 		/* ***************** OUTPUT ***************** */
 		/* ****************************************** */

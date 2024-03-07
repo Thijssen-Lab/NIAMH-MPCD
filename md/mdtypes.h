@@ -80,6 +80,11 @@ extern int snprintf (char *__restrict __s, size_t __maxlen, __const char *__rest
 # define MDinMPC 				1
 # define MPCinMD 				2
 
+//MD warmup modes
+# define FROZEN_WARMUP          0
+# define FREE_WARMUP            1 
+# define PINNED_WARMUP          2
+
 // domains
 #define	DOMAIN_ALL				-1
 
@@ -643,7 +648,7 @@ typedef struct simulation {		 		// a simulation
     paramptr	param;		 			///< pointer to a list of all parameters
     int			nParam;					///< number of simulation parameters
 	int			randomSeed;				///< Random number generator seed
-    int			warmupMD;				///< = 0 No, = 1 yes
+    int			warmupMD;				///< Whether/how MD happens during MPCD warmup
     // program information
     pid_t		pid;			 		///< process id of the simulation
     real		version;		 		///< version of the program

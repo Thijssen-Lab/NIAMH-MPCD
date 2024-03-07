@@ -315,6 +315,16 @@
 # define MPCinMD 2
 
 /* ****************************************** */
+/* ************** MD Warmup ***************** */
+/* ****************************************** */
+/// @brief MD warmup option. No MD integration and no coupling to MPCD during MPCD warmup.
+# define FROZEN_WARMUP 0
+/// @brief MD warmup option. MD coupled and integrated during MPCD warmup.
+# define FREE_WARMUP 1
+/// @brief MD warmup option. MD coupled and integrated during MPCD warmup but its center is kept where it is initiated. 
+# define PINNED_WARMUP 2
+
+/* ****************************************** */
 /* ************** Monte Carlo *************** */
 /* ****************************************** */
 // annealNum=(int)(MCINT+MCSLOPE*effM*S/KBT);
