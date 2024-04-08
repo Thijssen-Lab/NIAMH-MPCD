@@ -124,8 +124,8 @@ extern int snprintf (char *__restrict __s, size_t __maxlen, __const char *__rest
 #define	GEOM_CYLINDER				3
 
 // repulsive force around boundary
-#define noREPULSIVE      0
-#define REPULSIVE        1
+#define noREPULSION      0
+#define REPULSION        1
 
 // density types
 #define	VOLUME					0
