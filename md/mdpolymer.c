@@ -34,7 +34,7 @@
 void PolymerGeometry (simptr sim)
 //================================================================================
 {
-	int			i, k, nPolymer;
+	int			i, j, k, nPolymer;
 	itemPoly 	*polymer;
 	particleMD	*p1, *p2;
 	real		dx, dy, dz;
@@ -72,7 +72,8 @@ void PolymerGeometry (simptr sim)
 	fprintf (GetSimStream(sim->files,"POLYMER-angle-theta-mean"),  	"%.3f ", sim->tNow);
 	fprintf (GetSimStream(sim->files,"POLYMER-angle-phi"), 			"%.3f ", sim->tNow);
 	fprintf (GetSimStream(sim->files,"POLYMER-angle-phi-mean"), 	"%.3f ", sim->tNow);
-
+	fprintf (GetSimStream(sim->files,"POLYMER-Velocity"),       "\ntimestep indexed\n");
+	fprintf (GetSimStream(sim->files,"POLYMER-Acceleration"),   "\ntimestep indexed\n");
 	// initialize variables
 	thetamean = 0;
 	thetasig  = 0;
@@ -82,6 +83,27 @@ void PolymerGeometry (simptr sim)
 
 	// loop over polymers
 	for (i=0; i<nPolymer; i++) {
+
+		// pointer to first monomer
+		p1 = polymer[i].p1;
+		if (!p1) continue;
+
+		// skip grafting point
+		if (polymer[i].grafted) p1 = p1->next;
+		if (!p1) continue;
+
+		// Print velocity and acceleration
+		j = 0;
+		while (p1) {
+			fprintf (GetSimStream(sim->files,"POLYMER-Velocity"),  "%d %.6G %.6G %.6G", j, p1->vx, p1->vy, p1->vz);
+			fprintf (GetSimStream(sim->files,"POLYMER-Acceleration"),  "%d %.6G %.6G %.6G", j, p1->ax, p1->ay, p1->az);
+			fprintf (GetSimStream(sim->files,"POLYMER-Velocity"), "\n");
+			fprintf (GetSimStream(sim->files,"POLYMER-Acceleration"), "\n");
+			p1 = p1->next;
+			j = j+1;
+		}
+		fprintf (GetSimStream(sim->files,"POLYMER-Velocity"), "\n");
+		fprintf (GetSimStream(sim->files,"POLYMER-Acceleration"), "\n");
 
 		// pointer to first monomer
 		p1 = polymer[i].p1;
