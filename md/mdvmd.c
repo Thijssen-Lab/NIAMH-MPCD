@@ -266,7 +266,6 @@ void VMDFunction (void *simvoid, sceneptr s, int action)
 
 			// print frame header
 			fprintf (s->stream, "\ntimestep indexed\n");
-			fprintf (s->stream, "x\ty\tz\tvx\tvy\tvz\tax\tay\taz\n");
 
 			// initialize local point variables
 			memset (&r,  0, sizeof(point));
@@ -307,7 +306,7 @@ void VMDFunction (void *simvoid, sceneptr s, int action)
 				}
 
 				// print the atom
-				fprintf (s->stream, "%d %.6G %.6G %.6G %.6G %.6G %.6G %.6G %.6G %.6G", i, r.c1, r.c2, r.c3, p1->vx, p1->vy, p1->vz, p1->ax, p1->ay, p1->az);
+				fprintf (s->stream, "%d %.6G %.6G %.6G", i, r.c1, r.c2, r.c3);
 // 				// print link if there is one
 // 				if (p1->next) {
 // 					p1 = p1->next;
