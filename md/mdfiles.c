@@ -656,6 +656,27 @@ void TranslateMacros (char **stringptr)
 	snprintf (macro, STRMAX, "NO");
 	snprintf (value, STRMAX, "%d", NO);
 	ReplaceMacro (stringptr, macro, value);
+
+	// Zahra added the following
+	snprintf (macro, STRMAX, "FROZEN_WARMUP");
+	snprintf (value, STRMAX, "%u", FROZEN_WARMUP);
+	ReplaceMacro (stringptr, macro, value);
+
+	snprintf (macro, STRMAX, "FREE_WARMUP");
+	snprintf (value, STRMAX, "%u", FREE_WARMUP);
+	ReplaceMacro (stringptr, macro, value);
+
+	snprintf (macro, STRMAX, "PINNED_WARMUP");
+	snprintf (value, STRMAX, "%u", PINNED_WARMUP);
+	ReplaceMacro (stringptr, macro, value);
+
+	snprintf (macro, STRMAX, "noREPULSION");
+	snprintf (value, STRMAX, "%u", noREPULSION);
+	ReplaceMacro (stringptr, macro, value);
+
+	snprintf (macro, STRMAX, "REPULSION");
+	snprintf (value, STRMAX, "%u", REPULSION);
+	ReplaceMacro (stringptr, macro, value);
 }
 
 
