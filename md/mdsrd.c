@@ -102,7 +102,6 @@ void integrateMD_Pinned (simptr sim, int MDmode, int steps,struct particleMPC *p
 {
 	int	i,nAtom;
 	particleMD	*p ;
-	real dt ; 
 	double RX=0.0,RY=0.0,RZ=0.0,WX=0.0,WY=0.0,WZ=0.0;
 
 	sim->drTotMax = 0.0;	//reset maximum displacement to zero since particles were rebinned
@@ -111,7 +110,6 @@ void integrateMD_Pinned (simptr sim, int MDmode, int steps,struct particleMPC *p
 	if (sim->monoCharge[0]!=0 || sim->rCutCoul!=0.) ComputeElectrostaticForcesSRD(sim,pSRD,SP,GPOP,steps,CL);
 
 	nAtom	= sim->atom.n;
-	dt	= sim->dt;
 	// the central monomer 
 	p	= (sim->atom.items) + (int)(nAtom/2) ;
 	RX = p->rx;
