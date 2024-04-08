@@ -642,7 +642,7 @@ void ComputeForcesSRD (simptr sim,int MDmode,struct particleMPC *pSRD,struct spe
 	ComputeBendForces(sim);
 	ComputeNemForces(sim,SP,CL);
 	ComputeSqueezeForces(sim);
-	ComputeBoundaryForces(sim,WALL);
+	if (sim->boundaryType) ComputeBoundaryForces(sim,WALL);
 }
 
 /// Calculation of all forces acting on the atoms. First, the energy, accelearations
