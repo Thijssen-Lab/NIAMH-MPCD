@@ -951,9 +951,9 @@ double ndensity(  ) {
 }
 
 ///
-/// @brief Function that calculates the fluid number density.
+/// @brief Function that calculates the fluid mass density.
 ///
-/// This function calculates the number density of the fluid, either per unit area (2D) or volume (3D).
+/// This function calculates the mass density of the fluid, either per unit area (2D) or volume (3D).
 /// The volume must already have been calculated.
 ///
 /// @param MASS The system total mass.
@@ -1377,7 +1377,8 @@ int checkplaceMPC( int i,particleMPC *pp,spec SP[],bc WALL[] ) {
 	double shift[_3D];
 	int j,k;
 
-	for( j=0; j<NBC; j++ ) {
+	for( j=0; j<NBC; j++ ) if(WALL[j].INTER[(pp+i)->SPID] == BCON) {
+	// for( j=0; j<NBC; j++ ) {
 		//Zero the shift vector (just in case)
 		for( k=0; k<_3D; k++ ) shift[k] = 0.;
 		shiftBC( shift,&WALL[j],(pp+i) );

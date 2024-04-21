@@ -1404,7 +1404,7 @@ void listinput( inputList in,double AVVEL,spec SP[],kinTheory theory ) {
 /// @param fsynopsis This is a pointer to the synopsis.dat output file.
 ///
 void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList out,kinTheory theory,FILE *fsynopsis ) {
-	int i;
+	int i,j;
 
 	if( out.SYNOUT == OUT ) {
 		fprintf( fsynopsis,"\nBasic Units:\n" );
@@ -1462,6 +1462,9 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 			fprintf( fsynopsis,"\tActivity: %lf\n",SP[i].ACT );
 			fprintf( fsynopsis,"\tDamping friction: %lf\n",SP[i].DAMP );
 			fprintf( fsynopsis,"\tPos. dist.: %i\n\tVel. dist.: %i\n\tOri. dist.: %i\n",SP[i].QDIST,SP[i].VDIST,SP[i].ODIST );
+			fprintf( fsynopsis,"\tInteraction matrix: [" );
+			for( j=0; j<NSPECI-1; j++ ) fprintf( fsynopsis,"%lf, ",SP[i].M[j] );
+			fprintf( fsynopsis,"%lf]\n",SP[i].M[NSPECI-1] );
 		}
 		fprintf( fsynopsis,"\nBC variables:\n" );
 		fprintf( fsynopsis,"Number of BCs: %i\n",NBC );
@@ -1490,6 +1493,11 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 			fprintf( fsynopsis,"\tBC inertia tensor:\t[%lf, %lf %lf]\n",WALL[i].I[0][0],WALL[i].I[1][0],WALL[i].I[2][0] );
 			fprintf( fsynopsis,"\t\t\t\t\t\t\t\t[%lf, %lf %lf]\n",WALL[i].I[0][1],WALL[i].I[1][1],WALL[i].I[2][1] );
 			fprintf( fsynopsis,"\t\t\t\t\t\t\t\t[%lf, %lf %lf]\n",WALL[i].I[0][2],WALL[i].I[1][2],WALL[i].I[2][2] );
+			fprintf( fsynopsis,"\tInteraction matrix with SRD particles: [" );
+			for( j=0; j<NSPECI-1; j++ ) fprintf( fsynopsis,"%i, ",WALL[i].INTER[j] );
+			fprintf( fsynopsis,"%i]\n",WALL[i].INTER[NSPECI-1] );
+			fprintf( fsynopsis,"\tInteraction matrix with MD particles: %i\n",WALL[i].INTER[MAXSPECI+0] );
+			fprintf( fsynopsis,"\tInteraction matrix with swimmer particles: %i\n",WALL[i].INTER[MAXSPECI+1] );
 		}
 		fprintf( fsynopsis,"\nSwimmer variables:\n" );
 		fprintf( fsynopsis,"\tTyper: %d\n",SS.TYPE );
@@ -2629,6 +2637,8 @@ void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mo
 		fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", WALL[i].W, WALL[i].VOL, WALL[i].Q_old[0], WALL[i].Q_old[1], WALL[i].Q_old[2], WALL[i].O_old[0], WALL[i].O_old[1], WALL[i].O_old[2], WALL[i].I[0][0], WALL[i].I[0][1], WALL[i].I[0][2], WALL[i].I[1][0], WALL[i].I[1][1], WALL[i].I[1][2], WALL[i].I[2][0], WALL[i].I[2][1], WALL[i].I[2][2] );
 		fprintf( fout,"%d %d %d %lf %lf\n", WALL[i].PLANAR, WALL[i].REORIENT, WALL[i].ABS, WALL[i].ROTSYMM[0], WALL[i].ROTSYMM[1] );
 		fprintf( fout,"%lf %lf %lf %lf %lf %lf\n", WALL[i].dV[0], WALL[i].dV[1], WALL[i].dV[2], WALL[i].dL[0], WALL[i].dL[1], WALL[i].dL[2] );
+		for( j=0; j<MAXSPECI+2; j++ ) fprintf( fout,"%lf ", WALL[i].INTER[j] );		//BC particle interaction flags
+		fprintf( fout,"\n" );
 	}
 
 	//MPCD particles

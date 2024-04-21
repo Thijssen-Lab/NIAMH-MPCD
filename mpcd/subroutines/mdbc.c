@@ -161,7 +161,8 @@ void chooseBC_MD( bc WALL[],particleMD *atom,double *t_min,double *chosenW,int *
 	tempW = 1.;
 	flag=0;
 
-	for( i=0; i<NBC; i++ ) {
+	// for( i=0; i<NBC; i++ ) {
+	for( i=0; i<NBC; i++ ) if(WALL[i].INTER[MAXSPECI] == BCON) {
 		//Shift BC due to periodic BCs
 		shiftBC_MD( shift,&WALL[i],atom );
 		rotateBC_MD( &WALL[i],atom );
@@ -880,7 +881,8 @@ void chooseBC_swimmer( bc WALL[],smono *atom,double *t_min,double *chosenW,int *
 	tempW = 1.;
 	flag=0;
 
-	for( i=0; i<NBC; i++ ) {
+	// for( i=0; i<NBC; i++ ) {
+	for( i=0; i<NBC; i++ ) if(WALL[i].INTER[MAXSPECI+1] == BCON) {
 		//Shift BC due to periodic BCs
 		shiftBC_swimmer( shift,&WALL[i],atom );
 		rotateBC_swimmer( &WALL[i],atom );

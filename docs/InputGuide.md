@@ -212,6 +212,9 @@ Tag             | Type          | Default Value | Description
 `inv`           | int           | 0             | Whether to invert the bc (ie, multiply the A's by -1). 0 = no, 1 = yes
 `mass`          | double        | 1             | Mass of the wall in MPCD units. Should be the same density as the fluid if its displaceable
 `wavy`          | array(double) | [0,0,0]       | Generalized amplitudes and frequencies for wavy-walls. **Must** be 3D
+`interSRD`      | array(int)    | [1,...]       | Interaction matrix for this colloid with different species of MPCD particles. Length **must** be less than or equal to MAXSPECI. Default will autopopulate with 1s
+`interMD`       | int           | 1             | Interaction of this colloid with MD particles
+`interMD`       | int           | 1             | Interaction of this colloid with swimmer particles
 
 #### BC Overrides           {#bc-overrides}
 Override Tag    | Type          | Override param| Description

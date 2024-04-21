@@ -774,6 +774,11 @@ void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cel
 		else printf("Warning: Failed to read BC %d.\n",i);
 		if(fscanf( finput,"%lf %lf %lf %lf %lf %lf", &((*WALL+i)->dV[0]), &((*WALL+i)->dV[1]), &((*WALL+i)->dV[2]), &((*WALL+i)->dL[0]), &((*WALL+i)->dL[1]), &((*WALL+i)->dL[2]) ));
 		else printf("Warning: Failed to read BC %d.\n",i);
+		for( j=0; j<MAXSPECI+2; j++ ) {
+			//Read the species' interaction matrix with each BC
+			if(fscanf( finput,"%lf ",&((*WALL+i)->INTER[j]) ));	//Read the species' interactions
+			else printf("Warning: Failed to read BC %d interaction with particle %d.\n",i,j);
+		}
 	}
 
 	//Read the MPCD particles
@@ -1341,6 +1346,26 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			currWall->INV = getJObjInt(objElem, "inv", 0, jsonTagList); // inv
 			currWall->MASS = getJObjDou(objElem, "mass", 1, jsonTagList); // mass
 
+			//Read the colloid/particles interaction matrix for this BC
+			for (j = 0; j < MAXSPECI+2; j++) currWall->INTER[j] = BCON;	//Initialize them all equal to BCON=1 (since the input can be smaller than MAXSPECI)
+			currWall->INTER[MAXSPECI+0] = getJObjInt(objElem, "interMD", BCON, jsonTagList); // interMD
+			currWall->INTER[MAXSPECI+1] = getJObjInt(objElem, "interSw", BCON, jsonTagList); // interSw
+			cJSON *arrBCinter = NULL;
+			getCJsonArray(objElem, &arrBCinter, "interSRD", jsonTagList, arrayList, 0);
+			if (arrBCinter != NULL) { // if arrBCinter has been found then....
+				if (cJSON_GetArraySize(arrBCinter) > MAXSPECI) { // check dimensionality is valid
+					printf("Error: Interaction matrices must have columns of length less than or equal to the maximum number of species.\n");
+					exit(EXIT_FAILURE);
+				}
+				for (j = 0; j < cJSON_GetArraySize(arrBCinter); j++) { // get the value
+					currWall->INTER[j] = cJSON_GetArrayItem(arrBCinter, j)->valueint;
+				}
+			} else {
+				for (j = 0; j < MAXSPECI; j++) { // get the value
+					currWall->INTER[j] = BCON;
+				}
+			}
+
 			// B array
 			cJSON *arrB = NULL;
 			getCJsonArray(objElem, &arrB, "wavy", jsonTagList, arrayList, 0);
@@ -1506,6 +1531,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			currWall->DSPLC = 0; // dspc
 			currWall->INV = 0; // inv
 			currWall->MASS = 1; // mass
+			for (j = 0; j < MAXSPECI+2; j++) currWall->INTER[j] = BCON;	//Set them all equal to BCON=1
 
 			// Set the planar flag
 			currWall->PLANAR = 0;							// sets default to non-planar

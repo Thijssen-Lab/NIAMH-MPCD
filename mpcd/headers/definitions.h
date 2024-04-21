@@ -305,6 +305,15 @@
 // #define BC_MOVING_WALL 5
 
 /* ****************************************** */
+/* ********** Apply BC to particle ********** */
+/* ****************************************** */
+/// @brief BC interactions turned off.
+# define BCOFF 0
+/// @brief BC interactions left on.
+# define BCON 1
+
+
+/* ****************************************** */
 /* ************** MD Coupling *************** */
 /* ****************************************** */
 /// @brief MD coupling option. No MD coupling.

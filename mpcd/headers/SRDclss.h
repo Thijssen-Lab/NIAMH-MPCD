@@ -169,6 +169,11 @@ typedef struct bc {
 	double MASS;			///< The BC's mass (only relevant if it moves) --- json `'mass'`.
 	double VOL;				///< Body's volume.
 	double I[3][3];		    ///< The body's moment of inertia.
+
+	// Interaction matrix
+	// Which MPCD species, MD monomers and swimmers the object interacts with
+	// MAXSPECI is number of MPCD species then add one for MD monomers and another for swimmers
+	int INTER[MAXSPECI+2];	    ///< Interaction matrix for BC with particles. Each MPCD species has a flag, plus MD and swimmer particles --- json `'interSRD'`, `'interMD'` and `'interSw'`.
 /*
    Examples
 
