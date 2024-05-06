@@ -10,6 +10,8 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+# include "definitions.h"
+
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
@@ -37,7 +39,7 @@ int NSPECI;
 int NBC;
 /// @brief The total number of swimmers in the simulation.
 int NS;
-/// @brief The volume accessible to the simulation fluid.
+/// @brief The volume accessible to the simulation fluid. Determined by Monte Carlo.
 double VOL;
 /// @brief The particle number density of the simulation fluid. Found using the volume VOL determined by Monte Carlo.
 double nDNST;
