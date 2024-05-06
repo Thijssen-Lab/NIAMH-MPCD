@@ -1643,7 +1643,7 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 		(*SP) = (spec*) malloc( NSPECI * sizeof( spec ) );
 		for (i = 0; i < NSPECI; i++) { // loop through the species
 			// now get first set of primitives
-			(*SP+i)->MASS = 1; // mass
+			(*SP+i)->MASS = 1.0; // mass
 			(*SP+i)->POP = (int)(VOL*20); // pop
 			(*SP+i)->QDIST = 0; // qDist
 			(*SP+i)->VDIST = 0; // vDist
@@ -1683,7 +1683,7 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 		// handle population related overrides
 		if(useDens[i]) (*SP+i)->POP = (int)( ((*SP+i)->VOL)*dens[i] );
 		(*SP+i)->nDNST = (float)((*SP+i)->POP)/((*SP+i)->VOL);
-		(*SP+i)->mDNST = (float)(( (*SP+i)->mDNST )*( (*SP+i)->MASS ));
+		(*SP+i)->mDNST = (float)(( (*SP+i)->nDNST )*( (*SP+i)->MASS ));
 	}
 	//Total Number of particleMPCs
 	GPOP = 0;

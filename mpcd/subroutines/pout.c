@@ -1469,7 +1469,7 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 		for( i=0; i<NSPECI; i++ ) {
 			fprintf( fsynopsis,"Species: %i\n",i );
 			fprintf( fsynopsis,"\tMass: %lf\n\tPopulation: %i\n",SP[i].MASS,SP[i].POP );
-			fprintf( fsynopsis,"\tVolum accessible: %lf\n\tParticle Number Density: %lf\n\tMass Density: %lf\n",SP[i].VOL,SP[i].nDNST,SP[i].mDNST );
+			fprintf( fsynopsis,"\tVolume accessible: %lf\n\tParticle Number Density: %lf\n\tMass Density: %lf\n",SP[i].VOL,SP[i].nDNST,SP[i].mDNST );
 			fprintf( fsynopsis,"\tRotational Friction Coefficient: %lf\n",SP[i].RFC);
 			fprintf( fsynopsis,"\tEffective rod-length to couple MPC torque to BC force: %lf\n",SP[i].LEN);
 			fprintf( fsynopsis,"\tTumbling parameter: %lf\n",SP[i].TUMBLE);
