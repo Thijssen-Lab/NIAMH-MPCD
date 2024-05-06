@@ -463,7 +463,6 @@ double secant_time_MD( particleMD *atom,bc WALL,double t_step ) {
 	double Qi[DIM],QiM1[DIM];
 	double ti,tiM1,root;
 	double fi,fiM1;
-	int iter=0;
 
 	//Rewind the particle back to it's old position
 	//x-component
@@ -482,7 +481,6 @@ double secant_time_MD( particleMD *atom,bc WALL,double t_step ) {
 
 	//Secant Loop
 	do {
-		iter++;
 		// Calculate the surface function for the particles' positions at these times
 		fi = surf_func( WALL,Qi,DIM );
 		fiM1 = surf_func( WALL,QiM1,DIM );
@@ -1149,7 +1147,6 @@ double secant_time_swimmer( smono *atom,bc WALL,double t_step ) {
 	double Qi[DIM],QiM1[DIM];
 	double ti,tiM1,root;
 	double fi,fiM1;
-	int iter=0;
 	int d;
 
 	//Rewind the particle back to it's old position
@@ -1163,7 +1160,6 @@ double secant_time_swimmer( smono *atom,bc WALL,double t_step ) {
 
 	//Secant Loop
 	do {
-		iter++;
 		// Calculate the surface function for the particles' positions at these times
 		fi = surf_func( WALL,Qi,DIM );
 		fiM1 = surf_func( WALL,QiM1,DIM );

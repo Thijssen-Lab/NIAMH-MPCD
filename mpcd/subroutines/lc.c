@@ -1184,13 +1184,15 @@ void tensOrderParamNNN( cell ***CL,double **S,int LC,int a,int b,int c ) {
 double binderCumulant( cell ***CL,int L,int LC ) {
 	int nBins[_3D]={0.0};			//Number of cumulant bins
 	int i,j,k,a,b,c,d;			//Indices
-	double UL,thisS,avS,avS2,avS4;		//Average of the square and power 4 of order parameter and the Binder cumulant
+	double UL,thisS;		//Binder cumulant, scalar order parameter of the current cell
+	// double avS;
+	double avS2,avS4;		//Average of the square and power 4 of order parameter and the Binder cumulant
 	double **S,eigval[_3D];			//Order parameter tensor and it's eigenvalues
 	particleMPC *pMPC;			//Temporary pointer to MPC particles
 	double POPinv,fDIM,invDconst,invBinVol;
 	int binPOP,cL;
 
-	avS=0.;
+	// avS=0.;
 	avS2=0.;
 	avS4=0.;
 	fDIM = (double) DIM;
@@ -1234,12 +1236,12 @@ double binderCumulant( cell ***CL,int L,int LC ) {
 		if(DIM==_3D) thisS=-1.*(eigval[1]+eigval[2]);
 		else thisS=eigval[0];
 		//Add them to averages/sums
-		avS+=thisS;
+		// avS+=thisS;
 		avS2+=(thisS*thisS);
 		avS4+=(thisS*thisS*thisS*thisS);
 	}
 	invBinVol=1./((double)nBins[0]*nBins[1]*nBins[2]);
-	avS*=invBinVol;
+	// avS*=invBinVol;
 	avS2*=invBinVol;
 	avS4*=invBinVol;
 
@@ -1797,7 +1799,7 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 		id = tmpc->SPID;
 
 		// do a check to see if the subpopulation is of sufficient quantity to compute activity
-		if ( ((double)(SP+id)->MINACTRATIO == 0.0) || (((double)(SP+id)->MINACTRATIO)*nDNST < (double)CL->SP[id]) ) {
+		if ( ((double)(SP+id)->MINACTRATIO == 0.0) || (((double)(SP+id)->MINACTRATIO)*GnDNST < (double)CL->SP[id]) ) {
 			ACT += (double)(SP+id)->ACT / (double)(SP+id)->MASS;
 			sigWidth += (double)(SP+id)->SIGWIDTH;
 			sigPos += (double)(SP+id)->SIGPOS;
@@ -1806,7 +1808,7 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 	}
 	//If DIPOLE_DIR_SUM then use the sum just calculated
 	//If DIPOLE_DIR_AV or DIPOLE_DIR_SIG then use the average value everywhere
-	if( RTECH==DIPOLE_DIR_AV || RTECH==DIPOLE_DIR_SIG) ACT *= nDNST/((double)CL->POP);
+	if( RTECH==DIPOLE_DIR_AV || RTECH==DIPOLE_DIR_SIG) ACT *= GnDNST/((double)CL->POP);
 
 	// Now, if using sigmoidal dipole set up a sigmoidal falloff based on the cell population
 	if (RTECH==DIPOLE_DIR_SIG || RTECH==DIPOLE_DIR_SIG_SUM) {
@@ -1815,7 +1817,7 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 		sigPos /= (double)CL->POP;
 
 		// compute the sigmoidal falloff function
-		double falloffFactor = (1 - tanh( ((double)CL->POP  - nDNST * (1 + sigPos) ) / (nDNST * sigWidth) ) );
+		double falloffFactor = (1 - tanh( ((double)CL->POP  - GnDNST * (1 + sigPos) ) / (GnDNST * sigWidth) ) );
 		double rescaleFactor = 2;
 
 		// rescale the activity

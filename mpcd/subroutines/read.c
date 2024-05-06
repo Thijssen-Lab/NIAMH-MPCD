@@ -667,7 +667,7 @@ void readbc( char fpath[],bc **WALL ) {
 /// @param specS Pointer to the object containing the swimmer species hyperparameters. Expected to be &specS.
 /// @param sw Pointer to the swimmer list. Expected to be &sw.
 ///
-void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cell ****CL, int *MD_mode, bc **WALL, outputFlagsList *out, int *runtime, int *warmtime, kinTheory *theory, double *AVVEL, double *AVS, double avDIR[_3D], double *S4, double *stdN, double *KBTNOW, double AVV[_3D], double AVNOW[_3D], specSwimmer *specS, swimmer **sw ) {
+void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cell ****CL, int *MD_mode, bc **WALL, outputFlagsList *out, int *runtime, int *warmtime, kinTheory **theorySP, kinTheory *theoryGl, double *AVVEL, double *AVS, double avDIR[_3D], double *S4, double *stdN, double *KBTNOW, double AVV[_3D], double AVNOW[_3D], specSwimmer *specS, swimmer **sw ) {
 	FILE *finput;
 	int i,j;
 	char STR[100];
@@ -708,10 +708,12 @@ void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cel
 
 	if(fscanf( finput,"%d %d %lf %lf %d %d",runtime,warmtime,&(in->C),&(in->S),&(in->GRAV_FLAG),&(in->MAG_FLAG) ));//Read program variables
 	else printf("Warning: Failed to read various program variables.\n");
-	if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&(theory->MFP), &(theory->VISC), &(theory->THERMD), &(theory->SDIFF), &(theory->SPEEDOFSOUND), &(theory->sumM), AVVEL, AVS, &avDIR[0], &avDIR[1], &avDIR[2], S4, stdN, &nDNST, &mDNST, &VOL ));//Read program variables
+	if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf", AVVEL, AVS, &avDIR[0], &avDIR[1], &avDIR[2], S4, stdN, &VOL ));//Read program variables
 	else printf("Warning: Failed to read various program variables.\n");
 	if(fscanf( finput,"%lf %lf %lf %lf %lf %lf",&AVV[0], &AVV[1], &AVV[2], &AVNOW[0], &AVNOW[1], &AVNOW[2] ));//Read program variables
 	else printf("Warning: Failed to read average velocities.\n");
+	if(fscanf( finput,"%lf %lf %lf %lf %lf %lf",&(theoryGl->MFP), &(theoryGl->VISC), &(theoryGl->THERMD), &(theoryGl->SDIFF), &(theoryGl->SPEEDOFSOUND), &(theoryGl->sumM) ));//Read program variables
+	else printf("Warning: Failed to read global theoretical predictions.\n");
 
 	//Read output
 	if(fscanf( finput,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",&DBUG, &(out->TRAJOUT), &(out->printSP), &(out->COAROUT), &(out->FLOWOUT), &(out->VELOUT), &(out->AVVELOUT), &(out->ORDEROUT), &(out->QTENSOUT), &(out->QKOUT), &(out->AVSOUT), &(out->SOLOUT), &(out->ENOUT), &(out->ENFIELDOUT), &(out->ENNEIGHBOURS), &(out->ENSTROPHYOUT), &(out->DENSOUT), &(out->CVVOUT), &(out->CNNOUT), &(out->CWWOUT), &(out->CDDOUT), &(out->CSSOUT), &(out->CPPOUT), &(out->BINDER), &(out->BINDERBIN), &(out->SYNOUT), &(out->CHCKPNT), &(out->CHCKPNTrcvr) ));
@@ -728,13 +730,15 @@ void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cel
 	//Allocate the needed amount of memory for the species SP
 	(*SP) = (spec*) calloc( NSPECI, sizeof( spec ) );
 	for( i=0; i<NSPECI; i++ ) {
-		if(fscanf( finput,"%lf %i %i %i %i %lf %lf %lf %lf %lf %lf %lf %lf %lf",&((*SP+i)->MASS), &((*SP+i)->POP), &((*SP+i)->QDIST), &((*SP+i)->VDIST), &((*SP+i)->ODIST), &((*SP+i)->RFC), &((*SP+i)->LEN), &((*SP+i)->TUMBLE), &((*SP+i)->CHIHI), &((*SP+i)->CHIA), &((*SP+i)->ACT), &((*SP+i)->SIGWIDTH), &((*SP+i)->SIGPOS), &((*SP+i)->DAMP) ));	//Read the species' mass
+		if(fscanf( finput,"%lf %i %i %i %i %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&((*SP+i)->MASS), &((*SP+i)->POP), &((*SP+i)->QDIST), &((*SP+i)->VDIST), &((*SP+i)->ODIST), &((*SP+i)->RFC), &((*SP+i)->LEN), &((*SP+i)->TUMBLE), &((*SP+i)->CHIHI), &((*SP+i)->CHIA), &((*SP+i)->ACT), &((*SP+i)->SIGWIDTH), &((*SP+i)->SIGPOS), &((*SP+i)->DAMP), &((*SP+i)->VOL), &((*SP+i)->nDNST), &((*SP+i)->mDNST) ));	//Read the species' mass
 		else printf("Warning: Failed to read species %i.\n",i);
 		for( j=0; j<NSPECI; j++ ) {
 			//Read the species' interaction matrix with other species
 			if(fscanf( finput,"%lf ",&((*SP+i)->M[j]) ));	//Read the species' interactions
 			else printf("Warning: Failed to read species %d interaction with %d.\n",i,j);
 		}
+		if(fscanf( finput,"%lf %lf %lf %lf %lf %lf",&((*theorySP+i)->MFP), &((*theorySP+i)->VISC), &((*theorySP+i)->THERMD), &((*theorySP+i)->SDIFF), &((*theorySP+i)->SPEEDOFSOUND), &((*theorySP+i)->sumM) ));//Read program variables
+		else printf("Warning: Failed to read theoretical predictions.\n");
 	}
 	//Check total number of particleMPCs
 	j = 0;
@@ -776,7 +780,7 @@ void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cel
 		else printf("Warning: Failed to read BC %d.\n",i);
 		for( j=0; j<MAXSPECI+2; j++ ) {
 			//Read the species' interaction matrix with each BC
-			if(fscanf( finput,"%lf ",&((*WALL+i)->INTER[j]) ));	//Read the species' interactions
+			if(fscanf( finput,"%d ",&((*WALL+i)->INTER[j]) ));	//Read the species' interactions
 			else printf("Warning: Failed to read BC %d interaction with particle %d.\n",i,j);
 		}
 	}
@@ -945,6 +949,7 @@ int checkBC(cJSON *bc){
 /// @param fpath Path to the json input file.
 /// @param in Pointer to the inputList struct to be populated. Expected to be `&in`.
 /// @param SP Pointer to the particle species list to be populated. Expected to be `&SP`.
+/// @param theory Pointer to the particle species theory list to be populated. Expected to be `&theory`.
 /// @param pSRD Pointer to the particle list. Expected to be `&pSRD`.
 /// @param CL Pointer to the cell array. Expected to be `&CL`.
 /// @param MDMode Pointer to the MD mode flag integer. Expected to be `&MDMode`.
@@ -954,10 +959,12 @@ int checkBC(cJSON *bc){
 /// @param sw Pointer to the swimmer list. Expected to be `&sw`.
 /// @see cJson.c
 ///
-void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
-   cell ****CL, int *MDMode, outputFlagsList *out, bc **WALL,
-   specSwimmer *specS, swimmer **sw){
+void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, particleMPC **pSRD,
+	cell ****CL, int *MDMode, outputFlagsList *out, bc **WALL,
+	specSwimmer *specS, swimmer **sw){
 	int i, j; // counting variables
+	int useDens[MAXSPECI]={0};		//Flag to decide if set POP by read in number OR calculate from density override
+	double dens[MAXSPECI]={0.0};	//Density
 
 	char* fileStr = NULL;
 	if(getFileStr(fpath, &fileStr) != 0){ // read, return on error
@@ -1033,6 +1040,8 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 		XYZ[2] = 1;
 	}
 	for(i=0; i<_3D; i++ ) XYZ_P1[i] = XYZ[i]+1; // add 1 to each dimension
+	VOL=1.0;
+	for(i=0; i<DIM; i++ ) VOL *= XYZ[i]; // The total volume of the control volume
 
 	// first set of primitives
 	in->KBT = getJObjDou(jObj, "kbt", 1, jsonTagList); // kbt
@@ -1557,9 +1566,6 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
         out->CHCKPNTTIMER = checkPointTimer;
     }
 
-	// Numerically determine the accessible volume for the fluid, given these BCs
-	VOL = accessibleVolume( (*WALL) );
-
 	// 3. Species //////////////////////////////////////////////////////////////
 	// scroll up to void readin() to see better descriptions & definitions for these
 
@@ -1570,18 +1576,24 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 
 		//Allocate the needed amount of memory for the species SP
 		(*SP) = (spec*) malloc( NSPECI * sizeof( spec ) );
+		(*theory) = (kinTheory*) malloc( NSPECI * sizeof( kinTheory ) );
 		for (i = 0; i < NSPECI; i++) { // loop through the species
 			cJSON *objElem = cJSON_GetArrayItem(arrSpecies, i); // get the species object
 
 			// now get first set of primitives
 			(*SP+i)->MASS = getJObjDou(objElem, "mass", 1.0, jsonTagList); // mass
 
+			// Numerically determine the accessible volume for the fluid, given these BCs
+			(*SP+i)->VOL = accessibleVolume( (*WALL),i );
+
 			// handle population related overrides
 			double cellDens = getJObjDou(objElem, "dens", -1, jsonTagList);
 			if (cellDens < 0){ // if cellDens is invalid
 				(*SP+i)->POP = getJObjInt(objElem, "pop", (int)(VOL*20), jsonTagList); // pop
 			} else { // otherwise, set population using per cell density
-				(*SP+i)->POP = (int)(VOL*cellDens);
+				useDens[i]=1;
+				dens[i]=cellDens;
+				// (*SP+i)->POP = (int)(VOL*cellDens);
 			}
 
 			(*SP+i)->QDIST = getJObjInt(objElem, "qDist", 0, jsonTagList); // qDist
@@ -1652,11 +1664,6 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 		}
 	}
 
-	//Total Number of particleMPCs
-	GPOP = 0;
-	for( i=0; i<NSPECI; i++ ) GPOP += (*SP+i)->POP;
-	(*pSRD) = (particleMPC*) malloc( GPOP * sizeof( particleMPC ) );
-
 	//Allocate memory for the cells
 	//Allocate rows (x first)
 	*CL = (cell***) malloc( XYZ_P1[0] * sizeof( cell** ) );
@@ -1668,6 +1675,20 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			(*CL)[i][j] = (cell*) malloc( XYZ_P1[2] * sizeof( cell ) );
 		}
 	}
+
+	//Allocate the memory for the SRD particles
+	for (i = 0; i < NSPECI; i++) { // loop through the species
+		// Numerically determine the accessible volume for this species, given these BCs
+		(*SP+i)->VOL = accessibleVolume( (*WALL),i );
+		// handle population related overrides
+		if(useDens[i]) (*SP+i)->POP = (int)( ((*SP+i)->VOL)*dens[i] );
+		(*SP+i)->nDNST = (float)((*SP+i)->POP)/((*SP+i)->VOL);
+		(*SP+i)->mDNST = (float)(( (*SP+i)->mDNST )*( (*SP+i)->MASS ));
+	}
+	//Total Number of particleMPCs
+	GPOP = 0;
+	for( i=0; i<NSPECI; i++ ) GPOP += (*SP+i)->POP;
+	(*pSRD) = (particleMPC*) malloc( GPOP * sizeof( particleMPC ) );
 
 	// 4. Printcom /////////////////////////////////////////////////////////////
 	// scroll up to void readpc() to see better descriptions & definitions for these

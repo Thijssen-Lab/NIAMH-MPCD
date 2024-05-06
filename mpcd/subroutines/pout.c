@@ -1332,9 +1332,10 @@ void pall( particleMPC p[] ) {
 /// @param in This is a pointer that fetches information from input.json.
 /// @param AVVEL This is the average speed in any direction.
 /// @param SP This is a pointer that fetches species information such as population.
-/// @param theory This is a pointer that fetches theoretical information calculated from input.json.
+/// @param theorySP This is a pointer that fetches theoretical information for each species.
+/// @param theoryGl This is the theoretical information for the global system.
 ///
-void listinput( inputList in,double AVVEL,spec SP[],kinTheory theory ) {
+void listinput( inputList in,double AVVEL,spec SP[],kinTheory theorySP[],kinTheory theoryGl ) {
 	int i,n;
 	#ifdef DBG
 		if( DBUG >= DBGINIT ){
@@ -1355,27 +1356,41 @@ void listinput( inputList in,double AVVEL,spec SP[],kinTheory theory ) {
 			pvec( in.MAG,DIM );
 			printf( "\tAverage speed in any direction: %lf\n",AVVEL );
 			printf( "\tNumber of Species: %d\n",NSPECI );
-			printf( "\tSpecies population: " );
-			printf( "%i",SP[0].POP );
-			for( i=1; i<NSPECI; i++ ) printf( ",%i",SP[i].POP );
-			printf( "\n\tParticle Number Density: %lf\n",nDNST );
-			printf( "\n\tMass Density: %lf\n",mDNST );
 			printf( "\tWarmup Iterations: %d\n",in.warmupSteps );
 			printf( "\tSimulation Iterations: %d\n",in.simSteps );
 			printf( "\tTime Step: %lf\n",in.dt );
-			printf( "\tSystem population: %i\n",GPOP );
-			printf( "\tTotal mass: %lf\n",theory.sumM );
-			printf( "\tThe number of boundaries: %i\n",NBC );
+			printf( "\n\tThe number of boundaries: %i\n",NBC );
 			printf( "\tInputted System Temperature (units of KB): %lf\n",in.KBT );
 			printf( "\tRemove system's net momentum (1=yes, 0=no): %i\n",in.RFRAME );
 			printf( "\tThermostat Method: %i\n",in.TSTECH );
 			printf( "\tThermal Relaxation Scale: %lf\n",in.TAU );
-			printf( "\tMean Free Path: %lf\n",theory.MFP );
-			printf( "\tKinematic Viscosity: %lf\n",theory.VISC );
-			printf( "\tSelf Diffusion Coefficient: %lf\n",theory.SDIFF );
-			printf( "\tSchmidt number: %lf\n",theory.VISC/theory.SDIFF/mDNST );
-			printf( "\tSpeed of sound: %lf\n",theory.SPEEDOFSOUND );
-			printf( "\tThermal Diffusion Coefficient: %lf\n",theory.THERMD );
+			printf( "\tSystem-wide properties: " );
+			printf( "\t\tSystem population: %i\n",GPOP );
+			printf( "\t\tSystem total mass: %lf\n",GMASS );
+			printf( "\t\tParticle number density: %lf\n",GnDNST );
+			printf( "\t\tMass density: %lf\n",GmDNST );
+			printf( "\t\tMean Free Path: %lf\n",theoryGl.MFP );
+			printf( "\t\tKinematic Viscosity: %lf\n",theoryGl.VISC );
+			printf( "\t\tSelf Diffusion Coefficient: %lf\n",theoryGl.SDIFF );
+			printf( "\t\tSchmidt number: %lf\n",theoryGl.VISC/theoryGl.SDIFF/GmDNST );
+			printf( "\t\tSpeed of sound: %lf\n",theoryGl.SPEEDOFSOUND );
+			printf( "\t\tThermal Diffusion Coefficient: %lf\n",theoryGl.THERMD );
+			printf( "\tSpecies properties: " );
+			for( i=0; i<NSPECI; i++ ) {
+				printf( "\t\tSpecies ID: %i\n",i );
+				printf( "\t\t\tPopulation: %i\n",SP[i].POP );
+				printf( "\t\t\tParticle mass: %lf\n",SP[i].MASS );
+				printf( "\t\t\tSpecies total mass: %lf\n",theorySP[i].sumM );
+				printf( "\t\t\tThe following properties are calculated ASSUMING the species are perfectly separated\n" );
+				printf( "\t\t\tParticle number density: %lf\n",SP[i].nDNST );
+				printf( "\t\t\tMass density: %lf\n",SP[i].mDNST );
+				printf( "\t\t\tMean Free Path: %lf\n",theorySP[i].MFP );
+				printf( "\t\t\tKinematic Viscosity: %lf\n",theorySP[i].VISC );
+				printf( "\t\t\tSelf Diffusion Coefficient: %lf\n",theorySP[i].SDIFF );
+				printf( "\t\t\tSchmidt number: %lf\n",theorySP[i].VISC/theorySP[i].SDIFF/SP[i].mDNST );
+				printf( "\t\t\tSpeed of sound: %lf\n",theorySP[i].SPEEDOFSOUND );
+				printf( "\t\t\tThermal Diffusion Coefficient: %lf\n",theorySP[i].THERMD );
+			}
 		}
 	#endif
 	n = 0;
@@ -1400,10 +1415,11 @@ void listinput( inputList in,double AVVEL,spec SP[],kinTheory theory ) {
 /// @param WALL This is a pointer obtaining information on boundary conditions.
 /// @param SS This is a pointer that fetches swimmer specifications such as initial conditions, type, and run-tumble conditions.
 /// @param out This is a flag that determines if data should be output or not.
-/// @param theory This is a pointer that fetches theoretical information.
+/// @param theorySP This is a pointer that fetches theoretical information for each species.
+/// @param theoryGl This is the theoretical information for the global system.
 /// @param fsynopsis This is a pointer to the synopsis.dat output file.
 ///
-void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList out,kinTheory theory,FILE *fsynopsis ) {
+void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList out,kinTheory theorySP[],kinTheory theoryGl,FILE *fsynopsis ) {
 	int i,j;
 
 	if( out.SYNOUT == OUT ) {
@@ -1422,9 +1438,7 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 		fprintf( fsynopsis,"\nUser defined variables:\n" );
 		fprintf( fsynopsis,"Dimensionality: %i\n",DIM );
 		fprintf( fsynopsis,"System dimensions: (%i,%i,%i)\n",XYZ[0],XYZ[1],XYZ[2] );
-		fprintf( fsynopsis,"Volume accessible to MPCD particles: %lf\n",VOL );
-		fprintf( fsynopsis,"Particle Number Density: %lf\n",nDNST );
-		fprintf( fsynopsis,"Mass Density: %lf\n",mDNST );
+		fprintf( fsynopsis,"Volume of the control volum: %lf\n",VOL );
 		fprintf( fsynopsis,"Rotation technique: %i\n",in.RTECH );
 		fprintf( fsynopsis,"Nematic Liquid Crystal: ");
 		if(in.LC) fprintf( fsynopsis,"YES\n" );
@@ -1455,6 +1469,7 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 		for( i=0; i<NSPECI; i++ ) {
 			fprintf( fsynopsis,"Species: %i\n",i );
 			fprintf( fsynopsis,"\tMass: %lf\n\tPopulation: %i\n",SP[i].MASS,SP[i].POP );
+			fprintf( fsynopsis,"\tVolum accessible: %lf\n\tParticle Number Density: %lf\n\tMass Density: %lf\n",SP[i].VOL,SP[i].nDNST,SP[i].mDNST );
 			fprintf( fsynopsis,"\tRotational Friction Coefficient: %lf\n",SP[i].RFC);
 			fprintf( fsynopsis,"\tEffective rod-length to couple MPC torque to BC force: %lf\n",SP[i].LEN);
 			fprintf( fsynopsis,"\tTumbling parameter: %lf\n",SP[i].TUMBLE);
@@ -2589,11 +2604,12 @@ void spectout( FILE *fout,double spect[],double t ) {
 /// @param KBTNOW This is a pointer to the current un-thermostated temperature.
 /// @param AVV This is a pointer to the past average flow velocities.
 /// @param AVNOW This is a pointer to the current average flow velocities.
-/// @param theory These are theoretical values based off input.json.
+/// @param theorySP These are theoretical values for each species based off input.json.
+/// @param theoryGl These are the global theoretical values based off input.json.
 /// @param specS This is the swimmer species.
 /// @param sw This is a pointer to the list of swimmers.
 ///
-void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mode, bc *WALL, outputFlagsList outFlag, int runtime, int warmtime, double AVVEL, double AVS, double avDIR[_3D], double S4, double stdN, double KBTNOW, double AVV[_3D], double AVNOW[_3D], kinTheory theory, specSwimmer specS, swimmer *sw ) {
+void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mode, bc *WALL, outputFlagsList outFlag, int runtime, int warmtime, double AVVEL, double AVS, double avDIR[_3D], double S4, double stdN, double KBTNOW, double AVV[_3D], double AVNOW[_3D], kinTheory theorySP[], kinTheory theoryGl, specSwimmer specS, swimmer *sw ) {
 	int i,j;
 
 	fprintf( fout,"%d\n",in.simSteps );		//total time (or number of iterations)
@@ -2610,8 +2626,9 @@ void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mo
 	fprintf( fout,"%d %d\n",GPOP,NSPECI);			//Total number of particles and number of species
 
 	fprintf( fout,"%d %d %lf %lf %d %d\n",runtime,warmtime,in.C,in.S,in.GRAV_FLAG,in.MAG_FLAG );
-	fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", theory.MFP, theory.VISC, theory.THERMD, theory.SDIFF, theory.SPEEDOFSOUND, theory.sumM, AVVEL, AVS, avDIR[0], avDIR[1], avDIR[2], S4, stdN, nDNST, mDNST, VOL );
+	fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf\n", AVVEL, AVS, avDIR[0], avDIR[1], avDIR[2], S4, stdN, VOL );
 	fprintf( fout,"%lf %lf %lf %lf %lf %lf\n",AVV[0], AVV[1], AVV[2], AVNOW[0], AVNOW[1], AVNOW[2] );
+	fprintf( fout,"%lf %lf %lf %lf %lf %lf\n", theoryGl.MFP, theoryGl.VISC, theoryGl.THERMD, theoryGl.SDIFF, theoryGl.SPEEDOFSOUND, theoryGl.sumM );
 
 	//Output variables
 	fprintf( fout,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n",DBUG,outFlag.TRAJOUT,outFlag.printSP,outFlag.COAROUT,outFlag.FLOWOUT,outFlag.VELOUT,outFlag.AVVELOUT,outFlag.ORDEROUT,outFlag.QTENSOUT,outFlag.QKOUT,outFlag.AVSOUT,outFlag.SOLOUT,outFlag.ENOUT,outFlag.ENFIELDOUT,outFlag.ENNEIGHBOURS,outFlag.ENSTROPHYOUT,outFlag.DENSOUT,outFlag.CVVOUT,outFlag.CNNOUT,outFlag.CWWOUT,outFlag.CDDOUT,outFlag.CSSOUT,outFlag.CPPOUT,outFlag.BINDER,outFlag.BINDERBIN,outFlag.SYNOUT,outFlag.CHCKPNT,outFlag.CHCKPNTrcvr );
@@ -2623,9 +2640,11 @@ void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mo
 	//Species of MPCD particles
 	for( i=0; i<NSPECI; i++ ) {
 		fprintf( fout,"%lf %i %i %i %i ",(SP+i)->MASS,(SP+i)->POP,(SP+i)->QDIST,(SP+i)->VDIST,(SP+i)->ODIST );
-		fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf\n",(SP+i)->RFC, (SP+i)->LEN, (SP+i)->TUMBLE, (SP+i)->CHIHI, (SP+i)->CHIA, (SP+i)->ACT, (SP+i)->SIGWIDTH, (SP+i)->SIGPOS, (SP+i)->DAMP );
+		fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf ",(SP+i)->RFC, (SP+i)->LEN, (SP+i)->TUMBLE, (SP+i)->CHIHI, (SP+i)->CHIA, (SP+i)->ACT, (SP+i)->SIGWIDTH, (SP+i)->SIGPOS, (SP+i)->DAMP );
+		fprintf( fout,"%lf %lf %lf\n",(SP+i)->VOL,(SP+i)->nDNST,(SP+i)->mDNST );
 		for( j=0; j<NSPECI; j++ ) fprintf( fout,"%lf ",(SP+i)->M[j] );			//Binary fluid control parameters
 		fprintf( fout,"\n" );
+		fprintf( fout,"%lf %lf %lf %lf %lf %lf\n", theorySP[i].MFP, theorySP[i].VISC, theorySP[i].THERMD, theorySP[i].SDIFF, theorySP[i].SPEEDOFSOUND, theorySP[i].sumM );
 	}
 	//BCs
 	fprintf( fout,"%d\n",NBC );
@@ -2637,7 +2656,7 @@ void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mo
 		fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", WALL[i].W, WALL[i].VOL, WALL[i].Q_old[0], WALL[i].Q_old[1], WALL[i].Q_old[2], WALL[i].O_old[0], WALL[i].O_old[1], WALL[i].O_old[2], WALL[i].I[0][0], WALL[i].I[0][1], WALL[i].I[0][2], WALL[i].I[1][0], WALL[i].I[1][1], WALL[i].I[1][2], WALL[i].I[2][0], WALL[i].I[2][1], WALL[i].I[2][2] );
 		fprintf( fout,"%d %d %d %lf %lf\n", WALL[i].PLANAR, WALL[i].REORIENT, WALL[i].ABS, WALL[i].ROTSYMM[0], WALL[i].ROTSYMM[1] );
 		fprintf( fout,"%lf %lf %lf %lf %lf %lf\n", WALL[i].dV[0], WALL[i].dV[1], WALL[i].dV[2], WALL[i].dL[0], WALL[i].dL[1], WALL[i].dL[2] );
-		for( j=0; j<MAXSPECI+2; j++ ) fprintf( fout,"%lf ", WALL[i].INTER[j] );		//BC particle interaction flags
+		for( j=0; j<MAXSPECI+2; j++ ) fprintf( fout,"%i ", WALL[i].INTER[j] );		//BC particle interaction flags
 		fprintf( fout,"\n" );
 	}
 
@@ -2690,7 +2709,7 @@ void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mo
 /// @see checkpoint()
 /// @see openCheckpoint()
 ///
-void runCheckpoint(char op[500], time_t *lastCheckpoint, FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mode, bc *WALL, outputFlagsList outFlag, int runtime, int warmtime, double AVVEL, double AVS, double avDIR[_3D], double S4, double stdN, double KBTNOW, double AVV[_3D], double AVNOW[_3D], kinTheory theory, specSwimmer specS, swimmer *sw ) {
+void runCheckpoint(char op[500], time_t *lastCheckpoint, FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mode, bc *WALL, outputFlagsList outFlag, int runtime, int warmtime, double AVVEL, double AVS, double avDIR[_3D], double S4, double stdN, double KBTNOW, double AVV[_3D], double AVNOW[_3D], kinTheory theorySP[], kinTheory theoryGl, specSwimmer specS, swimmer *sw ) {
     // if time-based checkpointing has been enabled, see if a checkpoint needs to be made
     // otherwise return early
     if (outFlag.CHCKPNTTIMER != 0.0) {
@@ -2710,7 +2729,7 @@ void runCheckpoint(char op[500], time_t *lastCheckpoint, FILE *fout, inputList i
     #endif
     // normal checkpoint
     openCheckpoint( &(fout),op );
-    checkpoint(fout, in, SP, pSRD, MD_mode, WALL, outFlag, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory, specS, sw);
+    checkpoint(fout, in, SP, pSRD, MD_mode, WALL, outFlag, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theorySP, theoryGl, specS, sw);
     fclose( fout );
 }
 

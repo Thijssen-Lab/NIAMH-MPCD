@@ -68,7 +68,10 @@ typedef struct spec {
 	double M[MAXSPECI];	    ///< Interaction matrix for multiphase fluids. Each species has a different interaction with all others --- json `'interMatr'`.
 	double SIGWIDTH;		///< The width of the sigmoid for active dipole sigmoid (`DIPOLE_DIR_SIG` in definitions.h). 
 	double SIGPOS;			///< The position of the sigmoid for active dipole sigmoid (`DIPOLE_DIR_SIG` in definitions.h).
-	double MINACTRATIO;		///< Minimum proportion of particles in the cell for activity to be applied. 
+	double MINACTRATIO;		///< Minimum proportion of particles in the cell for activity to be applied.
+	double VOL;				///< The volume accessible to this species of particle. Determined by Monte Carlo.
+	double nDNST;			///< The particle number density of this species. Found using the volume `'VOL'`.
+	double mDNST;			///< The mass density of this species. Found using the volume `'VOL'`.
 } spec;
 
 ///
