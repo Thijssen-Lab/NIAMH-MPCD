@@ -952,19 +952,21 @@ double accessibleVolume( bc WALL[],int SPID ) {
 /// @param SP Array of all species.
 ///
 void globalDensities( cell ***CL,spec SP[] ) {
-	int a,b,c,cnt;
-	double sumN;
+	int a,b,c;
+	double cnt,sumN;
 
-	cnt=0;
+	cnt=0.0;
 	sumN=0.0;
 	GMASS=0.0;
 	for( a=0; a<XYZ[0]; a++ ) for( b=0; b<XYZ[1]; b++ ) for( c=0; c<XYZ[2]; c++ ) if(CL[a][b][c].POP>0) {
-		cnt++;
-		sumN += (double)CL[a][b][c].POP;
+		cnt += 1.0;
+		sumN += (double)CL[a][b][c].POPSRD;
 		GMASS += CL[a][b][c].MASS;
 	}
-	GnDNST=sumN/( (double)cnt );
-	GmDNST=GMASS/( (double)cnt );
+	if(cnt>0.0) {
+		GnDNST = sumN/cnt;
+		GmDNST = GMASS/cnt;	
+	}
 }
 
 /* ****************************************** */
@@ -2024,10 +2026,14 @@ void initializeSIM(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], 
 	}
 	if(outFlags.SYNOUT == OUT) fprintf(fsynopsis,"\nMPCD particles placed.\n" );
 	//Calculate the theoretical properties of each species of SRD gas
+	printf("\n\n\n\n\n\n");
+	for (i = 0; i < NSPECI; i++) { // loop through the species
+		printf("HERE Species %d: pop=%d vol=%lf n=%lf mass=%lf mass_dens=%lf\n",i,(SP+i)->POP,(SP+i)->VOL,(SP+i)->nDNST,(SP+i)->MASS,(SP+i)->mDNST );
+	}
 	for( i=0; i<NSPECI; i++ ) {
-		fprintf( fsynopsis,"Properties of isolated species %d:\n",i );
+		if(outFlags.SYNOUT == OUT) fprintf( fsynopsis,"Properties of isolated species %d:\n",i );
 		(theorySP+i)->sumM = ((SP+i)->POP)*((SP+i)->MASS);
-		theory_trans( &((theorySP+i)->MFP),&((theorySP+i)->VISC),&((theorySP+i)->THERMD),&((theorySP+i)->SDIFF),&((theorySP+i)->SPEEDOFSOUND),in->RA,in->FRICCO,in->KBT,in->dt,(theorySP+i)->sumM,(SP+i)->nDNST,(SP+i)->mDNST,in->RTECH,outFlags.SYNOUT,fsynopsis );
+		theory_trans( &((theorySP+i)->MFP),&((theorySP+i)->VISC),&((theorySP+i)->THERMD),&((theorySP+i)->SDIFF),&((theorySP+i)->SPEEDOFSOUND),in->RA,in->FRICCO,in->KBT,in->dt,(theorySP+i)->sumM,in->RTECH,(SP+i)->nDNST,(SP+i)->mDNST,outFlags.SYNOUT,fsynopsis );
 	}
 	//Zero counters
 	zerocnt( KBTNOW,AVNOW,AVS );
@@ -2054,7 +2060,7 @@ void initializeSIM(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], 
 	//Calculate the theoretical properties of each species of SRD gas
 	theoryGl->sumM = GMASS;
 	fprintf( fsynopsis,"Global properties of averaged MPCD fluid:\n" );
-	theory_trans( &(theoryGl->MFP),&(theoryGl->VISC),&(theoryGl->THERMD),&(theoryGl->SDIFF),&(theoryGl->SPEEDOFSOUND),in->RA,in->FRICCO,in->KBT,in->dt,GMASS,GnDNST,GmDNST,in->RTECH,outFlags.SYNOUT,fsynopsis );
+	theory_trans( &(theoryGl->MFP),&(theoryGl->VISC),&(theoryGl->THERMD),&(theoryGl->SDIFF),&(theoryGl->SPEEDOFSOUND),in->RA,in->FRICCO,in->KBT,in->dt,GMASS,in->RTECH,GnDNST,GmDNST,outFlags.SYNOUT,fsynopsis );
 
 	/* ****************************************** */
 	/* ******** GALILEAN TRANSFORMATION ********* */

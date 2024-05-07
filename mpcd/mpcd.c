@@ -166,7 +166,7 @@ int main(int argc, char* argv[]) {
 		readbc( ip, &WALL );
 		readpc( ip, &outFlags );
 		readswimmers( ip, &specS, &swimmers );
-	}	
+	}
 
 	//Check if recovering checkpointed simulation
 	if( inputVar.seed==-1 ) {
@@ -248,7 +248,7 @@ int main(int argc, char* argv[]) {
 	/* ****************************************** */
 	/* ****************************************** */
     lastCheckpoint = time(NULL); // set NOW to last checkpoint time
-
+	
 	/* ****************************************** */
 	/* *************** WARMUP LOOP ************** */
 	/* ****************************************** */

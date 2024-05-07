@@ -1683,7 +1683,7 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 		// handle population related overrides
 		if(useDens[i]) (*SP+i)->POP = (int)( ((*SP+i)->VOL)*dens[i] );
 		(*SP+i)->nDNST = (float)((*SP+i)->POP)/((*SP+i)->VOL);
-		(*SP+i)->mDNST = (float)(( (*SP+i)->nDNST )*( (*SP+i)->MASS ));
+		(*SP+i)->mDNST = ( (*SP+i)->nDNST )*( (*SP+i)->MASS );
 	}
 	//Total Number of particleMPCs
 	GPOP = 0;

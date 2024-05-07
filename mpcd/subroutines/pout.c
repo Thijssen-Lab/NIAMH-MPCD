@@ -1364,7 +1364,7 @@ void listinput( inputList in,double AVVEL,spec SP[],kinTheory theorySP[],kinTheo
 			printf( "\tRemove system's net momentum (1=yes, 0=no): %i\n",in.RFRAME );
 			printf( "\tThermostat Method: %i\n",in.TSTECH );
 			printf( "\tThermal Relaxation Scale: %lf\n",in.TAU );
-			printf( "\tSystem-wide properties: " );
+			printf( "\tSystem-wide properties:\n" );
 			printf( "\t\tSystem population: %i\n",GPOP );
 			printf( "\t\tSystem total mass: %lf\n",GMASS );
 			printf( "\t\tParticle number density: %lf\n",GnDNST );
@@ -1375,7 +1375,7 @@ void listinput( inputList in,double AVVEL,spec SP[],kinTheory theorySP[],kinTheo
 			printf( "\t\tSchmidt number: %lf\n",theoryGl.VISC/theoryGl.SDIFF/GmDNST );
 			printf( "\t\tSpeed of sound: %lf\n",theoryGl.SPEEDOFSOUND );
 			printf( "\t\tThermal Diffusion Coefficient: %lf\n",theoryGl.THERMD );
-			printf( "\tSpecies properties: " );
+			printf( "\tSpecies properties:\n" );
 			for( i=0; i<NSPECI; i++ ) {
 				printf( "\t\tSpecies ID: %i\n",i );
 				printf( "\t\t\tPopulation: %i\n",SP[i].POP );
