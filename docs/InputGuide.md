@@ -62,7 +62,6 @@ Tag             | Type          | Default Value | Description
 `tau`           | double        | 0.5           | Thermal relaxation time scale
 `rotAng`        | double        | 1.570796      | This is the angle used in the original SRD collision operator
 `fricCoef`      | double        | 1.0           | Friction coefficient for langevin thermostat
-`mfpot`         | double        | 10            | Liquid crystal mean field potential in units of thermal energy
 `noHI`          | int           | 0             | Enable no HI mode. 1 = on, 0 = off
 `incomp`        | int           | 0             | Enable incompressibility correction. 1 = on, 0 = off
 `multiphase`    | int           | 0             | Enable multiphase mode, applying multiphase interactions. 1 = on, 0 = off
@@ -160,6 +159,7 @@ Tag             | Type          | Default Value | Description
 `vDist`         | int           | 0             | Initial velocity distribution function for the species. See definitions.h for a list
 `oDist`         | int           | 2             | Initial orientation distribution function for the species. See definitions.h for a list
 `interMatr`     | array(double) | [0,...]       | Interaction matrix for this species, against other species. **Must** be of the same length as the number of species. Default will autopopulate with 0s
+`mfpot`         | double        | 10            | Liquid crystal mean field potential in units of thermal energy
 `rfc`           | double        | 0.01          | Nematogen rotational friction coefficient
 `len`           | double        | 0.007         | Effective rod length (specifically for solid boundary interactions)
 `tumble`        | double        | 2             | Tumbling parameter
@@ -242,7 +242,6 @@ As a reminder, if you wish to use the default value for a tag, you can leave it 
     "tau":              0.5,
     "rotAng":           1.570796,
     "fricCoef":         1.0,
-    "mfpot":            10,
     "grav":             [0, 0, 0],
     "mag":              [0, 0, 0],
     "seed":             0,
@@ -263,6 +262,7 @@ As a reminder, if you wish to use the default value for a tag, you can leave it 
             "tumble":       2,
             "shearSusc":    0.5,
             "magnSusc":     0.001,
+            "mfpot":        10,
             "act":          0.05,
             "damp":         0,
             "sigWidth":     1.0,

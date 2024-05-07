@@ -108,9 +108,6 @@ void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL
 	//Read the Langevin thermostat friction coefficient
 	read=fscanf( finput,"%lf %s",&(in->FRICCO),STR );
 	checkRead( read,"friction coefficient",inSTR);
-	//Read the liquid crystal mean-field potential
-	read=fscanf( finput,"%lf %s",&(in->MFPOT),STR );
-	checkRead( read,"LC mean-field potential",inSTR);
 	//Read the constant external acceleration
 	for( i=0; i<_3D; i++ ) {
 		read=fscanf( finput,"%lf %s",&(in->GRAV[i]),STR );
@@ -197,10 +194,6 @@ void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL
 		read=fscanf( finput,"%lf %s",&MF,STR );
 		checkRead( read,"activity",inSTR);
 		(*SP+i)->ACT = MF;
-		//Read the species' mean field potential
-		read=fscanf( finput,"%lf %s",&MF,STR );
-		checkRead( read,"mean field potential",inSTR);
-		(*SP+i)->MFPOT = MF;
 		//Read the species' damping friction coefficient
 		read=fscanf( finput,"%lf %s",&MF,STR );
 		checkRead( read,"damping friction",inSTR);
@@ -695,7 +688,7 @@ void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cel
 	for(i=0; i<_3D; i++ ) XYZ_P1[i] = XYZ[i]+1;
 	if(fscanf( finput,"%d %d %d %d %d %d",&(in->RFRAME),&(in->zeroNetMom),&(in->GALINV),&(in->TSTECH),&(in->RTECH),&(in->LC) ));
 	else printf("Warning: Failed to Galilean transform, rest frame, thermostat mode, collision mode or liquid crystal mode.\n");
-	if(fscanf( finput,"%lf %lf %lf %lf",&(in->TAU),&(in->RA),&(in->FRICCO),&(in->MFPOT) ));		//Read the thermal relaxation time scale
+	if(fscanf( finput,"%lf %lf %lf",&(in->TAU),&(in->RA),&(in->FRICCO) ));				//Read the thermal relaxation time scale
 	else printf("Warning: Failed to read relaxation time, rotation angle, friction coefficient or mean-field potential.\n");
 	if(fscanf( finput,"%d %d %d",&(in->noHI),&(in->inCOMP),&(in->MULTIPHASE) ));		//Read no hydrodynamics, incompressibility and multi-phase
 	else printf("Warning: Failed to read no hydrodynamics or incompressibility.\n");
@@ -734,7 +727,7 @@ void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cel
 	//Allocate the needed amount of memory for the species SP
 	(*SP) = (spec*) calloc( NSPECI, sizeof( spec ) );
 	for( i=0; i<NSPECI; i++ ) {
-		if(fscanf( finput,"%lf %i %i %i %i %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&((*SP+i)->MASS), &((*SP+i)->POP), &((*SP+i)->QDIST), &((*SP+i)->VDIST), &((*SP+i)->ODIST), &((*SP+i)->RFC), &((*SP+i)->LEN), &((*SP+i)->TUMBLE), &((*SP+i)->CHIHI), &((*SP+i)->CHIA), &((*SP+i)->ACT), &((*SP+i)->MFPOT), &((*SP+i)->SIGWIDTH), &((*SP+i)->SIGPOS), &((*SP+i)->DAMP), &((*SP+i)->VOL), &((*SP+i)->nDNST), &((*SP+i)->mDNST) ));	//Read the species' mass
+		if(fscanf( finput,"%lf %i %i %i %i %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&((*SP+i)->MASS), &((*SP+i)->POP), &((*SP+i)->QDIST), &((*SP+i)->VDIST), &((*SP+i)->ODIST), &((*SP+i)->RFC), &((*SP+i)->LEN), &((*SP+i)->TUMBLE), &((*SP+i)->CHIHI), &((*SP+i)->CHIA), &((*SP+i)->ACT), &((*SP+i)->SIGWIDTH), &((*SP+i)->SIGPOS), &((*SP+i)->DAMP), &((*SP+i)->VOL), &((*SP+i)->nDNST), &((*SP+i)->mDNST) ));	//Read the species' mass
 		else printf("Warning: Failed to read species %i.\n",i);
 		for( j=0; j<NSPECI; j++ ) {
 			//Read the species' interaction matrix with other species
@@ -1062,7 +1055,6 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 	in->TAU = getJObjDou(jObj, "tau", 0.5, jsonTagList); // TAU
 	in->RA = getJObjDou(jObj, "rotAng", 1.570796, jsonTagList); // rotAng
 	in->FRICCO = getJObjDou(jObj, "fricCoef", 1.0, jsonTagList); // fricCo
-	in->MFPOT = getJObjDou(jObj, "mfpot", 10.0, jsonTagList); // mfPot
 	in->tolD = getJObjDou(jObj, "tolD", 0.01, jsonTagList); //defect tolerance
 	in->noHI = getJObjInt(jObj, "noHI", 0, jsonTagList); // noHI
 	in->inCOMP = getJObjInt(jObj, "incomp", 0, jsonTagList); // inCOMP

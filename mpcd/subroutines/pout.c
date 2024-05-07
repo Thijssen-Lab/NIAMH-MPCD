@@ -1343,7 +1343,6 @@ void listinput( inputList in,double AVVEL,spec SP[],kinTheory theorySP[],kinTheo
 			printf( "\tDimensions: %i\n",DIM );
 			printf( "\tRotation Technique: %i\n",in.RTECH );
 			printf( "\tLiquid Crystal: %i\n",in.LC );
-			printf( "\tLiquid Crystal Mean-Field Potential: %lf\n",in.MFPOT );
 			printf( "\tRotation angle: %lf\n",in.RA );
 			printf( "\tSystem Size: [%i,%i,%i]\n",XYZ[0],XYZ[1],XYZ[2] );
 			printf( "\tAccessible volume: %lf\n",VOL );
@@ -1817,11 +1816,10 @@ void enout( FILE *fout,particleMPC *pp,spec *pSP,bc WALL[],double t,double KBT,d
 /// @param fout This is a pointer to the output .dat file name to be produced.
 /// @param CL This is a pointer to the co-ordinates and cell of each particle.
 /// @param SP This is a pointer to species subpopulation indices.
-/// @param MFPOT This is a pointer to mean-field potential specified by input.json.
 /// @param LC This is a flag that states if the system is a liquid crystal.
 /// @see outputResults
 ///
-void enfieldout( FILE *fout,cell ***CL,spec *SP,double MFPOT,int LC ) {
+void enfieldout( FILE *fout,cell ***CL,spec *SP,int LC ) {
 	int a,b,c,d,id;
 	double enK,wmf,S,un,DIR[_3D],u[_3D],m;
 	double invdim=1./((double)DIM);
@@ -1840,7 +1838,7 @@ void enfieldout( FILE *fout,cell ***CL,spec *SP,double MFPOT,int LC ) {
 				if( LC ) {
 					for( d=0; d<DIM; d++ ) u[d] = tmpc->U[d];
 					un = dotprod( u,DIR,DIM );
-					wmf += S*un*un  + (1.-S)*invdim;
+					wmf += ( S*un*un  + (1.-S)*invdim )*( (SP+id)->MFPOT );
 				}
 				//Kinetic energy
 				m = (SP+id)->MASS;
@@ -1851,7 +1849,6 @@ void enfieldout( FILE *fout,cell ***CL,spec *SP,double MFPOT,int LC ) {
 				tmpc = tmpc->next;
 			}
 		}
-		wmf*=MFPOT;
 		fprintf( fout, "%5i\t%5i\t%5i\t%e\t%e\n",a,b,c,enK,wmf );
 	}
 }
@@ -1865,16 +1862,17 @@ void enfieldout( FILE *fout,cell ***CL,spec *SP,double MFPOT,int LC ) {
 /// @param fout This is a pointer to the output .dat file name to be produced.
 /// @param t This is time.
 /// @param CL This is a pointer to the co-ordinates and cell of each particle.
-/// @param MFPOT This is a pointer to mean-field potential specified by input.json.
+/// @param SP This is a pointer to species subpopulation indices.
 /// @param LC This is a flag that states if the system is a liquid crystal.
 /// @see outputResults()
 ///
-void enneighboursout( FILE *fout,double t,cell ***CL,double MFPOT,int LC ) {
-	int a,b,c,d;
-	double wmf,un,sumWMF;
+void enneighboursout( FILE *fout,double t,cell ***CL,spec *SP,int LC ) {
+	int a,b,c,d,id;
+	double avMFPOT,wmf,un,sumWMF;
 	double local_DIR[DIM],nnn_DIR[DIM],local_S,nnn_S;
 	double **Q,eigval[DIM];
 	//double invDIM=1.0/((double)DIM);
+	particleMPC *tmpc;	//Temporary pointer to MPC particles
 
 	sumWMF=0.;
 	//Allocate memory for tensor order parameter Q
@@ -1886,6 +1884,16 @@ void enneighboursout( FILE *fout,double t,cell ***CL,double MFPOT,int LC ) {
 		//Local values
 		for( d=0; d<DIM; d++ ) local_DIR[d]=CL[a][b][c].DIR[d];
 		local_S=CL[a][b][c].S;
+		avMFPOT=0.;
+		if( CL[a][b][c].POPSRD > 1 ) {
+			tmpc = CL[a][b][c].pp;
+			while( tmpc != NULL ) {
+				id = tmpc->SPID;
+				avMFPOT+=(SP+id)->MFPOT;
+				tmpc = tmpc->next;
+			}
+			avMFPOT/=(float)CL[a][b][c].POPSRD;
+		}
 		//Next-nearest values
 		//Calculate the tensor order parameter from the cell and its neighbous
 		tensOrderParamNNN( CL,Q,LC,a,b,c );
@@ -1910,7 +1918,7 @@ void enneighboursout( FILE *fout,double t,cell ***CL,double MFPOT,int LC ) {
 		un = dotprod( local_DIR,nnn_DIR,DIM );
 		wmf = local_S*un*un;
 		//wmf += (1.-local_S)*invDIM;	//Don't include the constant (wrt u.n) term
-		wmf*=MFPOT;
+		wmf*=avMFPOT;
 		sumWMF+=wmf;
 	}
 	fprintf( fout, "%12.5e\t%12.5e\n",t,sumWMF );
@@ -2636,7 +2644,7 @@ void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mo
 	fprintf( fout,"%ld\n",in.seed );				//Random seed (0 if read from time)
 	fprintf( fout,"%d %d %d %d %lf %lf\n",DIM,XYZ[0],XYZ[1],XYZ[2],in.KBT,KBTNOW );
 	fprintf( fout,"%d %d %d %d %d %d\n",in.RFRAME,in.zeroNetMom,in.GALINV,in.TSTECH,in.RTECH,in.LC );
-	fprintf( fout,"%lf %lf %lf %lf\n",in.TAU,in.RA,in.FRICCO,in.MFPOT );
+	fprintf( fout,"%lf %lf %lf\n",in.TAU,in.RA,in.FRICCO );
 	fprintf( fout,"%d %d %d\n",in.noHI,in.inCOMP,in.MULTIPHASE );
 	fprintf( fout,"%lf %lf %lf\n",in.GRAV[0],in.GRAV[1],in.GRAV[2] );		//Acceleration (external force)
 	fprintf( fout,"%lf %lf %lf\n",in.MAG[0],in.MAG[1],in.MAG[2] );			//External magnetic field
@@ -2900,11 +2908,11 @@ void outputResults(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], 
 	/* *************** TOTAL ENERGY ************* */
 	/* ****************************************** */
 	if( outFlag.ENOUT>=OUT && runtime%outFlag.ENOUT==0 ) {
-		wmf = calcE_LC( CL,in.LC,in.MFPOT );
+		wmf = calcE_LC( CL,in.LC,SP );
 		enout( outFiles.fenergy,SRDparticles,SP,WALL,time_now,KBTNOW,wmf );
 	}
-	if( outFlag.ENFIELDOUT>=OUT && runtime%outFlag.ENFIELDOUT==0 ) enfieldout( outFiles.fenergyfield,CL,SP,in.MFPOT,in.LC );
-	if( outFlag.ENNEIGHBOURS>=OUT && runtime%outFlag.ENNEIGHBOURS==0 ) enneighboursout( outFiles.fenneighbours,time_now,CL,in.MFPOT,in.LC );
+	if( outFlag.ENFIELDOUT>=OUT && runtime%outFlag.ENFIELDOUT==0 ) enfieldout( outFiles.fenergyfield,CL,SP,in.LC );
+	if( outFlag.ENNEIGHBOURS>=OUT && runtime%outFlag.ENNEIGHBOURS==0 ) enneighboursout( outFiles.fenneighbours,time_now,CL,SP,in.LC );
 	/* ****************************************** */
 	/* ***** SWIMMERS' POSITONS/ORIENTATIONS **** */
 	/* ****************************************** */

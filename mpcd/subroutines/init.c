@@ -1573,6 +1573,7 @@ void setcoord(char dir[], spec SP[], particleMPC *pp, double KBT, double AVVEL[]
 ///
 void checkSim( FILE *fsynopsis,int SYNOUT,inputList in,spec *SP,bc *WALL,specSwimmer SS ) {
 	int i,j;
+	double checkValue;
 
 	//Check thermostat
 	if( in.TSTECH==BEREND && in.TAU<0.5*in.dt ) {
@@ -1704,11 +1705,13 @@ void checkSim( FILE *fsynopsis,int SYNOUT,inputList in,spec *SP,bc *WALL,specSwi
 		if(SYNOUT == OUT) fprintf( fsynopsis,"Warning:\tSpecies %d has zero rotational friction coefficient\n\t\tThis is acceptable iff no magnetic field is applied\n",i );
 	}
 	//Check that if running as a LC that the LC mean field potential MFPOT is greater than zero
-	if( in.LC>ISOF && in.MFPOT<=0.0 ) {
+	checkValue=0.0;
+	for( i=0; i<NSPECI; i++ ) checkValue+=SP[i].MFPOT;
+	if( in.LC>ISOF && checkValue<=0.0 ) {
 		#ifdef DBG
-			if( DBUG >= DBGWARN ) printf( "Error: Running as nematic liquid crystal (LC=%d) but mean field = %lf. Must be greater than 0 or run as isotropic\n",in.LC,in.MFPOT );
+			if( DBUG >= DBGWARN ) printf( "Error: Running as nematic liquid crystal (LC=%d) but sum of mean field = %lf. Must be greater than 0 or run as isotropic\n",in.LC,checkValue );
 		#endif
-		if(SYNOUT == OUT) fprintf(fsynopsis,"Error: Running as nematic liquid crystal (LC=%d) but mean field = %lf. Must be greater than 0 or run as isotropic\n",in.LC,in.MFPOT );
+		if(SYNOUT == OUT) fprintf(fsynopsis,"Error: Running as nematic liquid crystal (LC=%d) but sum of mean field = %lf. Must be greater than 0 or run as isotropic\n",in.LC,checkValue );
 		exit(1);
 	}
 // 	if( in.LC==LCG || in.LC==LCL ) for( i=0; i<NSPECI; i++ ) if( SP[i].RFC*SP[i].TUMBLE>1.0 ) {

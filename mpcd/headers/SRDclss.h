@@ -404,7 +404,6 @@ typedef struct inputList {
 	double FRICCO;				///< Friction coefficient for Langevin thermostat --- json `'fricCoef'`.
 	int TSTECH;					///< Temperature scaling technique --- json `'tsTech'`.
 	double TAU;					///< The temperature relaxation time scale --- json `'tau'`.
-	double MFPOT;				///< The mean-field potential from self-consistent mean-field liquid crystals --- json `'mfpot'`.
 	int RTECH;					///< Rotation technique --- json `'collOp'`.
 	int LC;						///< If LC=LCG=2 then liquid crystal using global S, if LC=LCL=1 then use local S, else isotropic (ISOF=0) --- json `'lc'`.
 	int RFRAME;					///< Flags initial galilean trans to rest frame (0 No shift, 1 shift) --- json `'rFrame'`.

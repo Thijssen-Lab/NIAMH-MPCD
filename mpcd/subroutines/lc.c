@@ -419,12 +419,12 @@ void genrand_maierSaupeMetropolis_2D( double DIR[],double rotAx[],double rotAngl
 /// @param CL Class containing cell data (pointed to local cell considered).
 /// @param SP List of species.
 /// @param KBT The temperature.
-/// @param MFPOT The molecular field potential.
+/// @param zeroMFPot Flag to zero the molecular field potential (regardless of species values). 0==False (leave it) 1==True (zero it) 
 /// @param dt The timestep.
 /// @param SG The global nematic order value.
 /// @param LC Variable to define if Nematic LC using an isotropic fluid (0), the local nematic order  value (1) or global nematic order value (2).
 ///
-void LCcollision( cell *CL,spec *SP,double KBT,double MFPOT,double dt,double SG,int LC ) {
+void LCcollision( cell *CL,spec *SP,double KBT,int zeroMFPot,double dt,double SG,int LC ) {
 	int i,id;
 	double DIR[_3D]={0.0},dU[_3D]={0.0};	//The director, the difference in orientation
 	double rotAx[_3D],xaxis[_3D]={0.0},rotAngle;
@@ -477,18 +477,23 @@ void LCcollision( cell *CL,spec *SP,double KBT,double MFPOT,double dt,double SG,
 	#endif
 	
 	//Calculate cell's average mean field potential
-	avMFPOT=0.0;
-	tmpc = CL->pp;
-	while( tmpc!=NULL ) {
-		id = tmpc->SPID;
-		avMFPOT+=(SP+id)->MFPOT;
-		//Increment link in list
-		tmpc = tmpc->next;
+	if(zeroMFPot) {
+		MFPOT_scaled=0.0;
 	}
-	if( CL->POPSRD>1 ) avMFPOT /= (float)(CL->POPSRD);
-	// MFPOT_scaled=MFPOT*0.5*(double)DIM;
-	// printf("\tMFPOT=%lf\n",avMFPOT);
-	MFPOT_scaled=avMFPOT*0.5*(double)DIM;
+	else {
+		avMFPOT=0.0;
+		tmpc = CL->pp;
+		while( tmpc!=NULL ) {
+			id = tmpc->SPID;
+			avMFPOT+=(SP+id)->MFPOT;
+			//Increment link in list
+			tmpc = tmpc->next;
+		}
+		if( CL->POPSRD>1 ) avMFPOT /= (float)(CL->POPSRD);
+		// MFPOT_scaled=MFPOT*0.5*(double)DIM;
+		// printf("\tMFPOT=%lf\n",avMFPOT);
+		MFPOT_scaled=avMFPOT*0.5*(double)DIM;
+	}
 
 	//Generate random orientations for MPC particles
 	if( CL->POPSRD>1 ) {

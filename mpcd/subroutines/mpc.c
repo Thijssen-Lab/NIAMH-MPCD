@@ -4279,7 +4279,7 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 	int outPressure=0;				//Whether to make the pressure calculations (never used just outputted)
 	int bcCNT,reCNT,rethermCNT;		//Count if any particles had problems with the BCs
     // Active layer variables
-    double effMFPot;                // Storage for the effective potential, which depends on height
+    int zeroMFPot;                	// Flag to switch to zero effective potential
     double savedAct[NSPECI];        // Storage to save the activity of species, to make it height dependent
 
 	#ifdef DBG
@@ -4405,13 +4405,14 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
             if (in.MFPLAYERH > 0) { // if MFPLAYERH set then perform the "active layer" hack
                 // Active layer
                 // Check if cell is within the layer, if not then run with an effective MFP of 0
-                if (j <= in.MFPLAYERH) effMFPot = in.MFPOT;
-                else effMFPot = 0.0;
-                if( CL[i][j][k].POPSRD > 1 ) LCcollision( &CL[i][j][k],SP,in.KBT,effMFPot,in.dt,*AVS,in.LC );
+                if (j <= in.MFPLAYERH) zeroMFPot=0;
+                else zeroMFPot = 1;
+                if( CL[i][j][k].POPSRD > 1 ) LCcollision( &CL[i][j][k],SP,in.KBT,zeroMFPot,in.dt,*AVS,in.LC );
             } else {
                 // otherwise perform typical LC collision
+				zeroMFPot=0;
                 // LC collision algorithm (no collision if only 1 particle in cell)
-                if( CL[i][j][k].POPSRD > 1 ) LCcollision( &CL[i][j][k],SP,in.KBT,in.MFPOT,in.dt,*AVS,in.LC );
+                if( CL[i][j][k].POPSRD > 1 ) LCcollision( &CL[i][j][k],SP,in.KBT,zeroMFPot,in.dt,*AVS,in.LC );
             }
 		}
 
