@@ -903,7 +903,7 @@ void chooseP( bc WALL,particleMPC *pp,double *chosenW,int *chosenP ) {
 	double shift[DIM];
 	*chosenW = 1.0;
 
-	for( i=0; i<GPOP; i++ ) {
+	for( i=0; i<GPOP; i++ ) if(WALL.INTER[(pp+i)->SPID] == BCON) {
 		//Shift the BC due to any periodic BCs
 		shiftBC( shift,&WALL,(pp+i) );
 		rotateBC( &WALL,(pp+i),0 );
