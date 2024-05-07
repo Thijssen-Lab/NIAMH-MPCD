@@ -879,15 +879,17 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 	}
 	*THERMD = THERMDKIN+THERMDCOL;
 	if( SYNOUT == OUT ) {
-		fprintf( fsynopsis,"Mean Free Path: %lf\n",*MFP );
-		fprintf( fsynopsis,"Dynamic Viscosity: %lf\n",*VISC );
-		fprintf( fsynopsis,"\tkinetic contribution: %lf\n\tcollisional contribution: %lf\n",VISCKIN,VISCCOL );
-		fprintf( fsynopsis,"Kinematic Viscosity: %lf\n",(*VISC)*inv_nDNST/avMASS );
-		fprintf( fsynopsis,"\tkinetic contribution: %lf\n\tcollisional contribution: %lf\n",VISCKIN*inv_nDNST/avMASS,VISCCOL*inv_nDNST/avMASS );
-		fprintf( fsynopsis,"Self Diffusion Coefficient: %lf\n",*SDIFF );
-		fprintf( fsynopsis,"Schmidt number: %lf\n",(*VISC)/(*SDIFF)/mDNST );
-		fprintf( fsynopsis,"Speed of sound: %lf\n",*SPEEDOFSOUND );
-		fprintf( fsynopsis,"Thermal Diffusion Coefficient: %lf\n",*THERMD );
+		fprintf( fsynopsis,"\tNumber density: %lf\n",nDNST );
+		fprintf( fsynopsis,"\tMass density: %lf\n",mDNST );
+		fprintf( fsynopsis,"\tMean Free Path: %lf\n",*MFP );
+		fprintf( fsynopsis,"\tDynamic Viscosity: %lf\n",*VISC );
+		fprintf( fsynopsis,"\t\tkinetic contribution: %lf\n\tcollisional contribution: %lf\n",VISCKIN,VISCCOL );
+		fprintf( fsynopsis,"\tKinematic Viscosity: %lf\n",(*VISC)*inv_nDNST/avMASS );
+		fprintf( fsynopsis,"\t\tkinetic contribution: %lf\n\tcollisional contribution: %lf\n",VISCKIN*inv_nDNST/avMASS,VISCCOL*inv_nDNST/avMASS );
+		fprintf( fsynopsis,"\tSelf Diffusion Coefficient: %lf\n",*SDIFF );
+		fprintf( fsynopsis,"\tSchmidt number: %lf\n",(*VISC)/(*SDIFF)/mDNST );
+		fprintf( fsynopsis,"\tSpeed of sound: %lf\n",*SPEEDOFSOUND );
+		fprintf( fsynopsis,"\tThermal Diffusion Coefficient: %lf\n",*THERMD );
 	}
 }
 
@@ -2023,6 +2025,7 @@ void initializeSIM(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], 
 	if(outFlags.SYNOUT == OUT) fprintf(fsynopsis,"\nMPCD particles placed.\n" );
 	//Calculate the theoretical properties of each species of SRD gas
 	for( i=0; i<NSPECI; i++ ) {
+		fprintf( fsynopsis,"Properties of isolated species %d:\n",i );
 		(theorySP+i)->sumM = ((SP+i)->POP)*((SP+i)->MASS);
 		theory_trans( &((theorySP+i)->MFP),&((theorySP+i)->VISC),&((theorySP+i)->THERMD),&((theorySP+i)->SDIFF),&((theorySP+i)->SPEEDOFSOUND),in->RA,in->FRICCO,in->KBT,in->dt,(theorySP+i)->sumM,(SP+i)->nDNST,(SP+i)->mDNST,in->RTECH,outFlags.SYNOUT,fsynopsis );
 	}
@@ -2050,6 +2053,7 @@ void initializeSIM(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], 
 	for( i=0; i<DIM; i++ ) in->MAG[i]/=GnDNST;//Want torque per unit volume so divide field by global number density
 	//Calculate the theoretical properties of each species of SRD gas
 	theoryGl->sumM = GMASS;
+	fprintf( fsynopsis,"Global properties of averaged MPCD fluid:\n" );
 	theory_trans( &(theoryGl->MFP),&(theoryGl->VISC),&(theoryGl->THERMD),&(theoryGl->SDIFF),&(theoryGl->SPEEDOFSOUND),in->RA,in->FRICCO,in->KBT,in->dt,GMASS,GnDNST,GmDNST,in->RTECH,outFlags.SYNOUT,fsynopsis );
 
 	/* ****************************************** */
