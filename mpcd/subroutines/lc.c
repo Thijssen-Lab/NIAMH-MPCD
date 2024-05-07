@@ -430,7 +430,7 @@ void LCcollision( cell *CL,spec *SP,double KBT,double MFPOT,double dt,double SG,
 	double rotAx[_3D],xaxis[_3D]={0.0},rotAngle;
 	double rfc;			//Rotational friction coefficient
 	double S;			//Local scalar order parameter
-	double MFPOT_scaled=MFPOT*0.5*(double)DIM;
+	double avMFPOT,MFPOT_scaled;	//Mean field potential that actually get used in the calculation
 	particleMPC *tmpc;		//Temporary particleMPC
 
 	if( LC==LCL ) S=CL->S;		//Use the local scalar order parameter in collision
@@ -475,6 +475,20 @@ void LCcollision( cell *CL,spec *SP,double KBT,double MFPOT,double dt,double SG,
 			printf( "Rotation angle: %lf\n",rotAngle );
 		}
 	#endif
+	
+	//Calculate cell's average mean field potential
+	avMFPOT=0.0;
+	tmpc = CL->pp;
+	while( tmpc!=NULL ) {
+		id = tmpc->SPID;
+		avMFPOT+=(SP+id)->MFPOT;
+		//Increment link in list
+		tmpc = tmpc->next;
+	}
+	if( CL->POPSRD>1 ) avMFPOT /= (float)(CL->POPSRD);
+	// MFPOT_scaled=MFPOT*0.5*(double)DIM;
+	// printf("\tMFPOT=%lf\n",avMFPOT);
+	MFPOT_scaled=avMFPOT*0.5*(double)DIM;
 
 	//Generate random orientations for MPC particles
 	if( CL->POPSRD>1 ) {

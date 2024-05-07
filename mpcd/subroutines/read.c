@@ -197,6 +197,10 @@ void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL
 		read=fscanf( finput,"%lf %s",&MF,STR );
 		checkRead( read,"activity",inSTR);
 		(*SP+i)->ACT = MF;
+		//Read the species' mean field potential
+		read=fscanf( finput,"%lf %s",&MF,STR );
+		checkRead( read,"mean field potential",inSTR);
+		(*SP+i)->MFPOT = MF;
 		//Read the species' damping friction coefficient
 		read=fscanf( finput,"%lf %s",&MF,STR );
 		checkRead( read,"damping friction",inSTR);
@@ -730,7 +734,7 @@ void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cel
 	//Allocate the needed amount of memory for the species SP
 	(*SP) = (spec*) calloc( NSPECI, sizeof( spec ) );
 	for( i=0; i<NSPECI; i++ ) {
-		if(fscanf( finput,"%lf %i %i %i %i %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&((*SP+i)->MASS), &((*SP+i)->POP), &((*SP+i)->QDIST), &((*SP+i)->VDIST), &((*SP+i)->ODIST), &((*SP+i)->RFC), &((*SP+i)->LEN), &((*SP+i)->TUMBLE), &((*SP+i)->CHIHI), &((*SP+i)->CHIA), &((*SP+i)->ACT), &((*SP+i)->SIGWIDTH), &((*SP+i)->SIGPOS), &((*SP+i)->DAMP), &((*SP+i)->VOL), &((*SP+i)->nDNST), &((*SP+i)->mDNST) ));	//Read the species' mass
+		if(fscanf( finput,"%lf %i %i %i %i %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&((*SP+i)->MASS), &((*SP+i)->POP), &((*SP+i)->QDIST), &((*SP+i)->VDIST), &((*SP+i)->ODIST), &((*SP+i)->RFC), &((*SP+i)->LEN), &((*SP+i)->TUMBLE), &((*SP+i)->CHIHI), &((*SP+i)->CHIA), &((*SP+i)->ACT), &((*SP+i)->MFPOT), &((*SP+i)->SIGWIDTH), &((*SP+i)->SIGPOS), &((*SP+i)->DAMP), &((*SP+i)->VOL), &((*SP+i)->nDNST), &((*SP+i)->mDNST) ));	//Read the species' mass
 		else printf("Warning: Failed to read species %i.\n",i);
 		for( j=0; j<NSPECI; j++ ) {
 			//Read the species' interaction matrix with other species
@@ -1058,7 +1062,7 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 	in->TAU = getJObjDou(jObj, "tau", 0.5, jsonTagList); // TAU
 	in->RA = getJObjDou(jObj, "rotAng", 1.570796, jsonTagList); // rotAng
 	in->FRICCO = getJObjDou(jObj, "fricCoef", 1.0, jsonTagList); // fricCo
-	in->MFPOT = getJObjDou(jObj, "mfpot", 10.0, jsonTagList); // mfpPot
+	in->MFPOT = getJObjDou(jObj, "mfpot", 10.0, jsonTagList); // mfPot
 	in->tolD = getJObjDou(jObj, "tolD", 0.01, jsonTagList); //defect tolerance
 	in->noHI = getJObjInt(jObj, "noHI", 0, jsonTagList); // noHI
 	in->inCOMP = getJObjInt(jObj, "incomp", 0, jsonTagList); // inCOMP
@@ -1619,12 +1623,13 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 			}
 
 			// get second set of primitives
-			(*SP+i)->RFC = getJObjDou(objElem, "rfc", 0.01, jsonTagList); // rfCoef
-			(*SP+i)->LEN = getJObjDou(objElem, "len", 0.007, jsonTagList); // len
-			(*SP+i)->TUMBLE = getJObjDou(objElem, "tumble", 2.0, jsonTagList); // tumble
-			(*SP+i)->CHIHI = getJObjDou(objElem, "shearSusc", 0.5, jsonTagList); // chiHi
-			(*SP+i)->CHIA = getJObjDou(objElem, "magnSusc", 0.001, jsonTagList); // chiA
-			(*SP+i)->ACT = getJObjDou(objElem, "act", 0.05, jsonTagList); // act
+			(*SP+i)->RFC = getJObjDou(objElem, "rfc", 0.01, jsonTagList); // rotational friction Coef
+			(*SP+i)->LEN = getJObjDou(objElem, "len", 0.007, jsonTagList); // length
+			(*SP+i)->TUMBLE = getJObjDou(objElem, "tumble", 2.0, jsonTagList); // tumbling parameter
+			(*SP+i)->CHIHI = getJObjDou(objElem, "shearSusc", 0.5, jsonTagList); // Hydrodynamic susceptibility
+			(*SP+i)->CHIA = getJObjDou(objElem, "magnSusc", 0.001, jsonTagList); // Magnetic susceptibility
+			(*SP+i)->ACT = getJObjDou(objElem, "act", 0.05, jsonTagList); // activity
+			(*SP+i)->MFPOT = getJObjDou(objElem, "mfpot", 10.0, jsonTagList); // mean field potential
 			(*SP+i)->SIGWIDTH = getJObjDou(objElem, "sigWidth", 1, jsonTagList); // sigWidth
 			// error check, is SIGWIDTH 0?
 			if ((*SP+i)->SIGWIDTH == 0) {
@@ -1633,7 +1638,7 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 			}
 			(*SP+i)->SIGPOS = getJObjDou(objElem, "sigPos", (*SP+i)->SIGWIDTH, jsonTagList); // sigPos
 			(*SP+i)->MINACTRATIO = getJObjDou(objElem, "minActRatio", 0.0, jsonTagList); // minActRatio
-			(*SP+i)->DAMP = getJObjDou(objElem, "damp", 0.0, jsonTagList); // damp
+			(*SP+i)->DAMP = getJObjDou(objElem, "damp", 0.0, jsonTagList); // damping coefficient
 		}
 	} else { // if nothing found in the JSON then fallback to the default
 		// setting up a single species with default parameters
@@ -1657,6 +1662,7 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 			(*SP+i)->CHIHI = 0.5; // chiHi
 			(*SP+i)->CHIA = 0.001; // chiA
 			(*SP+i)->ACT = 0.05; // act
+			(*SP+i)->MFPOT = 10.0; // mean field potential
 			(*SP+i)->SIGWIDTH = 1; // sigwidth
 			(*SP+i)->SIGPOS = 1; // sigpos
 			(*SP+i)->MINACTRATIO = 0.0; // minActRatio

@@ -1378,10 +1378,26 @@ void listinput( inputList in,double AVVEL,spec SP[],kinTheory theorySP[],kinTheo
 			printf( "\tSpecies properties:\n" );
 			for( i=0; i<NSPECI; i++ ) {
 				printf( "\t\tSpecies ID: %i\n",i );
-				printf( "\t\t\tPopulation: %i\n",SP[i].POP );
-				printf( "\t\t\tParticle mass: %lf\n",SP[i].MASS );
-				printf( "\t\t\tSpecies total mass: %lf\n",theorySP[i].sumM );
-				printf( "\t\t\tThe following properties are calculated ASSUMING the species are perfectly separated\n" );
+				printf( "\t\tPopulation: %i\n",SP[i].POP );
+				printf( "\t\tAccessible volume: %lf\n",SP[i].VOL );
+				printf( "\t\tParticle mass: %lf\n",SP[i].MASS );
+				if(in.LC) {
+					printf( "\t\tLiquid crystal properties:\n" );
+					printf( "\t\t\tRotational friction coefficient: %lf\n",SP[i].RFC );
+					printf( "\t\t\tTumbling parameter: %lf\n",SP[i].TUMBLE );
+					printf( "\t\t\tHydrodynamic susceptibility: %lf\n",SP[i].CHIHI );
+					printf( "\t\t\tMagnetic susceptibility: %lf\n",SP[i].CHIA );
+					printf( "\t\t\tLength: %lf\n",SP[i].LEN );
+					printf( "\t\t\tActivity: %lf\n",SP[i].ACT );
+					printf( "\t\t\t\tActive dipole sigmoid width: %lf\n",SP[i].SIGWIDTH );
+					printf( "\t\t\t\tActive dipole sigmoid position: %lf\n",SP[i].SIGPOS );
+					printf( "\t\t\tMean field potential: %lf\n",SP[i].MFPOT );
+				}
+				printf( "\t\tInteraction matrix: " );
+				pvec( SP[i].M,NSPECI );
+				printf( "\t\tSpecies total mass: %lf\n",SP[i].DAMP );
+				printf( "\t\tDamping/friction coefficient: %lf\n",theorySP[i].sumM );
+				printf( "\t\tThe following assume the species are perfectly separated from each other\n" );
 				printf( "\t\t\tParticle number density: %lf\n",SP[i].nDNST );
 				printf( "\t\t\tMass density: %lf\n",SP[i].mDNST );
 				printf( "\t\t\tMean Free Path: %lf\n",theorySP[i].MFP );
@@ -1474,12 +1490,14 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 			fprintf( fsynopsis,"\tEffective rod-length to couple MPC torque to BC force: %lf\n",SP[i].LEN);
 			fprintf( fsynopsis,"\tTumbling parameter: %lf\n",SP[i].TUMBLE);
 			fprintf( fsynopsis,"\tMagnetic Sysceptibility: %lf\n\tShear Sysceptibility: %lf\n",SP[i].CHIA,SP[i].CHIHI );
-			fprintf( fsynopsis,"\tActivity: %lf\n",SP[i].ACT );
+			fprintf( fsynopsis,"\tActivity: %lf\n\tActivity-sigmoid width: %lf\n\tActivity-sigmoid position: %lf\n\tMinimum proportion for activity %lf\n",SP[i].ACT,SP[i].SIGWIDTH,SP[i].SIGPOS,SP[i].MINACTRATIO );
+			fprintf( fsynopsis,"\tMean field potential: %lf\n",SP[i].MFPOT );
 			fprintf( fsynopsis,"\tDamping friction: %lf\n",SP[i].DAMP );
 			fprintf( fsynopsis,"\tPos. dist.: %i\n\tVel. dist.: %i\n\tOri. dist.: %i\n",SP[i].QDIST,SP[i].VDIST,SP[i].ODIST );
 			fprintf( fsynopsis,"\tInteraction matrix: [" );
 			for( j=0; j<NSPECI-1; j++ ) fprintf( fsynopsis,"%lf, ",SP[i].M[j] );
 			fprintf( fsynopsis,"%lf]\n",SP[i].M[NSPECI-1] );
+			fprintf( fsynopsis,"\tAccessible volume: %lf\n\tNumber density: %lf\n\tMass density: %lf\n",SP[i].VOL,SP[i].nDNST,SP[i].mDNST );
 		}
 		fprintf( fsynopsis,"\nBC variables:\n" );
 		fprintf( fsynopsis,"Number of BCs: %i\n",NBC );
@@ -2640,7 +2658,7 @@ void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mo
 	//Species of MPCD particles
 	for( i=0; i<NSPECI; i++ ) {
 		fprintf( fout,"%lf %i %i %i %i ",(SP+i)->MASS,(SP+i)->POP,(SP+i)->QDIST,(SP+i)->VDIST,(SP+i)->ODIST );
-		fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf ",(SP+i)->RFC, (SP+i)->LEN, (SP+i)->TUMBLE, (SP+i)->CHIHI, (SP+i)->CHIA, (SP+i)->ACT, (SP+i)->SIGWIDTH, (SP+i)->SIGPOS, (SP+i)->DAMP );
+		fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf ",(SP+i)->RFC, (SP+i)->LEN, (SP+i)->TUMBLE, (SP+i)->CHIHI, (SP+i)->CHIA, (SP+i)->ACT, (SP+i)->MFPOT, (SP+i)->SIGWIDTH, (SP+i)->SIGPOS, (SP+i)->DAMP );
 		fprintf( fout,"%lf %lf %lf\n",(SP+i)->VOL,(SP+i)->nDNST,(SP+i)->mDNST );
 		for( j=0; j<NSPECI; j++ ) fprintf( fout,"%lf ",(SP+i)->M[j] );			//Binary fluid control parameters
 		fprintf( fout,"\n" );

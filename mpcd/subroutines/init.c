@@ -2026,10 +2026,6 @@ void initializeSIM(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], 
 	}
 	if(outFlags.SYNOUT == OUT) fprintf(fsynopsis,"\nMPCD particles placed.\n" );
 	//Calculate the theoretical properties of each species of SRD gas
-	printf("\n\n\n\n\n\n");
-	for (i = 0; i < NSPECI; i++) { // loop through the species
-		printf("HERE Species %d: pop=%d vol=%lf n=%lf mass=%lf mass_dens=%lf\n",i,(SP+i)->POP,(SP+i)->VOL,(SP+i)->nDNST,(SP+i)->MASS,(SP+i)->mDNST );
-	}
 	for( i=0; i<NSPECI; i++ ) {
 		if(outFlags.SYNOUT == OUT) fprintf( fsynopsis,"Properties of isolated species %d:\n",i );
 		(theorySP+i)->sumM = ((SP+i)->POP)*((SP+i)->MASS);
