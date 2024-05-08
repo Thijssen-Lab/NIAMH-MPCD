@@ -102,8 +102,6 @@ void PolymerGeometry (simptr sim)
 			p1 = p1->next;
 			j = j+1;
 		}
-		fprintf (GetSimStream(sim->files,"POLYMER-Velocity"), "\n");
-		fprintf (GetSimStream(sim->files,"POLYMER-Acceleration"), "\n");
 
 		// pointer to first monomer
 		p1 = polymer[i].p1;
