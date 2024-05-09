@@ -15,9 +15,9 @@
     "species":
     [
         {
-            "comment":      "dens is an alternative to pop for setting the average cell density. A density of 20 particles per MPCD cell is standard",    
-            "dens":         20,
-            "comment":      "An equivalent to the above line is ''pop': 50000', which would be need system included unaccessible volume like colloid interiors",
+            "comment":      "pop sets the number of particles. A density of 20 particles per MPCD cell is standard",    
+            "pop":          50000,
+            "comment":      "An equivalent to the above line is ''dens': 20', which would determine the appropriate population based on the accessible volume",
             "comment":      "Mass of particles",
             "mass":         1,
             "comment":      "Initial velocity distribution --- MPCD quickly thermalizes due to thermostate. 0==isorandom; 4==Gaussian dist",
@@ -43,7 +43,7 @@
             "comment":      "PBCs displace/shift/teleport the particles in the normal direction",
             "DN":           50,
             "comment":      "PBCs do NOT modify particle positions in the tangential direction",
-            "DN":           0,
+            "DT":           0,
             "comment":      "PBCs do NOT modify particle velocity in either the normal or tangential directions --- MVN=multiplicative factor in normal direction; MVT=multiplicative factor in tangential direction",
             "MVN":          1,
             "MVT":          1
@@ -85,6 +85,7 @@
     "comment":          "The above is just PBCs and since this is a standard BC, all those lines could be replaced by just ``domainWalls':1' sets PBCs around the domain",
     "comment":          "Furthermore, `adomainWalls':1' is the default so even that is extreneous and could have left out",
     "comment":          "OUTPUTS",
+    "comment":          "OUTPUTS",
     "comment":          "There are very many things that can be outputted but you will never need all of the possible output, so specify what to output",
     "comment":          "ALWAYS output a synopsis file so that you can check if the simulation is really what you thought it was",
     "comment":          "Synopsis file also includes info like the viscosity of the fluid based on input parameters",
@@ -93,6 +94,8 @@
     "debugOut":         3,
     "comment":          "All other outputs are NOT outputted if zero. If not zero, then they output data at a frequency determined by their value",
     "comment":          "Checkpointing dumps ALL simulation information so that the simulation can be restarted from a fail point. Only use for big, important simulations",
+    "checkpointOut":    1,
+    "checkpointTimerOut":    0.0056,
     "checkpointOut":    0,
     "comment":          "Output the average velocity every 10 iterations",
     "avVelOut":         10,
@@ -105,7 +108,7 @@
     "comment":          "Pressure field",
     "pressureOut":      0,
     "comment":          "Histogram of velocities",
-    "histVelOut":       100,
+    "histVelOut":       0,
     "comment":          "Histogram of speed",
     "histSpeedOut":     100,
     "comment":          "Histogram of number of particles per cell",
