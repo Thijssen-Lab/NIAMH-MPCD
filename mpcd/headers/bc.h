@@ -42,7 +42,7 @@ double secant_time( particleMPC p,bc WALL,double t_step );
 
 // void chooseP( bc WALL,particleMPC *pp,double *time,double *W2,int *chosenP,double t_step,double GRAV[] );
 void chooseP( bc WALL,particleMPC *pp,double *chosenW,int *chosenP );
-void chooseBC( bc WALL[],int currentP,particleMPC *pp,double *t_min,double *chosenW,int *chosenBC,double time );
+void chooseBC( bc WALL[],int currentP,particleMPC *pp,spec *pSP,double *t_min,double *chosenW,int *chosenBC,double time );
 
 double *normal( double *n,bc WALL,double *point,int dimension );
 double *normalWavy( double *n,bc WALL,double *point,int dimension );

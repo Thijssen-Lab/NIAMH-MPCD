@@ -903,7 +903,7 @@ void chooseP( bc WALL,particleMPC *pp,double *chosenW,int *chosenP ) {
 	double shift[DIM];
 	*chosenW = 1.0;
 
-	for( i=0; i<GPOP; i++ ) {
+	for( i=0; i<GPOP; i++ ) if(WALL.INTER[(pp+i)->SPID] == BCON) {
 		//Shift the BC due to any periodic BCs
 		shiftBC( shift,&WALL,(pp+i) );
 		rotateBC( &WALL,(pp+i),0 );
@@ -1249,7 +1249,7 @@ void BC_MPCcollision(bc WALL[], int BCcurrent, particleMPC *pp, spec *pSP, doubl
 /// @param t_left The time left for the particle to move.
 /// @see MPC_BCcollision
 ///
-void chooseBC( bc WALL[],int currentP,particleMPC *pp,double *t_minColl,double *chosenW,int *chosenBC,double t_left ) {
+void chooseBC( bc WALL[],int currentP,particleMPC *pp,spec *pSP,double *t_minColl,double *chosenW,int *chosenBC,double t_left ) {
 
 	int i,flag;
 	double t1,t2,tc;
@@ -1260,7 +1260,7 @@ void chooseBC( bc WALL[],int currentP,particleMPC *pp,double *t_minColl,double *
 	tempW = 1.0;
 	flag=0;
 
-	for( i=0; i<NBC; i++ ) {
+	for( i=0; i<NBC; i++ ) if(WALL[i].INTER[(pp+currentP)->SPID] == BCON) {
 		// Planar BCs
 		if( WALL[i].PLANAR ) {
 			tempW=calcW_PLANE( WALL[i],*(pp+currentP) );
@@ -1373,7 +1373,7 @@ void MPC_BCcollision( particleMPC *pp,int currentP,bc WALL[],spec *pSP,double KB
 	while( flag ) {
 		//We must check if the particle is inside any of the BCs
 		// printf( "\nChoosing BC...\n" );
-		chooseBC( WALL,currentP,pp,&t_coll,&W,&chosenBC,t_left );
+		chooseBC( WALL,currentP,pp,pSP,&t_coll,&W,&chosenBC,t_left );
 		//If no particles were inside then we are done.
 		if( W > -TOL ) flag = 0;
 		//Otherwise, COLLISON
