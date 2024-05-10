@@ -504,6 +504,43 @@ double secant_time_MD( particleMD *atom,bc WALL,double t_step ) {
 	return root;
 }
 
+// ///
+// /// @brief	Finds the normal to the surface that the particle is
+// ///			presently ON.
+// ///
+// /// It takes the gradient of \f$ ( a(x-h) )^p + (b(y-k))^p + (c(z-l))^p - r = 0 \f$, that is the equation
+// /// for the control volume, since the gradient is equal to the normal. For powers of 1 and 2 it takes the
+// /// shortcuts and uses the specific solution programmed in. For higher powers it uses a more general 
+// /// solution. 
+// /// 
+// /// @param	n			The normal vector to the surface.
+// /// @param WALL 		One of the walls of the BCs that the particle is interacting with.
+// /// @param atom 		The MD particle.
+// /// @param dimension	The dimenson of the control volume.
+// /// @return				The normal vector to the surface.
+// /// @see 				normal()
+// ///
+// double *normal_MD( double *n,bc WALL,particleMD *atom,int dimension ) {
+// 	int i;
+
+// 	if( WALL.PLANAR || ( feq(WALL.P[0],1.0) && feq(WALL.P[1],1.0) && feq(WALL.P[2],1.0) && feq(WALL.P[3],1.0))) {
+// 		for( i=0; i<dimension; i++ ) n[i] = WALL.A[i];
+// 	}
+// 	// Issue: for 2D, can't keep feq(WALL.P[2], 2.0) as P[2]=1.0.
+// 	else if( feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0) ) {
+// 		n[0] = 2.*WALL.A[0]*(atom->rx-WALL.Q[0]);
+// 		n[1] = 2.*WALL.A[1]*(atom->ry-WALL.Q[1]);
+// 		n[2] = 2.*WALL.A[2]*(atom->rz-WALL.Q[2]);
+// 	}
+// 	else {
+// 		n[0] = (WALL.P[0]) *smrtPow( WALL.A[0]*(atom->rx-WALL.Q[0]) , WALL.P[0]-1.0 );
+// 		n[1] = (WALL.P[1]) *smrtPow( WALL.A[1]*(atom->ry-WALL.Q[1]) , WALL.P[1]-1.0 );
+// 		n[2] = (WALL.P[2]) *smrtPow( WALL.A[2]*(atom->rz-WALL.Q[2]) , WALL.P[2]-1.0 );
+// 	}
+
+// 	return n;
+// }
+
 ///
 /// @brief	Finds the normal to the surface that the particle is
 ///			presently ON.
@@ -513,7 +550,7 @@ double secant_time_MD( particleMD *atom,bc WALL,double t_step ) {
 /// shortcuts and uses the specific solution programmed in. For higher powers it uses a more general 
 /// solution. 
 /// 
-/// @param	n			The normal vector to the surface.
+/// @param n			The normal vector to the surface.
 /// @param WALL 		One of the walls of the BCs that the particle is interacting with.
 /// @param atom 		The MD particle.
 /// @param dimension	The dimenson of the control volume.
@@ -521,24 +558,13 @@ double secant_time_MD( particleMD *atom,bc WALL,double t_step ) {
 /// @see 				normal()
 ///
 double *normal_MD( double *n,bc WALL,particleMD *atom,int dimension ) {
-	int i;
+	double pos[_3D]={0.0}; 	//The position of the particle.
 
-	if( WALL.PLANAR || ( feq(WALL.P[0],1.0) && feq(WALL.P[1],1.0) && feq(WALL.P[2],1.0) && feq(WALL.P[3],1.0))) {
-		for( i=0; i<dimension; i++ ) n[i] = WALL.A[i];
-	}
-	// Issue: for 2D, can't keep feq(WALL.P[2], 2.0) as P[2]=1.0.
-	else if( feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0) ) {
-		n[0] = 2.*WALL.A[0]*(atom->rx-WALL.Q[0]);
-		n[1] = 2.*WALL.A[1]*(atom->ry-WALL.Q[1]);
-		n[2] = 2.*WALL.A[2]*(atom->rz-WALL.Q[2]);
-	}
-	else {
-		n[0] = (WALL.P[0]) *smrtPow( WALL.A[0]*(atom->rx-WALL.Q[0]) , WALL.P[0]-1.0 );
-		n[1] = (WALL.P[1]) *smrtPow( WALL.A[1]*(atom->ry-WALL.Q[1]) , WALL.P[1]-1.0 );
-		n[2] = (WALL.P[2]) *smrtPow( WALL.A[2]*(atom->rz-WALL.Q[2]) , WALL.P[2]-1.0 );
-	}
+	pos[0] = atom->rx;
+	if(dimension>1) pos[1] = atom->ry;
+	if(dimension>2) pos[2]=atom->rz;
 
-	return n;
+	return normal( n,WALL,pos,dimension );
 }
 
 ///
