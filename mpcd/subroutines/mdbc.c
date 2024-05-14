@@ -78,11 +78,13 @@ void MD_BCcollision( particleMD *atom,bc WALL[],double KBT,double t_step ) {
 		if( W > -TOL ) flag = 0;
 		//Otherwise, COLLISON
 		else {
+			printf( "MD monomer collided with wall. Chosen BC %d. Crosstime: %e.\n",chosenBC,time);
 			cnt++;
 			//We have the BC to collide with and the time at which it collided
 			//Rewind the particle back to it's old position
 			rewind_MD( atom,time );
 			if(cnt==1){
+				//Save the original positions
 				RX=atom->rx;
 				RY=atom->ry;
 				RZ=atom->rz;
@@ -114,15 +116,17 @@ void MD_BCcollision( particleMD *atom,bc WALL[],double KBT,double t_step ) {
 			time = t_step - t_delta;
 			//Let the BC stream the rest of the way
 			stream_MD( atom,time );
-			//Return to the top and try to move again for the rest of the time.
+			//Check if the MD particle is now outside of the BC
 			W1 = calcW_MD(WALL[chosenBC],atom);
 			if (W1 < -TOL){
+				//If it is not then put it back to the original position before streaming and zero its velocity
 				atom->rx=RX;
 				atom->ry=RY;
 				atom->rz=RZ;
 				atom->wx=WX;
 				atom->wy=WY;
 				atom->wz=WZ;
+				//Zero the velocity
 				atom->vx=0.0;
 				atom->vy=0.0;
 				atom->vz=0.0;
@@ -176,9 +180,10 @@ void chooseBC_MD( bc WALL[],particleMD *atom,double *t_min,double *chosenW,int *
 			crosstime_MD( atom,WALL[i],&t1,&t2,time );
 			tc = chooseT( t_step,t1,t2,0,&flag );
 			if( flag ) {
-				printf( "Warning: Cross time unacceptable MD: %lf,wall:%d, tempW:%f.\n",tc,i,tempW);
+				printf( "Warning: Cross time unacceptable MD: %e, wall:%d, tempW:%e.\n",tc,i,tempW);
 				printf( "Particle:%d, rx:%f, ry:%f, rz:%f, \n",atom->object,atom->rx,atom->ry,atom->rz);
-				printf( "wx:%f, wy:%f, wz:%f.\n",atom->wx,atom->wy,atom->wz);
+				printf( "wx:%f, wy:%f, wz:%f,\n",atom->wx,atom->wy,atom->wz);
+				printf( "Candidate crosstime 1: %e and crosstime 2: %e.\n",t1,t2);
 				// exit( 1 );		no need to exit. it is solved by further actions in MD_BCcollision
 			}
 
@@ -329,13 +334,15 @@ double calcW_MD( bc WALL,particleMD *atom ){
 		terms = smrtPow( WALL.R,WALL.P[3] );
 		if( WALL.ABS ) terms=fabs(terms);
 		W -= terms;
+		//Check if need wavy wall complications
+		if( !feq(WALL.B[0],0.0) ) W += calcWavyW(WALL,Q,W);
 	}
 	else {
 		printf( "Error:\tNon 4-fold symmetry not yet programmed for MD-BC interaction\n" );
 		exit( 1 );
 	}
+	//Check if invert wall
 	if( WALL.INV ) W *= -1.;
-
 	return W;
 }
 
