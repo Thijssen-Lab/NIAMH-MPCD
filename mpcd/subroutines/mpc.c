@@ -398,12 +398,14 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 						// Particle loop
 						if (CL[a][b][c].pp!=NULL){
 							ptMPC = CL[a][b][c].pp;
-							while (ptMPC != NULL){
-								normal(n, WALL[i], ptMPC->Q, DIM);
-								norm(n, DIM);
-								// apply boundary condition (anchoring) to cell
-								// note: this also feeds anchoring torque back to boundary (to add to dV and dL), if mobile
-								oriBC(ptMPC, SP, &WALL[i], n);
+							while (ptMPC != NULL) {
+								if(WALL[i].INTER[ptMPC->SPID] == BCON) {
+									normal(n, WALL[i], ptMPC->Q, DIM);
+									norm(n, DIM);
+									// apply boundary condition (anchoring) to cell
+									// note: this also feeds anchoring torque back to boundary (to add to dV and dL), if mobile
+									oriBC(ptMPC, SP, &WALL[i], n);
+								}
 								ptMPC = ptMPC->next;
 							}
 						}
