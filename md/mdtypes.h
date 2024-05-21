@@ -84,6 +84,8 @@ extern int snprintf (char *__restrict __s, size_t __maxlen, __const char *__rest
 # define FROZEN_WARMUP          0
 # define FREE_WARMUP            1 
 # define PINNED_WARMUP          2
+//MD Flag that warmup has finished
+# define POS_WARMUP             3
 
 // domains
 #define	DOMAIN_ALL				-1
