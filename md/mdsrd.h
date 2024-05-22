@@ -22,7 +22,7 @@ void VelocityVerletStep 		(simptr sim,int MDmode,struct particleMPC *pSRD,struct
 void ComputeElectrostaticForcesSRD	(simptr sim,struct particleMPC *pSRD,struct spec *SP,int GPOP, int steps,struct cell ***CL);
 
 void ComputeForces			(simptr sim);
-void ComputeForcesSRD			(simptr sim,int MDmode,particleMPC *pSRD,spec *SP,int GPOP,struct cell ***CL,bc WALL[]);
+void ComputeForcesSRD			(simptr sim,int MDmode,particleMPC *pSRD,spec *SP,int GPOP,struct cell ***CL);
 void ComputeCapForces			(simptr sim);
 void ComputeDispersionForces		(simptr sim);
 void ComputeDispersionForcesSRD		(simptr sim,particleMPC *pSRD,spec *SP,int GPOP);

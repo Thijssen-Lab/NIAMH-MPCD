@@ -545,7 +545,7 @@ void VelocityVerletStep (simptr sim,int MDmode,struct particleMPC *pSRD,struct b
 	}
 	sim->drTotMax  += sqrt(v2max)*dt;
 	// calculate the net force on all particles
-	ComputeForcesSRD (sim,MDmode,pSRD,SP,GPOP,CL,pBC);
+	ComputeForcesSRD (sim,MDmode,pSRD,SP,GPOP,CL);
 
 	if(MDmode==MPCinMD) for (j=0; j<GPOP; j++) {
 		//Second half of Verlet
@@ -597,7 +597,7 @@ void VelocityVerletStep (simptr sim,int MDmode,struct particleMPC *pSRD,struct b
 /// @return 	void
 
 //================================================================================
-void ComputeForcesSRD (simptr sim,int MDmode,struct particleMPC *pSRD,struct spec *SP,int GPOP,struct cell ***CL,bc WALL[])
+void ComputeForcesSRD (simptr sim,int MDmode,struct particleMPC *pSRD,struct spec *SP,int GPOP,struct cell ***CL)
 //================================================================================
 {
 	int		i, nAtom;
