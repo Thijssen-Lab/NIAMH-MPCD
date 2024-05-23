@@ -10,6 +10,8 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+# include "definitions.h"
+
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
@@ -37,19 +39,20 @@ int NSPECI;
 int NBC;
 /// @brief The total number of swimmers in the simulation.
 int NS;
-/// @brief The volume accessible to the simulation fluid.
+/// @brief The global volume of the control volume X*Y*Z
 double VOL;
-/// @brief The particle number density of the simulation fluid. Found using the volume VOL determined by Monte Carlo.
-double nDNST;
-/// @brief The mass density of the simulation fluid. Found using the volume VOL determined by Monte Carlo. 
-double mDNST;
-
+/// @brief The global number density of particles
+double GnDNST;
+/// @brief The global mass density of particles
+double GmDNST;
+/// @brief The global mass
+double GMASS;
 /// @brief The x, y, z dimensions of the control volume.
-int XYZ[3];
+int XYZ[_3D];
 /// @brief The x, y, z dimensions of the control volume plus 1.
-int XYZ_P1[3];
+int XYZ_P1[_3D];
 /// @brief Flags as to whether the x, y, or z dimensions are wrapped in periodic boundary conditions.
-int XYZPBC[3];
+int XYZPBC[_3D];
 /// @brief The maximum length that can fit in the control volume (the diagonal length).
 int maxXYZ;
 

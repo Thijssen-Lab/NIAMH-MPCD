@@ -419,18 +419,18 @@ void genrand_maierSaupeMetropolis_2D( double DIR[],double rotAx[],double rotAngl
 /// @param CL Class containing cell data (pointed to local cell considered).
 /// @param SP List of species.
 /// @param KBT The temperature.
-/// @param MFPOT The molecular field potential.
+/// @param zeroMFPot Flag to zero the molecular field potential (regardless of species values). 0==False (leave it) 1==True (zero it) 
 /// @param dt The timestep.
 /// @param SG The global nematic order value.
 /// @param LC Variable to define if Nematic LC using an isotropic fluid (0), the local nematic order  value (1) or global nematic order value (2).
 ///
-void LCcollision( cell *CL,spec *SP,double KBT,double MFPOT,double dt,double SG,int LC ) {
+void LCcollision( cell *CL,spec *SP,double KBT,int zeroMFPot,double dt,double SG,int LC ) {
 	int i,id;
 	double DIR[_3D]={0.0},dU[_3D]={0.0};	//The director, the difference in orientation
 	double rotAx[_3D],xaxis[_3D]={0.0},rotAngle;
 	double rfc;			//Rotational friction coefficient
 	double S;			//Local scalar order parameter
-	double MFPOT_scaled=MFPOT*0.5*(double)DIM;
+	double avMFPOT,MFPOT_scaled;	//Mean field potential that actually get used in the calculation
 	particleMPC *tmpc;		//Temporary particleMPC
 
 	if( LC==LCL ) S=CL->S;		//Use the local scalar order parameter in collision
@@ -475,6 +475,25 @@ void LCcollision( cell *CL,spec *SP,double KBT,double MFPOT,double dt,double SG,
 			printf( "Rotation angle: %lf\n",rotAngle );
 		}
 	#endif
+	
+	//Calculate cell's average mean field potential
+	if(zeroMFPot) {
+		MFPOT_scaled=0.0;
+	}
+	else {
+		avMFPOT=0.0;
+		tmpc = CL->pp;
+		while( tmpc!=NULL ) {
+			id = tmpc->SPID;
+			avMFPOT+=(SP+id)->MFPOT;
+			//Increment link in list
+			tmpc = tmpc->next;
+		}
+		if( CL->POPSRD>1 ) avMFPOT /= (float)(CL->POPSRD);
+		// MFPOT_scaled=MFPOT*0.5*(double)DIM;
+		// printf("\tMFPOT=%lf\n",avMFPOT);
+		MFPOT_scaled=avMFPOT*0.5*(double)DIM;
+	}
 
 	//Generate random orientations for MPC particles
 	if( CL->POPSRD>1 ) {
@@ -1184,13 +1203,15 @@ void tensOrderParamNNN( cell ***CL,double **S,int LC,int a,int b,int c ) {
 double binderCumulant( cell ***CL,int L,int LC ) {
 	int nBins[_3D]={0.0};			//Number of cumulant bins
 	int i,j,k,a,b,c,d;			//Indices
-	double UL,thisS,avS,avS2,avS4;		//Average of the square and power 4 of order parameter and the Binder cumulant
+	double UL,thisS;		//Binder cumulant, scalar order parameter of the current cell
+	// double avS;
+	double avS2,avS4;		//Average of the square and power 4 of order parameter and the Binder cumulant
 	double **S,eigval[_3D];			//Order parameter tensor and it's eigenvalues
 	particleMPC *pMPC;			//Temporary pointer to MPC particles
 	double POPinv,fDIM,invDconst,invBinVol;
 	int binPOP,cL;
 
-	avS=0.;
+	// avS=0.;
 	avS2=0.;
 	avS4=0.;
 	fDIM = (double) DIM;
@@ -1234,12 +1255,12 @@ double binderCumulant( cell ***CL,int L,int LC ) {
 		if(DIM==_3D) thisS=-1.*(eigval[1]+eigval[2]);
 		else thisS=eigval[0];
 		//Add them to averages/sums
-		avS+=thisS;
+		// avS+=thisS;
 		avS2+=(thisS*thisS);
 		avS4+=(thisS*thisS*thisS*thisS);
 	}
 	invBinVol=1./((double)nBins[0]*nBins[1]*nBins[2]);
-	avS*=invBinVol;
+	// avS*=invBinVol;
 	avS2*=invBinVol;
 	avS4*=invBinVol;
 
@@ -1797,7 +1818,7 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 		id = tmpc->SPID;
 
 		// do a check to see if the subpopulation is of sufficient quantity to compute activity
-		if ( ((double)(SP+id)->MINACTRATIO == 0.0) || (((double)(SP+id)->MINACTRATIO)*nDNST < (double)CL->SP[id]) ) {
+		if ( ((double)(SP+id)->MINACTRATIO == 0.0) || (((double)(SP+id)->MINACTRATIO)*GnDNST < (double)CL->SP[id]) ) {
 			ACT += (double)(SP+id)->ACT / (double)(SP+id)->MASS;
 			sigWidth += (double)(SP+id)->SIGWIDTH;
 			sigPos += (double)(SP+id)->SIGPOS;
@@ -1806,7 +1827,7 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 	}
 	//If DIPOLE_DIR_SUM then use the sum just calculated
 	//If DIPOLE_DIR_AV or DIPOLE_DIR_SIG then use the average value everywhere
-	if( RTECH==DIPOLE_DIR_AV || RTECH==DIPOLE_DIR_SIG) ACT *= nDNST/((double)CL->POP);
+	if( RTECH==DIPOLE_DIR_AV || RTECH==DIPOLE_DIR_SIG) ACT *= GnDNST/((double)CL->POP);
 
 	// Now, if using sigmoidal dipole set up a sigmoidal falloff based on the cell population
 	if (RTECH==DIPOLE_DIR_SIG || RTECH==DIPOLE_DIR_SIG_SUM) {
@@ -1815,7 +1836,7 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 		sigPos /= (double)CL->POP;
 
 		// compute the sigmoidal falloff function
-		double falloffFactor = (1 - tanh( ((double)CL->POP  - nDNST * (1 + sigPos) ) / (nDNST * sigWidth) ) );
+		double falloffFactor = (1 - tanh( ((double)CL->POP  - GnDNST * (1 + sigPos) ) / (GnDNST * sigWidth) ) );
 		double rescaleFactor = 2;
 
 		// rescale the activity

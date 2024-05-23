@@ -39,14 +39,8 @@
 ///
 /// @brief	Applies the BCs to the MD particle, in case it is required.
 ///
-/// It checks if the particle is inside the boundaries. If it's inside the boundaries it does not
-/// do anything.
-/// But if it is not, it rewinds it back to its old position, then it calculates the
-/// time taken for the particle to collide with the boundary all through chooseBC_MD().
-/// It streams that time, collides with the boundary, then it streams in to the control volume for the 
-/// rest of the streaming time.
-/// If the function fails to bring it inside, it is simply brought back to its old position with no
-///	velocity.
+/// Instead of writing its own function, this casts the MD atom as and MPCD particles and 
+/// uses the pre-existing MPC_BCcollision()
 ///
 /// @param atom		The MD particle.
 /// @param WALL		All of the walls (BCs) that the particle might interact with. 
@@ -55,81 +49,141 @@
 /// @see 			MPC_BCcollision()
 /// 
 void MD_BCcollision( particleMD *atom,bc WALL[],double KBT,double t_step ) {
-	double t_delta;			//time passed so far
-	double time;			//time left to move for
-	double t_min=0.;		//smallest time
-	int chosenBC=0;			//Particle to go with t_min
-	int flag = 1;			//flag for if should keep looping. Loop while 1.
-	int cnt = 0;
-	double n[_3D] = {0.,0.,0.};	//Normal to the surface
-	double W, W1 = 0.0;
-	double shift[_3D] = {0.,0.,0.};
-	double RX=0.0,RY=0.0,RZ=0.0;
-	double WX=0.0,WY=0.0,WZ=0.0;
+	int i,j,d;
+	particleMPC tempMPC;	//Temporary pointer to fake MPC particle
+	spec tempSP;			//Temporary species properties for fake MPC particle
+	int bcCNT=0,reCNT=0,rethermCNT=0;
+	int INTER_backup[NBC][MAXSPECI+2];	    // Interaction matrix for BC with particles. 
 
-	t_delta = 0.;
-	time = t_step;
-
-	while( flag ) {
-		//We must check if the particle is inside any of the BCs
-		chooseBC_MD( WALL,atom,&t_min,&W,&chosenBC,time,t_step );
-
-		//If no particles were inside then we are done.
-		if( W > -TOL ) flag = 0;
-		//Otherwise, COLLISON
-		else {
-			cnt++;
-			//We have the BC to collide with and the time at which it collided
-			//Rewind the particle back to it's old position
-			rewind_MD( atom,time );
-			if(cnt==1){
-				RX=atom->rx;
-				RY=atom->ry;
-				RZ=atom->rz;
-				WX=atom->wx;
-				WY=atom->wy;
-				WZ=atom->wz;
-			}
-
-			//Update the time
-			t_delta += t_min;
-
-			//Translate the particle to the moment it hits the BC
-			stream_MD( atom,t_min );
-
-			//Now the BC and the particle are touching. Let them collide.
-			shiftBC_MD( shift,&WALL[chosenBC],atom );
-			rotateBC_MD( &WALL[chosenBC],atom );
-			//Find normal
-			normal_MD( n,WALL[chosenBC],atom,DIM );
-			//Normalize the normal vector
-			norm( n,DIM );
-			//Apply the BC to velocity
-			velBC_MD( atom,&WALL[chosenBC],n,KBT );
-			//Apply the BC to position
-			posBC_MD( atom,WALL[chosenBC],n );
-			rotatebackBC_MD( &WALL[chosenBC],atom );
-			shiftbackBC( shift,&WALL[chosenBC] );
-			//Update the time to stream for
-			time = t_step - t_delta;
-			//Let the BC stream the rest of the way
-			stream_MD( atom,time );
-			//Return to the top and try to move again for the rest of the time.
-			W1 = calcW_MD(WALL[chosenBC],atom);
-			if (W1 < -TOL){
-				atom->rx=RX;
-				atom->ry=RY;
-				atom->rz=RZ;
-				atom->wx=WX;
-				atom->wy=WY;
-				atom->wz=WZ;
-				atom->vx=0.0;
-				atom->vy=0.0;
-				atom->vz=0.0;
-			}
-		}
+	//Cast the MD atom as a temporary MPCD particle
+	tempMPC.Q[0]=atom->rx;
+	tempMPC.V[0]=atom->vx;
+	if(DIM>=_2D) {
+		tempMPC.Q[1]=atom->ry;
+		tempMPC.V[1]=atom->vy;
 	}
+	if(DIM>=_3D) {
+		tempMPC.Q[2]=atom->rz;
+		tempMPC.V[2]=atom->vz;
+	}
+	for( d=0; d<_3D; d++ ) {
+		tempMPC.U[d]=0.0;
+		tempMPC.T[d]=0.0;
+	}
+	tempMPC.S_flag=0;
+	tempMPC.SPID=0;
+	tempSP.POP=1;
+	tempSP.MASS=atom->mass;
+	for( i=0; i<NBC; i++ ) {
+		//Save the interaction matrix
+		for( j=0; j<MAXSPECI+2; j++ ) {
+			INTER_backup[i][j] = WALL[i].INTER[j];
+			WALL[i].INTER[j]=0;
+		}
+		// Set the interaction with species zero (since set temporary MPC particle's SPID=0) to MD interaction (index=MAXSPECI+0)
+		WALL[i].INTER[0]=INTER_backup[i][MAXSPECI+0];
+	}
+
+	MPC_BCcollision( &tempMPC,0,WALL,&tempSP,KBT,t_step,0,&bcCNT,&reCNT,&rethermCNT,0 );
+
+	//Recast the temporary MPCD particle back to MD atom
+	atom->rx=tempMPC.Q[0];
+	atom->vx=tempMPC.V[0];
+	if(DIM>=_2D) {
+		atom->ry=tempMPC.Q[1];
+		atom->vy=tempMPC.V[1];
+	}
+	if(DIM>=_3D) {
+		atom->rz=tempMPC.Q[2];
+		atom->vz=tempMPC.V[2];
+	}
+	//Restore the interaction matrix
+	for( i=0; i<NBC; i++ ) for( j=0; j<MAXSPECI+2; j++ ) WALL[i].INTER[j]=INTER_backup[i][j];
 }
+
+// ///
+// /// OLD MD_BCcollision()
+// /// 
+// void MD_BCcollision( particleMD *atom,bc WALL[],double KBT,double t_step ) {
+// 	double t_delta;			//time passed so far
+// 	double time;			//time left to move for
+// 	double t_min=0.;		//smallest time
+// 	int chosenBC=0;			//Particle to go with t_min
+// 	int flag = 1;			//flag for if should keep looping. Loop while 1.
+// 	int cnt = 0;
+// 	double n[_3D] = {0.,0.,0.};	//Normal to the surface
+// 	double W, W1 = 0.0;
+// 	double shift[_3D] = {0.,0.,0.};
+// 	double RX=0.0,RY=0.0,RZ=0.0;
+// 	double WX=0.0,WY=0.0,WZ=0.0;
+
+// 	t_delta = 0.;
+// 	time = t_step;
+
+// 	while( flag ) {
+// 		//We must check if the particle is inside any of the BCs
+// 		chooseBC_MD( WALL,atom,&t_min,&W,&chosenBC,time,t_step );
+
+// 		//If no particles were inside then we are done.
+// 		if( W > -TOL ) flag = 0;
+// 		//Otherwise, COLLISON
+// 		else {
+// 			printf( "MD monomer collided with wall. Chosen BC %d. Crosstime: %e.\n",chosenBC,time);
+// 			cnt++;
+// 			//We have the BC to collide with and the time at which it collided
+// 			//Rewind the particle back to it's old position
+// 			rewind_MD( atom,time );
+// 			if(cnt==1){
+// 				//Save the original positions
+// 				RX=atom->rx;
+// 				RY=atom->ry;
+// 				RZ=atom->rz;
+// 				WX=atom->wx;
+// 				WY=atom->wy;
+// 				WZ=atom->wz;
+// 			}
+
+// 			//Update the time
+// 			t_delta += t_min;
+
+// 			//Translate the particle to the moment it hits the BC
+// 			stream_MD( atom,t_min );
+
+// 			//Now the BC and the particle are touching. Let them collide.
+// 			shiftBC_MD( shift,&WALL[chosenBC],atom );
+// 			rotateBC_MD( &WALL[chosenBC],atom );
+// 			//Find normal
+// 			normal_MD( n,WALL[chosenBC],atom,DIM );
+// 			//Normalize the normal vector
+// 			norm( n,DIM );
+// 			//Apply the BC to velocity
+// 			velBC_MD( atom,&WALL[chosenBC],n,KBT );
+// 			//Apply the BC to position
+// 			posBC_MD( atom,WALL[chosenBC],n );
+// 			rotatebackBC_MD( &WALL[chosenBC],atom );
+// 			shiftbackBC( shift,&WALL[chosenBC] );
+// 			//Update the time to stream for
+// 			time = t_step - t_delta;
+// 			//Let the BC stream the rest of the way
+// 			stream_MD( atom,time );
+// 			//Check if the MD particle is now outside of the BC
+// 			W1 = calcW_MD(WALL[chosenBC],atom);
+// 			if (W1 < -TOL){
+// 				//If it is not then put it back to the original position before streaming and zero its velocity
+// 				atom->rx=RX;
+// 				atom->ry=RY;
+// 				atom->rz=RZ;
+// 				atom->wx=WX;
+// 				atom->wy=WY;
+// 				atom->wz=WZ;
+// 				//Zero the velocity
+// 				atom->vx=0.0;
+// 				atom->vy=0.0;
+// 				atom->vz=0.0;
+// 			}
+// 		}
+// 	}
+// }
 
 ///
 /// @brief	Checks if the MD particle is inside all the boundaries, if not it reports which 
@@ -161,7 +215,8 @@ void chooseBC_MD( bc WALL[],particleMD *atom,double *t_min,double *chosenW,int *
 	tempW = 1.;
 	flag=0;
 
-	for( i=0; i<NBC; i++ ) {
+	// for( i=0; i<NBC; i++ ) {
+	for( i=0; i<NBC; i++ ) if(WALL[i].INTER[MAXSPECI] == BCON) {
 		//Shift BC due to periodic BCs
 		shiftBC_MD( shift,&WALL[i],atom );
 		rotateBC_MD( &WALL[i],atom );
@@ -175,9 +230,10 @@ void chooseBC_MD( bc WALL[],particleMD *atom,double *t_min,double *chosenW,int *
 			crosstime_MD( atom,WALL[i],&t1,&t2,time );
 			tc = chooseT( t_step,t1,t2,0,&flag );
 			if( flag ) {
-				printf( "Warning: Cross time unacceptable MD: %lf,wall:%d, tempW:%f.\n",tc,i,tempW);
+				printf( "Warning: Cross time unacceptable MD: %e, wall:%d, tempW:%e.\n",tc,i,tempW);
 				printf( "Particle:%d, rx:%f, ry:%f, rz:%f, \n",atom->object,atom->rx,atom->ry,atom->rz);
-				printf( "wx:%f, wy:%f, wz:%f.\n",atom->wx,atom->wy,atom->wz);
+				printf( "wx:%f, wy:%f, wz:%f,\n",atom->wx,atom->wy,atom->wz);
+				printf( "Candidate crosstime 1: %e and crosstime 2: %e.\n",t1,t2);
 				// exit( 1 );		no need to exit. it is solved by further actions in MD_BCcollision
 			}
 
@@ -328,13 +384,15 @@ double calcW_MD( bc WALL,particleMD *atom ){
 		terms = smrtPow( WALL.R,WALL.P[3] );
 		if( WALL.ABS ) terms=fabs(terms);
 		W -= terms;
+		//Check if need wavy wall complications
+		if( !feq(WALL.B[0],0.0) ) W += calcWavyW(WALL,Q,W);
 	}
 	else {
 		printf( "Error:\tNon 4-fold symmetry not yet programmed for MD-BC interaction\n" );
 		exit( 1 );
 	}
+	//Check if invert wall
 	if( WALL.INV ) W *= -1.;
-
 	return W;
 }
 
@@ -462,7 +520,6 @@ double secant_time_MD( particleMD *atom,bc WALL,double t_step ) {
 	double Qi[DIM],QiM1[DIM];
 	double ti,tiM1,root;
 	double fi,fiM1;
-	int iter=0;
 
 	//Rewind the particle back to it's old position
 	//x-component
@@ -481,7 +538,6 @@ double secant_time_MD( particleMD *atom,bc WALL,double t_step ) {
 
 	//Secant Loop
 	do {
-		iter++;
 		// Calculate the surface function for the particles' positions at these times
 		fi = surf_func( WALL,Qi,DIM );
 		fiM1 = surf_func( WALL,QiM1,DIM );
@@ -504,6 +560,43 @@ double secant_time_MD( particleMD *atom,bc WALL,double t_step ) {
 	return root;
 }
 
+// ///
+// /// @brief	Finds the normal to the surface that the particle is
+// ///			presently ON.
+// ///
+// /// It takes the gradient of \f$ ( a(x-h) )^p + (b(y-k))^p + (c(z-l))^p - r = 0 \f$, that is the equation
+// /// for the control volume, since the gradient is equal to the normal. For powers of 1 and 2 it takes the
+// /// shortcuts and uses the specific solution programmed in. For higher powers it uses a more general 
+// /// solution. 
+// /// 
+// /// @param	n			The normal vector to the surface.
+// /// @param WALL 		One of the walls of the BCs that the particle is interacting with.
+// /// @param atom 		The MD particle.
+// /// @param dimension	The dimenson of the control volume.
+// /// @return				The normal vector to the surface.
+// /// @see 				normal()
+// ///
+// double *normal_MD( double *n,bc WALL,particleMD *atom,int dimension ) {
+// 	int i;
+
+// 	if( WALL.PLANAR || ( feq(WALL.P[0],1.0) && feq(WALL.P[1],1.0) && feq(WALL.P[2],1.0) && feq(WALL.P[3],1.0))) {
+// 		for( i=0; i<dimension; i++ ) n[i] = WALL.A[i];
+// 	}
+// 	// Issue: for 2D, can't keep feq(WALL.P[2], 2.0) as P[2]=1.0.
+// 	else if( feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0) ) {
+// 		n[0] = 2.*WALL.A[0]*(atom->rx-WALL.Q[0]);
+// 		n[1] = 2.*WALL.A[1]*(atom->ry-WALL.Q[1]);
+// 		n[2] = 2.*WALL.A[2]*(atom->rz-WALL.Q[2]);
+// 	}
+// 	else {
+// 		n[0] = (WALL.P[0]) *smrtPow( WALL.A[0]*(atom->rx-WALL.Q[0]) , WALL.P[0]-1.0 );
+// 		n[1] = (WALL.P[1]) *smrtPow( WALL.A[1]*(atom->ry-WALL.Q[1]) , WALL.P[1]-1.0 );
+// 		n[2] = (WALL.P[2]) *smrtPow( WALL.A[2]*(atom->rz-WALL.Q[2]) , WALL.P[2]-1.0 );
+// 	}
+
+// 	return n;
+// }
+
 ///
 /// @brief	Finds the normal to the surface that the particle is
 ///			presently ON.
@@ -513,7 +606,7 @@ double secant_time_MD( particleMD *atom,bc WALL,double t_step ) {
 /// shortcuts and uses the specific solution programmed in. For higher powers it uses a more general 
 /// solution. 
 /// 
-/// @param	n			The normal vector to the surface.
+/// @param n			The normal vector to the surface.
 /// @param WALL 		One of the walls of the BCs that the particle is interacting with.
 /// @param atom 		The MD particle.
 /// @param dimension	The dimenson of the control volume.
@@ -521,24 +614,13 @@ double secant_time_MD( particleMD *atom,bc WALL,double t_step ) {
 /// @see 				normal()
 ///
 double *normal_MD( double *n,bc WALL,particleMD *atom,int dimension ) {
-	int i;
+	double pos[_3D]={0.0}; 	//The position of the particle.
 
-	if( WALL.PLANAR || ( feq(WALL.P[0],1.0) && feq(WALL.P[1],1.0) && feq(WALL.P[2],1.0) && feq(WALL.P[3],1.0))) {
-		for( i=0; i<dimension; i++ ) n[i] = WALL.A[i];
-	}
-	// Issue: for 2D, can't keep feq(WALL.P[2], 2.0) as P[2]=1.0.
-	else if( feq(WALL.P[0],2.0) && feq(WALL.P[1],2.0) && feq(WALL.P[2],2.0) ) {
-		n[0] = 2.*WALL.A[0]*(atom->rx-WALL.Q[0]);
-		n[1] = 2.*WALL.A[1]*(atom->ry-WALL.Q[1]);
-		n[2] = 2.*WALL.A[2]*(atom->rz-WALL.Q[2]);
-	}
-	else {
-		n[0] = (WALL.P[0]) *smrtPow( WALL.A[0]*(atom->rx-WALL.Q[0]) , WALL.P[0]-1.0 );
-		n[1] = (WALL.P[1]) *smrtPow( WALL.A[1]*(atom->ry-WALL.Q[1]) , WALL.P[1]-1.0 );
-		n[2] = (WALL.P[2]) *smrtPow( WALL.A[2]*(atom->rz-WALL.Q[2]) , WALL.P[2]-1.0 );
-	}
+	pos[0] = atom->rx;
+	if(dimension>1) pos[1] = atom->ry;
+	if(dimension>2) pos[2]=atom->rz;
 
-	return n;
+	return normal( n,WALL,pos,dimension );
 }
 
 ///
@@ -880,7 +962,8 @@ void chooseBC_swimmer( bc WALL[],smono *atom,double *t_min,double *chosenW,int *
 	tempW = 1.;
 	flag=0;
 
-	for( i=0; i<NBC; i++ ) {
+	// for( i=0; i<NBC; i++ ) {
+	for( i=0; i<NBC; i++ ) if(WALL[i].INTER[MAXSPECI+1] == BCON) {
 		//Shift BC due to periodic BCs
 		shiftBC_swimmer( shift,&WALL[i],atom );
 		rotateBC_swimmer( &WALL[i],atom );
@@ -1147,7 +1230,6 @@ double secant_time_swimmer( smono *atom,bc WALL,double t_step ) {
 	double Qi[DIM],QiM1[DIM];
 	double ti,tiM1,root;
 	double fi,fiM1;
-	int iter=0;
 	int d;
 
 	//Rewind the particle back to it's old position
@@ -1161,7 +1243,6 @@ double secant_time_swimmer( smono *atom,bc WALL,double t_step ) {
 
 	//Secant Loop
 	do {
-		iter++;
 		// Calculate the surface function for the particles' positions at these times
 		fi = surf_func( WALL,Qi,DIM );
 		fiM1 = surf_func( WALL,QiM1,DIM );

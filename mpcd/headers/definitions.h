@@ -305,6 +305,12 @@
 // #define BC_MOVING_WALL 5
 
 /* ****************************************** */
+/* ********** Apply BC to particle ********** */
+/* ****************************************** */
+/// @brief BC interactions left on.
+# define BCON 1
+
+/* ****************************************** */
 /* ************** MD Coupling *************** */
 /* ****************************************** */
 /// @brief MD coupling option. No MD coupling.
@@ -313,6 +319,16 @@
 # define MDinMPC 1
 /// @brief MD coupling option. MPCD particles are treated in pair interactions with MD particles, but not between each other.
 # define MPCinMD 2
+
+/* ****************************************** */
+/* ************** MD Warmup ***************** */
+/* ****************************************** */
+/// @brief MD warmup option. No MD integration and no coupling to MPCD during MPCD warmup.
+# define FROZEN_WARMUP 0
+/// @brief MD warmup option. MD coupled and integrated during MPCD warmup.
+# define FREE_WARMUP 1
+/// @brief MD warmup option. MD coupled and integrated during MPCD warmup but its center is kept where it is initiated. 
+# define PINNED_WARMUP 2
 
 /* ****************************************** */
 /* ************** Monte Carlo *************** */
