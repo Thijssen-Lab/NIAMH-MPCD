@@ -84,6 +84,8 @@ extern int snprintf (char *__restrict __s, size_t __maxlen, __const char *__rest
 # define FROZEN_WARMUP          0
 # define FREE_WARMUP            1 
 # define PINNED_WARMUP          2
+//MD Flag that warmup has finished
+# define POS_WARMUP             3
 
 // domains
 #define	DOMAIN_ALL				-1
@@ -122,10 +124,6 @@ extern int snprintf (char *__restrict __s, size_t __maxlen, __const char *__rest
 #define	GEOM_CAPILLARY				1
 #define	GEOM_PLATES				2
 #define	GEOM_CYLINDER				3
-
-// repulsive force around boundary
-#define noREPULSION      0
-#define REPULSION        1
 
 // density types
 #define	VOLUME					0
@@ -616,7 +614,7 @@ typedef struct simulation {		 		// a simulation
     real  		potE;			 		///< total potential energy
     real  		ljE, harmE;				///< potential energies
     real  		coulE, feneE;			///< potential energies
-    real  		bendE, nemE;				///< potential energies
+    real  		bendE, nemE;			///< potential energies
     real  		s_kinE, ss_kinE;	 	///< kinetic energy accumulators
     real  		s_potE, ss_potE;	 	///< potential energy accumulators
     real  		s_totE, ss_totE;	 	///< total energy accumulators
@@ -633,13 +631,12 @@ typedef struct simulation {		 		// a simulation
     int			nAtomThermDPD;			///< number of atoms subject to DPD
 
     // simulation box
-    real       	unitCells[DIM_MD];		 	///< number of unit cells along each axis
+    real       	unitCells[DIM_MD];		 ///< number of unit cells along each axis
     int			lattice;		 		///< what type of crystal lattice
     int			geometry;		 		///< system geometry
-    int         boundaryType;           ///< if it is repulsive or not
     real		nAtomCell;		 		///< number of atoms per unit cell
-    real  		box[DIM_MD];		 		///< dimensions of the simulation box
-    real  		boxHalf[DIM_MD];		 	///< 0.5*box
+    real  		box[DIM_MD];		 	///< dimensions of the simulation box
+    real  		boxHalf[DIM_MD];		///< 0.5*box
     real  		rho;					///< density of the simulation box
 
     // capillary

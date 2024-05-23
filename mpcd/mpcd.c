@@ -112,7 +112,6 @@ int main(int argc, char* argv[]) {
 	outputFilesList outFiles;		//List of output files
 	specSwimmer specS;				//Swimmer's species
 	swimmer *swimmers;				//Swimmers
-	int WMD = 0;					// flag to decide if MD integrates during warmup of mpcd
 
     /* ****************************************** */
     /* ****************************************** */
@@ -257,16 +256,11 @@ int main(int argc, char* argv[]) {
 		if(outFlags.SYNOUT == OUT) fprintf( outFiles.fsynopsis,"\nBegin warmup loop.\n" );
 		// This is the main loop of the SRD program. The temporal loop. 
 		starttime=warmtime;
-        if (simMD != NULL) {
-            if(simMD->warmupMD){
-                WMD = simMD->warmupMD ;
-            }
-        }
 		for( warmtime=starttime; warmtime<=inputVar.warmupSteps; warmtime++ ) {
 			/* ****************************************** */
 			/* ***************** UPDATE ***************** */
 			/* ****************************************** */
-			timestep( CL, SRDparticles, SPECIES, WALL, simMD, &specS, swimmers, AVNOW, AVV, avDIR, inputVar, &KBTNOW, &AVS, warmtime, MDmode, outFlags, outFiles ,WMD);
+			timestep( CL, SRDparticles, SPECIES, WALL, simMD, &specS, swimmers, AVNOW, AVV, avDIR, inputVar, &KBTNOW, &AVS, warmtime, MDmode, outFlags, outFiles);
 			/* ****************************************** */
 			/* *************** CHECKPOINT *************** */
 			/* ****************************************** */
@@ -289,11 +283,14 @@ int main(int argc, char* argv[]) {
 	if(outFlags.SYNOUT == OUT) fprintf( outFiles.fsynopsis,"\nBegin temporal loop.\n" );
 	// This is the main loop of the SRD program. The temporal loop.
 	starttime=runtime;
+	if (simMD != NULL) {
+		simMD->warmupMD = POS_WARMUP;
+	}
 	for( runtime=starttime; runtime<=inputVar.simSteps; runtime++ ) {
 		/* ****************************************** */
 		/* ***************** UPDATE ***************** */
 		/* ****************************************** */
-		timestep( CL, SRDparticles, SPECIES, WALL, simMD, &specS, swimmers, AVNOW, AVV, avDIR, inputVar, &KBTNOW, &AVS, runtime, MDmode, outFlags, outFiles,FREE_WARMUP );
+		timestep( CL, SRDparticles, SPECIES, WALL, simMD, &specS, swimmers, AVNOW, AVV, avDIR, inputVar, &KBTNOW, &AVS, runtime, MDmode, outFlags, outFiles);
 		/* ****************************************** */
 		/* ***************** OUTPUT ***************** */
 		/* ****************************************** */

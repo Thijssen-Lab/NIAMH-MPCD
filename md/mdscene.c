@@ -113,7 +113,9 @@ void ScenePrint (simptr sim, sceneptr s)
 		if (s->active && s->stream) {
 			if (sim->step[count_] == 0 || s->stepPrint[count_] == s->stepPrint[phase]) {
 				s->stepPrint[count_] = 0;
-				if (s->scenefunc) s->scenefunc ((void *) sim, s, ACTION_PRINT);
+				if(sim->warmupMD==POS_WARMUP){
+					if (s->scenefunc) s->scenefunc ((void *) sim, s, ACTION_PRINT);
+				}
 			}
 		}
 		s = s->next;

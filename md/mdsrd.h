@@ -22,7 +22,7 @@ void VelocityVerletStep 		(simptr sim,int MDmode,struct particleMPC *pSRD,struct
 void ComputeElectrostaticForcesSRD	(simptr sim,struct particleMPC *pSRD,struct spec *SP,int GPOP, int steps,struct cell ***CL);
 
 void ComputeForces			(simptr sim);
-void ComputeForcesSRD			(simptr sim,int MDmode,particleMPC *pSRD,spec *SP,int GPOP,struct cell ***CL,bc WALL[]);
+void ComputeForcesSRD			(simptr sim,int MDmode,particleMPC *pSRD,spec *SP,int GPOP,struct cell ***CL);
 void ComputeCapForces			(simptr sim);
 void ComputeDispersionForces		(simptr sim);
 void ComputeDispersionForcesSRD		(simptr sim,particleMPC *pSRD,spec *SP,int GPOP);
@@ -34,10 +34,8 @@ void ComputeFeneForces			(simptr sim);
 void ComputeBendForces (simptr sim);
 void ComputeNemForces (simptr sim,struct spec *SP,struct cell ***CL);
 void ComputeSqueezeForces		(simptr sim);
-void ComputeBoundaryForces(simptr sim,bc WALL[]);
 
 real LennardJones 		(particleMD *p1, particleMD *p2, real dx, real dy, real dz, real rCut2);
-real LennardJonesWall 		(particleMD *p1, real dx, real dy, real dz, real rCut2);
 real LennardJonesSRD		(particleMD *p1,particleMPC *p2,spec *SP,real dx,real dy,real dz,real dt,real rCut2);
 real LennardJonesCap		(particleMD *p1, particleMD *p2, real dx, real dy, real dz, real rCut2, simptr sim);
 real Coulomb 			(particleMD *p1, particleMD *p2, real dx, real dy, real dz, real rCutCoul2, real bjerrum, real lambda_Ds);

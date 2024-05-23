@@ -545,7 +545,7 @@ void VelocityVerletStep (simptr sim,int MDmode,struct particleMPC *pSRD,struct b
 	}
 	sim->drTotMax  += sqrt(v2max)*dt;
 	// calculate the net force on all particles
-	ComputeForcesSRD (sim,MDmode,pSRD,SP,GPOP,CL,pBC);
+	ComputeForcesSRD (sim,MDmode,pSRD,SP,GPOP,CL);
 
 	if(MDmode==MPCinMD) for (j=0; j<GPOP; j++) {
 		//Second half of Verlet
@@ -597,7 +597,7 @@ void VelocityVerletStep (simptr sim,int MDmode,struct particleMPC *pSRD,struct b
 /// @return 	void
 
 //================================================================================
-void ComputeForcesSRD (simptr sim,int MDmode,struct particleMPC *pSRD,struct spec *SP,int GPOP,struct cell ***CL,bc WALL[])
+void ComputeForcesSRD (simptr sim,int MDmode,struct particleMPC *pSRD,struct spec *SP,int GPOP,struct cell ***CL)
 //================================================================================
 {
 	int		i, nAtom;
@@ -640,7 +640,6 @@ void ComputeForcesSRD (simptr sim,int MDmode,struct particleMPC *pSRD,struct spe
 	ComputeBendForces(sim);
 	ComputeNemForces(sim,SP,CL);
 	ComputeSqueezeForces(sim);
-	if (sim->boundaryType) ComputeBoundaryForces(sim,WALL);
 }
 
 /// Calculation of all forces acting on the atoms. First, the energy, accelearations
@@ -820,57 +819,6 @@ void ComputeDispersionForces (simptr sim)
 	sim->ljE   = ljE;
 }
 
-//================================================================================
-void ComputeBoundaryForces(simptr sim,bc WALL[])
-//================================================================================
-{
-	int	  		i, j, nAtom;
-	particleMD	*atom, *p;
-	real		dx, dy, dz;
-	real		rCut2, ljShift;
-	real		E=0, potE=0, ljE=0;
-	real		kT, dtSqrti, eta, sigma;
-	int		groupThermDPD;
-	real		sigma_lj;
-
-	// local sim variables
-	sigma_lj		= sim->sigma_lj;
-	ljShift	 		= sim->ljShift;
-	rCut2	 		= sim->rCut*sim->rCut;
-	kT		 		= sim->kT[sim->phase];
-	dtSqrti	 		= 1.0/sqrt(sim->dt);
-	eta		 		= sim->eta[sim->phase];
-	sigma    		= sqrt (2*kT*eta*(1-eta*sim->dt/2.0));
-	groupThermDPD 	= sim->groupThermDPD[sim->phase];
-	atom	 = sim->atom.items;
-	nAtom 	 = sim->atom.n;
-
-	double normal[_3D] = {0.,0.,0.};	//Normal to the surface
-	double shift[_3D] = {0.,0.,0.};
-
-	for (i=0; i<nAtom; i++) {
-		p = atom+i;
-		for( j=0; j<NBC; j++ ) {
-			if(WALL[j].DSPLC==0 & WALL[j].DN ==0){ 
-				//Shift BC due to periodic BCs
-				shiftBC_MD( shift,&WALL[j],p );
-				rotateBC_MD( &WALL[j],p );
-				normal_MD( normal,WALL[j],p,DIM );
-				dx = normal[0]/sigma_lj;
-				dy = normal[1]/sigma_lj;
-				dz = normal[2]/sigma_lj;
-				E = LennardJonesWall (p, dx, dy, dz, rCut2) + ljShift;
-				ljE  += E;
-				potE += E;
-				rotatebackBC_MD( &WALL[j],p );
-				shiftbackBC( shift,&WALL[j] );
-			}
-		}
-	}
-	// update energies in sim structure
-	sim->potE += potE;
-	sim->ljE   = ljE;
-}
 /// Calculates the net short-range dispersion force (LJ) acting on each atom. Note
 /// that the neighbors are stored as pointers to particle structures to avoid
 /// double indirections (Steve Guillouzic, 2001). Separate atom lists are
@@ -1647,48 +1595,6 @@ real LennardJones (particleMD *p1, particleMD *p2, real dx, real dy, real dz,
 			p2->Tfz += fz;
 			p1->Tdivf += Tdivf;
 			p2->Tdivf += Tdivf;
-		#endif
-	}
-
-	return potE;
-}
-
-//================================================================================
-real LennardJonesWall (particleMD *p1, real dx, real dy, real dz,
-						  real rCut2)
-//================================================================================
-{
-	real r2, r2i, r6i, fMag, fx, fy, fz;
-	real potE=0;
-	#ifdef TEMPERATURE_CONF
-		real Tdivf;
-	#endif
-
-	// calculate the distance squared
-	r2 = dx*dx + dy*dy + dz*dz;
-	// compute the force and the energy if we are inside the cutoff range
-	if (r2 < rCut2) {
-		r2i   = 1/r2;
-		r6i   = r2i*r2i*r2i;
-		potE  = 4*r6i*(r6i-1);  
-		fMag  = 48 * r2i * r6i;
-		#ifdef TEMPERATURE_CONF
-			Tdivf = fMag * (11*r6i - 2.5);
-		#endif
-		// particle is - and boundary +!
-		fMag  = fMag * (r6i - 0.5);
-		fx = fMag * dx;
-		fy = fMag * dy;
-		fz = fMag * dz;
-		p1->ax -= fx;
-		p1->ay -= fy;
-		p1->az -= fz;
-		#ifdef TEMPERATURE_CONF
-			// configurational temperature
-			p1->Tfx -= fx;
-			p1->Tfy -= fy;
-			p1->Tfz -= fz;
-			p1->Tdivf += Tdivf;
 		#endif
 	}
 

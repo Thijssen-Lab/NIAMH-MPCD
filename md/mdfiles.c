@@ -670,12 +670,8 @@ void TranslateMacros (char **stringptr)
 	snprintf (value, STRMAX, "%u", PINNED_WARMUP);
 	ReplaceMacro (stringptr, macro, value);
 
-	snprintf (macro, STRMAX, "noREPULSION");
-	snprintf (value, STRMAX, "%u", noREPULSION);
-	ReplaceMacro (stringptr, macro, value);
-
-	snprintf (macro, STRMAX, "REPULSION");
-	snprintf (value, STRMAX, "%u", REPULSION);
+	snprintf (macro, STRMAX, "POS_WARMUP");
+	snprintf (value, STRMAX, "%u", POS_WARMUP);
 	ReplaceMacro (stringptr, macro, value);
 }
 

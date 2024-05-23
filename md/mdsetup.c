@@ -191,7 +191,6 @@ void SetupParameters (simptr sim)
 				REAL_PARAM (sim, rCutCoul),
 				REAL_PARAM (sim, condenseCriteria),
 				REAL_PARAM (sim, wallThickness),
-				INTG_PARAM (sim, boundaryType),
 				REAL_PARAM (sim, r0Fene),
 				REAL_PARAM (sim, kFene),
 				REAL_PARAM (sim, kSqu),
