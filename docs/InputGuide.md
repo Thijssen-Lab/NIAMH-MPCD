@@ -218,7 +218,7 @@ Tag             | Type          | Default Value | Description
 `wavy`          | array(double) | [0,0,0]       | Generalized amplitudes and frequencies for wavy-walls. **Must** be 3D
 `interSRD`      | array(int)    | [1,...]       | Interaction matrix for this colloid with different species of MPCD particles. Length **must** be less than or equal to MAXSPECI. Default will autopopulate with 1s
 `interMD`       | int           | 1             | Interaction of this colloid with MD particles
-`interMD`       | int           | 1             | Interaction of this colloid with swimmer particles
+`interSw`       | int           | 1             | Interaction of this colloid with swimmer particles
 
 #### BC Overrides           {#bc-overrides}
 Override Tag    | Type          | Override param| Description
