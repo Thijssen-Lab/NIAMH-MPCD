@@ -14,7 +14,6 @@
 */
 
 void LCcollision( cell *CL,spec *SP,double KBT,int zeroMFPot,double dt,double SG,int LC );
-
 void addToTensOrderParam( particleMPC *pMPC,double **S );
 void addToTensOrderParamVel( particleMPC *pMPC,double **S );
 void tensOrderParam( cell *CL,double **S,int LC );

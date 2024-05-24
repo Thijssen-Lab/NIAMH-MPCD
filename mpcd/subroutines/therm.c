@@ -367,6 +367,24 @@ void avVel( cell ***CL,double AVVEL[] ) {
 }
 
 ///
+/// @brief Function that calculates the average global orientation.
+///
+/// This function computes the average orientation of the system by averaging all the orientation of particles
+///
+/// @param p Return pointer to first element in array of all MPCD particles.
+/// @param AVVEL Return pointer for the average global orientation.
+///
+void avOri( particleMPC *p,double AVORI[] ) {
+	int j,i,d;
+	for( d=0; d<DIM; d++ ) AVORI[d]=0.;
+	for( j=0; j<DIM; j++ ) {
+		for( i=0; i<GPOP; i++ ) AVORI[j]+=(p+i)->U[j];
+		AVORI[j] /= GPOP;
+	}
+}
+
+
+///
 /// @brief Function that calculates the global average enstrophy.
 ///
 /// This function returns the global average enstrophy `E` (mean squared vorticity)

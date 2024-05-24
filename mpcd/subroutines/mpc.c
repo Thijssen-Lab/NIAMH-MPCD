@@ -4352,6 +4352,19 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 		//Shift entire system by RSHIFT
 		gridShift_all(RSHIFT, 0, SRDparticles, WALL, simMD, swimmers, MD_mode );
 	}
+
+	/* ******************************************************/
+	/* * SUBTRACTING THE ORIENTATION PART FROM THE VELOCITY */
+	/* ******************************************************/
+	//For now only one specie is supported
+	if (in.LC == BCT) {
+		for (int i = 0; i < GPOP; i++) {
+			for( j=0; j<DIM; j++ ) {
+				(SRDparticles+i)->V[j] -= (SRDparticles+i)->U[j]*((SP+0)->BS);
+			}
+		}
+	}
+
 	/* ****************************************** */
 	/* ******************* BIN ****************** */
 	/* ****************************************** */
@@ -4423,7 +4436,6 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
                 if( CL[i][j][k].POPSRD > 1 ) LCcollision( &CL[i][j][k],SP,in.KBT,zeroMFPot,in.dt,*AVS,in.LC );
             }
 		}
-
 		// Magnetic alignment is really part of the collision
 		#ifdef DBG
 			if( DBUG >= DBGTITLE && in.MAG_FLAG) printf( "Apply Magnetic Torque Operator.\n" );
@@ -4537,6 +4549,17 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 			#endif
 		}
 	}
+
+	/* *******************************************/
+	/* * ADDING ORIENTATION PART TO THE VELOCITY */
+	/* *******************************************/
+	if (in.LC == BCT) {
+		for (int i = 0; i < GPOP; i++) {
+			for( j=0; j<DIM; j++ ) {
+				(SRDparticles+i)->V[j] += (SRDparticles+i)->U[j]*((SP+0)->BS);
+			}
+		}
+	}
 	/* ****************************************** */
 	/* ************ GRID SHIFT BACK ************* */
 	/* ****************************************** */
@@ -4562,7 +4585,10 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 	#ifdef DBG
 		if( DBUG >= DBGTITLE ) printf( "Translate MPC particles.\n" );
 	#endif
-	if( MDmode != MPCinMD ) stream_all( SRDparticles,in.dt );
+	if( MDmode != MPCinMD ) {
+		stream_all( SRDparticles,in.dt );
+	}
+
 	/* ****************************************** */
 	/* ******************* BCs ****************** */
 	/* ****************************************** */

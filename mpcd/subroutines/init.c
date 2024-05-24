@@ -149,6 +149,22 @@ void openavvel( FILE **f,char dir[],char fname[],char ext[] ) {
 }
 
 ///
+/// @brief Function that initializes the global average orientation MPCD output file.
+///
+/// This function initializes the global average orientation MPCD output file.
+/// It opens it up for writing and reading while formatting it with its header.
+///
+/// @param f Return pointer to the global average orientation MPCD output file being opened.
+/// @param dir Path to the directory of the global average orientation MPCD output file.
+/// @param fname Name of the coarse grained output file.
+/// @param ext Extension of the coarse grained output file.
+///
+void openavori( FILE **f,char dir[],char fname[],char ext[] ) {
+	openBasic( f,dir,fname,ext );
+	avOriheader( *f );
+}
+
+///
 /// @brief Function that initializes the director output file.
 ///
 /// This function initializes the director output file.
@@ -1675,7 +1691,7 @@ void checkSim( FILE *fsynopsis,int SYNOUT,inputList in,spec *SP,bc *WALL,specSwi
 			}
 		}
 	}
-	if( !( in.LC==ISOF || in.LC==LCL || in.LC==LCG) ){
+	if( !( in.LC==ISOF || in.LC==LCL || in.LC==LCG || in.LC==BCT) ){
 		printf( "Error: Unrecognized value of LC=%d.\n",in.LC );
 		exit( 1 );
 	}
@@ -1780,6 +1796,7 @@ void initOutput( char op[],outputFlagsList *outFlag,outputFilesList *outFile,inp
 	int i;
 	char filecoarse[]="coarsegrain";
 	char fileavvel[]="avVel";
+	char fileavori[]="avOri";
 	char fileorder[]="directorfield";
 	char fileorderQ[]="ordertensor";
 	char fileorderQK[]="recipOrder";
@@ -1839,6 +1856,8 @@ void initOutput( char op[],outputFlagsList *outFlag,outputFilesList *outFile,inp
 	if( (outFlag->COAROUT)>=OUT ) opencoarse( &(outFile->fcoarse),op,filecoarse,fileextension );
 	//d
 	if( (outFlag->AVVELOUT)>=OUT ) openavvel( &(outFile->favvel),op,fileavvel,fileextension );
+	//Initialize the orientation output file
+	if( (outFlag->AVORIOUT)>=OUT ) openavori( &(outFile->favori),op,fileavori,fileextension );
 	//Initialize the director output file
 	if( (outFlag->ORDEROUT)>=OUT ) openorder( &(outFile->forder),op,fileorder,fileextension );
 	//Initialize the tensor order parameter output file
@@ -1905,6 +1924,7 @@ void initOutput( char op[],outputFlagsList *outFlag,outputFilesList *outFile,inp
 		fprintf(outFile->fsynopsis,"\tTrajectories:\t%d\n",outFlag->TRAJOUT);
 		fprintf(outFile->fsynopsis,"\tCoarse-Grained Flow:\t%d\n",outFlag->COAROUT);
 		fprintf(outFile->fsynopsis,"\tGlobal Average velocity:\t%d\n",outFlag->AVVELOUT);
+		fprintf(outFile->fsynopsis,"\tGlobal Orientation direction:\t%d\n",outFlag->AVORIOUT);
 		fprintf(outFile->fsynopsis,"\tFlow:\t\t%d\n",outFlag->FLOWOUT);
 		fprintf(outFile->fsynopsis,"\tPrint distributions:\n");
 		fprintf(outFile->fsynopsis,"\t\tVel: %d\n\t\tSpeed: %d\n\t\tVorticity: %d\n\t\tEnstrophy: %d\n\t\tDirector: %d\n\t\tScalar order parameter: %d\n\t\tDensity: %d\n",outFlag->HISTVELOUT,outFlag->HISTSPEEDOUT,outFlag->HISTVORTOUT,outFlag->HISTENSTROUT,outFlag->HISTDIROUT,outFlag->HISTSOUT,outFlag->HISTNOUT);

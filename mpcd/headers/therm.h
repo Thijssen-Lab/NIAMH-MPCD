@@ -21,6 +21,7 @@ double calcE_MPC( particleMPC *p,spec *pSP );
 double calcE_BC( bc *WALL );
 double calcE_LC( cell ***CL,int LC,spec *pSP );
 void avVel( cell ***CL,double AVVEL[] );
+void avOri( particleMPC *p,double AVVEL[] );
 double avEnstrophy( cell ***CL );
 
 #endif
