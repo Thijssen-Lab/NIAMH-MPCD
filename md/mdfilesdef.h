@@ -454,7 +454,7 @@
     fptr = FileNew (sim->files);
     snprintf (fptr->label,   STRMAX, "POLYMER-Acceleration");
     snprintf (fptr->name,    STRMAX, "%s-%s.dat", sim->label, fptr->label);
-    snprintf (fptr->desc,    STRMAX, "Velocity of monomers");
+    snprintf (fptr->desc,    STRMAX, "Acceleration of monomers");
     snprintf (fptr->type,    STRMAX, "ascii");
     snprintf (fptr->layout,  STRMAX, "columns");
     snprintf (fptr->columns, STRMAX, " ax, ay, az");

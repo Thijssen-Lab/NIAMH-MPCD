@@ -64,7 +64,7 @@ typedef struct spec {
 	double CHIA;			///< Magnetic susceptibility anisotropy chi_parallel-chi_perpendicular --- json `'magnSusc'`.
 	double LEN;				///< Effective rod length to couple torque on  MPCD into force on BC (smaller=>stronger; bigger=>weaker) --- json `'len'`.
 	double ACT;				///< The activity of the particles --- json `'act'`.
-	double BS;				///< The bacterial speed, will be used only in case LCT=3 --- json `'bs'`.
+	double BS;				///< The bacterial speed, will be used only in case LC=3 --- json `'bs'`.
 	double MFPOT;			///< The mean-field potential from self-consistent mean-field liquid crystals --- json `'mfpot'`.
 	double DAMP;			///< A damping/friction coefficient to go from wet to dry (to kill hydrodynamics) [0,1] --- json `'damp'`.
 	double M[MAXSPECI];	    ///< Interaction matrix for multiphase fluids. Each species has a different interaction with all others --- json `'interMatr'`.
