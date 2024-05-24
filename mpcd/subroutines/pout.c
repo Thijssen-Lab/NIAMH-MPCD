@@ -594,6 +594,19 @@ void avvelWithGradVelheader( FILE *fout ) {
 }
 
 ///
+/// @brief Prints column headers for global average orientation output file.
+///
+/// Column headers are produced for average orientation and velocity gradient .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// NcmX, NcmY, and NcmZ are centre of mass orinetations in Cartesian co-ordinates.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+///
+void avOriheader( FILE *fout ) {
+	fprintf( fout,"t\t NcmX\t\tNcmY\t\tNcmZ\t\n" );
+}
+
+///
 /// @brief Prints column headers for radial correlation data output files.
 ///
 /// Column headers are produced for radial correlation .dat files to display raw data in a table format.
@@ -1522,6 +1535,7 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 		fprintf( fsynopsis,"Print flow data: %i\n",out.FLOWOUT );
         fprintf( fsynopsis,"Print velocity data: %i\n",out.VELOUT );
 		fprintf( fsynopsis,"Print averaged flow data: %i\n",out.AVVELOUT );
+		fprintf( fsynopsis,"Print averaged orientation data: %i\n",out.AVORIOUT );
 		fprintf( fsynopsis,"Print energy data: %i\n",out.ENOUT );
 		fprintf( fsynopsis,"Print director and scalar order parameter fields: %i\n",out.ORDEROUT );
 		fprintf( fsynopsis,"Print tensor order parameter data: %i\n",out.QTENSOUT );
@@ -1558,10 +1572,8 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 void histVelout( FILE *fout,int vel[_3D][BINS],double minRange,double maxRange,double t ) {
 	int i;
 	double dv = (maxRange-minRange)/((float)BINS - 1.0);
-
 	fprintf( fout,"%12.5e\n",t );
 	for( i=0; i<BINS; i++ ) fprintf( fout,"\t%12.5e\t%7i\t%7i\t%7i\n",minRange+i*dv,vel[0][i],vel[1][i],vel[2][i] );
-
 	fprintf( fout,"\n" );
 	#ifdef FFLSH
 		fflush(fout);
@@ -1891,6 +1903,23 @@ void enneighboursout( FILE *fout,double t,cell ***CL,double MFPOT,int LC ) {
 ///
 void avvelout( FILE *fout,double t,double vel[_3D],double KBT ) {
 	fprintf( fout, "%12.5e\t%12.5e\t%12.5e\t%12.5e\t%12.5e\n",t,vel[0],vel[1],vel[2],KBT );
+	#ifdef FFLSH
+		fflush(fout);
+	#endif
+}
+
+///
+/// @brief Outputs average orientation to file.
+///
+/// This function simply prints the average orientation to the output data file.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param t This is time.
+/// @param ori This is the velocity in three dimensions.
+/// @see outputResults()
+///
+void avoriout( FILE *fout,double t,double ori[_3D] ) {
+	fprintf( fout, "%12.5e\t%12.5e\t%12.5e\t%12.5e\n",t,ori[0],ori[1],ori[2] );
 	#ifdef FFLSH
 		fflush(fout);
 	#endif
@@ -2606,7 +2635,7 @@ void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mo
 	fprintf( fout,"%lf %lf %lf %lf %lf %lf\n",AVV[0], AVV[1], AVV[2], AVNOW[0], AVNOW[1], AVNOW[2] );
 
 	//Output variables
-	fprintf( fout,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n",DBUG,outFlag.TRAJOUT,outFlag.printSP,outFlag.COAROUT,outFlag.FLOWOUT,outFlag.VELOUT,outFlag.AVVELOUT,outFlag.ORDEROUT,outFlag.QTENSOUT,outFlag.QKOUT,outFlag.AVSOUT,outFlag.SOLOUT,outFlag.ENOUT,outFlag.ENFIELDOUT,outFlag.ENNEIGHBOURS,outFlag.ENSTROPHYOUT,outFlag.DENSOUT,outFlag.CVVOUT,outFlag.CNNOUT,outFlag.CWWOUT,outFlag.CDDOUT,outFlag.CSSOUT,outFlag.CPPOUT,outFlag.BINDER,outFlag.BINDERBIN,outFlag.SYNOUT,outFlag.CHCKPNT,outFlag.CHCKPNTrcvr );
+	fprintf( fout,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n",DBUG,outFlag.TRAJOUT,outFlag.printSP,outFlag.COAROUT,outFlag.FLOWOUT,outFlag.VELOUT,outFlag.AVVELOUT,outFlag.AVORIOUT,outFlag.ORDEROUT,outFlag.QTENSOUT,outFlag.QKOUT,outFlag.AVSOUT,outFlag.SOLOUT,outFlag.ENOUT,outFlag.ENFIELDOUT,outFlag.ENNEIGHBOURS,outFlag.ENSTROPHYOUT,outFlag.DENSOUT,outFlag.CVVOUT,outFlag.CNNOUT,outFlag.CWWOUT,outFlag.CDDOUT,outFlag.CSSOUT,outFlag.CPPOUT,outFlag.BINDER,outFlag.BINDERBIN,outFlag.SYNOUT,outFlag.CHCKPNT,outFlag.CHCKPNTrcvr );
 	fprintf( fout,"%d %d\n",outFlag.SPOUT,outFlag.PRESOUT );
 	fprintf( fout,"%d %d %d %d %d %d %d\n",outFlag.HISTVELOUT,outFlag.HISTSPEEDOUT,outFlag.HISTVORTOUT,outFlag.HISTENSTROUT,outFlag.HISTDIROUT,outFlag.HISTSOUT,outFlag.HISTNOUT );
 	fprintf( fout,"%d %d %d %d %d\n",outFlag.ENERGYSPECTOUT,outFlag.ENSTROPHYSPECTOUT,outFlag.TOPOOUT,outFlag.DEFECTOUT,outFlag.DISCLINOUT );
@@ -2776,7 +2805,7 @@ void outputResults(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], 
 	double corr[maxXYZ],spect[maxXYZ];				//Correlation functions and energy spectra
 	double UL;																//Binder cumulant
 	double avGradVel[_3D][_3D];								//Velocity gradient
-
+	double AVORI[_3D];
 	/* ****************************************** */
 	/* ************** BC trajectory ************* */
 	/* ****************************************** */
@@ -2799,6 +2828,7 @@ void outputResults(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], 
 	//Calculate the local properties of each cell (VCM,in.KBT,POPulation,Mass)
 	localPROP( CL,SP,SS,in.RTECH,in.LC );
 	avVel( CL,AVNOW );
+	avOri( SRDparticles,AVORI );
 	//Calculate velocity gradient
 	if( (outFlag.AVVELOUT>=OUT && runtime%outFlag.AVVELOUT==0) || (outFlag.ENSTROPHYOUT>=OUT && runtime%outFlag.ENSTROPHYOUT==0) || (outFlag.HISTVORTOUT>=OUT && runtime%outFlag.HISTVORTOUT==0)  || (outFlag.HISTENSTROUT>=OUT && runtime%outFlag.HISTENSTROUT==0) || (outFlag.CWWOUT>=OUT && runtime%outFlag.CWWOUT==0) ) {
 		//Velocity gradient
@@ -2833,6 +2863,7 @@ void outputResults(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], 
 		UL=binderCumulant( CL,outFlag.BINDERBIN,in.LC );
 		binderout( outFiles.fbinder,time_now,UL );
 	}
+
 	//Calculate average velocity and enstrophy
 	if( (outFlag.AVVELOUT>=OUT && runtime%outFlag.AVVELOUT==0) || (outFlag.ENSTROPHYOUT>=OUT && runtime%outFlag.ENSTROPHYOUT==0) ) {
 		if( outFlag.AVVELOUT>=OUT && runtime%outFlag.AVVELOUT==0 ) {
@@ -2848,6 +2879,12 @@ void outputResults(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], 
 			wmf = avEnstrophy( CL );
 			avenstrophyout( outFiles.fenstrophy,time_now,wmf );
 		}
+	}
+	/* ****************************************** */
+	/* *********** AVERAGE ORIENTATION ********** */
+	/* ****************************************** */
+	if( outFlag.AVORIOUT>=OUT && runtime%outFlag.AVORIOUT==0 ) {
+		avoriout(outFiles.favori, time_now, AVORI);
 	}
 	/* ****************************************** */
 	/* *************** TOTAL ENERGY ************* */
@@ -3139,6 +3176,7 @@ void closeOutputFiles( spec *SP,bc WALL[],outputFlagsList outFlag,outputFilesLis
 	if( outFlag.TRAJOUT>=OUT ) for( i=0; i<NSPECI; i++ ) if( SP[i].POP>=1 ) fclose( outFiles.fdetail[i] );
 	if( outFlag.COAROUT>=OUT ) fclose( outFiles.fcoarse );
 	if( outFlag.AVVELOUT>=OUT ) fclose( outFiles.favvel );
+	if( outFlag.AVORIOUT>=OUT ) fclose( outFiles.favori );
 	if( outFlag.ORDEROUT>=OUT ) fclose( outFiles.forder );
 	if( outFlag.QTENSOUT>=OUT ) fclose( outFiles.forderQ );
 	if( outFlag.QKOUT>=OUT ) fclose( outFiles.forderQK );
@@ -3188,7 +3226,7 @@ void closeOutputFiles( spec *SP,bc WALL[],outputFlagsList outFlag,outputFilesLis
 /// @param zeroNetMom This is momentum correction term to reset to the rest frame.
 ///
 int writeOutput( int t,outputFlagsList f,int RFRAME,int zeroNetMom ) {
-	if( ( RFRAME && t%zeroNetMom==0 ) || ( f.ENOUT>=OUT && t%f.ENOUT==0 ) || ( f.TRAJOUT>=OUT  && t%f.TRAJOUT==0 ) || ( f.AVVELOUT>=OUT && t%f.AVVELOUT==0 ) || ( f.QKOUT && t%f.QKOUT==0 ) || ( f.AVSOUT>=OUT && t%f.AVSOUT==0 ) || ( f.ENNEIGHBOURS>=OUT && t%f.ENNEIGHBOURS==0 ) || ( f.SOLOUT>=OUT && t%f.SOLOUT==0 ) || ( f.BINDER && t%f.BINDER==0 ) || ( f.SWOUT && t%f.SWOUT==0 ) || ( f.SWORIOUT && t%f.SWORIOUT==0 ) ) {
+	if( ( RFRAME && t%zeroNetMom==0 ) || ( f.ENOUT>=OUT && t%f.ENOUT==0 ) || ( f.TRAJOUT>=OUT  && t%f.TRAJOUT==0 ) || ( f.AVVELOUT>=OUT && t%f.AVVELOUT==0 ) || ( f.AVORIOUT>=OUT && t%f.AVORIOUT==0 ) || ( f.QKOUT && t%f.QKOUT==0 ) || ( f.AVSOUT>=OUT && t%f.AVSOUT==0 ) || ( f.ENNEIGHBOURS>=OUT && t%f.ENNEIGHBOURS==0 ) || ( f.SOLOUT>=OUT && t%f.SOLOUT==0 ) || ( f.BINDER && t%f.BINDER==0 ) || ( f.SWOUT && t%f.SWOUT==0 ) || ( f.SWORIOUT && t%f.SWORIOUT==0 ) ) {
 		return 1;
 	}
 	//Fields

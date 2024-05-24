@@ -19,6 +19,7 @@ void coordheader( FILE *fout );
 void coarseheader( FILE *fout );
 void avvelheader( FILE *fout );
 void avvelWithGradVelheader( FILE *fout );
+void avOriheader( FILE *fout );
 void corrheader( FILE *fout );
 void energyspectheader( FILE *fout );
 void enstrophyspectheader( FILE *fout );
@@ -65,6 +66,7 @@ void histDirout( FILE *fout,int dir[_3D][BINS],double minRange,double maxRange,d
 void histSout( FILE *fout,int S[BINS],double minRange,double maxRange,double t );
 void histNout( FILE *fout,int dens[BINS],double minRange,double maxRange,double t );
 void avvelout( FILE *fout,double t,double vel[_3D],double KBT );
+void avoriout( FILE *fout,double t,double ori[_3D]);
 void avveloutWithGradVel( FILE *fout,double t,double vel[_3D],double KBT,double gradVel[_3D][_3D] );
 void avsout( FILE *fout,double t,double S,double S4,double DIR[] );
 void densSTDout( FILE *fout,double t,double stdN );

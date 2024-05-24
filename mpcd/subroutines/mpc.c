@@ -558,18 +558,6 @@ void stream_P( particleMPC *p,double t ) {
 }
 
 /// 
-/// @brief The streaming step of the algorithm translates the position of a single MPCD particle according to it`s orientation. 
-/// 
-/// This function simply updates the position vector (in `DIM` dimensions) of a single MPCD particle.
-/// @param t The time interval for which the MPCD particle translates.
-/// @param p An MPCD particle. 
-///
-void stream_U( particleMPC *p,double t ) {
-	int i;
-	for( i=0; i<DIM; i++ ) p->Q[i] = trans( t,p->U[i],p->Q[i]);
-}
-
-/// 
 /// @brief Accelerating the velocity of a single wall (boundary condition). 
 /// 
 /// This function simply updates the velocity vector (in `DIM` dimensions) of a single wall (boundary condition).
@@ -611,24 +599,6 @@ void stream_all( particleMPC *pp,double t ) {
 		else (pp+i)->S_flag = STREAM;
 	}
 }
-
-/// 
-/// @brief The streaming step of the algorithm that translates the positions of all MPCD particles according to theirs orientation.
-///
-/// This function loops over the global population (`GPOP`) to update all MPCD particle positions.
-/// @param pp An MPCD particle. 
-/// @param t The time interval for which the MPCD particles translate.
-///
-void stream_orientation( particleMPC *pp,double t ) {
-	int i;
-	for( i=0; i<GPOP; i++ ){
-		//Update coordinates --- check if it already streamed
-		if( (pp+i)->S_flag ) stream_U( (pp+i),t );
-		else (pp+i)->S_flag = STREAM;
-	}
-}
-
-
 
 /// 
 /// @brief The accelerating all the MPCD particle velocities.
@@ -4370,6 +4340,19 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 		//Shift entire system by RSHIFT
 		gridShift_all(RSHIFT, 0, SRDparticles, WALL, simMD, swimmers, MD_mode );
 	}
+
+	/* ******************************************************/
+	/* * SUBTRACTING THE ORIENTATION PART FROM THE VELOCITY */
+	/* ******************************************************/
+	//For now only one specie is supported
+	if (in.LC == BCT) {
+		for (int i = 0; i < GPOP; i++) {
+			for( j=0; j<DIM; j++ ) {
+				(SRDparticles+i)->V[j] -= (SRDparticles+i)->U[j]*((SP+0)->BS);
+			}
+		}
+	}
+
 	/* ****************************************** */
 	/* ******************* BIN ****************** */
 	/* ****************************************** */
@@ -4553,6 +4536,17 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 			#endif
 		}
 	}
+
+	/* *******************************************/
+	/* * ADDING ORIENTATION PART TO THE VELOCITY */
+	/* *******************************************/
+	if (in.LC == BCT) {
+		for (int i = 0; i < GPOP; i++) {
+			for( j=0; j<DIM; j++ ) {
+				(SRDparticles+i)->V[j] += (SRDparticles+i)->U[j]*((SP+0)->BS);
+			}
+		}
+	}
 	/* ****************************************** */
 	/* ************ GRID SHIFT BACK ************* */
 	/* ****************************************** */
@@ -4580,9 +4574,6 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 	#endif
 	if( MDmode != MPCinMD ) {
 		stream_all( SRDparticles,in.dt );
-		if (in.LC == BCT) {
-			stream_orientation( SRDparticles,in.dt );
-		}
 	}
 
 	/* ****************************************** */

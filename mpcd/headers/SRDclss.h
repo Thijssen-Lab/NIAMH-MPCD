@@ -64,6 +64,7 @@ typedef struct spec {
 	double CHIA;			///< Magnetic susceptibility anisotropy chi_parallel-chi_perpendicular --- json `'magnSusc'`.
 	double LEN;				///< Effective rod length to couple torque on  MPCD into force on BC (smaller=>stronger; bigger=>weaker) --- json `'len'`.
 	double ACT;				///< The activity of the particles --- json `'act'`.
+	double BS;				///< The bacterial speed, will be used only in case LCT=3 --- json `'bs'`.
 	double DAMP;			///< A damping/friction coefficient to go from wet to dry (to kill hydrodynamics) [0,1] --- json `'damp'`.
 	double M[MAXSPECI];	    ///< Interaction matrix for multiphase fluids. Each species has a different interaction with all others --- json `'interMatr'`.
 	double SIGWIDTH;		///< The width of the sigmoid for active dipole sigmoid (`DIPOLE_DIR_SIG` in definitions.h). 
@@ -286,7 +287,7 @@ typedef struct cell {
 ///
 typedef struct outputFilesList {
 	FILE *fcoarse,*fflow,*fvel,*fenergy,*fenergyfield,*fenneighbours;
-	FILE *fsynopsis,*favvel,*forder,*forderQ,*forderQK,*favs,*fdensSTD,*fchckpnt,*fenstrophy,*fmultiphase,*fpressure;
+	FILE *fsynopsis,*favvel,*favori,*forder,*forderQ,*forderQK,*favs,*fdensSTD,*fchckpnt,*fenstrophy,*fmultiphase,*fpressure;
 	FILE *fcorrVV,*fcorrNN,*fcorrWW,*fcorrDD,*fcorrSS,*fcorrPP,*fbinder;
 	FILE *fhistVel,*fhistSpeed,*fhistVort,*fhistEnstr,*fhistDir,*fhistS,*fhistDens;
 	FILE *fenergyspect,*fenstrophyspect;
@@ -309,6 +310,7 @@ typedef struct outputFlagsList {
 	int TRAJOUT;				///< Flag for if the detailed trajectories of every particle are outputted --- json `'trajOut'`.
 	int COAROUT;				///< Flag for if coarse grain is outputted --- json `'coarseOut'`.
 	int AVVELOUT;				///< Flag for if total average velocity is outputted --- json `'avVelOut'`.
+	int AVORIOUT;				///< Flag for if total average orientation is outputted --- json `'avOriOut'`.
 	int FLOWOUT;				///< Flag for if the flow field is outputted --- json `'flowOut'`.
 	int VELOUT;				    ///< Flag for if the velocity field is outputted --- json `'velOut'`.
 	int HISTVELOUT;             ///< Flag for if the velocity distribution is outputted --- json `'histVelOut'`.

@@ -82,6 +82,7 @@ Tag             | Type          | Default Value | Description
 `flowOut`       | int           | 0             | Flow field averaged between output times
 `velOut`        | int           | 0             | Instantaneous velocity field.
 `avVelOut`      | int           | 0             | Total average MPCD velocity. System-averaged single value
+`avOriOut`      | int           | 0             | Total average MPCD orientation. System-averaged vector value
 `dirSOut`       | int           | 0             | Director and scalar order parameter fields
 `qTensOut`      | int           | 0             | Q tensor field
 `qkTensOut`     | int           | 0             | Reciprocal Q tensor field

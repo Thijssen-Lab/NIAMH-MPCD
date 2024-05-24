@@ -502,7 +502,7 @@ void LCcollision( cell *CL,spec *SP,double KBT,double MFPOT,double dt,double SG,
 					pvec( tmpc->U,DIM );
 				}
 			#endif
-			//Bacterial part of the collision
+			//If bacterial make sure angle it not bigger than 90 degrees
 			if (LC == BCT) {
 				if (dotprod(tmpc->U, dU, DIM) < 0) {
 					for(i=0; i<DIM; i++) tmpc->U[i]*=-1;
