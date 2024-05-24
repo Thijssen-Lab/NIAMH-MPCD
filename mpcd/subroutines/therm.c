@@ -324,14 +324,14 @@ double calcE_BC( bc *WALL ) {
 ///
 /// @param CL Array of all cells.
 /// @param LC Integer specifying type of liquid crystal/
-/// @param MFPOT The liquid crystal mean field potential.
+/// @param pSP Pointer to the species of the MPCD particle whose energy is being calculated.
 /// @return Total potential orientational energy.
 ///
-double calcE_LC( cell ***CL,int LC,double MFPOT ) {
+double calcE_LC( cell ***CL,int LC,spec *pSP ) {
 	double wmf=0.;
 	double S,un,DIR[_3D],u[_3D];
 	particleMPC *tmpc;	//Temporary particleMPC
-	int a,b,c,i;
+	int a,b,c,i,id;
 	//double invdim=1./((double)DIM);
 
 	if( LC ) for( a=0; a<XYZ[0]; a++ ) for( b=0; b<XYZ[1]; b++ ) for( c=0; c<XYZ[2]; c++ ) if( CL[a][b][c].POP > 1 ) {
@@ -339,14 +339,14 @@ double calcE_LC( cell ***CL,int LC,double MFPOT ) {
 		for( i=0; i<DIM; i++ ) DIR[i] = CL[a][b][c].DIR[i];
 		tmpc = CL[a][b][c].pp;
 		while( tmpc != NULL ) {
+			id = tmpc->SPID;
 			for( i=0; i<DIM; i++ ) u[i] = tmpc->U[i];
 			un = dotprod( u,DIR,DIM );
-			wmf += S*un*un;
+			wmf += ( S*un*un )*( (pSP+id)->MFPOT );
 			//wmf += (1.-S)*invdim;		//Don't include constant (wrt u.n) term
 			tmpc = tmpc->next;
 		}
 	}
-	wmf*=MFPOT;
 	return wmf;
 }
 

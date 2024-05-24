@@ -44,6 +44,7 @@
 #include "../mpcd/headers/lc.h"
 #include "../mpcd/headers/mdbc.h"
 #include "../mpcd/headers/definitions.h"
+#include "../mpcd/headers/globals.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -86,6 +87,62 @@ void integrateMD (simptr sim, int MDmode, int steps,struct particleMPC *pSRD,str
 	}
 	PeriodicBoundaries (sim);
 }
+
+
+/// The standard program entry point dealing with MD warmup during MPCD warmup. The sim variables holds all 
+/// the information about the simulation. The function simply iterates the MD steps and pinns the central 
+/// monomer in its initial place until done.
+///
+/// @param		sim md simulation pointer
+/// @param		steps number of md steps to integrate
+
+//================================================================================
+void integrateMD_Pinned (simptr sim, int MDmode, int steps,struct particleMPC *pSRD,struct bc *pBC,struct spec *SP,int GPOP,int NBC,struct cell ***CL)
+//================================================================================
+{
+	int	i,nAtom;
+	particleMD	*p ;
+	double RX=0.0,RY=0.0,RZ=0.0,WX=0.0,WY=0.0,WZ=0.0;
+
+	sim->drTotMax = 0.0;	//reset maximum displacement to zero since particles were rebinned
+
+	// Add the following line if you need electostatics
+	if (sim->monoCharge[0]!=0 || sim->rCutCoul!=0.) ComputeElectrostaticForcesSRD(sim,pSRD,SP,GPOP,steps,CL);
+
+	nAtom	= sim->atom.n;
+	// the central monomer 
+	p	= (sim->atom.items) + (int)(nAtom/2) ;
+	RX = p->rx;
+	RY = p->ry;
+	RZ = p->rz;
+	WX = p->wx;
+	WY = p->wy;
+	WZ = p->wz;
+	// main simulation loop
+	for(i=0;i<steps;i++) {
+		MDstep (sim,MDmode,pSRD,pBC,SP,GPOP,NBC,CL);
+		// the central monomer 
+		p	= (sim->atom.items) + (int)(nAtom/2) ;
+		// Put it back to its initial position
+		p->rx = RX;
+		p->ry = RY;
+		p->rz = RZ;
+		// Put it back to its initial position
+		p->wx = WX;
+		p->wy = WY;
+		p->wz = WZ;
+		// Kept pinned
+		p->vx = 0.0;
+		p->vy = 0.0;
+		p->vz = 0.0;
+		// Kept pinned
+		p->ax = 0.0;
+		p->ay = 0.0;
+		p->az = 0.0;
+	}
+	PeriodicBoundaries (sim);
+}
+
 
 //================================================================================
 void ComputeElectrostaticForcesSRD (simptr sim,struct particleMPC *pSRD,struct spec *SP,int GPOP, int steps, struct cell ***CL)

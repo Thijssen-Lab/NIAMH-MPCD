@@ -93,14 +93,15 @@ int main(int argc, char* argv[]) {
 	int starttime=0,runtime=0,warmtime=0;	//Temperal loop counter --- iterations NOT sim time
 	//Input
 	inputList inputVar;
-	kinTheory theory;				//Theoretical values based on input
+	kinTheory *theorySP;			//Theoretical values based on input one for each SPECIES
+	kinTheory theoryGlobal;			//Theoretical values based on global average of all SPECIES
 	//Timer variables
 	time_t to,tf,lastCheckpoint;
 	clock_t co,cf;
 	//Simulation variables
-	double KBTNOW=0.0;			//Current un-thermostated temperature
+	double KBTNOW=0.0;				//Current un-thermostated temperature
 	double AVVEL=0.0;				//The average speed
-	double AVS=0.0,S4=0.0,stdN=0.0;   //The average of the scalar order parameter, director and fourth moment
+	double AVS=0.0,S4=0.0,stdN=0.0; //The average of the scalar order parameter, director and fourth moment
 	double avDIR[_3D],AVV[_3D],AVNOW[_3D];  //The past and current average flow velocities
     zerovec_v(3, _3D, avDIR, AVV, AVNOW); // initialise to zero
 	//Input/Output
@@ -111,7 +112,6 @@ int main(int argc, char* argv[]) {
 	outputFilesList outFiles;		//List of output files
 	specSwimmer specS;				//Swimmer's species
 	swimmer *swimmers;				//Swimmers
-	int WMD = 0;					// if MD works during warmup of mpcd
 
     /* ****************************************** */
     /* ****************************************** */
@@ -158,14 +158,14 @@ int main(int argc, char* argv[]) {
 	/* ****************************************** */
 	// read in depending on inMode
 	if (inMode == 0){ // JSON input
-		readJson( ip, &inputVar, &SPECIES, &SRDparticles, &CL, &MDmode, 
+		readJson( ip, &inputVar, &SPECIES, &theorySP, &SRDparticles, &CL, &MDmode, 
 			&outFlags, &WALL, &specS, &swimmers);
 	} else if (inMode == 1){ // Legacy .inp input
 		readin( ip, &inputVar, &SPECIES, &SRDparticles, &CL, &MDmode );
 		readbc( ip, &WALL );
 		readpc( ip, &outFlags );
 		readswimmers( ip, &specS, &swimmers );
-	}	
+	}
 
 	//Check if recovering checkpointed simulation
 	if( inputVar.seed==-1 ) {
@@ -174,7 +174,7 @@ int main(int argc, char* argv[]) {
 			if( DBUG >= DBGINIT ) printf( "Recovering checkpointed simulation\n" );
 		#endif
 		//Recovering checkpointed simulation
-		readchckpnt( ip, &inputVar, &SPECIES, &SRDparticles, &CL, &MDmode, &WALL, &outFlags, &runtime, &warmtime, &theory, &AVVEL, &AVS, avDIR, &S4, &stdN, &KBTNOW, AVV, AVNOW, &specS, &swimmers );
+		readchckpnt( ip, &inputVar, &SPECIES, &SRDparticles, &CL, &MDmode, &WALL, &outFlags, &runtime, &warmtime, &theorySP, &theoryGlobal, &AVVEL, &AVS, avDIR, &S4, &stdN, &KBTNOW, AVV, AVNOW, &specS, &swimmers );
 	}
 	#ifdef DBG
 		if( DBUG > DBGRUN ) printf("Initialize simulation\n");
@@ -221,7 +221,7 @@ int main(int argc, char* argv[]) {
 			if(outFlags.SYNOUT == OUT) fprintf(outFiles.fsynopsis,"\nMD integrator launched.\n" );
 		}
 		//Normal initialization
-		initializeSIM( CL, SRDparticles, SPECIES, WALL, simMD, &specS, swimmers, argc, argv, &inputVar, &to, &co, &runtime, &warmtime, &AVVEL, &theory, &KBTNOW, &AVS, &S4, &stdN, AVNOW, AVV, avDIR, outFlags, MDmode, outFiles.fsynopsis, ip );
+		initializeSIM( CL, SRDparticles, SPECIES, WALL, simMD, &specS, swimmers, argc, argv, &inputVar, &to, &co, &runtime, &warmtime, &AVVEL, theorySP, &theoryGlobal, &KBTNOW, &AVS, &S4, &stdN, AVNOW, AVV, avDIR, outFlags, MDmode, outFiles.fsynopsis, ip );
 	}
 	/* ****************************************** */
 	/* ****************************************** */
@@ -230,7 +230,7 @@ int main(int argc, char* argv[]) {
 	/* ****************************************** */
 	/* ****************************************** */
 	/* ****************************************** */
-	stateinput( inputVar, SPECIES, WALL, specS, outFlags, theory, outFiles.fsynopsis );
+	stateinput( inputVar, SPECIES, WALL, specS, outFlags, theorySP, theoryGlobal, outFiles.fsynopsis );
 	/* ****************************************** */
 	/* ****************************************** */
 	/* ****************************************** */
@@ -238,7 +238,7 @@ int main(int argc, char* argv[]) {
 	/* ****************************************** */
 	/* ****************************************** */
 	/* ****************************************** */
-	listinput( inputVar, AVVEL, SPECIES, theory );
+	listinput( inputVar, AVVEL, SPECIES, theorySP, theoryGlobal );
 	/* ****************************************** */
 	/* ****************************************** */
 	/* ****************************************** */
@@ -246,8 +246,6 @@ int main(int argc, char* argv[]) {
 	/* ****************************************** */
 	/* ****************************************** */
 	/* ****************************************** */
-    lastCheckpoint = time(NULL); // set NOW to last checkpoint time
-
 	/* ****************************************** */
 	/* *************** WARMUP LOOP ************** */
 	/* ****************************************** */
@@ -258,21 +256,16 @@ int main(int argc, char* argv[]) {
 		if(outFlags.SYNOUT == OUT) fprintf( outFiles.fsynopsis,"\nBegin warmup loop.\n" );
 		// This is the main loop of the SRD program. The temporal loop. 
 		starttime=warmtime;
-        if (simMD != NULL) {
-            if(simMD->warmupMD){
-                WMD = 1;
-            }
-        }
 		for( warmtime=starttime; warmtime<=inputVar.warmupSteps; warmtime++ ) {
 			/* ****************************************** */
 			/* ***************** UPDATE ***************** */
 			/* ****************************************** */
-			timestep( CL, SRDparticles, SPECIES, WALL, simMD, &specS, swimmers, AVNOW, AVV, avDIR, inputVar, &KBTNOW, &AVS, warmtime, MDmode, outFlags, outFiles ,WMD);
+			timestep( CL, SRDparticles, SPECIES, WALL, simMD, &specS, swimmers, AVNOW, AVV, avDIR, inputVar, &KBTNOW, &AVS, warmtime, MDmode, outFlags, outFiles);
 			/* ****************************************** */
 			/* *************** CHECKPOINT *************** */
 			/* ****************************************** */
 			if( outFlags.CHCKPNT>=OUT && warmtime%outFlags.CHCKPNT==0 ) {
-                runCheckpoint( op, &lastCheckpoint, outFiles.fchckpnt, inputVar, SPECIES, SRDparticles, MDmode, WALL, outFlags, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory,specS, swimmers );
+                runCheckpoint( op, &lastCheckpoint, outFiles.fchckpnt, inputVar, SPECIES, SRDparticles, MDmode, WALL, outFlags, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theorySP, theoryGlobal, specS, swimmers );
 			}
 		}
 		inputVar.warmupSteps=0;
@@ -290,12 +283,14 @@ int main(int argc, char* argv[]) {
 	if(outFlags.SYNOUT == OUT) fprintf( outFiles.fsynopsis,"\nBegin temporal loop.\n" );
 	// This is the main loop of the SRD program. The temporal loop.
 	starttime=runtime;
-	WMD = 1;
+	if (simMD != NULL) {
+		simMD->warmupMD = POS_WARMUP;
+	}
 	for( runtime=starttime; runtime<=inputVar.simSteps; runtime++ ) {
 		/* ****************************************** */
 		/* ***************** UPDATE ***************** */
 		/* ****************************************** */
-		timestep( CL, SRDparticles, SPECIES, WALL, simMD, &specS, swimmers, AVNOW, AVV, avDIR, inputVar, &KBTNOW, &AVS, runtime, MDmode, outFlags, outFiles,WMD );
+		timestep( CL, SRDparticles, SPECIES, WALL, simMD, &specS, swimmers, AVNOW, AVV, avDIR, inputVar, &KBTNOW, &AVS, runtime, MDmode, outFlags, outFiles);
 		/* ****************************************** */
 		/* ***************** OUTPUT ***************** */
 		/* ****************************************** */
@@ -308,7 +303,7 @@ int main(int argc, char* argv[]) {
 		/* *************** CHECKPOINT *************** */
 		/* ****************************************** */
 		if( outFlags.CHCKPNT>=OUT && runtime%outFlags.CHCKPNT==0 ) {
-            runCheckpoint( op, &lastCheckpoint, outFiles.fchckpnt, inputVar, SPECIES, SRDparticles, MDmode, WALL, outFlags, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory,specS, swimmers );
+            runCheckpoint( op, &lastCheckpoint, outFiles.fchckpnt, inputVar, SPECIES, SRDparticles, MDmode, WALL, outFlags, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theorySP, theoryGlobal, specS, swimmers );
         }
 	}
 	#ifdef DBG
