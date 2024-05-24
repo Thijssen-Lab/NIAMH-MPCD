@@ -1705,6 +1705,7 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 	out->printSP = getJObjInt(jObj, "trajSpecOut", 0, jsonTagList); // printSP
 	out->COAROUT = getJObjInt(jObj, "coarseOut", 0, jsonTagList); // coarOut
 	out->FLOWOUT = getJObjInt(jObj, "flowOut", 0, jsonTagList); // flowOut
+	out->SWFLOWOUT = getJObjInt(jObj, "swFlowOut", 0, jsonTagList); // swFlowOut
 	out->VELOUT = getJObjInt(jObj, "velOut", 0, jsonTagList); // velOut
 	out->AVVELOUT = getJObjInt(jObj, "avVelOut", 0, jsonTagList); // avVelOut
 	out->AVORIOUT = getJObjInt(jObj, "avOriOut", 0, jsonTagList); // avOriOut
