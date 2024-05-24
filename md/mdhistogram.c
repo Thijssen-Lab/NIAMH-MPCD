@@ -50,7 +50,6 @@
 void SetupHistograms (simptr sim)
 //================================================================================
 {
-	printf("line 53\n");
 	histptr 	h;
 // 	histptr 	h1;
 // 	char		str[STRLEN];
@@ -60,12 +59,9 @@ void SetupHistograms (simptr sim)
 
 	// include additioinal user histogram definitions
 	#include "mdhistogramdef.h"
-	printf("line 62\n");
 	// setup histogram stream pointers and function pointers
 	HistogramSetupFiles (sim);
-	printf("line 65\n");
 	HistogramSetupFuncs (sim);
-	printf("line 67\n");
 
 	// report
 	h = sim->histograms;
