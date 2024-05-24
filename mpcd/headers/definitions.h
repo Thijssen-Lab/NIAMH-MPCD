@@ -190,6 +190,8 @@
 # define LCL 1
 /// @brief Liquid crystal setting. Nematic LC using the global S value.
 # define LCG 2
+/// @brief Value for bacterial simulations. Make sure particles do not rotate too much.
+# define BCT 3
 
 /* ****************************************** */
 /* ******** HYDRODYNAMIC INTERACTIONS ******* */
@@ -305,6 +307,12 @@
 // #define BC_MOVING_WALL 5
 
 /* ****************************************** */
+/* ********** Apply BC to particle ********** */
+/* ****************************************** */
+/// @brief BC interactions left on.
+# define BCON 1
+
+/* ****************************************** */
 /* ************** MD Coupling *************** */
 /* ****************************************** */
 /// @brief MD coupling option. No MD coupling.
@@ -315,6 +323,16 @@
 # define MPCinMD 2
 
 /* ****************************************** */
+/* ************** MD Warmup ***************** */
+/* ****************************************** */
+/// @brief MD warmup option. No MD integration and no coupling to MPCD during MPCD warmup.
+# define FROZEN_WARMUP 0
+/// @brief MD warmup option. MD coupled and integrated during MPCD warmup.
+# define FREE_WARMUP 1
+/// @brief MD warmup option. MD coupled and integrated during MPCD warmup but its center is kept where it is initiated. 
+# define PINNED_WARMUP 2
+
+/* ****************************************** */
 /* ************** Monte Carlo *************** */
 /* ****************************************** */
 // annealNum=(int)(MCINT+MCSLOPE*effM*S/KBT);
@@ -322,6 +340,8 @@
 # define MCSLOPE 0.1
 /// @brief Monte Carlo setting. Interval between Monte Carlo steps.
 # define MCINT 5
+/// @brief Number of pseudo-particles per MPCD used to calculate the accessible volume by Monte Carlo integration. 
+# define NUMMC 1000
 
 /* ****************************************** */
 /* **************** Swimmers **************** */

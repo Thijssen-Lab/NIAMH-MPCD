@@ -62,7 +62,6 @@ Tag             | Type          | Default Value | Description
 `tau`           | double        | 0.5           | Thermal relaxation time scale
 `rotAng`        | double        | 1.570796      | This is the angle used in the original SRD collision operator
 `fricCoef`      | double        | 1.0           | Friction coefficient for langevin thermostat
-`mfpot`         | double        | 10            | Liquid crystal mean field potential in units of thermal energy
 `noHI`          | int           | 0             | Enable no HI mode. 1 = on, 0 = off
 `incomp`        | int           | 0             | Enable incompressibility correction. 1 = on, 0 = off
 `multiphase`    | int           | 0             | Enable multiphase mode, applying multiphase interactions. 1 = on, 0 = off
@@ -72,6 +71,7 @@ Tag             | Type          | Default Value | Description
 `mdIn`          | string        | ""            | Path to the MD input file. This also acts as the switch for enabling MD --- If set to `""`, then MD is disabled, otherwise MD is enabled with the corresponding input file
 `mdCoupleMode`  | int           | 1             | Coupling mode for MD. Only matters if `mdIn` is set. Set to 1 for MD particles to be treated as MPCD particles, 2 for MD particles to be treated as MD particles in the MPCD simulator
 `stepsMD`       | int           | 20            | MD time steps per MPCD time step
+`mfpLayerH`     | int           | 0             | Height above which MFP goes to 0. For simulating thin ordered films below disordered fluids. If 0, disable this functionality entirely.
 `species`       | array(species)| 1 default spec  | An array of species objects.  See the [species table](#species-tag-table) for species tags
 ---             | ---           | ---           | ---
 `debugOut`      | int           | 3             | Debug (verbosity) level. See definitions.h for list
@@ -81,6 +81,7 @@ Tag             | Type          | Default Value | Description
 `flowOut`       | int           | 0             | Flow field averaged between output times
 `velOut`        | int           | 0             | Instantaneous velocity field.
 `avVelOut`      | int           | 0             | Total average MPCD velocity. System-averaged single value
+`avOriOut`      | int           | 0             | Total average MPCD orientation. System-averaged vector value
 `dirSOut`       | int           | 0             | Director and scalar order parameter fields
 `qTensOut`      | int           | 0             | Q tensor field
 `qkTensOut`     | int           | 0             | Reciprocal Q tensor field
@@ -162,6 +163,7 @@ Tag             | Type          | Default Value | Description
 `vDist`         | int           | 0             | Initial velocity distribution function for the species. See definitions.h for a list
 `oDist`         | int           | 2             | Initial orientation distribution function for the species. See definitions.h for a list
 `interMatr`     | array(double) | [0,...]       | Interaction matrix for this species, against other species. **Must** be of the same length as the number of species. Default will autopopulate with 0s
+`mfpot`         | double        | 10            | Liquid crystal mean field potential in units of thermal energy
 `rfc`           | double        | 0.01          | Nematogen rotational friction coefficient
 `len`           | double        | 0.007         | Effective rod length (specifically for solid boundary interactions)
 `tumble`        | double        | 2             | Tumbling parameter
@@ -214,6 +216,9 @@ Tag             | Type          | Default Value | Description
 `inv`           | int           | 0             | Whether to invert the bc (ie, multiply the A's by -1). 0 = no, 1 = yes
 `mass`          | double        | 1             | Mass of the wall in MPCD units. Should be the same density as the fluid if its displaceable
 `wavy`          | array(double) | [0,0,0]       | Generalized amplitudes and frequencies for wavy-walls. **Must** be 3D
+`interSRD`      | array(int)    | [1,...]       | Interaction matrix for this colloid with different species of MPCD particles. Length **must** be less than or equal to MAXSPECI. Default will autopopulate with 1s
+`interMD`       | int           | 1             | Interaction of this colloid with MD particles
+`interMD`       | int           | 1             | Interaction of this colloid with swimmer particles
 
 #### BC Overrides           {#bc-overrides}
 Override Tag    | Type          | Override param| Description
@@ -241,12 +246,12 @@ As a reminder, if you wish to use the default value for a tag, you can leave it 
     "tau":              0.5,
     "rotAng":           1.570796,
     "fricCoef":         1.0,
-    "mfpot":            10,
     "grav":             [0, 0, 0],
     "mag":              [0, 0, 0],
     "seed":             0,
     "mdIn":             "",
     "stepsMD":          20,
+    "mfpLayerH":        0,
     "species":
     [
         {
@@ -261,6 +266,7 @@ As a reminder, if you wish to use the default value for a tag, you can leave it 
             "tumble":       2,
             "shearSusc":    0.5,
             "magnSusc":     0.001,
+            "mfpot":        10,
             "act":          0.05,
             "damp":         0,
             "sigWidth":     1.0,

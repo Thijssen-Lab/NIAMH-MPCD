@@ -58,5 +58,6 @@ void RefreshCellList 			(simptr sim);
 simptr launchMD 			(int argc, char *argv[]);
 // void integrateMD			(simptr sim, int steps);
 void integrateMD			(simptr sim,int MDmode, int steps,struct particleMPC *pSRD,struct bc *pBC,struct spec *SP,int GPOP,int NBC,struct cell ***CL);
+void integrateMD_Pinned	    (simptr sim,int MDmode, int steps,struct particleMPC *pSRD,struct bc *pBC,struct spec *SP,int GPOP,int NBC,struct cell ***CL);
 
 #endif

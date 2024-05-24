@@ -15,6 +15,7 @@
 # include "../headers/globals.h"
 # include "../headers/pout.h"
 # include "../headers/mtools.h"
+# include "../headers/init.h"
 # include "../headers/cJson.h"
 
 /* ****************************************** */
@@ -49,7 +50,7 @@ void checkRead( int flag,char failure[],char file[]) {
 ///
 /// @brief LEGACY.
 ///
-void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL,int *MDmode ) {
+void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL,int *MD_mode ) {
 /*
    By reading in the addresses of the variables as
    pointers this function sets the values to what
@@ -107,9 +108,6 @@ void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL
 	//Read the Langevin thermostat friction coefficient
 	read=fscanf( finput,"%lf %s",&(in->FRICCO),STR );
 	checkRead( read,"friction coefficient",inSTR);
-	//Read the liquid crystal mean-field potential
-	read=fscanf( finput,"%lf %s",&(in->MFPOT),STR );
-	checkRead( read,"LC mean-field potential",inSTR);
 	//Read the constant external acceleration
 	for( i=0; i<_3D; i++ ) {
 		read=fscanf( finput,"%lf %s",&(in->GRAV[i]),STR );
@@ -133,7 +131,7 @@ void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL
 	read=fscanf( finput,"%ld %s",&(in->seed),STR );
 	checkRead( read,"random seed",inSTR);
 	//Read the MD coupling mode
-	read=fscanf( finput,"%d %s",MDmode,STR );
+	read=fscanf(finput, "%d %s", MD_mode, STR );
 	checkRead( read,"MD coupling",inSTR);
 	//Read the number of MD steps per SRD step
 	read=fscanf( finput,"%d %s",&(in->stepsMD),STR );
@@ -143,7 +141,7 @@ void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL
 	read=fscanf( finput,"%d %s",&NSPECI,STR );
 	checkRead( read,"number of species",inSTR);
 	//Allocate the needed amount of memory for the species SP
-	(*SP) = (spec*) malloc( NSPECI * sizeof( spec ) );
+	(*SP) = (spec*) calloc( NSPECI, sizeof( spec ) );
 	for( i=0; i<NSPECI; i++ ) {
 		//Read the species' mass
 		read=fscanf( finput,"%lf %s",&MF,STR );
@@ -204,17 +202,17 @@ void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL
 	//Total Number of particleMPCs
 	GPOP = 0;
 	for( i=0; i<NSPECI; i++ ) GPOP += (*SP+i)->POP;
-	(*pSRD) = (particleMPC*) malloc( GPOP * sizeof( particleMPC ) );
+	(*pSRD) = (particleMPC*) calloc( GPOP, sizeof( particleMPC ) );
 
 	//Allocate memory for the cells
 	//Allocate rows (x first)
-	*CL = (cell***) malloc( XYZ_P1[0] * sizeof( cell** ) );
+	*CL = (cell***) calloc( XYZ_P1[0], sizeof( cell** ) );
 	//For each x-element allocate the y columns
 	for( i=0; i<XYZ_P1[0]; i++ ) {
-		(*CL)[i] = (cell**) malloc( XYZ_P1[1] * sizeof( cell* ) );
+		(*CL)[i] = (cell**) calloc( XYZ_P1[1], sizeof( cell* ) );
 		//For each y-element allocate the z columns
 		for( j=0; j<XYZ_P1[1]; j++ ) {
-			(*CL)[i][j] = (cell*) malloc( XYZ_P1[2] * sizeof( cell ) );
+			(*CL)[i][j] = (cell*) calloc( XYZ_P1[2], sizeof( cell ) );
 		}
 	}
 
@@ -259,6 +257,9 @@ void readpc( char fpath[],outputFlagsList *out ) {
 	//Read how often the total average MPCD velocity is outputted
 	read=fscanf( finput,"%d %s",&(out->AVVELOUT),STR );
 	checkRead( read,"total average MPCD velocity",inSTR);
+	//Read how often the total average MPCD orientation is outputted
+	read=fscanf( finput,"%d %s",&(out->AVORIOUT),STR );
+	checkRead( read,"total average MPCD orientation",inSTR);
 	//Read how often the local director and scalar order parameter fields are outputted
 	read=fscanf( finput,"%d %s",&(out->ORDEROUT),STR );
 	checkRead( read,"director and scalar order parameter fields",inSTR);
@@ -627,7 +628,7 @@ void readbc( char fpath[],bc **WALL ) {
 	read=fscanf( fbc,"%d %s",&NBC,STR );
 	checkRead( read,"bc",inSTR);
 	//Allocate the needed amount of memory for the boundary conditions WALLs
-	(*WALL) = (bc*) malloc( NBC * sizeof( bc ) );
+	(*WALL) = (bc*) calloc( NBC, sizeof( bc ) );
 	//Read the parameters for each of the BCs
 	for( i=0; i<NBC; i++ ) bcin( fbc,(*WALL+i),inSTR );
 	//Determine if any BCs are periodic boundaries
@@ -649,7 +650,7 @@ void readbc( char fpath[],bc **WALL ) {
 /// @param SP Pointer to the species list. Expected to be &SP.
 /// @param pSRD Pointer to the particle list. Expected to be &pSRD.
 /// @param CL Pointer to the cell array. Expected to be &CL.
-/// @param MDmode Pointer to the MD mode int flag. Expected to be &MDmode.
+/// @param MD_mode Pointer to the MD mode int flag. Expected to be &MD_mode.
 /// @param WALL Pointer to the boundary condition list. Expected to be &WALL.
 /// @param out Pointer to the object containing output flags (corresponding to legacy printcom.inp). Expected to be &out.
 /// @param runtime Pointer to the current runtime of the simulation. Expected to be &runtime.
@@ -666,7 +667,7 @@ void readbc( char fpath[],bc **WALL ) {
 /// @param specS Pointer to the object containing the swimmer species hyperparameters. Expected to be &specS.
 /// @param sw Pointer to the swimmer list. Expected to be &sw.
 ///
-void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL,int *MDmode,bc **WALL,outputFlagsList *out,int *runtime,int *warmtime,kinTheory *theory,double *AVVEL, double *AVS,double avDIR[_3D],double *S4,double *stdN,double *KBTNOW,double AVV[_3D],double AVNOW[_3D],specSwimmer *specS,swimmer **sw ) {
+void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cell ****CL, int *MD_mode, bc **WALL, outputFlagsList *out, int *runtime, int *warmtime, kinTheory **theorySP, kinTheory *theoryGl, double *AVVEL, double *AVS, double avDIR[_3D], double *S4, double *stdN, double *KBTNOW, double AVV[_3D], double AVNOW[_3D], specSwimmer *specS, swimmer **sw ) {
 	FILE *finput;
 	int i,j;
 	char STR[100];
@@ -690,7 +691,7 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 	for(i=0; i<_3D; i++ ) XYZ_P1[i] = XYZ[i]+1;
 	if(fscanf( finput,"%d %d %d %d %d %d",&(in->RFRAME),&(in->zeroNetMom),&(in->GALINV),&(in->TSTECH),&(in->RTECH),&(in->LC) ));
 	else printf("Warning: Failed to Galilean transform, rest frame, thermostat mode, collision mode or liquid crystal mode.\n");
-	if(fscanf( finput,"%lf %lf %lf %lf",&(in->TAU),&(in->RA),&(in->FRICCO),&(in->MFPOT) ));		//Read the thermal relaxation time scale
+	if(fscanf( finput,"%lf %lf %lf",&(in->TAU),&(in->RA),&(in->FRICCO) ));				//Read the thermal relaxation time scale
 	else printf("Warning: Failed to read relaxation time, rotation angle, friction coefficient or mean-field potential.\n");
 	if(fscanf( finput,"%d %d %d",&(in->noHI),&(in->inCOMP),&(in->MULTIPHASE) ));		//Read no hydrodynamics, incompressibility and multi-phase
 	else printf("Warning: Failed to read no hydrodynamics or incompressibility.\n");
@@ -700,20 +701,22 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 	else printf("Warning: Failed to read magnetic field.\n");
 
 
-	if(fscanf( finput,"%d %d",MDmode,&(in->stepsMD) ));	//Read the MD coupling mode
+	if(fscanf(finput, "%d %d", MD_mode, &(in->stepsMD) ));	//Read the MD coupling mode
 	else printf("Warning: Failed to read MD coupling.\n");
 	if(fscanf( finput,"%d %d",&GPOP,&NSPECI ));	//Read the number of MPC particles
 	else printf("Warning: Failed to read total number of particles or number of species.\n");
 
 	if(fscanf( finput,"%d %d %lf %lf %d %d",runtime,warmtime,&(in->C),&(in->S),&(in->GRAV_FLAG),&(in->MAG_FLAG) ));//Read program variables
 	else printf("Warning: Failed to read various program variables.\n");
-	if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&(theory->MFP), &(theory->VISC), &(theory->THERMD), &(theory->SDIFF), &(theory->SPEEDOFSOUND), &(theory->sumM), AVVEL, AVS, &avDIR[0], &avDIR[1], &avDIR[2], S4, stdN, &nDNST, &mDNST ));//Read program variables
+	if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf", AVVEL, AVS, &avDIR[0], &avDIR[1], &avDIR[2], S4, stdN, &VOL ));//Read program variables
 	else printf("Warning: Failed to read various program variables.\n");
 	if(fscanf( finput,"%lf %lf %lf %lf %lf %lf",&AVV[0], &AVV[1], &AVV[2], &AVNOW[0], &AVNOW[1], &AVNOW[2] ));//Read program variables
 	else printf("Warning: Failed to read average velocities.\n");
+	if(fscanf( finput,"%lf %lf %lf %lf %lf %lf",&(theoryGl->MFP), &(theoryGl->VISC), &(theoryGl->THERMD), &(theoryGl->SDIFF), &(theoryGl->SPEEDOFSOUND), &(theoryGl->sumM) ));//Read program variables
+	else printf("Warning: Failed to read global theoretical predictions.\n");
 
 	//Read output
-	if(fscanf( finput,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",&DBUG, &(out->TRAJOUT), &(out->printSP), &(out->COAROUT), &(out->FLOWOUT), &(out->VELOUT), &(out->AVVELOUT), &(out->ORDEROUT), &(out->QTENSOUT), &(out->QKOUT), &(out->AVSOUT), &(out->SOLOUT), &(out->ENOUT), &(out->ENFIELDOUT), &(out->ENNEIGHBOURS), &(out->ENSTROPHYOUT), &(out->DENSOUT), &(out->CVVOUT), &(out->CNNOUT), &(out->CWWOUT), &(out->CDDOUT), &(out->CSSOUT), &(out->CPPOUT), &(out->BINDER), &(out->BINDERBIN), &(out->SYNOUT), &(out->CHCKPNT), &(out->CHCKPNTrcvr) ));
+	if(fscanf( finput,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",&DBUG, &(out->TRAJOUT), &(out->printSP), &(out->COAROUT), &(out->FLOWOUT), &(out->VELOUT), &(out->AVVELOUT), &(out->AVORIOUT), &(out->ORDEROUT), &(out->QTENSOUT), &(out->QKOUT), &(out->AVSOUT), &(out->SOLOUT), &(out->ENOUT), &(out->ENFIELDOUT), &(out->ENNEIGHBOURS), &(out->ENSTROPHYOUT), &(out->DENSOUT), &(out->CVVOUT), &(out->CNNOUT), &(out->CWWOUT), &(out->CDDOUT), &(out->CSSOUT), &(out->CPPOUT), &(out->BINDER), &(out->BINDERBIN), &(out->SYNOUT), &(out->CHCKPNT), &(out->CHCKPNTrcvr) ));
 	else printf("Warning: Failed to read output.\n");
 	if(fscanf( finput,"%d %d",&(out->SPOUT), &(out->PRESOUT) ));
 	else printf("Warning: Failed to read output.\n");
@@ -725,15 +728,18 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 	else printf("Warning: Failed to read histogram output.\n");
 
 	//Allocate the needed amount of memory for the species SP
-	(*SP) = (spec*) malloc( NSPECI * sizeof( spec ) );
+	(*SP) = (spec*) calloc( NSPECI, sizeof( spec ) );
 	for( i=0; i<NSPECI; i++ ) {
-		if(fscanf( finput,"%lf %i %i %i %i %lf %lf %lf %lf %lf %lf %lf %lf %lf",&((*SP+i)->MASS), &((*SP+i)->POP), &((*SP+i)->QDIST), &((*SP+i)->VDIST), &((*SP+i)->ODIST), &((*SP+i)->RFC), &((*SP+i)->LEN), &((*SP+i)->TUMBLE), &((*SP+i)->CHIHI), &((*SP+i)->CHIA), &((*SP+i)->ACT), &((*SP+i)->SIGWIDTH), &((*SP+i)->SIGPOS), &((*SP+i)->DAMP) ));	//Read the species' mass
+
+		if(fscanf( finput,"%lf %i %i %i %i %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&((*SP+i)->MASS), &((*SP+i)->POP), &((*SP+i)->QDIST), &((*SP+i)->VDIST), &((*SP+i)->ODIST), &((*SP+i)->RFC), &((*SP+i)->LEN), &((*SP+i)->TUMBLE), &((*SP+i)->CHIHI), &((*SP+i)->CHIA), &((*SP+i)->ACT),&((*SP+i)->BS), &((*SP+i)->SIGWIDTH), &((*SP+i)->SIGPOS), &((*SP+i)->DAMP), &((*SP+i)->VOL), &((*SP+i)->nDNST), &((*SP+i)->mDNST) ));	//Read the species' mass
 		else printf("Warning: Failed to read species %i.\n",i);
 		for( j=0; j<NSPECI; j++ ) {
 			//Read the species' interaction matrix with other species
 			if(fscanf( finput,"%lf ",&((*SP+i)->M[j]) ));	//Read the species' interactions
 			else printf("Warning: Failed to read species %d interaction with %d.\n",i,j);
 		}
+		if(fscanf( finput,"%lf %lf %lf %lf %lf %lf",&((*theorySP+i)->MFP), &((*theorySP+i)->VISC), &((*theorySP+i)->THERMD), &((*theorySP+i)->SDIFF), &((*theorySP+i)->SPEEDOFSOUND), &((*theorySP+i)->sumM) ));//Read program variables
+		else printf("Warning: Failed to read theoretical predictions.\n");
 	}
 	//Check total number of particleMPCs
 	j = 0;
@@ -742,17 +748,17 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 		printf("Warning: GPOP does not match sum of species populations.\n");
 		GPOP=j;
 	}
-	(*pSRD) = (particleMPC*) malloc( GPOP * sizeof( particleMPC ) );
+	(*pSRD) = (particleMPC*) calloc( GPOP, sizeof( particleMPC ) );
 
 	//Allocate memory for the cells
 	//Allocate rows (x first)
-	*CL = (cell***) malloc( XYZ_P1[0] * sizeof( cell** ) );
+	*CL = (cell***) calloc( XYZ_P1[0], sizeof( cell** ) );
 	//For each x-element allocate the y columns
 	for( i=0; i<XYZ_P1[0]; i++ ) {
-		(*CL)[i] = (cell**) malloc( XYZ_P1[1] * sizeof( cell* ) );
+		(*CL)[i] = (cell**) calloc( XYZ_P1[1], sizeof( cell* ) );
 		//For each y-element allocate the z columns
 		for( j=0; j<XYZ_P1[1]; j++ ) {
-			(*CL)[i][j] = (cell*) malloc( XYZ_P1[2] * sizeof( cell ) );
+			(*CL)[i][j] = (cell*) calloc( XYZ_P1[2], sizeof( cell ) );
 		}
 	}
 	//Read the BCs
@@ -773,6 +779,11 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 		else printf("Warning: Failed to read BC %d.\n",i);
 		if(fscanf( finput,"%lf %lf %lf %lf %lf %lf", &((*WALL+i)->dV[0]), &((*WALL+i)->dV[1]), &((*WALL+i)->dV[2]), &((*WALL+i)->dL[0]), &((*WALL+i)->dL[1]), &((*WALL+i)->dL[2]) ));
 		else printf("Warning: Failed to read BC %d.\n",i);
+		for( j=0; j<MAXSPECI+2; j++ ) {
+			//Read the species' interaction matrix with each BC
+			if(fscanf( finput,"%d ",&((*WALL+i)->INTER[j]) ));	//Read the species' interactions
+			else printf("Warning: Failed to read BC %d interaction with particle %d.\n",i,j);
+		}
 	}
 
 	//Read the MPCD particles
@@ -788,7 +799,7 @@ void readchckpnt( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell *
 	else printf("Warning: Failed to read swimmer-type variables.\n");
 
 	//Allocate the memory for the swimmers
-	(*sw) = (swimmer*) malloc( NS * sizeof( swimmer ) );
+	(*sw) = (swimmer*) calloc( NS, sizeof( swimmer ) );
 
 	for( i=0; i<NS; i++ ) {
 		if(fscanf( finput,"%d %lf %lf %lf %d %d %lf %lf %lf %lf %lf\n", &((*sw+i)->RT), &((*sw+i)->n0[0]), &((*sw+i)->n0[1]), &((*sw+i)->n0[2]), &((*sw+i)->timeCNT), &((*sw+i)->timeRND), &((*sw+i)->ro), &((*sw+i)->iro), &((*sw+i)->sig), &((*sw+i)->isig), &((*sw+i)->k) ));
@@ -939,6 +950,7 @@ int checkBC(cJSON *bc){
 /// @param fpath Path to the json input file.
 /// @param in Pointer to the inputList struct to be populated. Expected to be `&in`.
 /// @param SP Pointer to the particle species list to be populated. Expected to be `&SP`.
+/// @param theory Pointer to the particle species theory list to be populated. Expected to be `&theory`.
 /// @param pSRD Pointer to the particle list. Expected to be `&pSRD`.
 /// @param CL Pointer to the cell array. Expected to be `&CL`.
 /// @param MDMode Pointer to the MD mode flag integer. Expected to be `&MDMode`.
@@ -948,10 +960,12 @@ int checkBC(cJSON *bc){
 /// @param sw Pointer to the swimmer list. Expected to be `&sw`.
 /// @see cJson.c
 ///
-void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
-   cell ****CL, int *MDMode, outputFlagsList *out, bc **WALL,
-   specSwimmer *specS, swimmer **sw){
+void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, particleMPC **pSRD,
+	cell ****CL, int *MDMode, outputFlagsList *out, bc **WALL,
+	specSwimmer *specS, swimmer **sw){
 	int i, j; // counting variables
+	int useDens[MAXSPECI]={0};		//Flag to decide if set POP by read in number OR calculate from density override
+	double dens[MAXSPECI]={0.0};	//Density
 
 	char* fileStr = NULL;
 	if(getFileStr(fpath, &fileStr) != 0){ // read, return on error
@@ -1027,6 +1041,8 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 		XYZ[2] = 1;
 	}
 	for(i=0; i<_3D; i++ ) XYZ_P1[i] = XYZ[i]+1; // add 1 to each dimension
+	VOL=1.0;
+	for(i=0; i<DIM; i++ ) VOL *= XYZ[i]; // The total volume of the control volume
 
 	// first set of primitives
 	in->KBT = getJObjDou(jObj, "kbt", 1, jsonTagList); // kbt
@@ -1043,7 +1059,6 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	in->TAU = getJObjDou(jObj, "tau", 0.5, jsonTagList); // TAU
 	in->RA = getJObjDou(jObj, "rotAng", 1.570796, jsonTagList); // rotAng
 	in->FRICCO = getJObjDou(jObj, "fricCoef", 1.0, jsonTagList); // fricCo
-	in->MFPOT = getJObjDou(jObj, "mfpot", 10.0, jsonTagList); // mfpPot
 	in->tolD = getJObjDou(jObj, "tolD", 0.01, jsonTagList); //defect tolerance
 	in->noHI = getJObjInt(jObj, "noHI", 0, jsonTagList); // noHI
 	in->inCOMP = getJObjInt(jObj, "incomp", 0, jsonTagList); // inCOMP
@@ -1096,166 +1111,9 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	} else MDmode = mdCoupleMode; // otherwise set MD to correct coupling mode to enable it
 
 	in->stepsMD = getJObjInt(jObj, "stepsMD", 20, jsonTagList); // stepsMD
+    in->MFPLAYERH = getJObjInt(jObj, "mfpLayerH", 0, jsonTagList); // mfpLayerH
 
-	// 2. Species //////////////////////////////////////////////////////////////
-	// scroll up to void readin() to see better descriptions & definitions for these
-
-	cJSON *arrSpecies = NULL;
-	getCJsonArray(jObj, &arrSpecies, "species", jsonTagList, arrayList, 1);
-	if(arrSpecies != NULL){ // if this can be found in the json
-		NSPECI = cJSON_GetArraySize(arrSpecies); // get the number of species
-
-		//Allocate the needed amount of memory for the species SP
-		(*SP) = (spec*) malloc( NSPECI * sizeof( spec ) );
-		for (i = 0; i < NSPECI; i++) { // loop through the species
-			cJSON *objElem = cJSON_GetArrayItem(arrSpecies, i); // get the species object
-
-			// now get first set of primitives
-			(*SP+i)->MASS = getJObjDou(objElem, "mass", 1.0, jsonTagList); // mass
-
-			// handle population related overrides
-			double cellDens = getJObjDou(objElem, "dens", -1, jsonTagList);
-			if (cellDens < 0){ // if cellDens is invalid
-				(*SP+i)->POP = getJObjInt(objElem, "pop", XYZ[0]*XYZ[1]*XYZ[2]*20, jsonTagList); // pop
-			} else { // otherwise, set population using per cell density
-				(*SP+i)->POP = XYZ[0]*XYZ[1]*XYZ[2]*cellDens;
-			}
-
-			(*SP+i)->QDIST = getJObjInt(objElem, "qDist", 0, jsonTagList); // qDist
-			(*SP+i)->VDIST = getJObjInt(objElem, "vDist", 0, jsonTagList); // vDist
-			(*SP+i)->ODIST = getJObjInt(objElem, "oDist", 2, jsonTagList); // oDist
-
-			//Read the binary fluid interaction matrix for this species with all other species
-			cJSON *arrBFM = NULL;
-			getCJsonArray(jObj, &arrBFM, "interMatr", jsonTagList, arrayList, 0);
-			if (arrBFM != NULL) { // if grav has been found then....
-				if (cJSON_GetArraySize(arrBFM) != NSPECI) { // check dimensionality is valid
-					printf("Error: Interaction matrices must have columns of length equal to the number of species.\n");
-					exit(EXIT_FAILURE);
-				}
-
-				for (j = 0; j < NSPECI; j++) { // get the value
-					(*SP+i)->M[j] = cJSON_GetArrayItem(arrBFM, j)->valuedouble;
-				}
-			} else {
-				for (j = 0; j < NSPECI; j++) { // get the value
-					(*SP+i)->M[j] = 0;
-				}
-			}
-
-			// get second set of primitives
-			(*SP+i)->RFC = getJObjDou(objElem, "rfc", 0.01, jsonTagList); // rfCoef
-			(*SP+i)->LEN = getJObjDou(objElem, "len", 0.007, jsonTagList); // len
-			(*SP+i)->TUMBLE = getJObjDou(objElem, "tumble", 2.0, jsonTagList); // tumble
-			(*SP+i)->CHIHI = getJObjDou(objElem, "shearSusc", 0.5, jsonTagList); // chiHi
-			(*SP+i)->CHIA = getJObjDou(objElem, "magnSusc", 0.001, jsonTagList); // chiA
-			(*SP+i)->ACT = getJObjDou(objElem, "act", 0.05, jsonTagList); // act
-			(*SP+i)->SIGWIDTH = getJObjDou(objElem, "sigWidth", 1, jsonTagList); // sigWidth
-			// error check, is SIGWIDTH 0?
-			if ((*SP+i)->SIGWIDTH == 0) {
-				printf("Error: SIGWIDTH cannot be 0.\n");
-				exit(EXIT_FAILURE);
-			}
-			(*SP+i)->SIGPOS = getJObjDou(objElem, "sigPos", (*SP+i)->SIGWIDTH, jsonTagList); // sigPos
-			(*SP+i)->MINACTRATIO = getJObjDou(objElem, "minActRatio", 0.0, jsonTagList); // minActRatio
-			(*SP+i)->DAMP = getJObjDou(objElem, "damp", 0.0, jsonTagList); // damp
-		}
-	} else { // if nothing found in the JSON then fallback to the default
-		// setting up a single species with default parameters
-		//		note this is just copied from the above code w lines changed
-		NSPECI = 1;
-
-		(*SP) = (spec*) malloc( NSPECI * sizeof( spec ) );
-		for (i = 0; i < NSPECI; i++) { // loop through the species
-			// now get first set of primitives
-			(*SP+i)->MASS = 1; // mass
-			(*SP+i)->POP = XYZ[0]*XYZ[1]*XYZ[2]*20; // pop
-			(*SP+i)->QDIST = 0; // qDist
-			(*SP+i)->VDIST = 0; // vDist
-			(*SP+i)->ODIST = 2; // oDist
-			for (j = 0; j < NSPECI; j++) { // interaction matrix
-				(*SP+i)->M[j] = 0;
-			}
-			(*SP+i)->RFC = 0.01; // rfCoef
-			(*SP+i)->LEN = 0.007; // len
-			(*SP+i)->TUMBLE = 2; // tumble
-			(*SP+i)->CHIHI = 0.5; // chiHi
-			(*SP+i)->CHIA = 0.001; // chiA
-			(*SP+i)->ACT = 0.05; // act
-			(*SP+i)->SIGWIDTH = 1; // sigwidth
-			(*SP+i)->SIGPOS = 1; // sigpos
-			(*SP+i)->MINACTRATIO = 0.0; // minActRatio
-			(*SP+i)->DAMP = 0; // damp
-		}
-	}
-
-	//Total Number of particleMPCs
-	GPOP = 0;
-	for( i=0; i<NSPECI; i++ ) GPOP += (*SP+i)->POP;
-	(*pSRD) = (particleMPC*) malloc( GPOP * sizeof( particleMPC ) );
-
-	//Allocate memory for the cells
-	//Allocate rows (x first)
-	*CL = (cell***) malloc( XYZ_P1[0] * sizeof( cell** ) );
-	//For each x-element allocate the y columns
-	for( i=0; i<XYZ_P1[0]; i++ ) {
-		(*CL)[i] = (cell**) malloc( XYZ_P1[1] * sizeof( cell* ) );
-		//For each y-element allocate the z columns
-		for( j=0; j<XYZ_P1[1]; j++ ) {
-			(*CL)[i][j] = (cell*) malloc( XYZ_P1[2] * sizeof( cell ) );
-		}
-	}
-
-	// 3. Printcom /////////////////////////////////////////////////////////////
-	// scroll up to void readpc() to see better descriptions & definitions for these
-
-	DBUG = getJObjInt(jObj, "debugOut", 3, jsonTagList); // dbug
-	out->TRAJOUT = getJObjInt(jObj, "trajOut", 0, jsonTagList); // trajOut
-	out->printSP = getJObjInt(jObj, "trajSpecOut", 0, jsonTagList); // printSP
-	out->COAROUT = getJObjInt(jObj, "coarseOut", 0, jsonTagList); // coarOut
-	out->FLOWOUT = getJObjInt(jObj, "flowOut", 0, jsonTagList); // flowOut
-	out->VELOUT = getJObjInt(jObj, "velOut", 0, jsonTagList); // velOut
-	out->AVVELOUT = getJObjInt(jObj, "avVelOut", 0, jsonTagList); // avVelOut
-	out->ORDEROUT = getJObjInt(jObj, "dirSOut", 0, jsonTagList); // orderOut
-	out->QTENSOUT = getJObjInt(jObj, "qTensOut", 0, jsonTagList); // qTensOut
-	out->QKOUT = getJObjInt(jObj, "qkTensOut", 0, jsonTagList); // qKOut
-	out->ENFIELDOUT = getJObjInt(jObj, "oriEnOut", 0, jsonTagList); // enFieldOut
-	out->SPOUT = getJObjInt(jObj, "colourOut", 0, jsonTagList); // spOut
-	out->PRESOUT = getJObjInt(jObj, "pressureOut", 0, jsonTagList); // presOut
-	out->ENNEIGHBOURS = getJObjInt(jObj, "neighbourEnOut", 0, jsonTagList); // enNeighbours
-	out->AVSOUT = getJObjInt(jObj, "avSOut", 0, jsonTagList); // avSOut
-	out->DENSOUT = getJObjInt(jObj, "densSDOut", 0, jsonTagList); // densOut
-	out->ENSTROPHYOUT = getJObjInt(jObj, "enstrophyOut", 0, jsonTagList); // enStrophOut
-	out->HISTVELOUT = getJObjInt(jObj, "histVelOut", 0, jsonTagList); // histVelOut
-	out->HISTSPEEDOUT = getJObjInt(jObj, "histSpeedOut", 0, jsonTagList); // histSpeedOut
-	out->HISTVORTOUT = getJObjInt(jObj, "histVortOut", 0, jsonTagList); // histVortOut
-	out->HISTENSTROUT = getJObjInt(jObj, "histEnsOut", 0, jsonTagList); // histEnstrophyOut
-	out->HISTDIROUT = getJObjInt(jObj, "histDirOut", 0, jsonTagList); // histDirOut
-	out->HISTSOUT = getJObjInt(jObj, "histSOut", 0, jsonTagList); // histSOut
-	out->HISTNOUT = getJObjInt(jObj, "histNOut", 0, jsonTagList); // histNOut
-	out->SOLOUT = getJObjInt(jObj, "solidTrajOut", 0, jsonTagList); // solOut
-	out->TOPOOUT = getJObjInt(jObj, "topoFieldOut", 0, jsonTagList); // topoOut
-	out->DEFECTOUT = getJObjInt(jObj, "defectsOut", 0, jsonTagList); // defectOut
-	out->DISCLINOUT = getJObjInt(jObj, "disclinOut", 0, jsonTagList); // disclinationTensorFieldOut
-	out->ENOUT = getJObjInt(jObj, "energyOut", 0, jsonTagList); // enOut
-	out->CVVOUT = getJObjInt(jObj, "velCorrOut", 0, jsonTagList); // cvvOut
-	out->CNNOUT = getJObjInt(jObj, "dirCorrOut", 0, jsonTagList); // cnnOut
-	out->CWWOUT = getJObjInt(jObj, "vortCorrOut", 0, jsonTagList); // cwwOut
-	out->CDDOUT = getJObjInt(jObj, "densCorrOut", 0, jsonTagList); // cddOut
-	out->CSSOUT = getJObjInt(jObj, "orderCorrOut", 0, jsonTagList); // cssOut
-	out->CPPOUT = getJObjInt(jObj, "phaseCorrOut", 0, jsonTagList); // cppOut
-	out->ENERGYSPECTOUT = getJObjInt(jObj, "energySpecOut", 0, jsonTagList); // energySpectOut
-	out->ENSTROPHYSPECTOUT = getJObjInt(jObj, "enstrophySpecOut", 0, jsonTagList); // enstrophySpectOut
-	out->BINDER = getJObjInt(jObj, "binderOut", 0, jsonTagList); // binderOut
-	out->BINDERBIN = getJObjInt(jObj, "binderBin", 0, jsonTagList); // binderBinOut
-	out->SWOUT = getJObjInt(jObj, "swimQOut", 0, jsonTagList); // swOut
-	out->SWORIOUT = getJObjInt(jObj, "swimOOut", 0, jsonTagList); // swOriOut
-    const char* swimROutTags[2] = {"swimROut", "swimRTOut"}; // possible tags for collision operator
-    out->RTOUT = getJObjIntMultiple(jObj, swimROutTags, 2, 0, jsonTagList); // RTECH
-	out->SYNOUT = getJObjInt(jObj, "synopsisOut", 1, jsonTagList); // swSynOut
-	out->CHCKPNT = getJObjInt(jObj, "checkpointOut", 0, jsonTagList); // chkpntOut
-
-	// 3. Boundaries ///////////////////////////////////////////////////////////
+	// 2. Boundaries ///////////////////////////////////////////////////////////
 	// scroll up to void bcin() to see better descriptions & definitions for these
 
 	cJSON *arrBC = NULL;
@@ -1264,7 +1122,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 		NBC = cJSON_GetArraySize(arrBC); // get the number of BCs
 
 		//Allocate the needed amount of memory for the BCs
-		(*WALL) = (bc*) malloc( NBC * sizeof( bc ) );
+		(*WALL) = (bc*) calloc( NBC, sizeof( bc ) );
 		for (i = 0; i < NBC; i++) { // loop through the BCs
 			cJSON *objElem = cJSON_GetArrayItem(arrBC, i); // get the BC object
 			bc *currWall = (*WALL + i); // get the pointer to the BC we want to write to
@@ -1497,6 +1355,26 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			currWall->INV = getJObjInt(objElem, "inv", 0, jsonTagList); // inv
 			currWall->MASS = getJObjDou(objElem, "mass", 1, jsonTagList); // mass
 
+			//Read the colloid/particles interaction matrix for this BC
+			for (j = 0; j < MAXSPECI+2; j++) currWall->INTER[j] = BCON;	//Initialize them all equal to BCON=1 (since the input can be smaller than MAXSPECI)
+			currWall->INTER[MAXSPECI+0] = getJObjInt(objElem, "interMD", BCON, jsonTagList); // interMD
+			currWall->INTER[MAXSPECI+1] = getJObjInt(objElem, "interSw", BCON, jsonTagList); // interSw
+			cJSON *arrBCinter = NULL;
+			getCJsonArray(objElem, &arrBCinter, "interSRD", jsonTagList, arrayList, 0);
+			if (arrBCinter != NULL) { // if arrBCinter has been found then....
+				if (cJSON_GetArraySize(arrBCinter) > MAXSPECI) { // check dimensionality is valid
+					printf("Error: Interaction matrices must have columns of length less than or equal to the maximum number of species.\n");
+					exit(EXIT_FAILURE);
+				}
+				for (j = 0; j < cJSON_GetArraySize(arrBCinter); j++) { // get the value
+					currWall->INTER[j] = cJSON_GetArrayItem(arrBCinter, j)->valueint;
+				}
+			} else {
+				for (j = 0; j < MAXSPECI; j++) { // get the value
+					currWall->INTER[j] = BCON;
+				}
+			}
+
 			// B array
 			cJSON *arrB = NULL;
 			getCJsonArray(objElem, &arrB, "wavy", jsonTagList, arrayList, 0);
@@ -1550,7 +1428,8 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 		if (oldBCNo > 0) { // if wall already exists then realloc
 			(*WALL) = (bc*) realloc(*WALL, NBC * sizeof(bc)); // realloc mem
 		} else { // otherwise need to malloc
-			(*WALL) = (bc*) malloc(NBC * sizeof(bc)); // malloc mem
+//			(*WALL) = (bc*) malloc(NBC * sizeof(bc)); // malloc mem
+			(*WALL) = calloc(NBC, sizeof(bc)); // malloc mem
 		}
 
 		//set up PBCs on the xy plane based on the domain dimensions
@@ -1661,6 +1540,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 			currWall->DSPLC = 0; // dspc
 			currWall->INV = 0; // inv
 			currWall->MASS = 1; // mass
+			for (j = 0; j < MAXSPECI+2; j++) currWall->INTER[j] = BCON;	//Set them all equal to BCON=1
 
 			// Set the planar flag
 			currWall->PLANAR = 0;							// sets default to non-planar
@@ -1686,7 +1566,188 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
         out->CHCKPNTTIMER = checkPointTimer;
     }
 
-	// 4. Swimmers /////////////////////////////////////////////////////////////
+	// 3. Species //////////////////////////////////////////////////////////////
+	// scroll up to void readin() to see better descriptions & definitions for these
+
+	cJSON *arrSpecies = NULL;
+	getCJsonArray(jObj, &arrSpecies, "species", jsonTagList, arrayList, 1);
+	if(arrSpecies != NULL){ // if this can be found in the json
+		NSPECI = cJSON_GetArraySize(arrSpecies); // get the number of species
+
+		//Allocate the needed amount of memory for the species SP
+		(*SP) = (spec*) malloc( NSPECI * sizeof( spec ) );
+		(*theory) = (kinTheory*) malloc( NSPECI * sizeof( kinTheory ) );
+		for (i = 0; i < NSPECI; i++) { // loop through the species
+			cJSON *objElem = cJSON_GetArrayItem(arrSpecies, i); // get the species object
+
+			// now get first set of primitives
+			(*SP+i)->MASS = getJObjDou(objElem, "mass", 1.0, jsonTagList); // mass
+
+			// Numerically determine the accessible volume for the fluid, given these BCs
+			(*SP+i)->VOL = accessibleVolume( (*WALL),i );
+
+			// handle population related overrides
+			double cellDens = getJObjDou(objElem, "dens", -1, jsonTagList);
+			if (cellDens < 0){ // if cellDens is invalid
+				(*SP+i)->POP = getJObjInt(objElem, "pop", (int)(VOL*20), jsonTagList); // pop
+			} else { // otherwise, set population using per cell density
+				useDens[i]=1;
+				dens[i]=cellDens;
+				// (*SP+i)->POP = (int)(VOL*cellDens);
+			}
+
+			(*SP+i)->QDIST = getJObjInt(objElem, "qDist", 0, jsonTagList); // qDist
+			(*SP+i)->VDIST = getJObjInt(objElem, "vDist", 0, jsonTagList); // vDist
+			(*SP+i)->ODIST = getJObjInt(objElem, "oDist", 2, jsonTagList); // oDist
+
+			//Read the binary fluid interaction matrix for this species with all other species
+			cJSON *arrBFM = NULL;
+			getCJsonArray(jObj, &arrBFM, "interMatr", jsonTagList, arrayList, 0);
+			if (arrBFM != NULL) { // if grav has been found then....
+				if (cJSON_GetArraySize(arrBFM) != NSPECI) { // check dimensionality is valid
+					printf("Error: Interaction matrices must have columns of length equal to the number of species.\n");
+					exit(EXIT_FAILURE);
+				}
+
+				for (j = 0; j < NSPECI; j++) { // get the value
+					(*SP+i)->M[j] = cJSON_GetArrayItem(arrBFM, j)->valuedouble;
+				}
+			} else {
+				for (j = 0; j < NSPECI; j++) { // get the value
+					(*SP+i)->M[j] = 0;
+				}
+			}
+
+			// get second set of primitives
+
+			(*SP+i)->RFC = getJObjDou(objElem, "rfc", 0.01, jsonTagList); // rotational friction Coef
+			(*SP+i)->LEN = getJObjDou(objElem, "len", 0.007, jsonTagList); // length
+			(*SP+i)->TUMBLE = getJObjDou(objElem, "tumble", 2.0, jsonTagList); // tumbling parameter
+			(*SP+i)->CHIHI = getJObjDou(objElem, "shearSusc", 0.5, jsonTagList); // Hydrodynamic susceptibility
+			(*SP+i)->CHIA = getJObjDou(objElem, "magnSusc", 0.001, jsonTagList); // Magnetic susceptibility
+			(*SP+i)->ACT = getJObjDou(objElem, "act", 0.05, jsonTagList); // activity
+			(*SP+i)->MFPOT = getJObjDou(objElem, "mfpot", 10.0, jsonTagList); // mean field potential
+      (*SP+i)->BS = getJObjDou(objElem, "bs", 0.0, jsonTagList); // bs
+
+			(*SP+i)->SIGWIDTH = getJObjDou(objElem, "sigWidth", 1, jsonTagList); // sigWidth
+			// error check, is SIGWIDTH 0?
+			if ((*SP+i)->SIGWIDTH == 0) {
+				printf("Error: SIGWIDTH cannot be 0.\n");
+				exit(EXIT_FAILURE);
+			}
+			(*SP+i)->SIGPOS = getJObjDou(objElem, "sigPos", (*SP+i)->SIGWIDTH, jsonTagList); // sigPos
+			(*SP+i)->MINACTRATIO = getJObjDou(objElem, "minActRatio", 0.0, jsonTagList); // minActRatio
+			(*SP+i)->DAMP = getJObjDou(objElem, "damp", 0.0, jsonTagList); // damping coefficient
+		}
+	} else { // if nothing found in the JSON then fallback to the default
+		// setting up a single species with default parameters
+		//		note this is just copied from the above code w lines changed
+		NSPECI = 1;
+
+		(*SP) = (spec*) malloc( NSPECI * sizeof( spec ) );
+		for (i = 0; i < NSPECI; i++) { // loop through the species
+			// now get first set of primitives
+			(*SP+i)->MASS = 1.0; // mass
+			(*SP+i)->POP = (int)(VOL*20); // pop
+			(*SP+i)->QDIST = 0; // qDist
+			(*SP+i)->VDIST = 0; // vDist
+			(*SP+i)->ODIST = 2; // oDist
+			for (j = 0; j < NSPECI; j++) { // interaction matrix
+				(*SP+i)->M[j] = 0;
+			}
+			(*SP+i)->RFC = 0.01; // rfCoef
+			(*SP+i)->LEN = 0.007; // len
+			(*SP+i)->TUMBLE = 2; // tumble
+			(*SP+i)->CHIHI = 0.5; // chiHi
+			(*SP+i)->CHIA = 0.001; // chiA
+			(*SP+i)->ACT = 0.05; // act
+      (*SP+i)->BS = 0.0; // bs
+			(*SP+i)->MFPOT = 10.0; // mean field potential
+
+			(*SP+i)->SIGWIDTH = 1; // sigwidth
+			(*SP+i)->SIGPOS = 1; // sigpos
+			(*SP+i)->MINACTRATIO = 0.0; // minActRatio
+			(*SP+i)->DAMP = 0; // damp
+		}
+	}
+
+	//Allocate memory for the cells
+	//Allocate rows (x first)
+	*CL = (cell***) malloc( XYZ_P1[0] * sizeof( cell** ) );
+	//For each x-element allocate the y columns
+	for( i=0; i<XYZ_P1[0]; i++ ) {
+		(*CL)[i] = (cell**) malloc( XYZ_P1[1] * sizeof( cell* ) );
+		//For each y-element allocate the z columns
+		for( j=0; j<XYZ_P1[1]; j++ ) {
+			(*CL)[i][j] = (cell*) malloc( XYZ_P1[2] * sizeof( cell ) );
+		}
+	}
+
+	//Allocate the memory for the SRD particles
+	for (i = 0; i < NSPECI; i++) { // loop through the species
+		// Numerically determine the accessible volume for this species, given these BCs
+		(*SP+i)->VOL = accessibleVolume( (*WALL),i );
+		// handle population related overrides
+		if(useDens[i]) (*SP+i)->POP = (int)( ((*SP+i)->VOL)*dens[i] );
+		(*SP+i)->nDNST = (float)((*SP+i)->POP)/((*SP+i)->VOL);
+		(*SP+i)->mDNST = ( (*SP+i)->nDNST )*( (*SP+i)->MASS );
+	}
+	//Total Number of particleMPCs
+	GPOP = 0;
+	for( i=0; i<NSPECI; i++ ) GPOP += (*SP+i)->POP;
+	(*pSRD) = (particleMPC*) malloc( GPOP * sizeof( particleMPC ) );
+
+	// 4. Printcom /////////////////////////////////////////////////////////////
+	// scroll up to void readpc() to see better descriptions & definitions for these
+
+	DBUG = getJObjInt(jObj, "debugOut", 3, jsonTagList); // dbug
+	out->TRAJOUT = getJObjInt(jObj, "trajOut", 0, jsonTagList); // trajOut
+	out->printSP = getJObjInt(jObj, "trajSpecOut", 0, jsonTagList); // printSP
+	out->COAROUT = getJObjInt(jObj, "coarseOut", 0, jsonTagList); // coarOut
+	out->FLOWOUT = getJObjInt(jObj, "flowOut", 0, jsonTagList); // flowOut
+	out->VELOUT = getJObjInt(jObj, "velOut", 0, jsonTagList); // velOut
+	out->AVVELOUT = getJObjInt(jObj, "avVelOut", 0, jsonTagList); // avVelOut
+	out->AVORIOUT = getJObjInt(jObj, "avOriOut", 0, jsonTagList); // avOriOut
+	out->ORDEROUT = getJObjInt(jObj, "dirSOut", 0, jsonTagList); // orderOut
+	out->QTENSOUT = getJObjInt(jObj, "qTensOut", 0, jsonTagList); // qTensOut
+	out->QKOUT = getJObjInt(jObj, "qkTensOut", 0, jsonTagList); // qKOut
+	out->ENFIELDOUT = getJObjInt(jObj, "oriEnOut", 0, jsonTagList); // enFieldOut
+	out->SPOUT = getJObjInt(jObj, "colourOut", 0, jsonTagList); // spOut
+	out->PRESOUT = getJObjInt(jObj, "pressureOut", 0, jsonTagList); // presOut
+	out->ENNEIGHBOURS = getJObjInt(jObj, "neighbourEnOut", 0, jsonTagList); // enNeighbours
+	out->AVSOUT = getJObjInt(jObj, "avSOut", 0, jsonTagList); // avSOut
+	out->DENSOUT = getJObjInt(jObj, "densSDOut", 0, jsonTagList); // densOut
+	out->ENSTROPHYOUT = getJObjInt(jObj, "enstrophyOut", 0, jsonTagList); // enStrophOut
+	out->HISTVELOUT = getJObjInt(jObj, "histVelOut", 0, jsonTagList); // histVelOut
+	out->HISTSPEEDOUT = getJObjInt(jObj, "histSpeedOut", 0, jsonTagList); // histSpeedOut
+	out->HISTVORTOUT = getJObjInt(jObj, "histVortOut", 0, jsonTagList); // histVortOut
+	out->HISTENSTROUT = getJObjInt(jObj, "histEnsOut", 0, jsonTagList); // histEnstrophyOut
+	out->HISTDIROUT = getJObjInt(jObj, "histDirOut", 0, jsonTagList); // histDirOut
+	out->HISTSOUT = getJObjInt(jObj, "histSOut", 0, jsonTagList); // histSOut
+	out->HISTNOUT = getJObjInt(jObj, "histNOut", 0, jsonTagList); // histNOut
+	out->SOLOUT = getJObjInt(jObj, "solidTrajOut", 0, jsonTagList); // solOut
+	out->TOPOOUT = getJObjInt(jObj, "topoFieldOut", 0, jsonTagList); // topoOut
+	out->DEFECTOUT = getJObjInt(jObj, "defectsOut", 0, jsonTagList); // defectOut
+	out->DISCLINOUT = getJObjInt(jObj, "disclinOut", 0, jsonTagList); // disclinationTensorFieldOut
+	out->ENOUT = getJObjInt(jObj, "energyOut", 0, jsonTagList); // enOut
+	out->CVVOUT = getJObjInt(jObj, "velCorrOut", 0, jsonTagList); // cvvOut
+	out->CNNOUT = getJObjInt(jObj, "dirCorrOut", 0, jsonTagList); // cnnOut
+	out->CWWOUT = getJObjInt(jObj, "vortCorrOut", 0, jsonTagList); // cwwOut
+	out->CDDOUT = getJObjInt(jObj, "densCorrOut", 0, jsonTagList); // cddOut
+	out->CSSOUT = getJObjInt(jObj, "orderCorrOut", 0, jsonTagList); // cssOut
+	out->CPPOUT = getJObjInt(jObj, "phaseCorrOut", 0, jsonTagList); // cppOut
+	out->ENERGYSPECTOUT = getJObjInt(jObj, "energySpecOut", 0, jsonTagList); // energySpectOut
+	out->ENSTROPHYSPECTOUT = getJObjInt(jObj, "enstrophySpecOut", 0, jsonTagList); // enstrophySpectOut
+	out->BINDER = getJObjInt(jObj, "binderOut", 0, jsonTagList); // binderOut
+	out->BINDERBIN = getJObjInt(jObj, "binderBin", 0, jsonTagList); // binderBinOut
+	out->SWOUT = getJObjInt(jObj, "swimQOut", 0, jsonTagList); // swOut
+	out->SWORIOUT = getJObjInt(jObj, "swimOOut", 0, jsonTagList); // swOriOut
+    const char* swimROutTags[2] = {"swimROut", "swimRTOut"}; // possible tags for collision operator
+    out->RTOUT = getJObjIntMultiple(jObj, swimROutTags, 2, 0, jsonTagList); // RTECH
+	out->SYNOUT = getJObjInt(jObj, "synopsisOut", 1, jsonTagList); // swSynOut
+	out->CHCKPNT = getJObjInt(jObj, "checkpointOut", 0, jsonTagList); // chkpntOut
+
+	// 5. Swimmers /////////////////////////////////////////////////////////////
 	// look at void readswimmers() in swimmers.c to see better descriptions & definitions for these
 
 	specS->TYPE = getJObjInt(jObj, "typeSwim", 2, jsonTagList); // type
@@ -1716,7 +1777,7 @@ void readJson( char fpath[], inputList *in, spec **SP, particleMPC **pSRD,
 	specS->fixDist = getJObjDou(jObj, "fixDistSwim", 0, jsonTagList); // fixDist
 
 	//Allocate the memory for the swimmers
-	(*sw) = (swimmer*) malloc( NS * sizeof( swimmer ) );
+	(*sw) = (swimmer*) calloc( NS, sizeof( swimmer ) );
 
 	////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////

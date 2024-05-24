@@ -80,6 +80,13 @@ extern int snprintf (char *__restrict __s, size_t __maxlen, __const char *__rest
 # define MDinMPC 				1
 # define MPCinMD 				2
 
+//MD warmup modes
+# define FROZEN_WARMUP          0
+# define FREE_WARMUP            1 
+# define PINNED_WARMUP          2
+//MD Flag that warmup has finished
+# define POS_WARMUP             3
+
 // domains
 #define	DOMAIN_ALL				-1
 
@@ -131,9 +138,11 @@ extern int snprintf (char *__restrict __s, size_t __maxlen, __const char *__rest
 #define	LAYOUT_PLATES				4
 #define	LAYOUT_CYLINDER			5
 // Tyler added the following
-#define	LAYOUT_ROD				6
+#define	LAYOUT_RODX				6
+// Zahra added the following
+#define	LAYOUT_RODY				7
 // Karolina added the following
-#define	LAYOUT_U				7
+#define	LAYOUT_U				8
 
 // atom types (index)
 #define TYPE_WALL				0
@@ -605,7 +614,7 @@ typedef struct simulation {		 		// a simulation
     real  		potE;			 		///< total potential energy
     real  		ljE, harmE;				///< potential energies
     real  		coulE, feneE;			///< potential energies
-    real  		bendE, nemE;				///< potential energies
+    real  		bendE, nemE;			///< potential energies
     real  		s_kinE, ss_kinE;	 	///< kinetic energy accumulators
     real  		s_potE, ss_potE;	 	///< potential energy accumulators
     real  		s_totE, ss_totE;	 	///< total energy accumulators
@@ -622,12 +631,12 @@ typedef struct simulation {		 		// a simulation
     int			nAtomThermDPD;			///< number of atoms subject to DPD
 
     // simulation box
-    real       	unitCells[DIM_MD];		 	///< number of unit cells along each axis
+    real       	unitCells[DIM_MD];		 ///< number of unit cells along each axis
     int			lattice;		 		///< what type of crystal lattice
     int			geometry;		 		///< system geometry
     real		nAtomCell;		 		///< number of atoms per unit cell
-    real  		box[DIM_MD];		 		///< dimensions of the simulation box
-    real  		boxHalf[DIM_MD];		 	///< 0.5*box
+    real  		box[DIM_MD];		 	///< dimensions of the simulation box
+    real  		boxHalf[DIM_MD];		///< 0.5*box
     real  		rho;					///< density of the simulation box
 
     // capillary
@@ -641,7 +650,7 @@ typedef struct simulation {		 		// a simulation
     paramptr	param;		 			///< pointer to a list of all parameters
     int			nParam;					///< number of simulation parameters
 	int			randomSeed;				///< Random number generator seed
-
+    int			warmupMD;				///< Whether/how MD happens during MPCD warmup
     // program information
     pid_t		pid;			 		///< process id of the simulation
     real		version;		 		///< version of the program

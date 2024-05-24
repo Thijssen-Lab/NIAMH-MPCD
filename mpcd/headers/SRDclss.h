@@ -64,11 +64,16 @@ typedef struct spec {
 	double CHIA;			///< Magnetic susceptibility anisotropy chi_parallel-chi_perpendicular --- json `'magnSusc'`.
 	double LEN;				///< Effective rod length to couple torque on  MPCD into force on BC (smaller=>stronger; bigger=>weaker) --- json `'len'`.
 	double ACT;				///< The activity of the particles --- json `'act'`.
+	double BS;				///< The bacterial speed, will be used only in case LCT=3 --- json `'bs'`.
+	double MFPOT;			///< The mean-field potential from self-consistent mean-field liquid crystals --- json `'mfpot'`.
 	double DAMP;			///< A damping/friction coefficient to go from wet to dry (to kill hydrodynamics) [0,1] --- json `'damp'`.
 	double M[MAXSPECI];	    ///< Interaction matrix for multiphase fluids. Each species has a different interaction with all others --- json `'interMatr'`.
 	double SIGWIDTH;		///< The width of the sigmoid for active dipole sigmoid (`DIPOLE_DIR_SIG` in definitions.h). 
 	double SIGPOS;			///< The position of the sigmoid for active dipole sigmoid (`DIPOLE_DIR_SIG` in definitions.h).
-	double MINACTRATIO;		///< Minimum proportion of particles in the cell for activity to be applied. 
+	double MINACTRATIO;		///< Minimum proportion of particles in the cell for activity to be applied.
+	double VOL;				///< The volume accessible to this species of particle. Determined by Monte Carlo.
+	double nDNST;			///< The particle number density of this species. Found using the volume `'VOL'`.
+	double mDNST;			///< The mass density of this species. Found using the volume `'VOL'`.
 } spec;
 
 ///
@@ -169,6 +174,11 @@ typedef struct bc {
 	double MASS;			///< The BC's mass (only relevant if it moves) --- json `'mass'`.
 	double VOL;				///< Body's volume.
 	double I[3][3];		    ///< The body's moment of inertia.
+
+	// Interaction matrix
+	// Which MPCD species, MD monomers and swimmers the object interacts with
+	// MAXSPECI is number of MPCD species then add one for MD monomers and another for swimmers
+	int INTER[MAXSPECI+2];	    ///< Interaction matrix for BC with particles. Each MPCD species has a flag, plus MD and swimmer particles --- json `'interSRD'`, `'interMD'` and `'interSw'`.
 /*
    Examples
 
@@ -286,7 +296,7 @@ typedef struct cell {
 ///
 typedef struct outputFilesList {
 	FILE *fcoarse,*fflow,*fvel,*fenergy,*fenergyfield,*fenneighbours;
-	FILE *fsynopsis,*favvel,*forder,*forderQ,*forderQK,*favs,*fdensSTD,*fchckpnt,*fenstrophy,*fmultiphase,*fpressure;
+	FILE *fsynopsis,*favvel,*favori,*forder,*forderQ,*forderQK,*favs,*fdensSTD,*fchckpnt,*fenstrophy,*fmultiphase,*fpressure;
 	FILE *fcorrVV,*fcorrNN,*fcorrWW,*fcorrDD,*fcorrSS,*fcorrPP,*fbinder;
 	FILE *fhistVel,*fhistSpeed,*fhistVort,*fhistEnstr,*fhistDir,*fhistS,*fhistDens;
 	FILE *fenergyspect,*fenstrophyspect;
@@ -309,6 +319,7 @@ typedef struct outputFlagsList {
 	int TRAJOUT;				///< Flag for if the detailed trajectories of every particle are outputted --- json `'trajOut'`.
 	int COAROUT;				///< Flag for if coarse grain is outputted --- json `'coarseOut'`.
 	int AVVELOUT;				///< Flag for if total average velocity is outputted --- json `'avVelOut'`.
+	int AVORIOUT;				///< Flag for if total average orientation is outputted --- json `'avOriOut'`.
 	int FLOWOUT;				///< Flag for if the flow field is outputted --- json `'flowOut'`.
 	int VELOUT;				    ///< Flag for if the velocity field is outputted --- json `'velOut'`.
 	int HISTVELOUT;             ///< Flag for if the velocity distribution is outputted --- json `'histVelOut'`.
@@ -395,7 +406,6 @@ typedef struct inputList {
 	double FRICCO;				///< Friction coefficient for Langevin thermostat --- json `'fricCoef'`.
 	int TSTECH;					///< Temperature scaling technique --- json `'tsTech'`.
 	double TAU;					///< The temperature relaxation time scale --- json `'tau'`.
-	double MFPOT;				///< The mean-field potential from self-consistent mean-field liquid crystals --- json `'mfpot'`.
 	int RTECH;					///< Rotation technique --- json `'collOp'`.
 	int LC;						///< If LC=LCG=2 then liquid crystal using global S, if LC=LCL=1 then use local S, else isotropic (ISOF=0) --- json `'lc'`.
 	int RFRAME;					///< Flags initial galilean trans to rest frame (0 No shift, 1 shift) --- json `'rFrame'`.
@@ -404,6 +414,7 @@ typedef struct inputList {
 	int noHI;					///< If noHI=1 remove hydrodynamic interactions by randomly scrambling of velocities.
 	int inCOMP;					///< If inCOMP=1 remove div(v) by ***ALGORITHM NOT CREATED YET. BUILD ON https://doi.org/10.1063/5.0037934?***.
 	int MULTIPHASE;				///< MULTIPHASE mode. If MULTIPHASE==0 then no interactions between particles of different species occurs.
+    int MFPLAYERH; 				///< Height above which MFP goes to 0. For simulating thin ordered films below disordered fluids. If 0, disable this functionality.
 } inputList;
 
 ///
