@@ -187,38 +187,38 @@ void SimulationPhaseReset (simptr sim)
 	particleMD	*atom;
 	histptr		h;
 	sceneptr	s;
-	printf("[SimulationPhaseReset in mdmeasure.c]\n");
+
 	// local sim variables
 	nAtom = sim->atom.n;
 	atom  = sim->atom.items;
 	phase = sim->phase;
 	h	  = sim->histograms;
 	s	  = sim->scenes;
-	printf("line 197\n");
+
 	// calculate step parameter for this phase
 	sim->step[phase] = sim->step[count_] + sim->nStep[phase];
-	printf("line 200\n");
+
 	// reset simulation step counters (except global counter 0)
 	for (i=1; i < sim->stepCounter.n; i++) {
 		sim->stepCounter.items[i].counter[count_] = 0;
 	}
-	printf("line 205\n");
+
 	// reset histogram step counters
 	while (h) {
 		h->stepCollect [count_] = 0;
 		h->stepPrint   [count_] = 0;
 		h = h->next;
 	}
-	printf("line 212\n");
+
 	// reset scene step counters
 	while (s) {
 		s->stepPrint   [count_] = 0;
 		s = s->next;
 	}
-	printf("line 218\n");
+
 	// reset accumulators
 	AccumProperties (sim, ACTION_RESET);
-	printf("line 221\n");
+
 	// update thermostat rescale group
 	groupThermRescale 		= sim->groupThermRescale[phase];
 	sim->nAtomThermRescale 	= 0;
@@ -228,7 +228,7 @@ void SimulationPhaseReset (simptr sim)
 			if (atom[i].group & groupThermRescale) sim->nAtomThermRescale++;
 		}
 	}
-	printf("line 231\n");
+
 	// update thermostat DPD group
 	groupThermDPD			= sim->groupThermDPD[phase];
 	sim->nAtomThermDPD		= 0;
@@ -237,7 +237,7 @@ void SimulationPhaseReset (simptr sim)
 			if (atom[i].group & groupThermDPD) sim->nAtomThermDPD++;
 		}
 	}
-	printf("line 240\n");
+
 	// report
 	LOG ("--------------------------------------------------------------\n");
 	LOG ("Starting simulation phase %d\n",	phase);
