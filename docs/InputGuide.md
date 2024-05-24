@@ -139,6 +139,9 @@ Tag             | Type          | Default Value | Description
 `roSwim`        | double        | 4                  | Spring seperation
 `sigSwim`       | double        | 4                  | Diameter approx sigma
 `epsSwim`       | double        | 1                  | Interaction energy
+`depSwim`       | int           | 0                  | Tag for the depletion interaction: 0 to turn it off, 1 for Asakura-Oosawa potential, 2 for a square potential
+`rangeSwim`     | double        | 1.5                | Range of the depletion interaction
+`depthSwim`     | double        | 10                 | Depth of the depletion interaction
 `runTSwim`      | double        | 0                  | Average run time in units of MPCD timesteps dt (iterations, not MPCD time units)
 `tumTSwim`      | double        | 0                  | Average tumble time in units of MPCD timesteps dt (iterations, not MPCD time units)
 `shrTSwim`      | double        | 2                  | Set time to shrink/ extend in units of MPCD timesteps dt (iterations, not MPCD time units)

@@ -36,6 +36,9 @@ parser.add_argument("-m", "--makeAni", type=int,
 parser.add_argument("-k", "--keepFrames", type=int,
                     help="0=don't keep (delete) frames; 1=keep frames",
                     default=0)
+parser.add_argument("-f", "--flowtag", type=int,
+                    help="0=flow field (time averaged); 1=velocity field (instantaneous)",
+                    default=0)
 args = parser.parse_args()
 
 ###########################################################
@@ -55,6 +58,7 @@ rotAx = args.rotAx
 myAspect = args.myAspect
 makeAni = args.makeAni
 keepFrames = args.keepFrames
+flowtag = args.flowtag
 
 ###########################################################
 ### Style/formating stuff
@@ -104,10 +108,14 @@ if "dsSwim" in input:
 ###########################################################
 ### Initialize
 ###########################################################
-velFieldName="%s/flowfield.dat"%dataPath
+if flowtag==0:
+  velFieldName="%s/flowfield.dat"%dataPath
+if flowtag==1:
+  velFieldName="%s/velfield.dat"%dataPath
 if not os.path.isfile(velFieldName):
 	print("%s not found."%velFieldName)
 	exit()
+
 swimmerName="%s/swimmers.dat"%dataPath
 if not os.path.isfile(swimmerName):
 	print("%s not found."%swimmerName)
@@ -425,10 +433,17 @@ swimFile.close()
 if(makeAni):
     print( "Animating ..." )
     plt.close("all")
-    if rotAx:
+    if flowtag==0:
+      if rotAx:
+        name='%s/swimmerFlowField_refFrameRotated_animation%s'%(dataPath,suffix)
+      else:
+        name='%s/swimmerFLowField_RefFrameCentred_animation%s'%(dataPath,suffix)
+    if flowtag==1:
+      if rotAx:
         name='%s/swimmerVelField_refFrameRotated_animation%s'%(dataPath,suffix)
-    else:
+      else:
         name='%s/swimmerVelField_RefFrameCentred_animation%s'%(dataPath,suffix)
+    
     myCommand="rm %s"%name
     call(myCommand,shell=True)
     myCommand = "ffmpeg -f image2 -r %d"%(framerate)+" -i frame%04d.png"+" -vcodec %s -b %dk -r %d %s"%(codec,bitrate,framerate,name)
@@ -464,9 +479,15 @@ if(not makeAni):
 xlabel(r'$%s$'%labX)
 ylabel(r'$%s$'%labY)
 plt.axis(xmax=rotSize, xmin=0, ymax=rotSize, ymin=0)
-if rotAx:
+if flowtag==0:
+  if rotAx:
+    name='%s/swimmerFlowField_refFrameRotated_av.pdf'%(dataPath)
+  else:
+    name='%s/swimmerFLowField_RefFrameCentred_av.pdf'%(dataPath)
+if flowtag==1:
+  if rotAx:
     name='%s/swimmerVelField_refFrameRotated_av.pdf'%(dataPath)
-else:
+  else:
     name='%s/swimmerVelField_RefFrameCentred_av.pdf'%(dataPath)
 savefig( name )
 

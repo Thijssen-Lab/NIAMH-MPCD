@@ -795,7 +795,7 @@ void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cel
 	//Swimmers
 	if(fscanf( finput,"%d %d %d %d %d %d %lf %lf %d %d",&NS, &(specS->TYPE), &(specS->QDIST), &(specS->ODIST), &(specS->headM), &(specS->middM), &(specS->iheadM), &(specS->imiddM), &(specS->HSPid), &(specS->MSPid) ));
 	else printf("Warning: Failed to read swimmer-type variables.\n");
-	if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %d %lf", &(specS->FS), &(specS->TS), &(specS->DS), &(specS->sizeShrink), &(specS->springShrink), &(specS->fixDist), &(specS->k), &(specS->ro), &(specS->iro), &(specS->sig), &(specS->isig), &(specS->eps), &(specS->runTime), &(specS->tumbleTime), &(specS->shrinkTime), &(specS->MAGMOM) ));
+	if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %ld %lf %lf %lf %lf %d %lf", &(specS->FS), &(specS->TS), &(specS->DS), &(specS->sizeShrink), &(specS->springShrink), &(specS->fixDist), &(specS->k), &(specS->ro), &(specS->iro), &(specS->sig), &(specS->isig), &(specS->eps), &(specS->dep), &(specS->range), &(specS->depth), &(specS->runTime), &(specS->tumbleTime), &(specS->shrinkTime), &(specS->MAGMOM) ));
 	else printf("Warning: Failed to read swimmer-type variables.\n");
 
 	//Allocate the memory for the swimmers
@@ -1767,6 +1767,9 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 	specS->ro = getJObjDou(jObj, "roSwim", 4, jsonTagList); // ro
 	specS->sig = getJObjDou(jObj, "sigSwim", 4, jsonTagList); // sig
 	specS->eps = getJObjDou(jObj, "epsSwim", 1, jsonTagList); // eps
+	specS->dep = getJObjDou(jObj, "depSwim", 0, jsonTagList); // tag for depletion interaction
+	specS->range = getJObjDou(jObj, "rangeSwim", 1.5, jsonTagList); // depletion interaction range
+	specS->depth = getJObjDou(jObj, "depthSwim", 10, jsonTagList); // depletion interaction depth
 	specS->runTime = getJObjDou(jObj, "runTSwim", 0, jsonTagList); // runTime
 	specS->tumbleTime = getJObjDou(jObj, "tumTSwim", 0, jsonTagList); // tumbleTime
 	specS->shrinkTime = getJObjDou(jObj, "shrTSwim", 2, jsonTagList); // shrinkTime
