@@ -1345,9 +1345,10 @@ void pall( particleMPC p[] ) {
 /// @param in This is a pointer that fetches information from input.json.
 /// @param AVVEL This is the average speed in any direction.
 /// @param SP This is a pointer that fetches species information such as population.
-/// @param theory This is a pointer that fetches theoretical information calculated from input.json.
+/// @param theorySP This is a pointer that fetches theoretical information for each species.
+/// @param theoryGl This is the theoretical information for the global system.
 ///
-void listinput( inputList in,double AVVEL,spec SP[],kinTheory theory ) {
+void listinput( inputList in,double AVVEL,spec SP[],kinTheory theorySP[],kinTheory theoryGl ) {
 	int i,n;
 	#ifdef DBG
 		if( DBUG >= DBGINIT ){
@@ -1355,7 +1356,6 @@ void listinput( inputList in,double AVVEL,spec SP[],kinTheory theory ) {
 			printf( "\tDimensions: %i\n",DIM );
 			printf( "\tRotation Technique: %i\n",in.RTECH );
 			printf( "\tLiquid Crystal: %i\n",in.LC );
-			printf( "\tLiquid Crystal Mean-Field Potential: %lf\n",in.MFPOT );
 			printf( "\tRotation angle: %lf\n",in.RA );
 			printf( "\tSystem Size: [%i,%i,%i]\n",XYZ[0],XYZ[1],XYZ[2] );
 			printf( "\tAccessible volume: %lf\n",VOL );
@@ -1368,27 +1368,57 @@ void listinput( inputList in,double AVVEL,spec SP[],kinTheory theory ) {
 			pvec( in.MAG,DIM );
 			printf( "\tAverage speed in any direction: %lf\n",AVVEL );
 			printf( "\tNumber of Species: %d\n",NSPECI );
-			printf( "\tSpecies population: " );
-			printf( "%i",SP[0].POP );
-			for( i=1; i<NSPECI; i++ ) printf( ",%i",SP[i].POP );
-			printf( "\n\tParticle Number Density: %lf\n",nDNST );
-			printf( "\n\tMass Density: %lf\n",mDNST );
 			printf( "\tWarmup Iterations: %d\n",in.warmupSteps );
 			printf( "\tSimulation Iterations: %d\n",in.simSteps );
 			printf( "\tTime Step: %lf\n",in.dt );
-			printf( "\tSystem population: %i\n",GPOP );
-			printf( "\tTotal mass: %lf\n",theory.sumM );
-			printf( "\tThe number of boundaries: %i\n",NBC );
+			printf( "\n\tThe number of boundaries: %i\n",NBC );
 			printf( "\tInputted System Temperature (units of KB): %lf\n",in.KBT );
 			printf( "\tRemove system's net momentum (1=yes, 0=no): %i\n",in.RFRAME );
 			printf( "\tThermostat Method: %i\n",in.TSTECH );
 			printf( "\tThermal Relaxation Scale: %lf\n",in.TAU );
-			printf( "\tMean Free Path: %lf\n",theory.MFP );
-			printf( "\tKinematic Viscosity: %lf\n",theory.VISC );
-			printf( "\tSelf Diffusion Coefficient: %lf\n",theory.SDIFF );
-			printf( "\tSchmidt number: %lf\n",theory.VISC/theory.SDIFF/mDNST );
-			printf( "\tSpeed of sound: %lf\n",theory.SPEEDOFSOUND );
-			printf( "\tThermal Diffusion Coefficient: %lf\n",theory.THERMD );
+			printf( "\tSystem-wide properties:\n" );
+			printf( "\t\tSystem population: %i\n",GPOP );
+			printf( "\t\tSystem total mass: %lf\n",GMASS );
+			printf( "\t\tParticle number density: %lf\n",GnDNST );
+			printf( "\t\tMass density: %lf\n",GmDNST );
+			printf( "\t\tMean Free Path: %lf\n",theoryGl.MFP );
+			printf( "\t\tKinematic Viscosity: %lf\n",theoryGl.VISC );
+			printf( "\t\tSelf Diffusion Coefficient: %lf\n",theoryGl.SDIFF );
+			printf( "\t\tSchmidt number: %lf\n",theoryGl.VISC/theoryGl.SDIFF/GmDNST );
+			printf( "\t\tSpeed of sound: %lf\n",theoryGl.SPEEDOFSOUND );
+			printf( "\t\tThermal Diffusion Coefficient: %lf\n",theoryGl.THERMD );
+			printf( "\tSpecies properties:\n" );
+			for( i=0; i<NSPECI; i++ ) {
+				printf( "\t\tSpecies ID: %i\n",i );
+				printf( "\t\tPopulation: %i\n",SP[i].POP );
+				printf( "\t\tAccessible volume: %lf\n",SP[i].VOL );
+				printf( "\t\tParticle mass: %lf\n",SP[i].MASS );
+				if(in.LC) {
+					printf( "\t\tLiquid crystal properties:\n" );
+					printf( "\t\t\tRotational friction coefficient: %lf\n",SP[i].RFC );
+					printf( "\t\t\tTumbling parameter: %lf\n",SP[i].TUMBLE );
+					printf( "\t\t\tHydrodynamic susceptibility: %lf\n",SP[i].CHIHI );
+					printf( "\t\t\tMagnetic susceptibility: %lf\n",SP[i].CHIA );
+					printf( "\t\t\tLength: %lf\n",SP[i].LEN );
+					printf( "\t\t\tActivity: %lf\n",SP[i].ACT );
+					printf( "\t\t\t\tActive dipole sigmoid width: %lf\n",SP[i].SIGWIDTH );
+					printf( "\t\t\t\tActive dipole sigmoid position: %lf\n",SP[i].SIGPOS );
+					printf( "\t\t\tMean field potential: %lf\n",SP[i].MFPOT );
+				}
+				printf( "\t\tInteraction matrix: " );
+				pvec( SP[i].M,NSPECI );
+				printf( "\t\tSpecies total mass: %lf\n",SP[i].DAMP );
+				printf( "\t\tDamping/friction coefficient: %lf\n",theorySP[i].sumM );
+				printf( "\t\tThe following assume the species are perfectly separated from each other\n" );
+				printf( "\t\t\tParticle number density: %lf\n",SP[i].nDNST );
+				printf( "\t\t\tMass density: %lf\n",SP[i].mDNST );
+				printf( "\t\t\tMean Free Path: %lf\n",theorySP[i].MFP );
+				printf( "\t\t\tKinematic Viscosity: %lf\n",theorySP[i].VISC );
+				printf( "\t\t\tSelf Diffusion Coefficient: %lf\n",theorySP[i].SDIFF );
+				printf( "\t\t\tSchmidt number: %lf\n",theorySP[i].VISC/theorySP[i].SDIFF/SP[i].mDNST );
+				printf( "\t\t\tSpeed of sound: %lf\n",theorySP[i].SPEEDOFSOUND );
+				printf( "\t\t\tThermal Diffusion Coefficient: %lf\n",theorySP[i].THERMD );
+			}
 		}
 	#endif
 	n = 0;
@@ -1413,11 +1443,12 @@ void listinput( inputList in,double AVVEL,spec SP[],kinTheory theory ) {
 /// @param WALL This is a pointer obtaining information on boundary conditions.
 /// @param SS This is a pointer that fetches swimmer specifications such as initial conditions, type, and run-tumble conditions.
 /// @param out This is a flag that determines if data should be output or not.
-/// @param theory This is a pointer that fetches theoretical information.
+/// @param theorySP This is a pointer that fetches theoretical information for each species.
+/// @param theoryGl This is the theoretical information for the global system.
 /// @param fsynopsis This is a pointer to the synopsis.dat output file.
 ///
-void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList out,kinTheory theory,FILE *fsynopsis ) {
-	int i;
+void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList out,kinTheory theorySP[],kinTheory theoryGl,FILE *fsynopsis ) {
+	int i,j;
 
 	if( out.SYNOUT == OUT ) {
 		fprintf( fsynopsis,"\nBasic Units:\n" );
@@ -1435,9 +1466,7 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 		fprintf( fsynopsis,"\nUser defined variables:\n" );
 		fprintf( fsynopsis,"Dimensionality: %i\n",DIM );
 		fprintf( fsynopsis,"System dimensions: (%i,%i,%i)\n",XYZ[0],XYZ[1],XYZ[2] );
-		fprintf( fsynopsis,"Volume accessible to MPCD particles: %lf\n",VOL );
-		fprintf( fsynopsis,"Particle Number Density: %lf\n",nDNST );
-		fprintf( fsynopsis,"Mass Density: %lf\n",mDNST );
+		fprintf( fsynopsis,"Volume of the control volum: %lf\n",VOL );
 		fprintf( fsynopsis,"Rotation technique: %i\n",in.RTECH );
 		fprintf( fsynopsis,"Nematic Liquid Crystal: ");
 		if(in.LC) fprintf( fsynopsis,"YES\n" );
@@ -1468,13 +1497,19 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 		for( i=0; i<NSPECI; i++ ) {
 			fprintf( fsynopsis,"Species: %i\n",i );
 			fprintf( fsynopsis,"\tMass: %lf\n\tPopulation: %i\n",SP[i].MASS,SP[i].POP );
+			fprintf( fsynopsis,"\tVolume accessible: %lf\n\tParticle Number Density: %lf\n\tMass Density: %lf\n",SP[i].VOL,SP[i].nDNST,SP[i].mDNST );
 			fprintf( fsynopsis,"\tRotational Friction Coefficient: %lf\n",SP[i].RFC);
 			fprintf( fsynopsis,"\tEffective rod-length to couple MPC torque to BC force: %lf\n",SP[i].LEN);
 			fprintf( fsynopsis,"\tTumbling parameter: %lf\n",SP[i].TUMBLE);
 			fprintf( fsynopsis,"\tMagnetic Sysceptibility: %lf\n\tShear Sysceptibility: %lf\n",SP[i].CHIA,SP[i].CHIHI );
-			fprintf( fsynopsis,"\tActivity: %lf\n",SP[i].ACT );
+			fprintf( fsynopsis,"\tActivity: %lf\n\tActivity-sigmoid width: %lf\n\tActivity-sigmoid position: %lf\n\tMinimum proportion for activity %lf\n",SP[i].ACT,SP[i].SIGWIDTH,SP[i].SIGPOS,SP[i].MINACTRATIO );
+			fprintf( fsynopsis,"\tMean field potential: %lf\n",SP[i].MFPOT );
 			fprintf( fsynopsis,"\tDamping friction: %lf\n",SP[i].DAMP );
 			fprintf( fsynopsis,"\tPos. dist.: %i\n\tVel. dist.: %i\n\tOri. dist.: %i\n",SP[i].QDIST,SP[i].VDIST,SP[i].ODIST );
+			fprintf( fsynopsis,"\tInteraction matrix: [" );
+			for( j=0; j<NSPECI-1; j++ ) fprintf( fsynopsis,"%lf, ",SP[i].M[j] );
+			fprintf( fsynopsis,"%lf]\n",SP[i].M[NSPECI-1] );
+			fprintf( fsynopsis,"\tAccessible volume: %lf\n\tNumber density: %lf\n\tMass density: %lf\n",SP[i].VOL,SP[i].nDNST,SP[i].mDNST );
 		}
 		fprintf( fsynopsis,"\nBC variables:\n" );
 		fprintf( fsynopsis,"Number of BCs: %i\n",NBC );
@@ -1503,6 +1538,11 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 			fprintf( fsynopsis,"\tBC inertia tensor:\t[%lf, %lf %lf]\n",WALL[i].I[0][0],WALL[i].I[1][0],WALL[i].I[2][0] );
 			fprintf( fsynopsis,"\t\t\t\t\t\t\t\t[%lf, %lf %lf]\n",WALL[i].I[0][1],WALL[i].I[1][1],WALL[i].I[2][1] );
 			fprintf( fsynopsis,"\t\t\t\t\t\t\t\t[%lf, %lf %lf]\n",WALL[i].I[0][2],WALL[i].I[1][2],WALL[i].I[2][2] );
+			fprintf( fsynopsis,"\tInteraction matrix with SRD particles: [" );
+			for( j=0; j<NSPECI-1; j++ ) fprintf( fsynopsis,"%i, ",WALL[i].INTER[j] );
+			fprintf( fsynopsis,"%i]\n",WALL[i].INTER[NSPECI-1] );
+			fprintf( fsynopsis,"\tInteraction matrix with MD particles: %i\n",WALL[i].INTER[MAXSPECI+0] );
+			fprintf( fsynopsis,"\tInteraction matrix with swimmer particles: %i\n",WALL[i].INTER[MAXSPECI+1] );
 		}
 		fprintf( fsynopsis,"\nSwimmer variables:\n" );
 		fprintf( fsynopsis,"\tTyper: %d\n",SS.TYPE );
@@ -1788,11 +1828,10 @@ void enout( FILE *fout,particleMPC *pp,spec *pSP,bc WALL[],double t,double KBT,d
 /// @param fout This is a pointer to the output .dat file name to be produced.
 /// @param CL This is a pointer to the co-ordinates and cell of each particle.
 /// @param SP This is a pointer to species subpopulation indices.
-/// @param MFPOT This is a pointer to mean-field potential specified by input.json.
 /// @param LC This is a flag that states if the system is a liquid crystal.
 /// @see outputResults
 ///
-void enfieldout( FILE *fout,cell ***CL,spec *SP,double MFPOT,int LC ) {
+void enfieldout( FILE *fout,cell ***CL,spec *SP,int LC ) {
 	int a,b,c,d,id;
 	double enK,wmf,S,un,DIR[_3D],u[_3D],m;
 	double invdim=1./((double)DIM);
@@ -1811,7 +1850,7 @@ void enfieldout( FILE *fout,cell ***CL,spec *SP,double MFPOT,int LC ) {
 				if( LC ) {
 					for( d=0; d<DIM; d++ ) u[d] = tmpc->U[d];
 					un = dotprod( u,DIR,DIM );
-					wmf += S*un*un  + (1.-S)*invdim;
+					wmf += ( S*un*un  + (1.-S)*invdim )*( (SP+id)->MFPOT );
 				}
 				//Kinetic energy
 				m = (SP+id)->MASS;
@@ -1822,7 +1861,6 @@ void enfieldout( FILE *fout,cell ***CL,spec *SP,double MFPOT,int LC ) {
 				tmpc = tmpc->next;
 			}
 		}
-		wmf*=MFPOT;
 		fprintf( fout, "%5i\t%5i\t%5i\t%e\t%e\n",a,b,c,enK,wmf );
 	}
 }
@@ -1836,16 +1874,17 @@ void enfieldout( FILE *fout,cell ***CL,spec *SP,double MFPOT,int LC ) {
 /// @param fout This is a pointer to the output .dat file name to be produced.
 /// @param t This is time.
 /// @param CL This is a pointer to the co-ordinates and cell of each particle.
-/// @param MFPOT This is a pointer to mean-field potential specified by input.json.
+/// @param SP This is a pointer to species subpopulation indices.
 /// @param LC This is a flag that states if the system is a liquid crystal.
 /// @see outputResults()
 ///
-void enneighboursout( FILE *fout,double t,cell ***CL,double MFPOT,int LC ) {
-	int a,b,c,d;
-	double wmf,un,sumWMF;
+void enneighboursout( FILE *fout,double t,cell ***CL,spec *SP,int LC ) {
+	int a,b,c,d,id;
+	double avMFPOT,wmf,un,sumWMF;
 	double local_DIR[DIM],nnn_DIR[DIM],local_S,nnn_S;
 	double **Q,eigval[DIM];
 	//double invDIM=1.0/((double)DIM);
+	particleMPC *tmpc;	//Temporary pointer to MPC particles
 
 	sumWMF=0.;
 	//Allocate memory for tensor order parameter Q
@@ -1857,6 +1896,16 @@ void enneighboursout( FILE *fout,double t,cell ***CL,double MFPOT,int LC ) {
 		//Local values
 		for( d=0; d<DIM; d++ ) local_DIR[d]=CL[a][b][c].DIR[d];
 		local_S=CL[a][b][c].S;
+		avMFPOT=0.;
+		if( CL[a][b][c].POPSRD > 1 ) {
+			tmpc = CL[a][b][c].pp;
+			while( tmpc != NULL ) {
+				id = tmpc->SPID;
+				avMFPOT+=(SP+id)->MFPOT;
+				tmpc = tmpc->next;
+			}
+			avMFPOT/=(float)CL[a][b][c].POPSRD;
+		}
 		//Next-nearest values
 		//Calculate the tensor order parameter from the cell and its neighbous
 		tensOrderParamNNN( CL,Q,LC,a,b,c );
@@ -1881,7 +1930,7 @@ void enneighboursout( FILE *fout,double t,cell ***CL,double MFPOT,int LC ) {
 		un = dotprod( local_DIR,nnn_DIR,DIM );
 		wmf = local_S*un*un;
 		//wmf += (1.-local_S)*invDIM;	//Don't include the constant (wrt u.n) term
-		wmf*=MFPOT;
+		wmf*=avMFPOT;
 		sumWMF+=wmf;
 	}
 	fprintf( fout, "%12.5e\t%12.5e\n",t,sumWMF );
@@ -2610,11 +2659,12 @@ void spectout( FILE *fout,double spect[],double t ) {
 /// @param KBTNOW This is a pointer to the current un-thermostated temperature.
 /// @param AVV This is a pointer to the past average flow velocities.
 /// @param AVNOW This is a pointer to the current average flow velocities.
-/// @param theory These are theoretical values based off input.json.
+/// @param theorySP These are theoretical values for each species based off input.json.
+/// @param theoryGl These are the global theoretical values based off input.json.
 /// @param specS This is the swimmer species.
 /// @param sw This is a pointer to the list of swimmers.
 ///
-void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mode, bc *WALL, outputFlagsList outFlag, int runtime, int warmtime, double AVVEL, double AVS, double avDIR[_3D], double S4, double stdN, double KBTNOW, double AVV[_3D], double AVNOW[_3D], kinTheory theory, specSwimmer specS, swimmer *sw ) {
+void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mode, bc *WALL, outputFlagsList outFlag, int runtime, int warmtime, double AVVEL, double AVS, double avDIR[_3D], double S4, double stdN, double KBTNOW, double AVV[_3D], double AVNOW[_3D], kinTheory theorySP[], kinTheory theoryGl, specSwimmer specS, swimmer *sw ) {
 	int i,j;
 
 	fprintf( fout,"%d\n",in.simSteps );		//total time (or number of iterations)
@@ -2623,7 +2673,7 @@ void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mo
 	fprintf( fout,"%ld\n",in.seed );				//Random seed (0 if read from time)
 	fprintf( fout,"%d %d %d %d %lf %lf\n",DIM,XYZ[0],XYZ[1],XYZ[2],in.KBT,KBTNOW );
 	fprintf( fout,"%d %d %d %d %d %d\n",in.RFRAME,in.zeroNetMom,in.GALINV,in.TSTECH,in.RTECH,in.LC );
-	fprintf( fout,"%lf %lf %lf %lf\n",in.TAU,in.RA,in.FRICCO,in.MFPOT );
+	fprintf( fout,"%lf %lf %lf\n",in.TAU,in.RA,in.FRICCO );
 	fprintf( fout,"%d %d %d\n",in.noHI,in.inCOMP,in.MULTIPHASE );
 	fprintf( fout,"%lf %lf %lf\n",in.GRAV[0],in.GRAV[1],in.GRAV[2] );		//Acceleration (external force)
 	fprintf( fout,"%lf %lf %lf\n",in.MAG[0],in.MAG[1],in.MAG[2] );			//External magnetic field
@@ -2631,8 +2681,9 @@ void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mo
 	fprintf( fout,"%d %d\n",GPOP,NSPECI);			//Total number of particles and number of species
 
 	fprintf( fout,"%d %d %lf %lf %d %d\n",runtime,warmtime,in.C,in.S,in.GRAV_FLAG,in.MAG_FLAG );
-	fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", theory.MFP, theory.VISC, theory.THERMD, theory.SDIFF, theory.SPEEDOFSOUND, theory.sumM, AVVEL, AVS, avDIR[0], avDIR[1], avDIR[2], S4, stdN, nDNST, mDNST, VOL );
+	fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf\n", AVVEL, AVS, avDIR[0], avDIR[1], avDIR[2], S4, stdN, VOL );
 	fprintf( fout,"%lf %lf %lf %lf %lf %lf\n",AVV[0], AVV[1], AVV[2], AVNOW[0], AVNOW[1], AVNOW[2] );
+	fprintf( fout,"%lf %lf %lf %lf %lf %lf\n", theoryGl.MFP, theoryGl.VISC, theoryGl.THERMD, theoryGl.SDIFF, theoryGl.SPEEDOFSOUND, theoryGl.sumM );
 
 	//Output variables
 	fprintf( fout,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n",DBUG,outFlag.TRAJOUT,outFlag.printSP,outFlag.COAROUT,outFlag.FLOWOUT,outFlag.VELOUT,outFlag.AVVELOUT,outFlag.AVORIOUT,outFlag.ORDEROUT,outFlag.QTENSOUT,outFlag.QKOUT,outFlag.AVSOUT,outFlag.SOLOUT,outFlag.ENOUT,outFlag.ENFIELDOUT,outFlag.ENNEIGHBOURS,outFlag.ENSTROPHYOUT,outFlag.DENSOUT,outFlag.CVVOUT,outFlag.CNNOUT,outFlag.CWWOUT,outFlag.CDDOUT,outFlag.CSSOUT,outFlag.CPPOUT,outFlag.BINDER,outFlag.BINDERBIN,outFlag.SYNOUT,outFlag.CHCKPNT,outFlag.CHCKPNTrcvr );
@@ -2644,9 +2695,11 @@ void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mo
 	//Species of MPCD particles
 	for( i=0; i<NSPECI; i++ ) {
 		fprintf( fout,"%lf %i %i %i %i ",(SP+i)->MASS,(SP+i)->POP,(SP+i)->QDIST,(SP+i)->VDIST,(SP+i)->ODIST );
-		fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf\n",(SP+i)->RFC, (SP+i)->LEN, (SP+i)->TUMBLE, (SP+i)->CHIHI, (SP+i)->CHIA, (SP+i)->ACT, (SP+i)->SIGWIDTH, (SP+i)->SIGPOS, (SP+i)->DAMP );
+		fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf ",(SP+i)->RFC, (SP+i)->LEN, (SP+i)->TUMBLE, (SP+i)->CHIHI, (SP+i)->CHIA, (SP+i)->ACT, (SP+i)->MFPOT, (SP+i)->SIGWIDTH, (SP+i)->SIGPOS, (SP+i)->DAMP );
+		fprintf( fout,"%lf %lf %lf\n",(SP+i)->VOL,(SP+i)->nDNST,(SP+i)->mDNST );
 		for( j=0; j<NSPECI; j++ ) fprintf( fout,"%lf ",(SP+i)->M[j] );			//Binary fluid control parameters
 		fprintf( fout,"\n" );
+		fprintf( fout,"%lf %lf %lf %lf %lf %lf\n", theorySP[i].MFP, theorySP[i].VISC, theorySP[i].THERMD, theorySP[i].SDIFF, theorySP[i].SPEEDOFSOUND, theorySP[i].sumM );
 	}
 	//BCs
 	fprintf( fout,"%d\n",NBC );
@@ -2658,6 +2711,8 @@ void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mo
 		fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", WALL[i].W, WALL[i].VOL, WALL[i].Q_old[0], WALL[i].Q_old[1], WALL[i].Q_old[2], WALL[i].O_old[0], WALL[i].O_old[1], WALL[i].O_old[2], WALL[i].I[0][0], WALL[i].I[0][1], WALL[i].I[0][2], WALL[i].I[1][0], WALL[i].I[1][1], WALL[i].I[1][2], WALL[i].I[2][0], WALL[i].I[2][1], WALL[i].I[2][2] );
 		fprintf( fout,"%d %d %d %lf %lf\n", WALL[i].PLANAR, WALL[i].REORIENT, WALL[i].ABS, WALL[i].ROTSYMM[0], WALL[i].ROTSYMM[1] );
 		fprintf( fout,"%lf %lf %lf %lf %lf %lf\n", WALL[i].dV[0], WALL[i].dV[1], WALL[i].dV[2], WALL[i].dL[0], WALL[i].dL[1], WALL[i].dL[2] );
+		for( j=0; j<MAXSPECI+2; j++ ) fprintf( fout,"%i ", WALL[i].INTER[j] );		//BC particle interaction flags
+		fprintf( fout,"\n" );
 	}
 
 	//MPCD particles
@@ -2709,7 +2764,7 @@ void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mo
 /// @see checkpoint()
 /// @see openCheckpoint()
 ///
-void runCheckpoint(char op[500], time_t *lastCheckpoint, FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mode, bc *WALL, outputFlagsList outFlag, int runtime, int warmtime, double AVVEL, double AVS, double avDIR[_3D], double S4, double stdN, double KBTNOW, double AVV[_3D], double AVNOW[_3D], kinTheory theory, specSwimmer specS, swimmer *sw ) {
+void runCheckpoint(char op[500], time_t *lastCheckpoint, FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mode, bc *WALL, outputFlagsList outFlag, int runtime, int warmtime, double AVVEL, double AVS, double avDIR[_3D], double S4, double stdN, double KBTNOW, double AVV[_3D], double AVNOW[_3D], kinTheory theorySP[], kinTheory theoryGl, specSwimmer specS, swimmer *sw ) {
     // if time-based checkpointing has been enabled, see if a checkpoint needs to be made
     // otherwise return early
     if (outFlag.CHCKPNTTIMER != 0.0) {
@@ -2729,7 +2784,7 @@ void runCheckpoint(char op[500], time_t *lastCheckpoint, FILE *fout, inputList i
     #endif
     // normal checkpoint
     openCheckpoint( &(fout),op );
-    checkpoint(fout, in, SP, pSRD, MD_mode, WALL, outFlag, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theory, specS, sw);
+    checkpoint(fout, in, SP, pSRD, MD_mode, WALL, outFlag, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theorySP, theoryGl, specS, sw);
     fclose( fout );
 }
 
@@ -2890,11 +2945,11 @@ void outputResults(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], 
 	/* *************** TOTAL ENERGY ************* */
 	/* ****************************************** */
 	if( outFlag.ENOUT>=OUT && runtime%outFlag.ENOUT==0 ) {
-		wmf = calcE_LC( CL,in.LC,in.MFPOT );
+		wmf = calcE_LC( CL,in.LC,SP );
 		enout( outFiles.fenergy,SRDparticles,SP,WALL,time_now,KBTNOW,wmf );
 	}
-	if( outFlag.ENFIELDOUT>=OUT && runtime%outFlag.ENFIELDOUT==0 ) enfieldout( outFiles.fenergyfield,CL,SP,in.MFPOT,in.LC );
-	if( outFlag.ENNEIGHBOURS>=OUT && runtime%outFlag.ENNEIGHBOURS==0 ) enneighboursout( outFiles.fenneighbours,time_now,CL,in.MFPOT,in.LC );
+	if( outFlag.ENFIELDOUT>=OUT && runtime%outFlag.ENFIELDOUT==0 ) enfieldout( outFiles.fenergyfield,CL,SP,in.LC );
+	if( outFlag.ENNEIGHBOURS>=OUT && runtime%outFlag.ENNEIGHBOURS==0 ) enneighboursout( outFiles.fenneighbours,time_now,CL,SP,in.LC );
 	/* ****************************************** */
 	/* ***** SWIMMERS' POSITONS/ORIENTATIONS **** */
 	/* ****************************************** */

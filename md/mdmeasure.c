@@ -80,7 +80,9 @@ void Measure (simptr sim)
 	for (i=1; i<sim->stepCounter.n; i++) {
 		step = &(sim->stepCounter.items[i]);
 		if (step->counter[count_] == step->counter[sim->phase]) {
-			step->action ((void *) sim);
+			if(sim->warmupMD==POS_WARMUP){
+				step->action ((void *) sim);
+			}
 			step->counter[count_] = 0;
 		}
 	}

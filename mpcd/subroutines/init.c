@@ -760,10 +760,12 @@ void openruntumble( FILE **f,char dir[],char fname[],char ext[] ) {
 /// @param dt MPCD time-step value.
 /// @param sumM Sum of all masses.
 /// @param RTECH Rotation technique.
+/// @param nDNST Number density for this species.
+/// @param mDNST Mass density for this species.
 /// @param SYNOUT Integer specifying if the synopsis file should be outputted (1 for yes, 0 for no).
 /// @param fsynopsis Pointer to the synopsis file.
 ///
-void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double *SPEEDOFSOUND,double RA,double FRICCO,double KBT,double dt,double sumM,int RTECH,int SYNOUT,FILE *fsynopsis ) {
+void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double *SPEEDOFSOUND,double RA,double FRICCO,double KBT,double dt,double sumM,int RTECH,double nDNST,double mDNST,int SYNOUT,FILE *fsynopsis ) {
 	double a=1.0;							//MPCD cell size
 	double A,B,CM,SM;								//Correlation factors from Table 1 of Nguchi & Gompper
 	double VISCKIN,VISCCOL;		//Kinetic and collisional parts of DYNAMIC viscosity
@@ -893,28 +895,31 @@ void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double 
 	}
 	*THERMD = THERMDKIN+THERMDCOL;
 	if( SYNOUT == OUT ) {
-		fprintf( fsynopsis,"Mean Free Path: %lf\n",*MFP );
-		fprintf( fsynopsis,"Dynamic Viscosity: %lf\n",*VISC );
-		fprintf( fsynopsis,"\tkinetic contribution: %lf\n\tcollisional contribution: %lf\n",VISCKIN,VISCCOL );
-		fprintf( fsynopsis,"Kinematic Viscosity: %lf\n",(*VISC)*inv_nDNST/avMASS );
-		fprintf( fsynopsis,"\tkinetic contribution: %lf\n\tcollisional contribution: %lf\n",VISCKIN*inv_nDNST/avMASS,VISCCOL*inv_nDNST/avMASS );
-		fprintf( fsynopsis,"Self Diffusion Coefficient: %lf\n",*SDIFF );
-		fprintf( fsynopsis,"Schmidt number: %lf\n",(*VISC)/(*SDIFF)/mDNST );
-		fprintf( fsynopsis,"Speed of sound: %lf\n",*SPEEDOFSOUND );
-		fprintf( fsynopsis,"Thermal Diffusion Coefficient: %lf\n",*THERMD );
+		fprintf( fsynopsis,"\tNumber density: %lf\n",nDNST );
+		fprintf( fsynopsis,"\tMass density: %lf\n",mDNST );
+		fprintf( fsynopsis,"\tMean Free Path: %lf\n",*MFP );
+		fprintf( fsynopsis,"\tDynamic Viscosity: %lf\n",*VISC );
+		fprintf( fsynopsis,"\t\tkinetic contribution: %lf\n\tcollisional contribution: %lf\n",VISCKIN,VISCCOL );
+		fprintf( fsynopsis,"\tKinematic Viscosity: %lf\n",(*VISC)*inv_nDNST/avMASS );
+		fprintf( fsynopsis,"\t\tkinetic contribution: %lf\n\tcollisional contribution: %lf\n",VISCKIN*inv_nDNST/avMASS,VISCCOL*inv_nDNST/avMASS );
+		fprintf( fsynopsis,"\tSelf Diffusion Coefficient: %lf\n",*SDIFF );
+		fprintf( fsynopsis,"\tSchmidt number: %lf\n",(*VISC)/(*SDIFF)/mDNST );
+		fprintf( fsynopsis,"\tSpeed of sound: %lf\n",*SPEEDOFSOUND );
+		fprintf( fsynopsis,"\tThermal Diffusion Coefficient: %lf\n",*THERMD );
 	}
 }
 
 ///
-/// @brief Function that calculates the volume accessible to the fluid particles.
+/// @brief Function that calculates the volume accessible to the fluid particles of species type SPID.
 ///
-/// This function calculates the volume available to the particles. 
+/// This function calculates the volume available to the particles of species type SPID. 
 /// It does so using a Monte Carlo volume integration.
 ///
 /// @param WALL Array of the system's boundary conditions.
-/// @return The accessible volume.
+/// @param SPID The ID number of the fluid species that we are checking the accessible volume of.
+/// @return The accessible volume available to this species.
 ///
-double accessibleVolume( bc WALL[] ) {
+double accessibleVolume( bc WALL[],int SPID ) {
 /*
    Calculates the number density of the fluid.
    Either per unit volume or area
@@ -938,7 +943,8 @@ double accessibleVolume( bc WALL[] ) {
 		for( d=0; d<DIM; d++ ) pMPC.Q[d] = genrand_real( ) * XYZ[d];
 		// Check if position is allowed
 		check=0;
-		for( j=0; j<NBC; j++ ) {
+		// for( j=0; j<NBC; j++ ) {
+		for( j=0; j<NBC; j++ ) if(WALL[j].INTER[SPID] == BCON) {
 			W = calcW( WALL[j],pMPC );
 			if( W<0.0 ) check++;
 		}
@@ -951,32 +957,32 @@ double accessibleVolume( bc WALL[] ) {
 }
 
 ///
-/// @brief Function that calculates the fluid number density.
+/// @brief Function that calculates the global fluid density.
 ///
-/// This function calculates the number density of the fluid, either per unit area (2D) or volume (3D).
-/// The volume must already have been calculated.
+/// This function approximates the global number and mass density of the fluid, either per unit area (2D) or volume (3D).
+/// Other routines ('`readJson`') calculate the species specific densities (assuming the particle species to be perfectly separated). 
+/// This routine estimates the average by averaging the density in each cell (and so may have errors if high curvature boundaries are present).
+/// Assumes localPROP() was run before hand.
 ///
-/// @return The fluid number density.
+/// @param CL Return pointer to the array of all cell lists.
+/// @param SP Array of all species.
 ///
-double ndensity(  ) {
-/*
-   Calculates the number density of the fluid.
-   Either per unit volume or area
-*/
-	return ((double)GPOP)/VOL;
-}
+void globalDensities( cell ***CL,spec SP[] ) {
+	int a,b,c;
+	double cnt,sumN;
 
-///
-/// @brief Function that calculates the fluid number density.
-///
-/// This function calculates the number density of the fluid, either per unit area (2D) or volume (3D).
-/// The volume must already have been calculated.
-///
-/// @param MASS The system total mass.
-/// @return The fluid mass density.
-///
-double mdensity( double MASS ) {
-	return MASS / VOL;
+	cnt=0.0;
+	sumN=0.0;
+	GMASS=0.0;
+	for( a=0; a<XYZ[0]; a++ ) for( b=0; b<XYZ[1]; b++ ) for( c=0; c<XYZ[2]; c++ ) if(CL[a][b][c].POP>0) {
+		cnt += 1.0;
+		sumN += (double)CL[a][b][c].POPSRD;
+		GMASS += CL[a][b][c].MASS;
+	}
+	if(cnt>0.0) {
+		GnDNST = sumN/cnt;
+		GmDNST = GMASS/cnt;	
+	}
 }
 
 /* ****************************************** */
@@ -1124,7 +1130,6 @@ void zeroPressureColl( cell *CL ) {
 /// @param co Clock time.
 /// @param runtime Return pointer to runtime.
 /// @param warmtime Return pointer to warmtime.
-/// @param sumM Return pointer to sum of all masses.
 /// @param AV Return pointer to average velocity.
 /// @param avDIR Return pointer to average director.
 /// @param SP Array of all species.
@@ -1134,12 +1139,12 @@ void zeroPressureColl( cell *CL ) {
 /// @param AVVEL Return pointer to the average speed.
 /// @param KBT Temperature (a third of thermal energy).
 /// @param WALL Return pointer to array of boundary conditions.
-/// @param MAG Return pointer to constant external magnetic field.
 /// @param CL Return pointer to the array of all cell lists.
 /// @param pp Return pointer to the array of all MPCD particles.
 ///
-void initvar( unsigned long *seed,time_t *to,clock_t *co,int *runtime,int *warmtime,double *sumM,double AV[_3D],double avDIR[_3D],spec SP[],double *C,double *S,double RA,double *AVVEL,double KBT,bc WALL[],double MAG[_3D],cell ***CL,particleMPC *pp ) {
+void initvar( unsigned long *seed,time_t *to,clock_t *co,int *runtime,int *warmtime,double AV[_3D],double avDIR[_3D],spec SP[],double *C,double *S,double RA,double *AVVEL,double KBT,bc WALL[],cell ***CL,particleMPC *pp ) {
 	int i;
+	double sumM;
 
 	*seed = RandomSeedSRD (*seed);			//note to tyler
 
@@ -1150,20 +1155,17 @@ void initvar( unsigned long *seed,time_t *to,clock_t *co,int *runtime,int *warmt
 	*warmtime = 0;
 	for( i=0; i<_3D; i++ ) AV[i] = 0.;
 	for( i=0; i<_3D; i++ ) avDIR[i] = 0.;
-	*sumM = 0.;
-	for( i=0; i<NSPECI; i++ ) *sumM += (SP[i].POP) * (SP[i].MASS);
+	sumM = 0.;
+	for( i=0; i<NSPECI; i++ ) sumM += (SP[i].POP) * (SP[i].MASS);
 	*C = cos( RA );
 	*S = sin( RA );
-	*AVVEL = sqrt( DIM*KBT * GPOP / (*sumM) );	//If isotropic velocity dist.
+	*AVVEL = sqrt( DIM*KBT * GPOP / sumM );	//If isotropic velocity dist.
 	//Calculate physical parameters of BCs
 	for( i=0; i<NBC; i++ ) {		//Set the velocity of the walls to zero
 		dim_vol( &WALL[i],XYZ,DIM );
 		mominert( &WALL[i],XYZ,DIM );
 	}
 
-	nDNST = ndensity( );
-	mDNST = mdensity( *sumM );
-	for( i=0; i<DIM; i++ ) MAG[i]/=(nDNST);//Want torque per unit volume so divide field by number density
 	//Zero everything in the cell lists
 	zerocell( CL );
 	//Zero everything in the particles
@@ -1393,7 +1395,8 @@ int checkplaceMPC( int i,particleMPC *pp,spec SP[],bc WALL[] ) {
 	double shift[_3D];
 	int j,k;
 
-	for( j=0; j<NBC; j++ ) {
+	for( j=0; j<NBC; j++ ) if(WALL[j].INTER[(pp+i)->SPID] == BCON) {
+	// for( j=0; j<NBC; j++ ) {
 		//Zero the shift vector (just in case)
 		for( k=0; k<_3D; k++ ) shift[k] = 0.;
 		shiftBC( shift,&WALL[j],(pp+i) );
@@ -1586,6 +1589,7 @@ void setcoord(char dir[], spec SP[], particleMPC *pp, double KBT, double AVVEL[]
 ///
 void checkSim( FILE *fsynopsis,int SYNOUT,inputList in,spec *SP,bc *WALL,specSwimmer SS ) {
 	int i,j;
+	double checkValue;
 
 	//Check thermostat
 	if( in.TSTECH==BEREND && in.TAU<0.5*in.dt ) {
@@ -1717,11 +1721,13 @@ void checkSim( FILE *fsynopsis,int SYNOUT,inputList in,spec *SP,bc *WALL,specSwi
 		if(SYNOUT == OUT) fprintf( fsynopsis,"Warning:\tSpecies %d has zero rotational friction coefficient\n\t\tThis is acceptable iff no magnetic field is applied\n",i );
 	}
 	//Check that if running as a LC that the LC mean field potential MFPOT is greater than zero
-	if( in.LC>ISOF && in.MFPOT<=0.0 ) {
+	checkValue=0.0;
+	for( i=0; i<NSPECI; i++ ) checkValue+=SP[i].MFPOT;
+	if( in.LC>ISOF && checkValue<=0.0 ) {
 		#ifdef DBG
-			if( DBUG >= DBGWARN ) printf( "Error: Running as nematic liquid crystal (LC=%d) but mean field = %lf. Must be greater than 0 or run as isotropic\n",in.LC,in.MFPOT );
+			if( DBUG >= DBGWARN ) printf( "Error: Running as nematic liquid crystal (LC=%d) but sum of mean field = %lf. Must be greater than 0 or run as isotropic\n",in.LC,checkValue );
 		#endif
-		if(SYNOUT == OUT) fprintf(fsynopsis,"Error: Running as nematic liquid crystal (LC=%d) but mean field = %lf. Must be greater than 0 or run as isotropic\n",in.LC,in.MFPOT );
+		if(SYNOUT == OUT) fprintf(fsynopsis,"Error: Running as nematic liquid crystal (LC=%d) but sum of mean field = %lf. Must be greater than 0 or run as isotropic\n",in.LC,checkValue );
 		exit(1);
 	}
 // 	if( in.LC==LCG || in.LC==LCL ) for( i=0; i<NSPECI; i++ ) if( SP[i].RFC*SP[i].TUMBLE>1.0 ) {
@@ -1976,7 +1982,8 @@ void initOutput( char op[],outputFlagsList *outFlag,outputFilesList *outFile,inp
 /// @param runtime Return pointer to runtime.
 /// @param warmtime Return pointer to warmtime.
 /// @param AVVEL Return pointer to average velocity.
-/// @param theory Return pointer to structure containing theoretical system parameters.
+/// @param theorySP Return pointer to structure containing theoretical parameters for each species.
+/// @param theory Return pointer to structure containing theoretical parameters for global system.
 /// @param KBTNOW Return pointer to current temperature.
 /// @param AVS Return pointer to average scalar order parameter.
 /// @param S4 Return pointer to fourth moment of the scalar order parameter.
@@ -1992,12 +1999,13 @@ void initOutput( char op[],outputFlagsList *outFlag,outputFilesList *outFile,inp
 /// @see initvar()
 /// @see zerocnt()
 ///
-void initializeSIM(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simptr simMD, specSwimmer *specS, swimmer *swimmers, int argc, char* argv[], inputList *in, time_t *to, clock_t *co, int *runtime, int *warmtime, double *AVVEL, kinTheory *theory, double *KBTNOW, double *AVS, double *S4, double *stdN, double AVNOW[_3D], double AVV[_3D], double avDIR[_3D], outputFlagsList outFlags, int MD_mode, FILE *fsynopsis, char ip[] ) {
+void initializeSIM(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simptr simMD, specSwimmer *specS, swimmer *swimmers, int argc, char* argv[], inputList *in, time_t *to, clock_t *co, int *runtime, int *warmtime, double *AVVEL, kinTheory *theorySP, kinTheory *theoryGl, double *KBTNOW, double *AVS, double *S4, double *stdN, double AVNOW[_3D], double AVV[_3D], double avDIR[_3D], outputFlagsList outFlags, int MD_mode, FILE *fsynopsis, char ip[] ) {
 	int i,j;
+
 	#ifdef DBG
 		if( DBUG >= DBGINIT ) printf("\tInitialize Parameters\n");
 	#endif
-	initvar( &(in->seed),to,co,runtime,warmtime,&(theory->sumM),AVNOW,avDIR,SP,&(in->C),&(in->S),in->RA,AVVEL,in->KBT,WALL,in->MAG,CL,SRDparticles );
+	initvar( &(in->seed),to,co,runtime,warmtime,AVNOW,avDIR,SP,&(in->C),&(in->S),in->RA,AVVEL,in->KBT,WALL,CL,SRDparticles );
 
 	maxXYZ=(int) sqrt( (double)(XYZ[0]*XYZ[0]+XYZ[1]*XYZ[1]+XYZ[2]*XYZ[2]) );
 
@@ -2039,11 +2047,14 @@ void initializeSIM(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], 
 		#endif
 		setswimmers( specS,swimmers,WALL,in->stepsMD,in->dt );
 	}
-
 	if(outFlags.SYNOUT == OUT) fprintf(fsynopsis,"\nMPCD particles placed.\n" );
-	//Calculate the theoretical properties of the SRD gas
-	theory_trans( &(theory->MFP),&(theory->VISC),&(theory->THERMD),&(theory->SDIFF),&(theory->SPEEDOFSOUND),in->RA,in->FRICCO,in->KBT,in->dt,theory->sumM,in->RTECH,outFlags.SYNOUT,fsynopsis );
-		//Zero counters
+	//Calculate the theoretical properties of each species of SRD gas
+	for( i=0; i<NSPECI; i++ ) {
+		if(outFlags.SYNOUT == OUT) fprintf( fsynopsis,"Properties of isolated species %d:\n",i );
+		(theorySP+i)->sumM = ((SP+i)->POP)*((SP+i)->MASS);
+		theory_trans( &((theorySP+i)->MFP),&((theorySP+i)->VISC),&((theorySP+i)->THERMD),&((theorySP+i)->SDIFF),&((theorySP+i)->SPEEDOFSOUND),in->RA,in->FRICCO,in->KBT,in->dt,(theorySP+i)->sumM,in->RTECH,(SP+i)->nDNST,(SP+i)->mDNST,outFlags.SYNOUT,fsynopsis );
+	}
+	//Zero counters
 	zerocnt( KBTNOW,AVNOW,AVS );
 	if( in->TSTECH==MAXV ) for( j=0; j<DIM; j++ ) AVNOW[j]=AVV[j];
 	//Bin particles
@@ -2061,7 +2072,15 @@ void initializeSIM(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], 
 		*AVS = avOrderParam( SRDparticles,in->LC,avDIR );
 		*S4 = avS4( SRDparticles,in->LC,avDIR );
 		*stdN = stdNum( CL,GPOP,XYZ,XYZ_P1 );
-		}
+	}
+	//Calculate the global values
+	globalDensities( CL,SP );
+	for( i=0; i<DIM; i++ ) in->MAG[i]/=GnDNST;//Want torque per unit volume so divide field by global number density
+	//Calculate the theoretical properties of each species of SRD gas
+	theoryGl->sumM = GMASS;
+	fprintf( fsynopsis,"Global properties of averaged MPCD fluid:\n" );
+	theory_trans( &(theoryGl->MFP),&(theoryGl->VISC),&(theoryGl->THERMD),&(theoryGl->SDIFF),&(theoryGl->SPEEDOFSOUND),in->RA,in->FRICCO,in->KBT,in->dt,GMASS,in->RTECH,GnDNST,GmDNST,outFlags.SYNOUT,fsynopsis );
+
 	/* ****************************************** */
 	/* ******** GALILEAN TRANSFORMATION ********* */
 	/* ****************************************** */

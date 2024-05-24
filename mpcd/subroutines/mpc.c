@@ -398,12 +398,14 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 						// Particle loop
 						if (CL[a][b][c].pp!=NULL){
 							ptMPC = CL[a][b][c].pp;
-							while (ptMPC != NULL){
-								normal(n, WALL[i], ptMPC->Q, DIM);
-								norm(n, DIM);
-								// apply boundary condition (anchoring) to cell
-								// note: this also feeds anchoring torque back to boundary (to add to dV and dL), if mobile
-								oriBC(ptMPC, SP, &WALL[i], n);
+							while (ptMPC != NULL) {
+								if(WALL[i].INTER[ptMPC->SPID] == BCON) {
+									normal(n, WALL[i], ptMPC->Q, DIM);
+									norm(n, DIM);
+									// apply boundary condition (anchoring) to cell
+									// note: this also feeds anchoring torque back to boundary (to add to dV and dL), if mobile
+									oriBC(ptMPC, SP, &WALL[i], n);
+								}
 								ptMPC = ptMPC->next;
 							}
 						}
@@ -461,12 +463,12 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 
 			// Apply ghost particles for centre of mass velocity
 			if ( flagW ){
-				if( CL[a][b][c].POP < nDNST && CL[a][b][c].POP > 0 ) {
-					invN = 1.0/(nDNST-(double)CL[a][b][c].POP);
+				if( CL[a][b][c].POP < GnDNST && CL[a][b][c].POP > 0 ) {
+					invN = 1.0/(GnDNST-(double)CL[a][b][c].POP);
 					for( d=0; d<DIM; d++ ) {
 						R[d] = genrand_gaussMB( KBT, invN );
 						CL[a][b][c].VCM[d] += R[d];
-						CL[a][b][c].VCM[d] /= nDNST;
+						CL[a][b][c].VCM[d] /= GnDNST;
 					}
 				}
 			}
@@ -511,12 +513,12 @@ double trans( double t,double V, double QOLD ) {
 /// This function simply updates one component of a generic velocity vector based on a constant acceleration in that direction.
 /// @param t The time interval for which the particle accelerates.
 /// @param GRAV The acceleration with which the particle speed increases.
-/// @param VOLD The initial speed of the particle.
+/// @param V_OLD The initial speed of the particle.
 /// @return The newly accelerated component of the velocity. 
 ///
-double acc( double t,double GRAV,double VOLD ) {
+double acc( double t,double GRAV,double V_OLD ) {
 	double VNEW;
-	VNEW = VOLD + t * GRAV;
+	VNEW = V_OLD + t * GRAV;
 	return VNEW;
 }
 
@@ -785,9 +787,9 @@ double rewind_trans( double t,double V,double P ) {
 /// @return The velocity at the previous time step.
 ///
 double rewind_acc(double t,double G,double V){
-	double VOLD;
-	VOLD = V - t*G;
-	return VOLD;
+	double V_OLD;
+	V_OLD = V - t*G;
+	return V_OLD;
 }
 
 /// 
@@ -3039,8 +3041,8 @@ void incompAddVirial( cell *CL,double virialCoB, double virialCoC, double virial
 	particleMD *tmd;			//Temporary particleMD
 	smono *tsm;					//Temporary swimmer monomer
 
-	if( CL->POP > (int)nDNST ) {
-		dN = ((double)CL->POP)/nDNST - 1.0;
+	if( CL->POP > GnDNST ) {
+		dN = ((double)CL->POP)/GnDNST - 1.0;
 		// Zero arrays
 		for( i=0;i<CL->POP;i++ ) for( j=0;j<DIM;j++ ) RV[i][j] = 0.0;
 		for( i=0; i<DIM; i++ ) {
@@ -3148,7 +3150,9 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 	double VCM[_3D],RCM[_3D],PCM[_3D];
 	double DIV1,DIV2,DIVC,DIVC_swapped;
 	//Checks for debugging
-	double DIVCI,DIVCF,EI,EF,diffP,PMI,PMF;	//Divergence before and after (I=initial; F=final). Energy before and after
+	double DIVCI,DIVCF;						//Divergence before and after (I=initial; F=final). 
+	// double EI,EF;							//Energy before and after (I=initial; F=final). 
+	double diffP,PMI,PMF;					//Momenumt magnitude before and after (I=initial; F=final). 
 	double PI[_3D],PF[_3D];					//Momentum before and after
 	//Linked list variables
 	particleMPC *tmpc,*tmpc2;				//Temporary particleMPC
@@ -3184,8 +3188,8 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 			}
 			DIVCI=0.;
 			DIVCF=0.;
-			EI=0.;
-			EF=0.;
+			// EI=0.;
+			// EF=0.;
 		}
 	#endif
 
@@ -3247,7 +3251,7 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 				id = tmpc->SPID;
 				M = (SP+id)->MASS;
 				for( j=0; j<DIM; j++ ) V[j] = tmpc->V[j];
-				for( j=0; j<DIM; j++ ) EI += M*V[j]*V[j];
+				// for( j=0; j<DIM; j++ ) EI += M*V[j]*V[j];
 				for( j=0; j<DIM; j++ ) PI[j] += M*V[j];
 				tmpc = tmpc->next;
 				i++;
@@ -3259,7 +3263,7 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 				V[0] = tmd->vx;
 				V[1] = tmd->vy;
 				V[2] = tmd->vz;
-				for( j=0; j<DIM; j++ ) EI += M*V[j]*V[j];
+				// for( j=0; j<DIM; j++ ) EI += M*V[j]*V[j];
 				for( j=0; j<DIM; j++ ) PI[j] += M*V[j];
 				tmd = tmd->nextSRD;
 				i++;
@@ -3270,12 +3274,12 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 				if( tsm->HorM ) M = (double) SS.middM;
 				else M = (double) SS.headM;
 				for( j=0; j<DIM; j++ ) V[j] = tsm->V[j];
-				for( j=0; j<DIM; j++ ) EI += M*tsm->V[j]*V[j];
+				// for( j=0; j<DIM; j++ ) EI += M*tsm->V[j]*V[j];
 				for( j=0; j<DIM; j++ ) PI[j] += M*V[j];
 				tsm = tsm->next;
 				i++;
 			}
-			EI*=0.5;
+			// EI*=0.5;
 			DIVCI=DIVC;
 		}
 	#endif
@@ -3337,7 +3341,7 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 				id = tmpc->SPID;
 				M = (SP+id)->MASS;
 				for( j=0; j<DIM; j++ ) V[j] = tmpc->V[j];
-				for( j=0; j<DIM; j++ ) EF += M*V[j]*V[j];
+				// for( j=0; j<DIM; j++ ) EF += M*V[j]*V[j];
 				for( j=0; j<DIM; j++ ) PF[j] += M*V[j];
 				tmpc = tmpc->next;
 				i++;
@@ -3349,7 +3353,7 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 				V[0] = tmd->vx;
 				V[1] = tmd->vy;
 				V[2] = tmd->vz;
-				for( j=0; j<DIM; j++ ) EF += M*V[j]*V[j];
+				// for( j=0; j<DIM; j++ ) EF += M*V[j]*V[j];
 				for( j=0; j<DIM; j++ ) PF[j] += M*V[j];
 				tmd = tmd->nextSRD;
 				i++;
@@ -3360,12 +3364,12 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 				if( tsm->HorM ) M = (double) SS.middM;
 				else M = (double) SS.headM;
 				for( j=0; j<DIM; j++ ) V[j] = tsm->V[j];
-				for( j=0; j<DIM; j++ ) EF += M*tsm->V[j]*V[j];
+				// for( j=0; j<DIM; j++ ) EF += M*tsm->V[j]*V[j];
 				for( j=0; j<DIM; j++ ) PF[j] += M*V[j];
 				tsm = tsm->next;
 				i++;
 			}
-			EF*=0.5;
+			// EF*=0.5;
 			DIVCF=DIVC;
 			diffP=0.;
 			PMI=0.;
@@ -4143,7 +4147,8 @@ void checkEscape_all( particleMPC *pp ) {
 /// @param addVel The vector that is being added to the velocity of every MPCD particle in cell `CL`.
 ///
 void cellVelForce( cell *CL,double addVel[3] ) {
-	int i,j;
+	// int i;
+	int j;
 	particleMPC *tmpc;	//Temporary particleMPC
 	particleMD *tmd;	//Temporary particleMD
 	smono *pSW;			//Temporary pointer to swimmer monomers
@@ -4151,12 +4156,12 @@ void cellVelForce( cell *CL,double addVel[3] ) {
 	//Give particles a kick
 	// MPC particles
 	tmpc = CL->pp;
-	i=0;
+	// i=0;
 	while( tmpc!=NULL ) {
 		for( j=0; j<DIM; j++ ) tmpc->V[j] += addVel[j];
 		//Increment link in list
 		tmpc = tmpc->next;
-		i++;
+		// i++;
 	}
 	//MD particles
 	tmd = CL->MDpp;
@@ -4166,7 +4171,7 @@ void cellVelForce( cell *CL,double addVel[3] ) {
 		tmd->vz += addVel[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
-		i++;
+		// i++;
 	}
 	// Swimmer particles
 	pSW = CL->sp;
@@ -4174,7 +4179,7 @@ void cellVelForce( cell *CL,double addVel[3] ) {
 		for( j=0; j<DIM; j++ ) pSW->V[j] += addVel[j];
 		//Increment link in list
 		pSW = pSW->next;
-		i++;
+		// i++;
 	}
 }
 
@@ -4187,7 +4192,8 @@ void cellVelForce( cell *CL,double addVel[3] ) {
 /// @param vel The vector that every particle's velocity is set to within the cell `CL`. 
 ///
 void cellVelSet( cell *CL,double vel[3] ) {
-	int i,j;
+	// int i;
+	int j;
 	particleMPC *tmpc;	//Temporary particleMPC
 	particleMD *tmd;	//Temporary particleMD
 	smono *pSW;			//Temporary pointer to swimmer monomers
@@ -4195,12 +4201,12 @@ void cellVelSet( cell *CL,double vel[3] ) {
 	//Give particles a kick
 	// MPC particles
 	tmpc = CL->pp;
-	i=0;
+	// i=0;
 	while( tmpc!=NULL ) {
 		for( j=0; j<DIM; j++ ) tmpc->V[j] = vel[j];
 		//Increment link in list
 		tmpc = tmpc->next;
-		i++;
+		// i++;
 	}
 	//MD particles
 	tmd = CL->MDpp;
@@ -4210,7 +4216,7 @@ void cellVelSet( cell *CL,double vel[3] ) {
 		tmd->vz += vel[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
-		i++;
+		// i++;
 	}
 	// Swimmer particles
 	pSW = CL->sp;
@@ -4218,7 +4224,7 @@ void cellVelSet( cell *CL,double vel[3] ) {
 		for( j=0; j<DIM; j++ ) pSW->V[j] += vel[j];
 		//Increment link in list
 		pSW = pSW->next;
-		i++;
+		// i++;
 	}
 }
 
@@ -4266,7 +4272,7 @@ void cellVelSet( cell *CL,double vel[3] ) {
 /// @param outFlags The complete list of what is being outputted as results. 
 /// @param outFiles The complete list of pointers to output files. 
 ///
-void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simptr simMD, specSwimmer *SS, swimmer swimmers[], double AVNOW[_3D], double AVV[_3D], double avDIR[_3D], inputList in, double *KBTNOW, double *AVS, int runtime, int MD_mode, outputFlagsList outFlags, outputFilesList outFiles,int wmd ) {
+void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simptr simMD, specSwimmer *SS, swimmer swimmers[], double AVNOW[_3D], double AVV[_3D], double avDIR[_3D], inputList in, double *KBTNOW, double *AVS, int runtime, int MD_mode, outputFlagsList outFlags, outputFilesList outFiles) {
 
 	int i,j,k,l;					//Counting variables
 	double RSHIFT[_3D];				//Random vector to positively shift all components of the simulation
@@ -4275,7 +4281,7 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 	int outPressure=0;				//Whether to make the pressure calculations (never used just outputted)
 	int bcCNT,reCNT,rethermCNT;		//Count if any particles had problems with the BCs
     // Active layer variables
-    double effMFPot;                // Storage for the effective potential, which depends on height
+    int zeroMFPot;                	// Flag to switch to zero effective potential
     double savedAct[NSPECI];        // Storage to save the activity of species, to make it height dependent
 
 	#ifdef DBG
@@ -4302,7 +4308,13 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 	#ifdef DBG
 		if( DBUG >= DBGTITLE && MD_mode != noMD ) printf("Integrate MD.\n" );
 	#endif
-	if( MD_mode && wmd) integrateMD(simMD, MD_mode, in.stepsMD, SRDparticles, WALL, SP, GPOP, NBC, CL);
+	if(MD_mode){
+		if(simMD->warmupMD == FREE_WARMUP || simMD->warmupMD == POS_WARMUP){
+			integrateMD(simMD, MD_mode, in.stepsMD, SRDparticles, WALL, SP, GPOP, NBC, CL);
+		}else if(simMD->warmupMD == PINNED_WARMUP){
+			integrateMD_Pinned(simMD, MD_mode, in.stepsMD, SRDparticles, WALL, SP, GPOP, NBC, CL);
+		}
+	}
 	/* ****************************************** */
 	/* *********** INTEGRATE SWIMMER ************ */
 	/* ****************************************** */
@@ -4414,13 +4426,14 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
             if (in.MFPLAYERH > 0) { // if MFPLAYERH set then perform the "active layer" hack
                 // Active layer
                 // Check if cell is within the layer, if not then run with an effective MFP of 0
-                if (j <= in.MFPLAYERH) effMFPot = in.MFPOT;
-                else effMFPot = 0.0;
-                if( CL[i][j][k].POPSRD > 1 ) LCcollision( &CL[i][j][k],SP,in.KBT,effMFPot,in.dt,*AVS,in.LC );
+                if (j <= in.MFPLAYERH) zeroMFPot=0;
+                else zeroMFPot = 1;
+                if( CL[i][j][k].POPSRD > 1 ) LCcollision( &CL[i][j][k],SP,in.KBT,zeroMFPot,in.dt,*AVS,in.LC );
             } else {
                 // otherwise perform typical LC collision
+				zeroMFPot=0;
                 // LC collision algorithm (no collision if only 1 particle in cell)
-                if( CL[i][j][k].POPSRD > 1 ) LCcollision( &CL[i][j][k],SP,in.KBT,in.MFPOT,in.dt,*AVS,in.LC );
+                if( CL[i][j][k].POPSRD > 1 ) LCcollision( &CL[i][j][k],SP,in.KBT,zeroMFPot,in.dt,*AVS,in.LC );
             }
 		}
 		// Magnetic alignment is really part of the collision
