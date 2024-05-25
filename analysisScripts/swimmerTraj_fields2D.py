@@ -28,7 +28,7 @@ parser.add_argument("--qy", type=int, help="Only show every qy arrow in y",
                     default=1)
 parser.add_argument('avdim', type=str, help="Dimension to average over")
 parser.add_argument('fieldType', type=str,
-                    help="Field type: 'vel', 'vort' or 'nem' for velocity, "
+                    help="Field type: 'vel', 'vor' or 'nem' for velocity, "
                          "vorticity or director field, respectively")
 parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'",
                     default="auto")
@@ -53,6 +53,14 @@ avdim = args.avdim
 fieldType = args.fieldType
 myAspect = args.myAspect
 keepFrames = args.keepFrames
+
+fieldType=fieldType.lower()
+if(fieldType=="v" or fieldType=="vel" or fieldType=="velocity"):
+  fieldType="vel"
+elif(fieldType=="w" or fieldType=="vor" or fieldType=="vort" or fieldType=="vorticity"):
+  fieldType="vor"
+elif(fieldType=="n" or fieldType=="nem" or fieldType=="nematic" or fieldType=="dir" or fieldType=="director"):
+  fieldType="nem"
 
 ###########################################################
 ### Style/formating stuff
@@ -114,13 +122,6 @@ tailFreq=1.0/3.5
 tailWaveLength=(4.0/10.0)*2.0*(1.0+dipole)
 hidgeonLength=1.0
 tailRad=1.0
-fieldType=fieldType.lower()
-if(fieldType=="v" or fieldType=="vel" or fieldType=="velocity"):
-  fieldType="vel"
-elif(fieldType=="w" or fieldType=="vor" or fieldType=="vort" or fieldType=="vorticity"):
-  fieldType="vor"
-elif(fieldType=="n" or fieldType=="nem" or fieldType=="nematic" or fieldType=="dir" or fieldType=="director"):
-  fieldType="nem"
 
 ###########################################################
 ### Initialize
