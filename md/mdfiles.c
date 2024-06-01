@@ -557,6 +557,11 @@ void TranslateMacros (char **stringptr)
 	snprintf (value, STRMAX, "%u", LAYOUT_U);
 	ReplaceMacro (stringptr, macro, value);
 
+	// Zahra added the following for translocation
+	snprintf (macro, STRMAX, "LAYOUT_TRANS");
+	snprintf (value, STRMAX, "%u", LAYOUT_TRANS);
+	ReplaceMacro (stringptr, macro, value);
+
 	snprintf (macro, STRMAX, "GROUP_NONE");
 	snprintf (value, STRMAX, "%#010X", GROUP_NONE);
 	ReplaceMacro (stringptr, macro, value);

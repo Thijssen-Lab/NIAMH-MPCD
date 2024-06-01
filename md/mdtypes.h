@@ -132,10 +132,10 @@ extern int snprintf (char *__restrict __s, size_t __maxlen, __const char *__rest
 // layout rules
 #define	LAYOUT_NONE				-1
 #define	LAYOUT_WALL				0
-#define	LAYOUT_FLUID				1
+#define	LAYOUT_FLUID			1
 #define	LAYOUT_SURFACE			2
-#define	LAYOUT_ANCHOR				3
-#define	LAYOUT_PLATES				4
+#define	LAYOUT_ANCHOR			3
+#define	LAYOUT_PLATES			4
 #define	LAYOUT_CYLINDER			5
 // Tyler added the following
 #define	LAYOUT_RODX				6
@@ -143,6 +143,8 @@ extern int snprintf (char *__restrict __s, size_t __maxlen, __const char *__rest
 #define	LAYOUT_RODY				7
 // Karolina added the following
 #define	LAYOUT_U				8
+// Zahra added the following for translocation
+#define	LAYOUT_TRANS		9
 
 // atom types (index)
 #define TYPE_WALL				0

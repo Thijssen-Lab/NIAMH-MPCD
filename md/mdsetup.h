@@ -45,9 +45,10 @@ void			JiggleParticles				(simptr sim);
 void			FinishSimulation			(simptr sim);
 
 particleMD*		GrowLinearChain 			(simptr sim, int type, int layout, int n, particleMD *p0, int *status);
-particleMD*		GrowRodChain 			(simptr sim, int type, int layout, int n, particleMD *p0, int *status, int dir);
-particleMD*		GrowUChain 			(simptr sim, int type, int layout, int n, particleMD *p0, int *status);
-particleMD*       AtomInsert 					(simptr sim, int type, int layout, particleMD *p0, int chkolap, int chkptrs);
+particleMD*		GrowLinearChainTrans 		(simptr sim, int type, int layout, int n, particleMD *p0, int *status);
+particleMD*		GrowRodChain 			    (simptr sim, int type, int layout, int n, particleMD *p0, int *status, int dir, int flag);
+particleMD*		GrowUChain 			        (simptr sim, int type, int layout, int n, particleMD *p0, int *status);
+particleMD*       AtomInsert 				(simptr sim, int type, int layout, particleMD *p0, int chkolap, int chkptrs);
 int       		AtomRemove 					(simptr sim, int type, int n, particleMD *p0);
 void 			OffsetParticlePointers 		(simptr sim, int n, int offset);
 void 			OffsetPointer 				(particleMD **p, particleMD *p1, particleMD *p2, int offset);

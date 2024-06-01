@@ -112,6 +112,9 @@ int main(int argc, char* argv[]) {
 	outputFilesList outFiles;		//List of output files
 	specSwimmer specS;				//Swimmer's species
 	swimmer *swimmers;				//Swimmers
+	particleMD	*atom,*p1;			//MD particle
+	int nAtom;						//number of monomers in MD
+	int width = 2;					// width of the pore for translocation
 
     /* ****************************************** */
     /* ****************************************** */
@@ -305,6 +308,16 @@ int main(int argc, char* argv[]) {
 		if( outFlags.CHCKPNT>=OUT && runtime%outFlags.CHCKPNT==0 ) {
             runCheckpoint( op, &lastCheckpoint, outFiles.fchckpnt, inputVar, SPECIES, SRDparticles, MDmode, WALL, outFlags, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theorySP, theoryGlobal, specS, swimmers );
         }
+		if(simMD->polyLayout[POLY_SETS-1]==LAYOUT_TRANS){
+			atom=simMD->atom.items;
+			nAtom=simMD->atom.n;
+			if (atom->ry>XYZ_P1[1]/2+2*width){
+				runtime = inputVar.simSteps+1;
+			}
+			if((atom+(nAtom-1))->ry<XYZ_P1[1]/2-2*width){
+				runtime =inputVar.simSteps+1;
+			}
+		}
 	}
 	#ifdef DBG
 		if( DBUG > DBGRUN ) printf( "Temporal loop complete\n" );
