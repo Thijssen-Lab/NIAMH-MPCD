@@ -18,7 +18,7 @@
     ],
     "debugOut":         3,
     "flowOut":          0,
-    "dirSOut":          100,
+    "dirSOut":          0,
     "avSOut":           100,
     "topoFieldOut":     0,
     "synopsisOut":      1,

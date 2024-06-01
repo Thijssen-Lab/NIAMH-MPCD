@@ -430,7 +430,7 @@ void SetupCheckpointWorld (simptr sim)
 	SetupPolymerList  (sim);
 	SetupChargeList   (sim);
 	//SetupDipoleList   (sim);
-// 	SetupNeighborList (sim);
+	//SetupNeighborList (sim);
 	SetupAnchorList   (sim);
 	SetupFeneList	  (sim);
 	SetupBendList	  (sim);

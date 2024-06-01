@@ -245,11 +245,11 @@ typedef struct particleMD {				// a particle					double		 float
     int		group;						// group bit field					 4		 	 4
     real  	wx, wy, wz;					// real world position				24			12
     real  	Tfx, Tfy, Tfz, Tdivf;		// for configurational temp.		32			16
+    real    dipole;                     // dipole magnitude, with sign       8           4 (?)
     int		pad[7];						// memory padding					28			28
     int		object;						// object id (for viewer)			 4			 4
     struct  particleMD *prev, *next;		// previous and next monomer		 8			 8
     struct  particleMD *prevSRD, *nextSRD;	// previous and next monomer for SRD binning	 8			 8
-    real    dipole;                     // dipole magnitude, with sign       8           4 (?)
 } particleMD;	 							// TOTAL						   240
 
 
