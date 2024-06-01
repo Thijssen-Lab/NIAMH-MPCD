@@ -13,7 +13,6 @@
 /*
    These functions are used to initialize the program
 */
-void zerovec( double VEC[],int dimension );
 void zero_bc_var( double *tfrac,double *tdiff,int *g );
 void zerocnt( double *KBTNOW,double AVNOW[],double *AVS );
 void zeroHISTVEC( int HIST[_3D][BINS] );
@@ -22,19 +21,20 @@ void zerocell( cell ***CL );
 void zeroparticles( particleMPC *pp );
 void zeroPressureColl( cell *CL );
 
-void initvar( unsigned long *seed,time_t *to,clock_t *co,int *runtime,int *warmtime,double *sumM,double AV[_3D],double avDIR[_3D],spec SP[],double *C,double *S,double RA,double *AVVEL,double KBT,bc WALL[],double MAG[_3D],cell ***CL,particleMPC *pp );
+void initvar( unsigned long *seed,time_t *to,clock_t *co,int *runtime,int *warmtime,double AV[_3D],double avDIR[_3D],spec SP[],double *C,double *S,double RA,double *AVVEL,double KBT,bc WALL[],cell ***CL,particleMPC *pp );
+
 void place( double Q[],int PL,FILE *fin );
 void replace( particleMPC *p );
 void push( double V[],double KBT,int PL,double MASS,FILE *fin );
 void orient( double U[],double Q[],int PL );
-void setcoord( char dir[],spec SP[],particleMPC *pp,double KBT,double VEL[],bc WALL[],simptr simMD,int MDmode,int LC );
+void setcoord(char dir[], spec SP[], particleMPC *pp, double KBT, double VEL[], bc WALL[], simptr simMD, int MD_mode, int LC );
 int checkplaceMPC( int IN,particleMPC *pp,spec SP[],bc WALL[] );
 void replacePos_WithCheck( particleMPC *pp,bc WALL[] );
 int checkplace( int IN,particleMPC *pp,spec SP[],bc WALL[],simptr simMD,int MDmode );
 
-void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double *SPEEDOFSOUND,double RA,double FRICCO,double KBT,double dt,double sumM,int RTECH,int SYNOUT,FILE *fsynopsis );
-double ndensity( bc WALL[] );
-double mdensity( bc WALL[],double MASS );
+void theory_trans( double *MFP,double *VISC,double *THERMD,double *SDIFF,double *SPEEDOFSOUND,double RA,double FRICCO,double KBT,double dt,double sumM,int RTECH,double nDNST,double mDNST,int SYNOUT,FILE *fsynopsis );
+double accessibleVolume( bc WALL[],int SPID );
+void globalDensities( cell ***CL,spec SP[] );
 
 void openBasic( FILE **fout,char dir[],char filestring[],char fileextension[] );
 void openCheckpoint( FILE **fout,char dir[] );
@@ -56,6 +56,7 @@ void openhistS( FILE **f,char dir[],char fname[],char ext[] );
 void openavenstrophy( FILE **f,char dir[],char fname[],char ext[] );
 void openflow( FILE **f,char dir[],char fname[],char ext[] );
 void openvel( FILE **f,char dir[],char fname[],char ext[] );
+void openswflow( FILE **f,char dir[],char fname[],char ext[] );
 void opentraj( int bc,FILE *fsolids[],char dir[],char filesolids[],char filesuffix[],char fileextension[] );
 void openplace( int i,FILE *fsolids[],char dir[],char filesolids[],char filesuffix[],char fileextension[] );
 void openenergy( FILE **f,char dir[],char fname[],char ext[] );
@@ -78,7 +79,7 @@ void openruntumble( FILE **f,char dir[],char fname[],char ext[] );
 void checkSim( FILE *fsynopsis,int SYNOUT,inputList in,spec *SP,bc *WALL,specSwimmer SS );
 
 void initOutput( char op[],outputFlagsList *outFlag,outputFilesList *outFile,inputList in,spec *SP, bc WALL[] );
-void initializeSIM( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr simMD,specSwimmer *specS,swimmer *swimmers,int argc, char* argv[],inputList *in,time_t *to,clock_t *co,int *runtime,int *warmtime,double *AVVEL,kinTheory *theory,double *KBTNOW,double *AVS,double *S4,double *stdN,double AVNOW[_3D],double AVV[_3D],double avDIR[_3D], outputFlagsList outFlags,int MDmode,FILE *fsynopsis,char ip[] );
-void initializeRecovery( cell ***CL, particleMPC *SRDparticles, spec SP[],specSwimmer specS,int RTECH,int LC,int MDmode,int SYNOUT,FILE *fsynopsis );
+void initializeSIM(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simptr simMD, specSwimmer *specS, swimmer *swimmers, int argc, char* argv[], inputList *in, time_t *to, clock_t *co, int *runtime, int *warmtime, double *AVVEL, kinTheory *theorySP, kinTheory *theoryGl, double *KBTNOW, double *AVS, double *S4, double *stdN, double AVNOW[_3D], double AVV[_3D], double avDIR[_3D], outputFlagsList outFlags, int MD_mode, FILE *fsynopsis, char ip[] );
+void initializeRecovery(cell ***CL, particleMPC *SRDparticles, spec SP[], specSwimmer specS, int RTECH, int LC, int MD_mode, int SYNOUT, FILE *fsynopsis );
 
 #endif

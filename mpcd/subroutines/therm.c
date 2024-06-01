@@ -324,14 +324,14 @@ double calcE_BC( bc *WALL ) {
 ///
 /// @param CL Array of all cells.
 /// @param LC Integer specifying type of liquid crystal/
-/// @param MFPOT The liquid crystal mean field potential.
+/// @param pSP Pointer to the species of the MPCD particle whose energy is being calculated.
 /// @return Total potential orientational energy.
 ///
-double calcE_LC( cell ***CL,int LC,double MFPOT ) {
+double calcE_LC( cell ***CL,int LC,spec *pSP ) {
 	double wmf=0.;
 	double S,un,DIR[_3D],u[_3D];
 	particleMPC *tmpc;	//Temporary particleMPC
-	int a,b,c,i;
+	int a,b,c,i,id;
 	//double invdim=1./((double)DIM);
 
 	if( LC ) for( a=0; a<XYZ[0]; a++ ) for( b=0; b<XYZ[1]; b++ ) for( c=0; c<XYZ[2]; c++ ) if( CL[a][b][c].POP > 1 ) {
@@ -339,14 +339,14 @@ double calcE_LC( cell ***CL,int LC,double MFPOT ) {
 		for( i=0; i<DIM; i++ ) DIR[i] = CL[a][b][c].DIR[i];
 		tmpc = CL[a][b][c].pp;
 		while( tmpc != NULL ) {
+			id = tmpc->SPID;
 			for( i=0; i<DIM; i++ ) u[i] = tmpc->U[i];
 			un = dotprod( u,DIR,DIM );
-			wmf += S*un*un;
+			wmf += ( S*un*un )*( (pSP+id)->MFPOT );
 			//wmf += (1.-S)*invdim;		//Don't include constant (wrt u.n) term
 			tmpc = tmpc->next;
 		}
 	}
-	wmf*=MFPOT;
 	return wmf;
 }
 
@@ -363,8 +363,26 @@ void avVel( cell ***CL,double AVVEL[] ) {
 	int a,b,c,d;
 	for( d=0; d<DIM; d++ ) AVVEL[d]=0.;
 	for( a=0; a<XYZ_P1[0]; a++ ) for( b=0; b<XYZ_P1[1]; b++ ) for( c=0; c<XYZ_P1[2]; c++ ) for( d=0; d<DIM; d++ ) AVVEL[d] += CL[a][b][c].VCM[d];
-	for( d=0; d<DIM; d++ ) AVVEL[d] /= (double)(XYZ[0]*XYZ[1]*XYZ[2]);
+	for( d=0; d<DIM; d++ ) AVVEL[d] /= VOL;
 }
+
+///
+/// @brief Function that calculates the average global orientation.
+///
+/// This function computes the average orientation of the system by averaging all the orientation of particles
+///
+/// @param p Return pointer to first element in array of all MPCD particles.
+/// @param AVVEL Return pointer for the average global orientation.
+///
+void avOri( particleMPC *p,double AVORI[] ) {
+	int j,i,d;
+	for( d=0; d<DIM; d++ ) AVORI[d]=0.;
+	for( j=0; j<DIM; j++ ) {
+		for( i=0; i<GPOP; i++ ) AVORI[j]+=(p+i)->U[j];
+		AVORI[j] /= GPOP;
+	}
+}
+
 
 ///
 /// @brief Function that calculates the global average enstrophy.
@@ -387,7 +405,7 @@ double avEnstrophy( cell ***CL ) {
 		w[2]=(CL[a][b][c].E[1][0] - CL[a][b][c].E[0][1]);
 		E += dotprod( w,w, _3D );
 	}
-	E /= (XYZ[0]*XYZ[1]*XYZ[2]);
+	E /= VOL;
 	E *= 0.5;
 	return E;
 }

@@ -92,8 +92,6 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 		for( d=0; d<DIM; d++ ) CL[a][b][c].VCM[d] = 0.0;
 		for( d=0; d<NSPECI; d++ ) CL[a][b][c].SP[d] = 0;
 		if (computeCM) for( d=0; d<DIM; d++ ) CL[a][b][c].CM[d] = 0.0;
-		//**************************************************//
-		//**************************************************//
 
 		//Find local values
 		if( CL[a][b][c].pp!=NULL || ( CL[a][b][c].MDpp!=NULL && MDmode==MDinMPC ) || CL[a][b][c].sp!=NULL ) {
@@ -177,8 +175,8 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 	// Find the order parameter tensor, the director and the scalar order parameter
 	if( LC!=ISOF || RTECH==CHATE || RTECH==CHATE_MPCAT || RTECH==CHATE_LANG || RTECH==DIPOLE_VCM || RTECH==DIPOLE_DIR_SUM || RTECH==DIPOLE_DIR_AV ) {
 		//Allocate memory for S
-		S = malloc ( DIM * sizeof( *S ) );
-		for( i=0; i<DIM; i++ ) S[i] = malloc ( DIM * sizeof( *S[i] ) );
+		S = calloc ( DIM, sizeof( *S ) );
+		for( i=0; i<DIM; i++ ) S[i] = calloc ( DIM, sizeof( *S[i] ) );
 		for( i=0; i<DIM; i++ ) for( d=0; d<DIM; d++ ) S[i][d] = 0.0;
 		// Find the order parameter tensor, the director and the scalar order parameter for each cell
 		for( a=0; a<XYZ_P1[0]; a++ ) for( b=0; b<XYZ_P1[1]; b++ ) for( c=0; c<XYZ_P1[2]; c++ ) {
@@ -248,6 +246,90 @@ void sumFLOW( cell ***CL ) {
 }
 
 /// 
+/// @brief This routine calculates the rolling-average local flow in each cell, centered around the first swimmer.
+///
+/// The function loops over all cells and adds the current (pre-calculated) local velocity (in `DIM` dimensions) of each cell to a running sum.
+/// The sum will become a time-window-averaged flow velocity and will be outputted by swflowout().  
+/// This is done by hijacking the cell structure: the local velocity in question does not correspond to the cell where SWFLOW is stored, but to the cell which holds the same position in a grid centered around the first swimmer.
+/// This results in some cells receiving more information than others: this is corrected by SWFLOW[3].
+/// @param CL All of the MPCD cells.
+/// @param sw The first swimmer's information.
+/// @param ss The global information of the swimmers.
+/// @see swflowout()
+///
+void sumSWFLOW( cell ***CL, swimmer *sw , specSwimmer *ss) {
+	int a,b,c,d,w;
+	double i,j,k,i2,j2,k2;
+	int I,J,K;
+	double ori[3]={0.0,0.0,0.0},center[3]={0.0,0.0,0.0},finalOrientation[3]={1.0,0.0,0.0};
+	double rotMatrix[3][3]={{0.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,0.0}};
+
+	// Find the orientation of the first swimmer, and the necessary translation to place its hydrodynamic center at the point (0,0,0)
+	for (d=0;d<3; d++) 
+	{
+		ori[d]=sw[0].H.Q[d]-sw[0].M.Q[d];
+		if (ori[d]>0.5*XYZ[d]) ori[d]=ori[d]-XYZ[d];
+		else if (ori[d]<-0.5*XYZ[d]) ori[d]=ori[d]+XYZ[d];
+		center[d]=0.25*sw[0].M.Q[d]+0.25*sw[0].H.Q[d]-0.5*(sw[0].M.Q[d]-ori[d]*ss->DS);
+		center[d]=sw[0].M.Q[d]-ori[d]*ss->DS;
+		center[d]=0.5*XYZ[d]-center[d];
+	}
+
+	// Find the matrix that places the swimmer's orientation along the x axis
+	norm(ori,_3D);
+	findRotationMatrix( rotMatrix, ori, finalOrientation);
+
+	// Translates and rewraps, then stores the translated velocity field in the last three slots in SWFLOW (SWFLOW[4],SWFLOW[5],SWFLOW[6]).
+	for( a=0; a<XYZ[0]; a++ ) for( b=0; b<XYZ[1]; b++ ) for( c=0; c<XYZ[2]; c++ ) {
+
+		i=a+center[0];j=b+center[1];k=c+center[2];
+
+		if (i>=XYZ[0]) i-=XYZ[0];
+		if (i<0) i+=XYZ[0];
+		if (j>=XYZ[1]) j-=XYZ[1];
+		if (j<0) j+=XYZ[1];
+		if (k>=XYZ[2]) k-=XYZ[2];
+		if (k<0) k+=XYZ[2];
+		I=(int)i;J=(int)j;K=(int)k;
+
+		for (d=0;d<DIM;d++){
+			w=d+4;
+			CL[I][J][K].SWFLOW[w]=CL[a][b][c].VCM[d];
+		}
+	}
+
+	// Rotating and rewrapping the cell indices, before rotating the velocity vectors themselves
+	for( a=0; a<XYZ[0]; a++ ) for( b=0; b<XYZ[1]; b++ ) for( c=0; c<XYZ[2]; c++ ) {
+
+		for (d=0;d<3; d++) center[d]=XYZ[d]*0.5;
+
+		i2=a-center[0];j2=b-center[1];k2=c-center[2];		
+		i=rotMatrix[0][0]*i2+rotMatrix[0][1]*j2+rotMatrix[0][2]*k2+center[0];
+		j=rotMatrix[1][0]*i2+rotMatrix[1][1]*j2+rotMatrix[1][2]*k2+center[1];
+		k=rotMatrix[2][0]*i2+rotMatrix[2][1]*j2+rotMatrix[2][2]*k2+center[2];
+
+		// Rewrapping
+		while (i>=XYZ[0])i=i-XYZ[0];
+		while (i<0)i=i+XYZ[0];
+		while (j>=XYZ[1])j=j-XYZ[1];
+		while (j<0)j=j+XYZ[1];
+		while (k>=XYZ[2])k=k-XYZ[2];
+		while (k<0)k=k+XYZ[2];
+
+		I=(int)i;J=(int)j;K=(int)k;
+
+		for ( d=0; d<DIM; d++ )
+		{
+			w=d+4;
+			CL[I][J][K].SWFLOW[0] += CL[a][b][c].SWFLOW[w]*rotMatrix[0][d];
+			CL[I][J][K].SWFLOW[1] += CL[a][b][c].SWFLOW[w]*rotMatrix[1][d];
+			CL[I][J][K].SWFLOW[2] += CL[a][b][c].SWFLOW[w]*rotMatrix[2][d];
+		}
+		CL[I][J][K].SWFLOW[3] += 1.0; // Counter that keeps track of how many time each grid point corresponds to another grid point.
+	}
+}
+
+/// 
 /// @brief This routine adds the effect of phantom MPCD particles to the centre of mass. 
 /// 
 /// Then this routine operates (to fill cell up with ghost particles, or apply strong anchoring). 
@@ -289,8 +371,8 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 
 	if (setGhostAnch == 1){
 		// Allocate memory for S
-		S = malloc ( DIM * sizeof( *S ) );
-		for( i=0; i<DIM; i++ ) S[i] = malloc ( DIM * sizeof( *S[i] ) );
+		S = calloc ( DIM, sizeof( *S ) );
+		for( i=0; i<DIM; i++ ) S[i] = calloc ( DIM, sizeof( *S[i] ) );
 		for( i=0; i<DIM; i++ ) for( d=0; d<DIM; d++ ) S[i][d] = 0.0;
 	}
 
@@ -400,12 +482,14 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 						// Particle loop
 						if (CL[a][b][c].pp!=NULL){
 							ptMPC = CL[a][b][c].pp;
-							while (ptMPC != NULL){
-								normal(n, WALL[i], ptMPC->Q, DIM);
-								norm(n, DIM);
-								// apply boundary condition (anchoring) to cell
-								// note: this also feeds anchoring torque back to boundary (to add to dV and dL), if mobile
-								oriBC(ptMPC, SP, &WALL[i], n);
+							while (ptMPC != NULL) {
+								if(WALL[i].INTER[ptMPC->SPID] == BCON) {
+									normal(n, WALL[i], ptMPC->Q, DIM);
+									norm(n, DIM);
+									// apply boundary condition (anchoring) to cell
+									// note: this also feeds anchoring torque back to boundary (to add to dV and dL), if mobile
+									oriBC(ptMPC, SP, &WALL[i], n);
+								}
 								ptMPC = ptMPC->next;
 							}
 						}
@@ -463,12 +547,12 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 
 			// Apply ghost particles for centre of mass velocity
 			if ( flagW ){
-				if( CL[a][b][c].POP < nDNST && CL[a][b][c].POP > 0 ) {
-					invN = 1.0/(nDNST-(double)CL[a][b][c].POP);
+				if( CL[a][b][c].POP < GnDNST && CL[a][b][c].POP > 0 ) {
+					invN = 1.0/(GnDNST-(double)CL[a][b][c].POP);
 					for( d=0; d<DIM; d++ ) {
 						R[d] = genrand_gaussMB( KBT, invN );
 						CL[a][b][c].VCM[d] += R[d];
-						CL[a][b][c].VCM[d] /= nDNST;
+						CL[a][b][c].VCM[d] /= GnDNST;
 					}
 				}
 			}
@@ -513,12 +597,12 @@ double trans( double t,double V, double QOLD ) {
 /// This function simply updates one component of a generic velocity vector based on a constant acceleration in that direction.
 /// @param t The time interval for which the particle accelerates.
 /// @param GRAV The acceleration with which the particle speed increases.
-/// @param VOLD The initial speed of the particle.
+/// @param V_OLD The initial speed of the particle.
 /// @return The newly accelerated component of the velocity. 
 ///
-double acc( double t,double GRAV,double VOLD ) {
+double acc( double t,double GRAV,double V_OLD ) {
 	double VNEW;
-	VNEW = VOLD + t * GRAV;
+	VNEW = V_OLD + t * GRAV;
 	return VNEW;
 }
 
@@ -631,9 +715,9 @@ void acc_all( particleMPC *pp,double t,double GRAV[] ) {
 /// @param WALL All of the walls (boundary conditions) that particles might interact with. 
 /// @param simMD A pointer to the entire MD portion of the simulation.
 /// @param swimmers All the swimmers, including their head and middle monomers. 
-/// @param MDmode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
+/// @param MD_mode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
 ///
-void gridShift_all( double SHIFT[],int shiftBack,particleMPC *SRDparticles,bc WALL[],simptr simMD,swimmer swimmers[],int MDmode ) {
+void gridShift_all( double SHIFT[],int shiftBack,particleMPC *SRDparticles,bc WALL[],simptr simMD,swimmer swimmers[],int MD_mode ) {
 	int i,j;							//Counting variables
 	double signedSHIFT[_3D];
 
@@ -650,7 +734,7 @@ void gridShift_all( double SHIFT[],int shiftBack,particleMPC *SRDparticles,bc WA
 		 if (shiftBack == 0 && SRDparticles[i].Q[j] > XYZ[j] && SRDparticles[i].Q[j] <= XYZ[j] + signedSHIFT[j] )	SRDparticles[i].Q[j] -= XYZ[j];
 		 else if (shiftBack == 1 && SRDparticles[i].Q[j] < 0.0 && SRDparticles[i].Q[j] >= signedSHIFT[j] ) SRDparticles[i].Q[j] += XYZ[j];
 	 }
-	if( MDmode == MDinMPC) for( i=0; i<(simMD->atom.n); i++ ) {
+	if(MD_mode == MDinMPC) for(i=0; i < (simMD->atom.n); i++ ) {
 		(simMD->atom.items+i)->rx += signedSHIFT[0];
 		if( DIM>=_2D ) (simMD->atom.items+i)->ry += signedSHIFT[1];
 		if( DIM>=_3D ) (simMD->atom.items+i)->rz += signedSHIFT[2];
@@ -787,9 +871,9 @@ double rewind_trans( double t,double V,double P ) {
 /// @return The velocity at the previous time step.
 ///
 double rewind_acc(double t,double G,double V){
-	double VOLD;
-	VOLD = V - t*G;
-	return VOLD;
+	double V_OLD;
+	V_OLD = V - t*G;
+	return V_OLD;
 }
 
 /// 
@@ -1425,7 +1509,7 @@ void andersenROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 		if( outP ) calcPressureColl_preColl( relQP[i],dp[i],tmpc,CLQ );
 		for( j=0; j<DIM; j++ ) RV[i][j] = genrand_gaussMB( KBT,MASS );
 		for( j=0; j<DIM; j++ ) RS[j] += MASS*RV[i][j];
-		for( j=0; j<DIM; j++ ) DV[i][j] = ((SP+id)->DAMP)*(CL->VCM[j])/((double)CL->POP);
+		for( j=0; j<DIM; j++ ) DV[i][j] = ((SP+id)->DAMP)*(CL->VCM[j]);
 		tmpc = tmpc->next;
 		i++;
 	}
@@ -1921,7 +2005,7 @@ void langevinROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 		crossprod( W,relQ[i],angterm );
 		a = (MASS - FRICCO * Step * 0.5) / (MASS + 0.5 * FRICCO * Step);
 		b = sqrt( FRICCO*Step ) / ( MASS + 0.5 * FRICCO * Step );
-		for( j=0; j<DIM; j++ ) tmpc->V[j] = VCM[j] + a * (tmpc->V[j]-VCM[j]) + b * (WN[i][j] - WNS[j]) - DV[i][j] + angterm[j];;
+		for( j=0; j<DIM; j++ ) tmpc->V[j] = VCM[j] + a * (tmpc->V[j]-VCM[j]) + b * (WN[i][j] - WNS[j]) - DV[i][j] + angterm[j];
 		//Pressure term
 		if( outP ) calcPressureColl_postColl( relQ[i],dp[i],MASS,tmpc->V,CL );
 		//Increment link in list
@@ -2707,7 +2791,7 @@ void dipoleAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 /// @param S Sine of the rotation angle.
 /// @param FRICCO Friction coefficient for Langevin thermostat.
 /// @param TimeStep The interval of each MPCD time step in MPCD time units.
-/// @param MDmode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
+/// @param MD_mode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
 /// @param LC Flags whether or not the nematic liquid crystal is turned on.
 /// @param RELAX The temperature relaxation time scale.
 /// @param CLQ The geometric centre of `CL`, the MPCD cell.
@@ -2734,11 +2818,11 @@ void dipoleAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 /// @see chateAndersenMPC()
 /// @see chateLangevinMPC()
 ///
-void MPCcollision( cell *CL,spec *SP,specSwimmer SS,double KBT,int RTECH,double C,double S,double FRICCO,double TimeStep,int MDmode,int LC,double RELAX,double *CLQ,int outP ) {
+void MPCcollision(cell *CL, spec *SP, specSwimmer SS, double KBT, int RTECH, double C, double S, double FRICCO, double TimeStep, int MD_mode, int LC, double RELAX, double *CLQ, int outP ) {
 	particleMD *tmd;	//Temporary particleMD
 
 	tmd = CL->MDpp;
-	if (MDmode==MPCinMD) CL->MDpp=NULL;
+	if (MD_mode == MPCinMD) CL->MDpp=NULL;
 	if( outP ) zeroPressureColl( CL );
 	//Liquid Crystal
 	if( LC!=ISOF ) {
@@ -2768,7 +2852,7 @@ void MPCcollision( cell *CL,spec *SP,specSwimmer SS,double KBT,int RTECH,double 
 		}
 	}
 	if( outP ) normPressureColl( CL,TimeStep );
-	if (MDmode==MPCinMD) CL->MDpp=tmd;
+	if (MD_mode == MPCinMD) CL->MDpp=tmd;
 }
 
 /// 
@@ -2784,11 +2868,11 @@ void MPCcollision( cell *CL,spec *SP,specSwimmer SS,double KBT,int RTECH,double 
 /// @param SS The species-wide information about swimmers.
 /// @param multiphaseMode The interactions between different species that allows phase segregation. 
 /// @param KBT The thermal energy. 
-/// @param MDmode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
+/// @param MD_mode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
 /// @param CLQ The geometric centre of `CL`, the MPCD cell.
 /// @param outP Flag whether or not to output the pressure.
 ///
-void multiphaseColl( cell *CL,spec *SP,specSwimmer SS,int multiphaseMode, double KBT,int MDmode,double *CLQ,int outP ) {
+void multiphaseColl(cell *CL, spec *SP, specSwimmer SS, int multiphaseMode, double KBT, int MD_mode, double *CLQ, int outP ) {
 /*
     THIS IS WHERE KIRA SHOULD ADD HER NEW BIT!!!
 */
@@ -2796,7 +2880,7 @@ void multiphaseColl( cell *CL,spec *SP,specSwimmer SS,int multiphaseMode, double
 		printf("Error: Multiphase interaction not yet implemented.\nTo be implemented by Kira");
 		exit( 1 );
 	}
-	else if( multiphaseMode==MPHPOINT ) multiphaseCollPoint( CL,SP,SS,KBT,MDmode,CLQ,outP );
+	else if( multiphaseMode==MPHPOINT ) multiphaseCollPoint(CL, SP, SS, KBT, MD_mode, CLQ, outP );
 	else {
 		printf( "Error: Multiphase interaction  technique unacceptable.\n" );
 		exit( 1 );
@@ -2813,11 +2897,11 @@ void multiphaseColl( cell *CL,spec *SP,specSwimmer SS,int multiphaseMode, double
 /// @param SP The species-wide information about MPCD particles.
 /// @param SS The species-wide information about swimmers.
 /// @param KBT The thermal energy. 
-/// @param MDmode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
+/// @param MD_mode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
 /// @param CLQ The geometric centre of `CL`, the MPCD cell.
 /// @param outP Flag whether or not to output the pressure.
 ///
-void multiphaseCollPoint( cell *CL,spec *SP,specSwimmer SS, double KBT,int MDmode,double *CLQ,int outP ) {
+void multiphaseCollPoint(cell *CL, spec *SP, specSwimmer SS, double KBT, int MD_mode, double *CLQ, int outP ) {
 	int i,j,k,id;
 	int mixedCell=0;
 	double N,NSP[NSPECI];			//Number of each type
@@ -3028,11 +3112,11 @@ void multiphaseCollPoint( cell *CL,spec *SP,specSwimmer SS, double KBT,int MDmod
 /// @param SP The species-wide information about MPCD particles.
 /// @param SS The species-wide information about swimmers.
 /// @param INCOMPmode The technique for making the fluid a non-ideal gas.
-/// @param MDmode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
+/// @param MD_mode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
 /// @param CLQ The geometric centre of `CL`, the MPCD cell.
 /// @param outP Flag whether or not to output the pressure.
 ///
-void incompColl( cell *CL,spec *SP,specSwimmer SS,int INCOMPmode,int MDmode,double *CLQ,int outP ) {
+void incompColl(cell *CL, spec *SP, specSwimmer SS, int INCOMPmode, int MD_mode, double *CLQ, int outP ) {
 	if(INCOMPmode==INCOMPSWAP) incompSwap( CL,SP,SS );
 	else if(INCOMPmode==INCOMPVIRIAL) incompAddVirial( CL,7.0,49.0,343.0,SP,SS );
 	else if(INCOMPmode==INCOMPSUB) incompSubtractDivergence( CL,SP,SS );
@@ -3069,8 +3153,8 @@ void incompAddVirial( cell *CL,double virialCoB, double virialCoC, double virial
 	particleMD *tmd;			//Temporary particleMD
 	smono *tsm;					//Temporary swimmer monomer
 
-	if( CL->POP > (int)nDNST ) {
-		dN = ((double)CL->POP)/nDNST - 1.0;
+	if( CL->POP > GnDNST ) {
+		dN = ((double)CL->POP)/GnDNST - 1.0;
 		// Zero arrays
 		for( i=0;i<CL->POP;i++ ) for( j=0;j<DIM;j++ ) RV[i][j] = 0.0;
 		for( i=0; i<DIM; i++ ) {
@@ -3178,7 +3262,9 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 	double VCM[_3D],RCM[_3D],PCM[_3D];
 	double DIV1,DIV2,DIVC,DIVC_swapped;
 	//Checks for debugging
-	double DIVCI,DIVCF,EI,EF,diffP,PMI,PMF;	//Divergence before and after (I=initial; F=final). Energy before and after
+	double DIVCI,DIVCF;						//Divergence before and after (I=initial; F=final). 
+	// double EI,EF;							//Energy before and after (I=initial; F=final). 
+	double diffP,PMI,PMF;					//Momenumt magnitude before and after (I=initial; F=final). 
 	double PI[_3D],PF[_3D];					//Momentum before and after
 	//Linked list variables
 	particleMPC *tmpc,*tmpc2;				//Temporary particleMPC
@@ -3214,8 +3300,8 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 			}
 			DIVCI=0.;
 			DIVCF=0.;
-			EI=0.;
-			EF=0.;
+			// EI=0.;
+			// EF=0.;
 		}
 	#endif
 
@@ -3277,7 +3363,7 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 				id = tmpc->SPID;
 				M = (SP+id)->MASS;
 				for( j=0; j<DIM; j++ ) V[j] = tmpc->V[j];
-				for( j=0; j<DIM; j++ ) EI += M*V[j]*V[j];
+				// for( j=0; j<DIM; j++ ) EI += M*V[j]*V[j];
 				for( j=0; j<DIM; j++ ) PI[j] += M*V[j];
 				tmpc = tmpc->next;
 				i++;
@@ -3289,7 +3375,7 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 				V[0] = tmd->vx;
 				V[1] = tmd->vy;
 				V[2] = tmd->vz;
-				for( j=0; j<DIM; j++ ) EI += M*V[j]*V[j];
+				// for( j=0; j<DIM; j++ ) EI += M*V[j]*V[j];
 				for( j=0; j<DIM; j++ ) PI[j] += M*V[j];
 				tmd = tmd->nextSRD;
 				i++;
@@ -3300,12 +3386,12 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 				if( tsm->HorM ) M = (double) SS.middM;
 				else M = (double) SS.headM;
 				for( j=0; j<DIM; j++ ) V[j] = tsm->V[j];
-				for( j=0; j<DIM; j++ ) EI += M*tsm->V[j]*V[j];
+				// for( j=0; j<DIM; j++ ) EI += M*tsm->V[j]*V[j];
 				for( j=0; j<DIM; j++ ) PI[j] += M*V[j];
 				tsm = tsm->next;
 				i++;
 			}
-			EI*=0.5;
+			// EI*=0.5;
 			DIVCI=DIVC;
 		}
 	#endif
@@ -3367,7 +3453,7 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 				id = tmpc->SPID;
 				M = (SP+id)->MASS;
 				for( j=0; j<DIM; j++ ) V[j] = tmpc->V[j];
-				for( j=0; j<DIM; j++ ) EF += M*V[j]*V[j];
+				// for( j=0; j<DIM; j++ ) EF += M*V[j]*V[j];
 				for( j=0; j<DIM; j++ ) PF[j] += M*V[j];
 				tmpc = tmpc->next;
 				i++;
@@ -3379,7 +3465,7 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 				V[0] = tmd->vx;
 				V[1] = tmd->vy;
 				V[2] = tmd->vz;
-				for( j=0; j<DIM; j++ ) EF += M*V[j]*V[j];
+				// for( j=0; j<DIM; j++ ) EF += M*V[j]*V[j];
 				for( j=0; j<DIM; j++ ) PF[j] += M*V[j];
 				tmd = tmd->nextSRD;
 				i++;
@@ -3390,12 +3476,12 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 				if( tsm->HorM ) M = (double) SS.middM;
 				else M = (double) SS.headM;
 				for( j=0; j<DIM; j++ ) V[j] = tsm->V[j];
-				for( j=0; j<DIM; j++ ) EF += M*tsm->V[j]*V[j];
+				// for( j=0; j<DIM; j++ ) EF += M*tsm->V[j]*V[j];
 				for( j=0; j<DIM; j++ ) PF[j] += M*V[j];
 				tsm = tsm->next;
 				i++;
 			}
-			EF*=0.5;
+			// EF*=0.5;
 			DIVCF=DIVC;
 			diffP=0.;
 			PMI=0.;
@@ -4371,7 +4457,8 @@ void checkEscape_all( particleMPC *pp ) {
 /// @param addVel The vector that is being added to the velocity of every MPCD particle in cell `CL`.
 ///
 void cellVelForce( cell *CL,double addVel[3] ) {
-	int i,j;
+	// int i;
+	int j;
 	particleMPC *tmpc;	//Temporary particleMPC
 	particleMD *tmd;	//Temporary particleMD
 	smono *pSW;			//Temporary pointer to swimmer monomers
@@ -4379,12 +4466,12 @@ void cellVelForce( cell *CL,double addVel[3] ) {
 	//Give particles a kick
 	// MPC particles
 	tmpc = CL->pp;
-	i=0;
+	// i=0;
 	while( tmpc!=NULL ) {
 		for( j=0; j<DIM; j++ ) tmpc->V[j] += addVel[j];
 		//Increment link in list
 		tmpc = tmpc->next;
-		i++;
+		// i++;
 	}
 	//MD particles
 	tmd = CL->MDpp;
@@ -4394,7 +4481,7 @@ void cellVelForce( cell *CL,double addVel[3] ) {
 		tmd->vz += addVel[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
-		i++;
+		// i++;
 	}
 	// Swimmer particles
 	pSW = CL->sp;
@@ -4402,7 +4489,7 @@ void cellVelForce( cell *CL,double addVel[3] ) {
 		for( j=0; j<DIM; j++ ) pSW->V[j] += addVel[j];
 		//Increment link in list
 		pSW = pSW->next;
-		i++;
+		// i++;
 	}
 }
 
@@ -4415,7 +4502,8 @@ void cellVelForce( cell *CL,double addVel[3] ) {
 /// @param vel The vector that every particle's velocity is set to within the cell `CL`. 
 ///
 void cellVelSet( cell *CL,double vel[3] ) {
-	int i,j;
+	// int i;
+	int j;
 	particleMPC *tmpc;	//Temporary particleMPC
 	particleMD *tmd;	//Temporary particleMD
 	smono *pSW;			//Temporary pointer to swimmer monomers
@@ -4423,12 +4511,12 @@ void cellVelSet( cell *CL,double vel[3] ) {
 	//Give particles a kick
 	// MPC particles
 	tmpc = CL->pp;
-	i=0;
+	// i=0;
 	while( tmpc!=NULL ) {
 		for( j=0; j<DIM; j++ ) tmpc->V[j] = vel[j];
 		//Increment link in list
 		tmpc = tmpc->next;
-		i++;
+		// i++;
 	}
 	//MD particles
 	tmd = CL->MDpp;
@@ -4438,7 +4526,7 @@ void cellVelSet( cell *CL,double vel[3] ) {
 		tmd->vz += vel[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
-		i++;
+		// i++;
 	}
 	// Swimmer particles
 	pSW = CL->sp;
@@ -4446,7 +4534,7 @@ void cellVelSet( cell *CL,double vel[3] ) {
 		for( j=0; j<DIM; j++ ) pSW->V[j] += vel[j];
 		//Increment link in list
 		pSW = pSW->next;
-		i++;
+		// i++;
 	}
 }
 
@@ -4490,18 +4578,21 @@ void cellVelSet( cell *CL,double vel[3] ) {
 /// @param KBTNOW The current thermal energy (not the thermostats target temperature). 
 /// @param AVS  The average global scalar order parameter from the nematic Q-tensor.
 /// @param runtime The number of iterations that timestep will ultimately be looped over. 
-/// @param MDmode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
+/// @param MD_mode The MD coupling mode. Can be off (noMD), MD particles included in the MPCD collisions (MDinMPC), or MPCD particles included in MD pair interactions (MPCinMD).
 /// @param outFlags The complete list of what is being outputted as results. 
 /// @param outFiles The complete list of pointers to output files. 
 ///
-void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr simMD,specSwimmer *SS,swimmer swimmers[],double AVNOW[_3D],double AVV[_3D],double avDIR[_3D],inputList in,double *KBTNOW, double *AVS,int runtime,int MDmode,outputFlagsList outFlags,outputFilesList outFiles ) {
+void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simptr simMD, specSwimmer *SS, swimmer swimmers[], double AVNOW[_3D], double AVV[_3D], double avDIR[_3D], inputList in, double *KBTNOW, double *AVS, int runtime, int MD_mode, outputFlagsList outFlags, outputFilesList outFiles) {
 
-	int i,j,k;						//Counting variables
+	int i,j,k,l;					//Counting variables
 	double RSHIFT[_3D];				//Random vector to positively shift all components of the simulation
 	double CLQ[_3D];				//Position of the cell since calculating pressure sucks
 	int BC_FLAG;					//Flags if the BC moved in this time step
 	int outPressure=0;				//Whether to make the pressure calculations (never used just outputted)
 	int bcCNT,reCNT,rethermCNT;		//Count if any particles had problems with the BCs
+    // Active layer variables
+    int zeroMFPot;                	// Flag to switch to zero effective potential
+    double savedAct[NSPECI];        // Storage to save the activity of species, to make it height dependent
 
 	#ifdef DBG
 		if ( DBUG >= DBGSTEPS ) {
@@ -4525,9 +4616,15 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 	/* ************* INTEGRATE MD *************** */
 	/* ****************************************** */
 	#ifdef DBG
-		if( DBUG >= DBGTITLE && MDmode != noMD ) printf( "Integrate MD.\n" );
+		if( DBUG >= DBGTITLE && MD_mode != noMD ) printf("Integrate MD.\n" );
 	#endif
-	if( MDmode ) integrateMD(simMD,MDmode,in.stepsMD,SRDparticles,WALL,SP,GPOP,NBC,CL);
+	if(MD_mode){
+		if(simMD->warmupMD == FREE_WARMUP || simMD->warmupMD == POS_WARMUP){
+			integrateMD(simMD, MD_mode, in.stepsMD, SRDparticles, WALL, SP, GPOP, NBC, CL);
+		}else if(simMD->warmupMD == PINNED_WARMUP){
+			integrateMD_Pinned(simMD, MD_mode, in.stepsMD, SRDparticles, WALL, SP, GPOP, NBC, CL);
+		}
+	}
 	/* ****************************************** */
 	/* *********** INTEGRATE SWIMMER ************ */
 	/* ****************************************** */
@@ -4563,8 +4660,21 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 		//Generate random shift
 		ranshift( RSHIFT,in.GALINV,DIM );
 		//Shift entire system by RSHIFT
-		gridShift_all( RSHIFT,0,SRDparticles,WALL,simMD,swimmers,MDmode );
+		gridShift_all(RSHIFT, 0, SRDparticles, WALL, simMD, swimmers, MD_mode );
 	}
+
+	/* ******************************************************/
+	/* * SUBTRACTING THE ORIENTATION PART FROM THE VELOCITY */
+	/* ******************************************************/
+	//For now only one specie is supported
+	if (in.LC == BCT) {
+		for (int i = 0; i < GPOP; i++) {
+			for( j=0; j<DIM; j++ ) {
+				(SRDparticles+i)->V[j] -= (SRDparticles+i)->U[j]*((SP+0)->BS);
+			}
+		}
+	}
+
 	/* ****************************************** */
 	/* ******************* BIN ****************** */
 	/* ****************************************** */
@@ -4576,7 +4686,7 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 	// Bin swimmer monomers
 	binSwimmers( CL,1 );
 	// Bin MD particles
-	if( MDmode ) binMD( CL );
+	if( MD_mode ) binMD(CL );
 	/* ****************************************** */
 	/* ************** PRE-COLLISION ************* */
 	/* ****************************************** */
@@ -4623,8 +4733,18 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 			if( DBUG >= DBGTITLE ) printf( "Orientation Collision Step.\n" );
 		#endif
 		for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) {
-			//LC collision algorithm (no collision if only 1 particle in cell)
-			if( CL[i][j][k].POPSRD > 1 ) LCcollision( &CL[i][j][k],SP,in.KBT,in.MFPOT,in.dt,*AVS,in.LC );
+            if (in.MFPLAYERH > 0) { // if MFPLAYERH set then perform the "active layer" hack
+                // Active layer
+                // Check if cell is within the layer, if not then run with an effective MFP of 0
+                if (j <= in.MFPLAYERH) zeroMFPot=0;
+                else zeroMFPot = 1;
+                if( CL[i][j][k].POPSRD > 1 ) LCcollision( &CL[i][j][k],SP,in.KBT,zeroMFPot,in.dt,*AVS,in.LC );
+            } else {
+                // otherwise perform typical LC collision
+				zeroMFPot=0;
+                // LC collision algorithm (no collision if only 1 particle in cell)
+                if( CL[i][j][k].POPSRD > 1 ) LCcollision( &CL[i][j][k],SP,in.KBT,zeroMFPot,in.dt,*AVS,in.LC );
+            }
 		}
 		// Magnetic alignment is really part of the collision
 		#ifdef DBG
@@ -4660,22 +4780,41 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 				swcoord(swimmers[i]);
 			}
 		}
-	#endif
+    #endif
+
+    for (i = 0; i < NSPECI; i++) { // Temporarily store the intended activity for each species
+        savedAct[i] = (double)(SP+i)->ACT;
+    }
 	for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) {
 		//MPC/SRD collision algorithm (no collision if only 1 particle in cell)
 		CLQ[0]=i+0.5;
 		CLQ[1]=j+0.5;
 		CLQ[2]=k+0.5;
-		if( CL[i][j][k].POP > 1 ) MPCcollision( &CL[i][j][k],SP,*SS,in.KBT,in.RTECH,in.C,in.S,in.FRICCO,in.dt,MDmode,in.LC,in.TAU,CLQ,outPressure );
+
+        // handle active layer logic
+        if (in.MFPLAYERH > 0) {
+            for (l = 0; l < NSPECI; l++) { // if not inside a layer, set activity to 0
+                if (j <= in.MFPLAYERH) (SP+l)->ACT = savedAct[l];
+                else (SP+l)->ACT = 0.0;
+            }
+        }
+
+        if( CL[i][j][k].POP > 1 ) MPCcollision(&CL[i][j][k], SP, *SS, in.KBT, in.RTECH, in.C, in.S, in.FRICCO, in.dt, MD_mode, in.LC, in.TAU, CLQ, outPressure );
 	}
+
 	// Apply the multiphase interactions
 	if( in.MULTIPHASE != MPHOFF && NSPECI>1 ) {
-		for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) if( CL[i][j][k].POP > 1 ) multiphaseColl( &CL[i][j][k],SP,*SS,in.MULTIPHASE,in.KBT,MDmode,CLQ,outPressure );
+		for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) if( CL[i][j][k].POP > 1 ) multiphaseColl(&CL[i][j][k], SP, *SS, in.MULTIPHASE, in.KBT, MD_mode, CLQ, outPressure );
 	}
 	// Apply the incompressibility correction
 	if( in.inCOMP != INCOMPOFF ) {
-		for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) if( CL[i][j][k].POP > 1 ) incompColl( &CL[i][j][k],SP,*SS,in.inCOMP,MDmode,CLQ,outPressure );
+		for( i=0; i<XYZ_P1[0]; i++ ) for( j=0; j<XYZ_P1[1]; j++ ) for( k=0; k<XYZ_P1[2]; k++ ) if( CL[i][j][k].POP > 1 ) incompColl(&CL[i][j][k], SP, *SS, in.inCOMP, MD_mode, CLQ, outPressure );
 	}
+
+    for (i = 0; i < NSPECI; i++) { // revert activity
+        (SP+i)->ACT = savedAct[i];
+    }
+
 
 	// Apply the MD active dipoles
 	if( MDmode && fabs(simMD->dStrength)>=TOL) {
@@ -4726,6 +4865,17 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 			#endif
 		}
 	}
+
+	/* *******************************************/
+	/* * ADDING ORIENTATION PART TO THE VELOCITY */
+	/* *******************************************/
+	if (in.LC == BCT) {
+		for (int i = 0; i < GPOP; i++) {
+			for( j=0; j<DIM; j++ ) {
+				(SRDparticles+i)->V[j] += (SRDparticles+i)->U[j]*((SP+0)->BS);
+			}
+		}
+	}
 	/* ****************************************** */
 	/* ************ GRID SHIFT BACK ************* */
 	/* ****************************************** */
@@ -4751,7 +4901,10 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 	#ifdef DBG
 		if( DBUG >= DBGTITLE ) printf( "Translate MPC particles.\n" );
 	#endif
-	if( MDmode != MPCinMD ) stream_all( SRDparticles,in.dt );
+	if( MDmode != MPCinMD ) {
+		stream_all( SRDparticles,in.dt );
+	}
+
 	/* ****************************************** */
 	/* ******************* BCs ****************** */
 	/* ****************************************** */
@@ -4786,82 +4939,82 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 			zerovec(WALL[i].dV,DIM);
 			zerovec(WALL[i].dL,_3D);
 		}
-		/* ****************************************** */
-		/* ************* TRANSLATE BCs ************** */
-		/* ****************************************** */
-		#ifdef DBG
-			if( DBUG >= DBGTITLE ) printf( "Translate BCs.\n" );
-		#endif
-		//Save the old position in case a BC-BC collision occurs
-		for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) for( j=0; j<DIM; j++ ) {
-			(WALL+i)->Q_old[j] = (WALL+i)->Q[j];
-			(WALL+i)->O_old[j] = (WALL+i)->O[j];
-		}
-		//Translate each of the BCs --- using velocity from BEFORE MPC_BCcollision()
-		for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) stream_BC( (WALL+i),in.dt );
-		/* ****************************************** */
-		/* *************** ROTATE BCs *************** */
-		/* ****************************************** */
-		#ifdef DBG
-			if( DBUG >= DBGTITLE ) printf( "Spin BCs.\n" );
-		#endif
-		for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) spin_BC( (WALL+i),in.dt );
-		/* ****************************************** */
-		/* ***************** BC-BC ****************** */
-		/* ****************************************** */
-		#ifdef DBG
-			if( DBUG >= DBGTITLE ) printf( "Check BCs Against BCs.\n" );
-		#endif
-		//Check each BC
-		for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) {
-			BC_FLAG = 0;
-			for( j=0; j<NBC; j++ ) if( j != i ) {
-				//Check BC number i for collisions other BCs
-				#ifdef DBG
-					if( DBUG == DBGBCBC ) printf( "BC%d BC%d\n",i,j );
-				#endif
-				BC_BCcollision( WALL+i,WALL+j,in.dt,&BC_FLAG );
-			}
-		}
-		/* ****************************************** */
-		/* ***************** BC-MPCD **************** */
-		/* ****************************************** */
-		// if( BC_FLAG ) {
-			#ifdef DBG
-				if( DBUG >= DBGTITLE ) printf( "Check BCs Against MPCs after BC-BC collisions.\n" );
-			#endif
-			bcCNT=0;
-			reCNT=0;
-			rethermCNT=0;
-			// Check each BC for collisions MPC particles
-			for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) {
-				BC_MPCcollision( WALL,i,SRDparticles,SP,in.KBT,in.GRAV,in.dt,simMD,MDmode,in.LC,&bcCNT,&reCNT,&rethermCNT );
-			}
-			#ifdef DBG
-				if( DBUG == DBGBCCNT ) if( bcCNT>0 ) printf( "\t%d particles had difficulty with the BCs when the BCs moved (%d rewind events; %d rethermalization events).\n",bcCNT,reCNT,rethermCNT );
-			#endif
-		// }
-		/* ****************************************** */
-		/* ************* APPLY IMPULSE ************** */
-		/* ****************************************** */
-		#ifdef DBG
-			if( DBUG >= DBGTITLE ) printf( "Impulse on BCs from BC-translations.\n" );
-		#endif
-		//Apply impulse from BC_MPCcollision()
-		for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) {
-			for( j=0; j<DIM; j++ ) (WALL+i)->V[j] += (WALL+i)->dV[j];
-			//THERE SHOULD BE NO dL since BC_MPCcollision() ignores ang mom
-			for( j=0; j<_3D; j++ ) (WALL+i)->L[j] += (WALL+i)->dL[j];
-		}
-		/* ****************************************** */
-		/* ************* ACCELERATE BCs ************* */
-		/* ****************************************** */
-		#ifdef DBG
-			if( DBUG >= DBGTITLE ) printf( "Accelerate BCs.\n" );
-		#endif
-		//Accelerate each of the BCs
-		if( in.GRAV_FLAG ) for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) acc_BC( (WALL+i),in.dt,(WALL+i)->G );
+	/* ****************************************** */
+	/* ************* TRANSLATE BCs ************** */
+	/* ****************************************** */
+	#ifdef DBG
+		if( DBUG >= DBGTITLE ) printf( "Translate BCs.\n" );
+	#endif
+	//Save the old position in case a BC-BC collision occurs
+	for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) for( j=0; j<DIM; j++ ) {
+		(WALL+i)->Q_old[j] = (WALL+i)->Q[j];
+		(WALL+i)->O_old[j] = (WALL+i)->O[j];
 	}
+	//Translate each of the BCs --- using velocity from BEFORE MPC_BCcollision()
+	for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) stream_BC( (WALL+i),in.dt );
+	/* ****************************************** */
+	/* *************** ROTATE BCs *************** */
+	/* ****************************************** */
+	#ifdef DBG
+		if( DBUG >= DBGTITLE ) printf( "Spin BCs.\n" );
+	#endif
+	for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) spin_BC( (WALL+i),in.dt );
+	/* ****************************************** */
+	/* ***************** BC-BC ****************** */
+	/* ****************************************** */
+	#ifdef DBG
+		if( DBUG >= DBGTITLE ) printf( "Check BCs Against BCs.\n" );
+	#endif
+	//Check each BC
+	for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) {
+		BC_FLAG = 0;
+		for( j=0; j<NBC; j++ ) if( j != i ) {
+			//Check BC number i for collisions other BCs
+			#ifdef DBG
+				if( DBUG == DBGBCBC ) printf( "BC%d BC%d\n",i,j );
+			#endif
+			BC_BCcollision( WALL+i,WALL+j,in.dt,&BC_FLAG );
+		}
+	}
+	/* ****************************************** */
+	/* ***************** BC-MPCD **************** */
+	/* ****************************************** */
+	// if( BC_FLAG ) {
+		#ifdef DBG
+			if( DBUG >= DBGTITLE ) printf( "Check BCs Against MPCs after BC-BC collisions.\n" );
+		#endif
+		bcCNT=0;
+		reCNT=0;
+		rethermCNT=0;
+		// Check each BC for collisions MPC particles
+		for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) {
+			BC_MPCcollision( WALL,i,SRDparticles,SP,in.KBT,in.GRAV,in.dt,simMD,MDmode,in.LC,&bcCNT,&reCNT,&rethermCNT );
+		}
+		#ifdef DBG
+			if( DBUG == DBGBCCNT ) if( bcCNT>0 ) printf( "\t%d particles had difficulty with the BCs when the BCs moved (%d rewind events; %d rethermalization events).\n",bcCNT,reCNT,rethermCNT );
+		#endif
+	// }
+	/* ****************************************** */
+	/* ************* APPLY IMPULSE ************** */
+	/* ****************************************** */
+	#ifdef DBG
+		if( DBUG >= DBGTITLE ) printf( "Impulse on BCs from BC-translations.\n" );
+	#endif
+	//Apply impulse from BC_MPCcollision()
+	for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) {
+		for( j=0; j<DIM; j++ ) (WALL+i)->V[j] += (WALL+i)->dV[j];
+		//THERE SHOULD BE NO dL since BC_MPCcollision() ignores ang mom
+		for( j=0; j<_3D; j++ ) (WALL+i)->L[j] += (WALL+i)->dL[j];
+	}
+	/* ****************************************** */
+	/* ************* ACCELERATE BCs ************* */
+	/* ****************************************** */
+	#ifdef DBG
+		if( DBUG >= DBGTITLE ) printf( "Accelerate BCs.\n" );
+	#endif
+	//Accelerate each of the BCs
+	if( in.GRAV_FLAG ) for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) acc_BC( (WALL+i),in.dt,(WALL+i)->G );
+}
 	/* ****************************************** */
 	/* ***************** RE-BIN ***************** */
 	/* ****************************************** */
@@ -4879,10 +5032,13 @@ void timestep( cell ***CL,particleMPC *SRDparticles,spec SP[],bc WALL[],simptr s
 	/* ****************************************** */
 	/* ********** SAVE SOME PROPERTIES ********** */
 	/* ****************************************** */
-		//Build the flow profile by summing over everytime step and averaging after FLOWOUT iterations
-	if( outFlags.FLOWOUT>=OUT && !in.warmupSteps) {
+	//Build the flow profile by summing over everytime step and averaging after FLOWOUT or SWFLOWOUT iterations
+	if( (outFlags.FLOWOUT>=OUT || outFlags.SWFLOWOUT>=OUT) && !in.warmupSteps ) {
 		localFLOW( CL,SP );
-		sumFLOW( CL );
+		//The 'lab frame' flowout
+		if( outFlags.FLOWOUT>=OUT ) sumFLOW( CL );
+		//The first swimmer 'frame' averaged swflowout
+		if( outFlags.SWFLOWOUT>=OUT && NS>0 ) sumSWFLOW( CL, swimmers,SS);
 	}
 }
 

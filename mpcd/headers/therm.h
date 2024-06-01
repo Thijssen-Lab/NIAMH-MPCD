@@ -19,8 +19,9 @@ double TEMP( particleMPC *pp,spec SP[],bc WALL[],double VEL[] );
 double calcE( particleMPC *p,spec *pSP,bc WALL[] );
 double calcE_MPC( particleMPC *p,spec *pSP );
 double calcE_BC( bc *WALL );
-double calcE_LC( cell ***CL,int LC,double MFPOT );
+double calcE_LC( cell ***CL,int LC,spec *pSP );
 void avVel( cell ***CL,double AVVEL[] );
+void avOri( particleMPC *p,double AVVEL[] );
 double avEnstrophy( cell ***CL );
 
 #endif

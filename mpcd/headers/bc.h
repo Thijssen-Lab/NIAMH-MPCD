@@ -15,7 +15,7 @@
 
 void BC_BCcollision( bc *WALL1,bc *WALL2,double t_step,int *flag );
 void MPC_BCcollision( particleMPC *pp,int currentP,bc WALL[],spec *pSP,double KBT,double t_step,int LC,int *bcCNT,int *reCNT,int *rethermCNT, int flagMPConBC );
-void BC_MPCcollision(bc WALL[],int BCcurrent,particleMPC *pp,spec *pSP,double KBT,double GRAV[],double t_step,simptr simMD,int MDmode,int LC,int *bcCNT,int *reCNT,int *rethermCNT);
+void BC_MPCcollision(bc WALL[], int BCcurrent, particleMPC *pp, spec *pSP, double KBT, double GRAV[], double t_step, simptr simMD, int MD_mode, int LC, int *bcCNT, int *reCNT, int *rethermCNT);
 
 double calcW( bc WALL,particleMPC P );
 double calcWavyW( bc WALL,double POS[], double W );
@@ -42,7 +42,7 @@ double secant_time( particleMPC p,bc WALL,double t_step );
 
 // void chooseP( bc WALL,particleMPC *pp,double *time,double *W2,int *chosenP,double t_step,double GRAV[] );
 void chooseP( bc WALL,particleMPC *pp,double *chosenW,int *chosenP );
-void chooseBC( bc WALL[],int currentP,particleMPC *pp,double *t_min,double *chosenW,int *chosenBC,double time );
+void chooseBC( bc WALL[],int currentP,particleMPC *pp,spec *pSP,double *t_min,double *chosenW,int *chosenBC,double time );
 
 double *normal( double *n,bc WALL,double *point,int dimension );
 double *normalWavy( double *n,bc WALL,double *point,int dimension );

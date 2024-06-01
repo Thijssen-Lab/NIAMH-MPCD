@@ -121,6 +121,13 @@ void readswimmers( char fpath[],specSwimmer *specS,swimmer **sw ) {
 	else printf("Warning: Failed to read swimmer-LJ energy.\n");
 	specS->eps = MF;
 
+	if(fscanf( finput,"%lf %s",&MF,STR ));			//Read AO range
+	else printf("Warning: Failed to read the range of the Asakura-Oosawa potential.\n");
+	specS->range = MF;
+	if(fscanf( finput,"%lf %s",&MF,STR ));			//Read AO depth
+	else printf("Warning: Failed to read the depth of the Asakura-Oosawa potential.\n");
+	specS->depth = MF;
+
   	if(fscanf( finput,"%lf %s",&MF,STR ));		//Read swimmers' average run time
 	else printf("Warning: Failed to read swimmer average run time.\n");
 	specS->runTime = MF;
@@ -140,7 +147,7 @@ void readswimmers( char fpath[],specSwimmer *specS,swimmer **sw ) {
 	specS->fixDist = MF;
 
 	//Allocate the memory for the swimmers
-	(*sw) = (swimmer*) malloc( NS * sizeof( swimmer ) );
+	(*sw) = (swimmer*) calloc( NS, sizeof( swimmer ) );
 
 	fclose( finput );
 }
@@ -731,25 +738,68 @@ void smonoForce_sameSwimmer( double a[],specSwimmer SS,swimmer *s,int springType
 }
 
 ///
-/// @brief Calculate the magnitude of the Weeks-Chandler-Andersen force between two monomers in different swimmers.
+/// @brief Calculate the magnitude of the Asakura-Oosawa depletion force between two monomers in different swimmers.
+///
+/// Computes the AO attractive potential, based on a depth and range given in the json input. The AO potential is null past its
+/// cutoff range, and quadratic below. A standard way of computing depletion interactions. Introduced in https://doi.org/10.1063/1.1740347 .
+///
+/// @param dr Distance between the swimmer, scaled by `sigma` (default value 4, can be changed in the input file).
+/// @param depth Depth of the AO potential.
+/// @param range Range of the AO potential.
+/// @return Magnitude of the AO force.
+///
+double swimmerWellAO(double dr,double depth,double range ) {
+	if (dr<range)
+		{return -depth*(1-(dr/range)*(dr/range));}
+	if (dr>=range)
+		{return 0;}
+}
+
+///
+/// @brief Calculate the magnitude of a simple depletion force between two monomers in different swimmers.
+///
+/// Computes an attractive square potential, based on a depth and range given in the json input. This potential is null past its
+/// cutoff range, and constant below.
+///
+/// @param dr Distance between the swimmer, scaled by `sigma` (default value 4, can be changed in the input file).
+/// @param depth Depth of the square potential.
+/// @param range Range of the square potential.
+/// @return Magnitude of the depletion force.
+///
+double swimmerCstF(double dr, double depth, double range ) {
+	if (dr<range)
+		{return -depth;}
+	if (dr>=range)
+		{return 0;}
+}
+
+///
+/// @brief Calculate the magnitude of the forces between two monomers in different swimmers.
 ///
 /// Calculate the magnitude of the WCA force between two monomers in different swimmers. If tumbling is activated,
-/// swimmers still see each other's true size, without shrinking.
+/// swimmers still see each other's true size, without shrinking. If depletion interactions are activated, they are added in as an attractive force here.
 ///
 /// @param dr Distance between the swimmer, scaled by `sigma` (default value 4, can be changed in the input file).
 /// @param SS Swimmer properties, used here to obtaine `sigma` and `epsilon`.
 /// @return Magnitude of the WCA force.
 ///
 double smonoForceMag_differentSwimmers( double dr,specSwimmer SS ) {
+	double fWCA,fAttractiveWell;
 	dr *= SS.isig;		
-	return swimmerWCA( dr,SS.eps );
+	fWCA = swimmerWCA( dr,SS.eps );
+
+	if(SS.dep==0) {fAttractiveWell = 0;}
+	if(SS.dep==1) {fAttractiveWell = swimmerWellAO( dr,SS.depth,SS.range );}
+	if(SS.dep==2) {fAttractiveWell = swimmerCstF( dr,SS.depth,SS.range );}
+
+	return fWCA+fAttractiveWell;
 }
 
 ///
-/// @brief Calculate the WCA force between two monomers in different swimmer.
+/// @brief Calculate the forces between two monomers in different swimmer.
 ///
-/// First calculates the distance between the monomers, then the magnitude of the WCA. The acceleration due to the
-/// force is then returned, as a vectorial quantity.
+/// First calculates the distance between the monomers, then the magnitude of the WCA and of the depletion forces (if they are turned on).
+/// The acceleration due to the force is then returned, as a vectorial quantity.
 ///
 /// @param a Vector built for the acceleration due to the force calculated in this function.
 /// @param SS Swimmer type.

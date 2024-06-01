@@ -543,13 +543,23 @@ void TranslateMacros (char **stringptr)
 	ReplaceMacro (stringptr, macro, value);
 
 	// Tyler added the following
-	snprintf (macro, STRMAX, "LAYOUT_ROD");
-	snprintf (value, STRMAX, "%u", LAYOUT_ROD);
+	snprintf (macro, STRMAX, "LAYOUT_RODX");
+	snprintf (value, STRMAX, "%u", LAYOUT_RODX);
+	ReplaceMacro (stringptr, macro, value);
+
+	// Zahra added the following
+	snprintf (macro, STRMAX, "LAYOUT_RODY");
+	snprintf (value, STRMAX, "%u", LAYOUT_RODY);
 	ReplaceMacro (stringptr, macro, value);
 
 	// Karolina added the following
 	snprintf (macro, STRMAX, "LAYOUT_U");
 	snprintf (value, STRMAX, "%u", LAYOUT_U);
+	ReplaceMacro (stringptr, macro, value);
+
+	// Zahra added the following for translocation
+	snprintf (macro, STRMAX, "LAYOUT_TRANS");
+	snprintf (value, STRMAX, "%u", LAYOUT_TRANS);
 	ReplaceMacro (stringptr, macro, value);
 
 	snprintf (macro, STRMAX, "GROUP_NONE");
@@ -650,6 +660,23 @@ void TranslateMacros (char **stringptr)
 
 	snprintf (macro, STRMAX, "NO");
 	snprintf (value, STRMAX, "%d", NO);
+	ReplaceMacro (stringptr, macro, value);
+
+	// Zahra added the following
+	snprintf (macro, STRMAX, "FROZEN_WARMUP");
+	snprintf (value, STRMAX, "%u", FROZEN_WARMUP);
+	ReplaceMacro (stringptr, macro, value);
+
+	snprintf (macro, STRMAX, "FREE_WARMUP");
+	snprintf (value, STRMAX, "%u", FREE_WARMUP);
+	ReplaceMacro (stringptr, macro, value);
+
+	snprintf (macro, STRMAX, "PINNED_WARMUP");
+	snprintf (value, STRMAX, "%u", PINNED_WARMUP);
+	ReplaceMacro (stringptr, macro, value);
+
+	snprintf (macro, STRMAX, "POS_WARMUP");
+	snprintf (value, STRMAX, "%u", POS_WARMUP);
 	ReplaceMacro (stringptr, macro, value);
 }
 

@@ -179,6 +179,7 @@ void SetupParameters (simptr sim)
 
 				// physical characteristics
 				INTG_PARAM (sim, randomSeed),
+				INTG_PARAM (sim, warmupMD),
 				REAL_PARAM (sim, unitCells),
 				INTG_PARAM (sim, lattice),
 				INTG_PARAM (sim, geometry),
@@ -905,7 +906,13 @@ void InitPolymers (simptr sim)
 			case LAYOUT_FLUID:		polyBulkTot+=polyM[set];
 									break;
 			// Tyler added this to place the polymer as a rod in x-direction - almost identical to LAYOUT_FLUID
-			case LAYOUT_ROD:		polyBulkTot+=polyM[set];
+			case LAYOUT_RODX:		polyBulkTot+=polyM[set];
+									break;
+			// Zahra added this to place the polymer as a rod in y-direction - almost identical to LAYOUT_RODX
+			case LAYOUT_RODY:		polyBulkTot+=polyM[set];
+									break;
+			// Zahra added this for translocation project, mixes LAYOUT_RODY and LAYOUT_FLUID
+			case LAYOUT_TRANS:		polyBulkTot+=polyM[set];
 									break;
 			// Added by Karolina to initialise polymer as a hairpin
 			case LAYOUT_U:		polyBulkTot+=polyM[set];
@@ -947,7 +954,19 @@ void InitPolymers (simptr sim)
 				layoutList = fluid;
 				break;
 			// Tyler added - identical to LAYOUT_FLUID
-			case LAYOUT_ROD:
+			case LAYOUT_RODX:
+				d2Min  	   = pow (polySpread[set]*pow(V/polyBulkTot,1/3.0), 2.0);
+				layout 	   = LAYOUT_FLUID;
+				layoutList = fluid;
+				break;
+			// Zahra added - identical to LAYOUT_RODX 
+			case LAYOUT_RODY:
+				d2Min  	   = pow (polySpread[set]*pow(V/polyBulkTot,1/3.0), 2.0);
+				layout 	   = LAYOUT_FLUID;
+				layoutList = fluid;
+				break;
+			// Zahra added - mixes LAYOUT_RODY and LAYOUT_FLUID  
+			case LAYOUT_TRANS:
 				d2Min  	   = pow (polySpread[set]*pow(V/polyBulkTot,1/3.0), 2.0);
 				layout 	   = LAYOUT_FLUID;
 				layoutList = fluid;
@@ -987,7 +1006,7 @@ void InitPolymers (simptr sim)
 				break;
 			case LAYOUT_PLATES:
 				p1 = (particleMD *) mycalloc (1, sizeof(particleMD));
-//				AddItem1STD (&candidates, p1);			// register candidate (just one!)
+				// AddItem1STD (&candidates, p1);			// register candidate (just one!)
 				break;
 			case LAYOUT_CYLINDER:
 				p1 = (particleMD *) mycalloc (1, sizeof(particleMD));
@@ -1003,14 +1022,13 @@ void InitPolymers (simptr sim)
 
 		// grow polymers
 		for (i=0; i<polyM[set]; i++) {
-
 			// grow polymer
 			picked = 0;
 			loop   = LOOP_MAX;
 			while (!picked && loop--) {
 
 				// no candidates left!
-				if (candidates.n==0 && polyLayout[set]!=LAYOUT_ANCHOR && polyLayout[set]!=LAYOUT_FLUID && polyLayout[set]!=LAYOUT_PLATES && polyLayout[set]!=LAYOUT_CYLINDER && polyLayout[set]!=LAYOUT_ROD && polyLayout[set]!=LAYOUT_U) error (EGRAFT);
+				if (candidates.n==0 && polyLayout[set]!=LAYOUT_ANCHOR && polyLayout[set]!=LAYOUT_FLUID && polyLayout[set]!=LAYOUT_PLATES && polyLayout[set]!=LAYOUT_CYLINDER && polyLayout[set]!=LAYOUT_RODX && polyLayout[set]!=LAYOUT_RODY && polyLayout[set]!=LAYOUT_U && polyLayout[set]!=LAYOUT_TRANS) error (EGRAFT);
 
 				// choose candidate atom randomly
 				c = (int) (RandomReal()*candidates.n);
@@ -1087,10 +1105,21 @@ void InitPolymers (simptr sim)
 							}
 							break;
 
-						// Tyler added - Identical to LAYOUT_FLUID (shouldn't be necessary)
-						case LAYOUT_ROD:
-							// distance with ALL other polymers
-							// this may cause a crash...  I commented it out in another code
+						// Tyler added-Identical to LAYOUT_FLUID (shouldn't be necessary)
+						// Zahra modified 
+						case LAYOUT_RODX:
+							for (j=0; j<polymer.n; j++) {
+								p2 = polymer.items[j].p1;
+								d2 = DistanceSquared (p1, p2, CARTESIAN, 0);
+								if (d2 < d2Min) {
+									keep = 0;
+									break;
+								}
+							}
+							break;
+
+						// Zahra added - Identical to LAYOUT_RODX 
+						case LAYOUT_RODY:
 							for (j=0; j<polymer.n; j++) {
 								p2 = polymer.items[j].p1;
 								d2 = DistanceSquared (p1, p2, CARTESIAN, 0);
@@ -1103,8 +1132,18 @@ void InitPolymers (simptr sim)
 
 						//Added by Karolina - identical to LAYOUT_FLUID
 						case LAYOUT_U:
-							// distance with ALL other polymers
-							// this may cause a crash...  I commented it out in another code
+							for (j=0; j<polymer.n; j++) {
+								p2 = polymer.items[j].p1;
+								d2 = DistanceSquared (p1, p2, CARTESIAN, 0);
+								if (d2 < d2Min) {
+									keep = 0;
+									break;
+								}
+							}
+							break;
+
+						//Added by Zahra - identical to LAYOUT_FLUID
+						case LAYOUT_TRANS:
 							for (j=0; j<polymer.n; j++) {
 								p2 = polymer.items[j].p1;
 								d2 = DistanceSquared (p1, p2, CARTESIAN, 0);
@@ -1168,10 +1207,25 @@ void InitPolymers (simptr sim)
 						p1->next = GrowLinearChain (sim, polyAtomType[set], layout, polyN[set],  NULL, &grown);
 					}
 					// Tyler added ---Stolen from above
-					else if (polyLayout[set]==LAYOUT_ROD ) {
+					else if (polyLayout[set]==LAYOUT_RODX ) {
 						p1 = p3;
-						p1->next = GrowRodChain (sim, polyAtomType[set], layout, polyN[set],  NULL, &grown);
+						p1->next = GrowRodChain (sim, polyAtomType[set], layout, polyN[set],  NULL, &grown, x_, 0);
 					}
+					// Zahra added ---Stolen from above
+					else if (polyLayout[set]==LAYOUT_RODY ) {
+						p1 = p3;
+						p1->next = GrowRodChain (sim, polyAtomType[set], layout, polyN[set],  NULL, &grown, y_, 0);
+					}
+					// Zahra added --- Mixing Fluid and RODY layout 
+					else if (polyLayout[set]==LAYOUT_TRANS ) {
+						int width = 2;		// width of pore for translocation
+						p1 = p3;
+						p1->next = GrowRodChain (sim, polyAtomType[set], layout, polyN[set],  NULL, &grown, y_, 1);
+						if((sim->polyN[set]/2)-3 > 0){
+							grown = 0 ;
+							GrowLinearChainTrans (sim, polyAtomType[set], layout, sim->polyN[set]-((sim->polyN[set]/2)+1+width/2+2), (p1->next)+polyN[set]/2+width/2+2, &grown);
+						}
+					}					
 					// added by Karolina - same as above
 					else if (polyLayout[set]==LAYOUT_U ) {
 						p1 = p3;
@@ -1195,13 +1249,25 @@ void InitPolymers (simptr sim)
 								AddItemPoly (&polymer, p1, 0);
 								break;
 							// Tyler added --- Identical to LAYOUT_FLUID
-							case LAYOUT_ROD:
+							case LAYOUT_RODX:
+								p1 = p1->next;
+								p1->prev = NULL;
+								AddItemPoly (&polymer, p1, 0);
+								break;
+							// Zahra added --- Identical to above
+							case LAYOUT_RODY:
 								p1 = p1->next;
 								p1->prev = NULL;
 								AddItemPoly (&polymer, p1, 0);
 								break;
 							//added by Karolina - identical to above
 							case LAYOUT_U:
+								p1 = p1->next;
+								p1->prev = NULL;
+								AddItemPoly (&polymer, p1, 0);
+								break;
+							//added by Zahra - identical to above
+							case LAYOUT_TRANS:
 								p1 = p1->next;
 								p1->prev = NULL;
 								AddItemPoly (&polymer, p1, 0);
@@ -1425,11 +1491,17 @@ void InitCharges (simptr sim)
 			case LAYOUT_FLUID:		qBulkTot+=qNumber[set];
                        				break;
 			// Tyler added --- Identical to LAYOUT_FLUID
-			case LAYOUT_ROD:		qBulkTot+=qNumber[set];
+			case LAYOUT_RODX:		qBulkTot+=qNumber[set];
+                       				break;
+			// Zahra added --- Identical to above
+			case LAYOUT_RODY:		qBulkTot+=qNumber[set];
                        				break;
 			// added by Karolina - identical to above
-			case LAYOUT_U:		qBulkTot+=qNumber[set];
+			case LAYOUT_U:			qBulkTot+=qNumber[set];
                        				break;
+			// Zahra added - identical to above
+			case LAYOUT_TRANS:	qBulkTot+=qNumber[set];
+                       					break;
 			default:			error (ELAYOUT);
 							break;
 		}
@@ -1457,15 +1529,23 @@ void InitCharges (simptr sim)
 				layoutList = fluid;
 				break;
 			// Tyler added --- Identical to LAYOUT_FLUID
-			case LAYOUT_ROD:
+			case LAYOUT_RODX:
 				d2Min  	   = pow (qSpread[set]*pow(V/qBulkTot,1/3.0), 2.0);
-// 				layout 	   = LAYOUT_FLUID;
 				layoutList = fluid;
 				break;
-				// added by Karolina - identical to above
+			// Zahra added --- Identical to above
+			case LAYOUT_RODY:
+				d2Min  	   = pow (qSpread[set]*pow(V/qBulkTot,1/3.0), 2.0);
+				layoutList = fluid;
+				break;
+			// added by Karolina - identical to above
 			case LAYOUT_U:
 				d2Min  	   = pow (qSpread[set]*pow(V/qBulkTot,1/3.0), 2.0);
-// 				layout 	   = LAYOUT_FLUID;
+				layoutList = fluid;
+				break;
+			// Zahra added - identical to above
+			case LAYOUT_TRANS:
+				d2Min  	   = pow (qSpread[set]*pow(V/qBulkTot,1/3.0), 2.0);
 				layoutList = fluid;
 				break;
 			default:
@@ -1526,7 +1606,20 @@ void InitCharges (simptr sim)
 						break;
 
 					// Tyler added --- Identical to LAYOUT_FLUID
-					case LAYOUT_ROD:
+					case LAYOUT_RODX:
+						// distance with ALL other charges
+						for (j=0; j<charge.n; j++) {
+							p2 = charge.items[j].p1;
+							d2 = DistanceSquared (p1, p2, CARTESIAN,0);
+							if (d2 < d2Min) {
+								keep = 0;
+								break;
+							}
+						}
+						break;
+
+					// Zahra added --- Identical to above
+					case LAYOUT_RODY:
 						// distance with ALL other charges
 						for (j=0; j<charge.n; j++) {
 							p2 = charge.items[j].p1;
@@ -1540,6 +1633,19 @@ void InitCharges (simptr sim)
 
 					// added by Karolina - identical to above
 					case LAYOUT_U:
+						// distance with ALL other charges
+						for (j=0; j<charge.n; j++) {
+							p2 = charge.items[j].p1;
+							d2 = DistanceSquared (p1, p2, CARTESIAN,0);
+							if (d2 < d2Min) {
+								keep = 0;
+								break;
+							}
+						}
+						break;
+
+					// Zahra added - identical to above
+					case LAYOUT_TRANS:
 						// distance with ALL other charges
 						for (j=0; j<charge.n; j++) {
 							p2 = charge.items[j].p1;
@@ -2702,7 +2808,69 @@ particleMD *GrowLinearChain (simptr sim, int type, int layout, int n, particleMD
 }
 
 //================================================================================
-particleMD *GrowRodChain (simptr sim, int type, int layout, int n, particleMD *p0, int *status)
+particleMD *GrowLinearChainTrans (simptr sim, int type, int layout, int n, particleMD *p0, int *status)
+//================================================================================
+{
+
+	int		grown, loop1, loop2, picked;
+	real		v[3];
+	particleMD	p1, *pNew=0;
+	int width=2;        				// width of pore in translocation
+	// return if there is no monomer to add
+	if (n==0) {
+		*status = 1;
+		return 0;
+	}
+
+	// add a monomer in the chain
+	grown = 0;
+	loop1  = GROWLOOP_MAX;
+	while (!grown && loop1--) {
+		// new monomer location
+		if (p0) {
+			picked = 0;
+			loop2   = LOOP_MAX;
+			while (!picked && loop2--) {
+				// pick a random vector
+				RandomVector3D (v);
+				p1.rx = p0->rx + v[x_]*sim->r0Fene/1.5;
+				p1.ry = p0->ry + v[y_]*sim->r0Fene/1.5;
+				if (sim->box[z_] != 0.0 ){
+					p1.rz = p0->rz + v[z_]*sim->r0Fene/1.5;
+				}
+				else {
+					p1.rz = 0.0;
+				}
+				if(p1.ry > sim->box[x_]*0.5 + width/2){
+					picked=1;
+				}
+			}
+			if (!picked) error (ELOOPMAX);
+			pNew = AtomInsert (sim, type, layout, &p1, CHECK, CHECK);
+		}
+		else {
+			pNew = AtomInsert (sim, type, layout, 0, CHECK, CHECK);
+		}
+		// continue growing (recursively), and remove candidate if stunted growth
+		if (pNew) {
+			pNew->prev = p0;
+			p0->next = pNew;
+			pNew->next = GrowLinearChainTrans (sim, type, layout, n-1, pNew, &grown);
+			if (!grown) AtomRemove (sim, type, PICK_POINTER, pNew);
+		}
+	}
+	// update growth status
+	*status = grown;
+
+	// growth failure
+	if (!grown) return NULL;
+
+	// growth success
+	return pNew;
+}
+
+//================================================================================
+particleMD *GrowRodChain (simptr sim, int type, int layout, int n, particleMD *p0, int *status, int dir, int flag)
 //================================================================================
 {
 	// RECURSIVE function to grow a n-monomer subchain from the particle pointed
@@ -2711,11 +2879,14 @@ particleMD *GrowRodChain (simptr sim, int type, int layout, int n, particleMD *p
 	// pointer otherwise. It also sets the status variable to 1 for a fully
 	// grown subchain, 0 otherwise.
 
-	int		grown, loop;
+	int		grown, loop,Ntotal;
 	particleMD	p1, *pNew=0;
+	int width = 2;						// width of pore in tranlocation
 
+	// number of monomers left for random part of LAYOUT_TRANS, works if translocation flag is on
+	Ntotal = sim->polyN[POLY_SETS-1]-((sim->polyN[POLY_SETS-1]/2)+1+width/2+2);
 	// return if there is no monomer to add
-	if (n==0) {
+	if (n==0 || (flag==1 && n==Ntotal)) {
 		*status = 1;
 		return 0;
 	}
@@ -2727,29 +2898,29 @@ particleMD *GrowRodChain (simptr sim, int type, int layout, int n, particleMD *p
 
 		// new monomer location
 		if (p0) {
-			p1.rx = p0->rx + sim->r0Fene/1.5;
-			p1.ry = p0->ry;
+			p1.rx = p0->rx + (1-dir)*sim->r0Fene/1.5;
+			p1.ry = p0->ry + (dir)*sim->r0Fene/1.5;
 			p1.rz = p0->rz;
 			pNew = AtomInsert (sim, type, layout, &p1, CHECK, CHECK);
 		}
 		else {
 			pNew = AtomInsert (sim, type, layout, 0, CHECK, CHECK);
 			// Force it to be at a give position rather than the random position it was inserted at
-			pNew->rx = sim->box[x_]*0.5 - n/2;
-			pNew->ry = sim->box[y_]*0.5;
+			pNew->rx = sim->box[x_]*0.5 - (1-dir)*n/2;
+			pNew->ry = sim->box[y_]*0.5	- (dir)*n/2;
 			pNew->rz = sim->box[z_]*0.5;
-			pNew->wx = sim->box[x_]*0.5 - n/2;
-			pNew->wy = sim->box[y_]*0.5;
+			pNew->wx = sim->box[x_]*0.5 - (1-dir)*n/2;
+			pNew->wy = sim->box[y_]*0.5 - (dir)*n/2;
 			pNew->wz = sim->box[z_]*0.5;
-			pNew->x0 = sim->box[x_]*0.5 - n/2;
-			pNew->y0 = sim->box[y_]*0.5;
+			pNew->x0 = sim->box[x_]*0.5 - (1-dir)*n/2;
+			pNew->y0 = sim->box[y_]*0.5 - (dir)*n/2;
 			pNew->z0 = sim->box[z_]*0.5;
 		}
 
 		// continue growing (recursively), and remove candidate if stunted growth
 		if (pNew) {
 			pNew->prev = p0;
-			pNew->next = GrowRodChain (sim, type, layout, n-1, pNew, &grown);
+			pNew->next = GrowRodChain (sim, type, layout, n-1, pNew, &grown, dir, flag);
 			if (!grown) AtomRemove (sim, type, PICK_POINTER, pNew);
 		}
 	}
@@ -3196,7 +3367,15 @@ int LayoutRule (simptr sim, int layout, real x, real y, real z)
 					else return 0;
 					break;
 				//Tyler added. Copied from above
-				case LAYOUT_ROD:
+				case LAYOUT_RODX:
+					// keep only if inside capillary
+					rMax2  = sim->caprIn-0.5;
+					rMax2 *= rMax2;
+					if (r2 < rMax2) return 1;
+					else return 0;
+					break;
+				//Zahra added. Copied from above
+				case LAYOUT_RODY:
 					// keep only if inside capillary
 					rMax2  = sim->caprIn-0.5;
 					rMax2 *= rMax2;
@@ -3205,6 +3384,14 @@ int LayoutRule (simptr sim, int layout, real x, real y, real z)
 					break;
 				// added by Karolina - identical to above
 				case LAYOUT_U:
+					// keep only if inside capillary
+					rMax2  = sim->caprIn-0.5;
+					rMax2 *= rMax2;
+					if (r2 < rMax2) return 1;
+					else return 0;
+					break;
+				// Zahra added - identical to above
+				case LAYOUT_TRANS:
 					// keep only if inside capillary
 					rMax2  = sim->caprIn-0.5;
 					rMax2 *= rMax2;
@@ -3245,7 +3432,15 @@ int LayoutRule (simptr sim, int layout, real x, real y, real z)
 					else return 0;
 					break;
 				//Tyler added. Copied from above
-				case LAYOUT_ROD:
+				case LAYOUT_RODX:
+					// keep only if inside capillary
+					rMax2  = sim->caprIn-0.5;
+					rMax2 *= rMax2;
+					if (r2 < rMax2) return 1;
+					else return 0;
+					break;
+				//Zahra added. Copied from above
+				case LAYOUT_RODY:
 					// keep only if inside capillary
 					rMax2  = sim->caprIn-0.5;
 					rMax2 *= rMax2;
@@ -3254,6 +3449,14 @@ int LayoutRule (simptr sim, int layout, real x, real y, real z)
 					break;
 				// added by Karolina - same as above
 				case LAYOUT_U:
+					// keep only if inside capillary
+					rMax2  = sim->caprIn-0.5;
+					rMax2 *= rMax2;
+					if (r2 < rMax2) return 1;
+					else return 0;
+					break;
+				// Zahra added - same as above
+				case LAYOUT_TRANS:
 					// keep only if inside capillary
 					rMax2  = sim->caprIn-0.5;
 					rMax2 *= rMax2;

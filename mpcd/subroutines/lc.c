@@ -17,6 +17,7 @@
 # include "../headers/bc.h"
 # include "../headers/lc.h"
 # include "../headers/mpc.h"
+# include "../headers/ctools.h"
 
 /* ****************************************** */
 /* ****************************************** */
@@ -418,23 +419,23 @@ void genrand_maierSaupeMetropolis_2D( double DIR[],double rotAx[],double rotAngl
 /// @param CL Class containing cell data (pointed to local cell considered).
 /// @param SP List of species.
 /// @param KBT The temperature.
-/// @param MFPOT The molecular field potential.
+/// @param zeroMFPot Flag to zero the molecular field potential (regardless of species values). 0==False (leave it) 1==True (zero it) 
 /// @param dt The timestep.
 /// @param SG The global nematic order value.
 /// @param LC Variable to define if Nematic LC using an isotropic fluid (0), the local nematic order  value (1) or global nematic order value (2).
 ///
-void LCcollision( cell *CL,spec *SP,double KBT,double MFPOT,double dt,double SG,int LC ) {
+void LCcollision( cell *CL,spec *SP,double KBT,int zeroMFPot,double dt,double SG,int LC ) {
 	int i,id;
 	double DIR[_3D]={0.0},dU[_3D]={0.0};	//The director, the difference in orientation
 	double rotAx[_3D],xaxis[_3D]={0.0},rotAngle;
 	double rfc;			//Rotational friction coefficient
 	double S;			//Local scalar order parameter
-	double MFPOT_scaled=MFPOT*0.5*(double)DIM;
+	double avMFPOT,MFPOT_scaled;	//Mean field potential that actually get used in the calculation
 	particleMPC *tmpc;		//Temporary particleMPC
 
-	if( LC==LCL ) S=CL->S;		//Use the local scalar order parameter in collision
+	if( LC==LCL || LC==BCT ) S=CL->S;		//Use the local scalar order parameter in collision
 	else if( LC==LCG ) S=SG;	//Use the global scalar order parameter in collision
-	else{
+	else {
 		printf( "Error: Unexpected value of LC=%d in LCcolloision().\n",LC );
 		exit( 1 );
 	}
@@ -474,6 +475,25 @@ void LCcollision( cell *CL,spec *SP,double KBT,double MFPOT,double dt,double SG,
 			printf( "Rotation angle: %lf\n",rotAngle );
 		}
 	#endif
+	
+	//Calculate cell's average mean field potential
+	if(zeroMFPot) {
+		MFPOT_scaled=0.0;
+	}
+	else {
+		avMFPOT=0.0;
+		tmpc = CL->pp;
+		while( tmpc!=NULL ) {
+			id = tmpc->SPID;
+			avMFPOT+=(SP+id)->MFPOT;
+			//Increment link in list
+			tmpc = tmpc->next;
+		}
+		if( CL->POPSRD>1 ) avMFPOT /= (float)(CL->POPSRD);
+		// MFPOT_scaled=MFPOT*0.5*(double)DIM;
+		// printf("\tMFPOT=%lf\n",avMFPOT);
+		MFPOT_scaled=avMFPOT*0.5*(double)DIM;
+	}
 
 	//Generate random orientations for MPC particles
 	if( CL->POPSRD>1 ) {
@@ -501,6 +521,12 @@ void LCcollision( cell *CL,spec *SP,double KBT,double MFPOT,double dt,double SG,
 					pvec( tmpc->U,DIM );
 				}
 			#endif
+			//If bacterial make sure angle it not bigger than 90 degrees
+			if (LC == BCT) {
+				if (dotprod(tmpc->U, dU, DIM) < 0) {
+					for(i=0; i<DIM; i++) tmpc->U[i]*=-1;
+				}
+			}
 			//Calculate rate of change of orientation
 			for( i=0; i<DIM; i++ ) dU[i]=(tmpc->U[i]-dU[i])/dt;
 			//Calculate angular velocity (save in torque for now)
@@ -966,8 +992,8 @@ double avOrderParam( particleMPC *p,int LC,double avDIR[] ) {
 
 	//Calculate the tensor order parameter
 	//Allocate memory for S and zero
-	S = malloc ( DIM * sizeof( *S ) );
-	for( i=0; i<DIM; i++ ) S[i] = malloc ( DIM * sizeof( *S[i] ) );
+	S = calloc ( DIM, sizeof( *S ) );
+	for( i=0; i<DIM; i++ ) S[i] = calloc ( DIM, sizeof( *S[i] ) );
 	for( j=0; j<DIM; j++ ) for( k=0; k<DIM; k++ ) S[j][k] = 0.0;
 	for( j=0; j<_3D; j++ ) U[j] = 0.0;
 
@@ -1183,19 +1209,21 @@ void tensOrderParamNNN( cell ***CL,double **S,int LC,int a,int b,int c ) {
 double binderCumulant( cell ***CL,int L,int LC ) {
 	int nBins[_3D]={0.0};			//Number of cumulant bins
 	int i,j,k,a,b,c,d;			//Indices
-	double UL,thisS,avS,avS2,avS4;		//Average of the square and power 4 of order parameter and the Binder cumulant
+	double UL,thisS;		//Binder cumulant, scalar order parameter of the current cell
+	// double avS;
+	double avS2,avS4;		//Average of the square and power 4 of order parameter and the Binder cumulant
 	double **S,eigval[_3D];			//Order parameter tensor and it's eigenvalues
 	particleMPC *pMPC;			//Temporary pointer to MPC particles
 	double POPinv,fDIM,invDconst,invBinVol;
 	int binPOP,cL;
 
-	avS=0.;
+	// avS=0.;
 	avS2=0.;
 	avS4=0.;
 	fDIM = (double) DIM;
 	invDconst=1./(fDIM-1.);
-	S = malloc ( DIM * sizeof( *S ) );
-	for( d=0; d<DIM; d++ ) S[d] = malloc ( DIM * sizeof( *S[d] ) );
+	S = calloc ( DIM, sizeof( *S ) );
+	for( d=0; d<DIM; d++ ) S[d] = calloc ( DIM, sizeof( *S[d] ) );
 	for( i=0; i<DIM; i++ ) for( j=0; j<DIM; j++ ) S[i][j] = 0.0;
 
 	for( d=0; d<DIM; d++ ) nBins[d] = XYZ[d]/L;
@@ -1233,12 +1261,12 @@ double binderCumulant( cell ***CL,int L,int LC ) {
 		if(DIM==_3D) thisS=-1.*(eigval[1]+eigval[2]);
 		else thisS=eigval[0];
 		//Add them to averages/sums
-		avS+=thisS;
+		// avS+=thisS;
 		avS2+=(thisS*thisS);
 		avS4+=(thisS*thisS*thisS*thisS);
 	}
 	invBinVol=1./((double)nBins[0]*nBins[1]*nBins[2]);
-	avS*=invBinVol;
+	// avS*=invBinVol;
 	avS2*=invBinVol;
 	avS4*=invBinVol;
 
@@ -1731,8 +1759,8 @@ void andersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double dt,doubl
 /// @param outP Parameter that determines if we should output pressure (0 not, 1 yes).
 ///
 void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RELAX,double dt,int RTECH,double *CLQ,int outP ) {
-	int i,j,id;
-	double M,MASS,ACT,pmOne,sigWidth,sigPos;
+	int i=0,j=0,id=0;
+	double M=0.0f,MASS=0.0f,ACT=0.0f,pmOne=0.0f,sigWidth=0.0f,sigPos=0.0f;
 	double RV[CL->POP][_3D];	//Random velocities
 	double RS[_3D];			//Sum of random velocities
 	double DV[CL->POP][_3D];	//Damping velocities
@@ -1747,8 +1775,8 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 	double VCM[_3D];
 	double II[_3D][_3D];		//Inverse of moment of inertia tensor (3D)
 	double dp[CL->POP][DIM],relQP[CL->POP][DIM];		//For pressure
-	double pW;			//The particle's pW for passing the plane
-	bc PLANE;			//The plane that cuts the cell in half
+	double pW=0.0f;			//The particle's pW for passing the plane
+	bc PLANE = {0};			//The plane that cuts the cell in half
 	particleMPC *tmpc;		//Temporary particleMPC
 	particleMD *tmd;		//Temporary particleMD
 	smono *tsm;			//Temporary swimmer mnomer
@@ -1773,12 +1801,14 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 	for( i=0;i<_3D;i++ ) for( j=0;j<_3D;j++ ) II[i][j]=0.;
 
 	//Define the plane normal to the centre of mass velocity at the centre of mass position
+    //Note: the zero'ing here should be unnecessary (PLANE is force zero'd on init), but keeping this here for now
 	for( i=0;i<4;i++ ) PLANE.P[i]=1;
 	PLANE.INV=0;
 	PLANE.ABS=0;
 	PLANE.R=0.0;
 	PLANE.ROTSYMM[0]=4.0;
 	PLANE.ROTSYMM[1]=4.0;
+    zerovec(PLANE.B, 3);
 	//Normal
 	for( i=0; i<DIM; i++ ) PLANE.A[i] = CL->DIR[i];
 	//Position
@@ -1794,7 +1824,7 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 		id = tmpc->SPID;
 
 		// do a check to see if the subpopulation is of sufficient quantity to compute activity
-		if ( ((double)(SP+id)->MINACTRATIO == 0.0) || (((double)(SP+id)->MINACTRATIO)*nDNST < (double)CL->SP[id]) ) {
+		if ( ((double)(SP+id)->MINACTRATIO == 0.0) || (((double)(SP+id)->MINACTRATIO)*GnDNST < (double)CL->SP[id]) ) {
 			ACT += (double)(SP+id)->ACT / (double)(SP+id)->MASS;
 			sigWidth += (double)(SP+id)->SIGWIDTH;
 			sigPos += (double)(SP+id)->SIGPOS;
@@ -1803,7 +1833,7 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 	}
 	//If DIPOLE_DIR_SUM then use the sum just calculated
 	//If DIPOLE_DIR_AV or DIPOLE_DIR_SIG then use the average value everywhere
-	if( RTECH==DIPOLE_DIR_AV || RTECH==DIPOLE_DIR_SIG) ACT *= nDNST/((double)CL->POP);
+	if( RTECH==DIPOLE_DIR_AV || RTECH==DIPOLE_DIR_SIG) ACT *= GnDNST/((double)CL->POP);
 
 	// Now, if using sigmoidal dipole set up a sigmoidal falloff based on the cell population
 	if (RTECH==DIPOLE_DIR_SIG || RTECH==DIPOLE_DIR_SIG_SUM) {
@@ -1812,7 +1842,7 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 		sigPos /= (double)CL->POP;
 
 		// compute the sigmoidal falloff function
-		double falloffFactor = (1 - tanh( ((double)CL->POP  - nDNST * (1 + sigPos) ) / (nDNST * sigWidth) ) );
+		double falloffFactor = (1 - tanh( ((double)CL->POP  - GnDNST * (1 + sigPos) ) / (GnDNST * sigWidth) ) );
 		double rescaleFactor = 2;
 
 		// rescale the activity
