@@ -112,7 +112,7 @@ int main(int argc, char* argv[]) {
 	outputFilesList outFiles;		//List of output files
 	specSwimmer specS;				//Swimmer's species
 	swimmer *swimmers;				//Swimmers
-	particleMD	*atom,*p1;			//MD particle
+	particleMD	*atom;				//MD particle
 	int nAtom;						//number of monomers in MD
 	int width = 2;					// width of the pore for translocation
 

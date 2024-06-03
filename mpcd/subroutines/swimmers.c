@@ -749,10 +749,8 @@ void smonoForce_sameSwimmer( double a[],specSwimmer SS,swimmer *s,int springType
 /// @return Magnitude of the AO force.
 ///
 double swimmerWellAO(double dr,double depth,double range ) {
-	if (dr<range)
-		{return -depth*(1-(dr/range)*(dr/range));}
-	if (dr>=range)
-		{return 0;}
+	if (dr>=range) return 0;
+	else return -depth*(1-(dr/range)*(dr/range));
 }
 
 ///
@@ -767,10 +765,8 @@ double swimmerWellAO(double dr,double depth,double range ) {
 /// @return Magnitude of the depletion force.
 ///
 double swimmerCstF(double dr, double depth, double range ) {
-	if (dr<range)
-		{return -depth;}
-	if (dr>=range)
-		{return 0;}
+	if (dr>=range) return 0;
+	else return -depth;
 }
 
 ///
@@ -789,9 +785,12 @@ double smonoForceMag_differentSwimmers( double dr,specSwimmer SS ) {
 	fWCA = swimmerWCA( dr,SS.eps );
 
 	if(SS.dep==0) {fAttractiveWell = 0;}
-	if(SS.dep==1) {fAttractiveWell = swimmerWellAO( dr,SS.depth,SS.range );}
-	if(SS.dep==2) {fAttractiveWell = swimmerCstF( dr,SS.depth,SS.range );}
-
+	else if(SS.dep==1) {fAttractiveWell = swimmerWellAO( dr,SS.depth,SS.range );}
+	else if(SS.dep==2) {fAttractiveWell = swimmerCstF( dr,SS.depth,SS.range );}
+	else {
+		printf( "Error:\tDepletion option %d unknown.\n",SS.dep );
+ 		exit(1);
+	}
 	return fWCA+fAttractiveWell;
 }
 
