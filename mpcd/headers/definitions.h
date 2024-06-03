@@ -240,6 +240,13 @@
 # define MAXV 4
 
 /* ****************************************** */
+/* ********** POLYMER TRANSLOCATION ********* */
+/* ****************************************** */
+//For translocation, the pore width can be changed in the BC inputs
+//HOWEVER, for initializing the polymer conformation, we need to know the pore width and it is hardcoded as transPoreWidth
+# define transPoreWidth 2
+
+/* ****************************************** */
 /* *********** COLLISION OPERATOR *********** */
 /* ****************************************** */
 //The following global variables are flag values for the collision operator / rotation technique.

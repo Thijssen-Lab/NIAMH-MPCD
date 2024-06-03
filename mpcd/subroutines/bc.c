@@ -1286,7 +1286,7 @@ void chooseBC( bc WALL[],int currentP,particleMPC *pp,spec *pSP,double *t_minCol
 				t2=t_left-t2;
 				tc = chooseT( t_left,t1,t2,currentP,&flag );
 				if( flag ) {
-					printf( "Error: Cross time unacceptable for particle %d colliding with wall %d: %lf.\n",tc,currentP,i );
+					printf( "Error: Cross time unacceptable for particle %d colliding with wall %d: %lf.\n",currentP,i,tc );
 				}
 				if( tc < *t_minColl ) {
 					*t_minColl = tc;
@@ -1317,7 +1317,7 @@ void chooseBC( bc WALL[],int currentP,particleMPC *pp,spec *pSP,double *t_minCol
 				// #endif
 				tc = chooseT( t_left,t1,t2,currentP,&flag );
 				if( flag ) {
-					printf( "Error: Cross time unacceptable for particle %d colliding with wall %d: %lf.\n",tc,currentP,i );
+					printf( "Error: Cross time unacceptable for particle %d colliding with wall %d: %lf.\n",currentP,i,tc );
 					//exit( 1 );
 				}
 				if( tc < *t_minColl ) {

@@ -112,9 +112,7 @@ int main(int argc, char* argv[]) {
 	outputFilesList outFiles;		//List of output files
 	specSwimmer specS;				//Swimmer's species
 	swimmer *swimmers;				//Swimmers
-	particleMD	*atom,*p1;			//MD particle
-	int nAtom;						//number of monomers in MD
-	int width = 2;					// width of the pore for translocation
+	particleMD *atom;				//MD particle
 
     /* ****************************************** */
     /* ****************************************** */
@@ -124,11 +122,11 @@ int main(int argc, char* argv[]) {
     /* ****************************************** */
     /* ****************************************** */
     #ifdef FPE
-    #ifdef __linux__
-    feenableexcept(FE_INVALID | FE_OVERFLOW | FE_DIVBYZERO);
-    #else
-    printf("Floating point exception handling is only supported on Linux.\n");
-    #endif
+		#ifdef __linux__
+			feenableexcept(FE_INVALID | FE_OVERFLOW | FE_DIVBYZERO);
+		#else
+			printf("Floating point exception handling is only supported on Linux.\n");
+		#endif
     #endif
 
 	/* ****************************************** */
@@ -163,7 +161,8 @@ int main(int argc, char* argv[]) {
 	if (inMode == 0){ // JSON input
 		readJson( ip, &inputVar, &SPECIES, &theorySP, &SRDparticles, &CL, &MDmode, 
 			&outFlags, &WALL, &specS, &swimmers);
-	} else if (inMode == 1){ // Legacy .inp input
+	} 
+	else if (inMode == 1){ // Legacy .inp input
 		readin( ip, &inputVar, &SPECIES, &SRDparticles, &CL, &MDmode );
 		readbc( ip, &WALL );
 		readpc( ip, &outFlags );
@@ -308,15 +307,14 @@ int main(int argc, char* argv[]) {
 		if( outFlags.CHCKPNT>=OUT && runtime%outFlags.CHCKPNT==0 ) {
             runCheckpoint( op, &lastCheckpoint, outFiles.fchckpnt, inputVar, SPECIES, SRDparticles, MDmode, WALL, outFlags, runtime, warmtime, AVVEL, AVS, avDIR, S4, stdN, KBTNOW, AVV, AVNOW, theorySP, theoryGlobal, specS, swimmers );
         }
-		if(simMD->polyLayout[POLY_SETS-1]==LAYOUT_TRANS){
+		/* ****************************************** */
+		/* *************** EARLY END **************** */
+		/* ****************************************** */
+		//For polymer translocation, end the simulation early if the polymer has passed the pore
+		//If translocated then set runtime to a value even greater than simSteps to trigger a break
+		if(MDmode && simMD->polyLayout[POLY_SETS-1]==LAYOUT_TRANS) {
 			atom=simMD->atom.items;
-			nAtom=simMD->atom.n;
-			if (atom->ry>XYZ_P1[1]/2+2*width){
-				runtime = inputVar.simSteps+1;
-			}
-			if((atom+(nAtom-1))->ry<XYZ_P1[1]/2-2*width){
-				runtime =inputVar.simSteps+1;
-			}
+			if( atom->ry>XYZ_P1[1]/2+2*transPoreWidth || (atom+(simMD->atom.n-1))->ry<XYZ_P1[1]/2-2*transPoreWidth ) runtime =inputVar.simSteps+1;	
 		}
 	}
 	#ifdef DBG

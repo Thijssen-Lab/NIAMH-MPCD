@@ -30,6 +30,7 @@
 #include "mdthermostat.h"
 #include "mdsrd.h"
 #include "mdsetup.h"
+#include "../mpcd/headers/definitions.h"
 
 #ifdef MPI
 #include <mpi.h>
@@ -1215,12 +1216,11 @@ void InitPolymers (simptr sim)
 					}
 					// Zahra added --- Mixing Fluid and RODY layout 
 					else if (polyLayout[set]==LAYOUT_TRANS ) {
-						int width = 2;		// width of pore for translocation
 						p1 = p3;
 						p1->next = GrowRodChain (sim, polyAtomType[set], layout, polyN[set],  NULL, &grown, y_, 1);
 						if((sim->polyN[set]/2)-3 > 0){
 							grown = 0 ;
-							GrowLinearChainTrans (sim, polyAtomType[set], layout, sim->polyN[set]-((sim->polyN[set]/2)+1+width/2+2), (p1->next)+polyN[set]/2+width/2+2, &grown);
+							GrowLinearChainTrans (sim, polyAtomType[set], layout, sim->polyN[set]-((sim->polyN[set]/2)+1+transPoreWidth/2+2), (p1->next)+polyN[set]/2+transPoreWidth/2+2, &grown);
 						}
 					}					
 					// added by Karolina - same as above
@@ -2752,7 +2752,6 @@ particleMD *GrowLinearChainTrans (simptr sim, int type, int layout, int n, parti
 	int		grown, loop1, loop2, picked;
 	real		v[3];
 	particleMD	p1, *pNew=0;
-	int width=2;        				// width of pore in translocation
 	// return if there is no monomer to add
 	if (n==0) {
 		*status = 1;
@@ -2778,7 +2777,7 @@ particleMD *GrowLinearChainTrans (simptr sim, int type, int layout, int n, parti
 				else {
 					p1.rz = 0.0;
 				}
-				if(p1.ry > sim->box[x_]*0.5 + width/2){
+				if(p1.ry > sim->box[x_]*0.5 + transPoreWidth*0.5){
 					picked=1;
 				}
 			}
@@ -2818,10 +2817,9 @@ particleMD *GrowRodChain (simptr sim, int type, int layout, int n, particleMD *p
 
 	int		grown, loop,Ntotal;
 	particleMD	p1, *pNew=0;
-	int width = 2;						// width of pore in tranlocation
 
 	// number of monomers left for random part of LAYOUT_TRANS, works if translocation flag is on
-	Ntotal = sim->polyN[POLY_SETS-1]-((sim->polyN[POLY_SETS-1]/2)+1+width/2+2);
+	Ntotal = sim->polyN[POLY_SETS-1]-((sim->polyN[POLY_SETS-1]/2)+1+transPoreWidth/2+2);
 	// return if there is no monomer to add
 	if (n==0 || (flag==1 && n==Ntotal)) {
 		*status = 1;
