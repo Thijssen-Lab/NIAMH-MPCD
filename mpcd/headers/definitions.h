@@ -115,6 +115,12 @@
 # define NOUT 0
 
 /* ****************************************** */
+/* *************** FILE NAMES *************** */
+/* ****************************************** */
+/// @brief Assumed string length for file names, etc. Long because clusters often have long paths
+# define STRLN 500
+
+/* ****************************************** */
 /* ***************** STREAM ***************** */
 /* ****************************************** */
 /// @brief If the particle needs to stream its STREAM.

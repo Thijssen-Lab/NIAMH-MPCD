@@ -106,7 +106,7 @@ int main(int argc, char* argv[]) {
     zerovec_v(3, _3D, avDIR, AVV, AVNOW); // initialise to zero
 	//Input/Output
 	int CHCKPNTrcvr = 0;			//Flag for simulation from recovery of checkpoint
-	char ip[500],op[500];			//Path to input and output
+	char ip[STRLN],op[STRLN];			//Path to input and output
 	int inMode = 0;					//Input mode: 0 - JSON, 1 - Legacy .inp
 	outputFlagsList outFlags;		//Flags for what is outputted
 	outputFilesList outFiles;		//List of output files
@@ -170,7 +170,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	//Check if recovering checkpointed simulation
-	if( inputVar.seed==-1 ) {
+	if( inputVar.chckpntIn ) {
 		CHCKPNTrcvr=1;
 		#ifdef DBG
 			if( DBUG >= DBGINIT ) printf( "Recovering checkpointed simulation\n" );

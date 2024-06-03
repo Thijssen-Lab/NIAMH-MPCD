@@ -59,7 +59,7 @@ void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL
 	FILE *finput;
 	int i,j,MS,read;
 	double MF;
-	char STR[100],inSTR[100];
+	char STR[STRLN],inSTR[STRLN];
 
 	strcpy( inSTR,fpath );
 	strcat( inSTR,"input.inp" );
@@ -229,7 +229,7 @@ void readpc( char fpath[],outputFlagsList *out ) {
   the program what data to output
 */
 	FILE *finput;
-	char STR[100],inSTR[100];
+	char STR[STRLN],inSTR[STRLN];
 	int read;
 
 	strcpy( inSTR,fpath );
@@ -612,7 +612,7 @@ void readbc( char fpath[],bc **WALL ) {
 */
 	FILE *fbc;
 	int i,read;
-	char STR[100],inSTR[100];
+	char STR[STRLN],inSTR[STRLN];
 
 	strcpy( inSTR,fpath );
 	strcat( inSTR,"bc.inp" );
@@ -670,13 +670,10 @@ void readbc( char fpath[],bc **WALL ) {
 void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cell ****CL, int *MD_mode, bc **WALL, outputFlagsList *out, int *runtime, int *warmtime, kinTheory **theorySP, kinTheory *theoryGl, double *AVVEL, double *AVS, double avDIR[_3D], double *S4, double *stdN, double *KBTNOW, double AVV[_3D], double AVNOW[_3D], specSwimmer *specS, swimmer **sw ) {
 	FILE *finput;
 	int i,j;
-	char STR[100];
 
-	strcpy( STR,fpath );
-	strcat( STR,"checkpoint.dat" );
-	finput = fopen( STR, "r" );
+	finput = fopen( in->chckpntInputFile, "r" );
 	if( !finput ) {					// file couldn't be opened
-		printf( "Error:\tFile '%s' could not be opened.\n",STR );
+		printf( "Error:\tFile '%s' could not be opened.\n",in->chckpntInputFile );
 		exit( 1 );
 	}
 	if(fscanf( finput,"%d",&(in->simSteps) ));		//Read time
@@ -1102,6 +1099,12 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 
 	// second set of primitives
 	in->seed = getJObjInt(jObj, "seed", 0, jsonTagList); // seed
+
+	// Handle checkpoint
+	getJObjStr(jObj, "checkpointIn", "", &(in->chckpntInputFile), jsonTagList);
+	if (strcmp(in->chckpntInputFile, "") == 0){ // if no input file was found
+		in->chckpntIn = 0;
+	} else in->chckpntIn = 1; // otherwise set set checkpoint
 
 	// Handle MD
 	getJObjStr(jObj, "mdIn", "", &mdInputFile, jsonTagList);

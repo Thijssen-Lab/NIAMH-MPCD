@@ -2801,7 +2801,7 @@ void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mo
 /// @see checkpoint()
 /// @see openCheckpoint()
 ///
-void runCheckpoint(char op[500], time_t *lastCheckpoint, FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mode, bc *WALL, outputFlagsList outFlag, int runtime, int warmtime, double AVVEL, double AVS, double avDIR[_3D], double S4, double stdN, double KBTNOW, double AVV[_3D], double AVNOW[_3D], kinTheory theorySP[], kinTheory theoryGl, specSwimmer specS, swimmer *sw ) {
+void runCheckpoint(char op[STRLN], time_t *lastCheckpoint, FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mode, bc *WALL, outputFlagsList outFlag, int runtime, int warmtime, double AVVEL, double AVS, double avDIR[_3D], double S4, double stdN, double KBTNOW, double AVV[_3D], double AVNOW[_3D], kinTheory theorySP[], kinTheory theoryGl, specSwimmer specS, swimmer *sw ) {
     // if time-based checkpointing has been enabled, see if a checkpoint needs to be made
     // otherwise return early
     if (outFlag.CHCKPNTTIMER != 0.0) {
