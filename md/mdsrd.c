@@ -161,13 +161,10 @@ void ComputeElectrostaticForcesSRD (simptr sim,struct particleMPC *pSRD,struct s
 	int 		xc,yc,zc;
 	int		a,b,c,pbcx1,pbcy1,pbcz1,pbcx2,pbcy2,pbcz2;
 	real		drTotMax;
-	real		qeff;
 	real		condenseCriteria,q0;
-	real junk = 0;
 
 	condenseCriteria=sim->condenseCriteria;
 	q0 = sim->monoCharge[0];
-	qeff = 0;
 
 	// calculate coulomb interaction variables (here for clarity)
 	if (sim->charge.n > 0) {
@@ -400,10 +397,7 @@ void ComputeElectrostaticForcesSRD (simptr sim,struct particleMPC *pSRD,struct s
 							ApplyPBC_dr (sim,&dx,&dy,&dz);
 							// calculate DH weighting
 							r = sqrt(dx*dx+dy*dy+dz*dz);
-							if (r<rCutCoul && p2->q/q0>0) {
-								p1->q -= q0*exp(-r/lambda_D)/weight[i]/r;
-								junk += q0*exp(-r/lambda_D)/weight[i]/r;
-							}
+							if (r<rCutCoul && p2->q/q0>0) p1->q -= q0*exp(-r/lambda_D)/weight[i]/r;
 							p2=p2->next;
 						}
 					}
@@ -415,8 +409,7 @@ void ComputeElectrostaticForcesSRD (simptr sim,struct particleMPC *pSRD,struct s
 	for (j=0; j<GPOP; j++) {
 		// adjust counter ion speed
 		if ( (pSRD+j)->q/q0<0) {
-		  (pSRD+j)->V[0] += Efield*(pSRD+j)->q*dt; //N.B. dt is not sim->dt but sim->dt*mdSteps
-		  qeff+=(pSRD+j)->q;
+			(pSRD+j)->V[0] += Efield*(pSRD+j)->q*dt; //N.B. dt is not sim->dt but sim->dt*mdSteps
 		}
 	}
 	// add potential energies in sim structure
@@ -1172,7 +1165,7 @@ void ComputeCapDispersionForces (simptr sim)
 	particleMD	*atom, *p1, *p2;
 	real		dx, dy, dz;
 	real		rCut2, ljShift;
-	real		E=0, potE=0, ljE=0;
+	real		E=0, potE=0;
 	real		r2min=10;
 	real		sigma_lj;
 
@@ -1190,7 +1183,7 @@ void ComputeCapDispersionForces (simptr sim)
 		default   (none) \
 		shared	  (n, nebrSTD, rCut2, ljShift) \
 		private   (i, p1, p2, dx, dy, dz, E) \
-		reduction (+: ljE, potE)
+		reduction (+: r2min, potE)
 	#endif
 
 	for (i=0; i<n; i++) {
@@ -1209,7 +1202,6 @@ void ComputeCapDispersionForces (simptr sim)
 			dz /= sigma_lj;
 			E = LennardJonesCap (p1, p2, dx, dy, dz, rCut2, sim) + ljShift;
 			if (E<r2min) r2min = E;
-			ljE  += E;
 			potE += E;
 		}
 	}
