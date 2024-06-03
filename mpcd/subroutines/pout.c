@@ -2809,7 +2809,7 @@ void runCheckpoint(char op[500], time_t *lastCheckpoint, FILE *fout, inputList i
         if (currTime - *lastCheckpoint >= outFlag.CHCKPNTTIMER*60*60) {
             // if time diff is more than the set checkpointing time
             #ifdef DBG
-            if( DBUG >= DBGRUN ) printf( "\nTimer based checkpoint triggered." );
+            	if( DBUG >= DBGRUN ) printf( "\nTimer based checkpoint triggered." );
             #endif
             *lastCheckpoint = currTime;
         } else {

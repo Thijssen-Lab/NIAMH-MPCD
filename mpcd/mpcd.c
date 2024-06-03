@@ -225,6 +225,7 @@ int main(int argc, char* argv[]) {
 		//Normal initialization
 		initializeSIM( CL, SRDparticles, SPECIES, WALL, simMD, &specS, swimmers, argc, argv, &inputVar, &to, &co, &runtime, &warmtime, &AVVEL, theorySP, &theoryGlobal, &KBTNOW, &AVS, &S4, &stdN, AVNOW, AVV, avDIR, outFlags, MDmode, outFiles.fsynopsis, ip );
 	}
+	lastCheckpoint=time( NULL );
 	/* ****************************************** */
 	/* ****************************************** */
 	/* ****************************************** */
@@ -333,7 +334,7 @@ int main(int argc, char* argv[]) {
 	#ifdef DBG
 		if( DBUG >= DBGINIT ) {
             float cpuTime = (float) (cf-co)/CLOCKS_PER_SEC;
-            printf( "Wall compuation time: %e sec\nCPU compuation time:  %e CPUsec\n",(float)(tf-to), cpuTime );
+            printf( "Wall computation time: %e sec\nCPU compuation time:  %e CPUsec\n",(float)(tf-to), cpuTime );
 
             // compute particle updates per second (PUPS)
             int mpcUpdates = (inputVar.simSteps+inputVar.warmupSteps) * GPOP; // total # of mpc particle updates
