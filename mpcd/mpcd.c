@@ -176,7 +176,7 @@ int main(int argc, char* argv[]) {
 			if( DBUG >= DBGINIT ) printf( "Recovering checkpointed simulation\n" );
 		#endif
 		//Recovering checkpointed simulation
-		readchckpnt( ip, &inputVar, &SPECIES, &SRDparticles, &CL, &MDmode, &WALL, &outFlags, &runtime, &warmtime, &theorySP, &theoryGlobal, &AVVEL, &AVS, avDIR, &S4, &stdN, &KBTNOW, AVV, AVNOW, &specS, &swimmers );
+		readchckpnt( &inputVar, &SPECIES, &SRDparticles, &CL, &MDmode, &WALL, &outFlags, &runtime, &warmtime, &theorySP, &theoryGlobal, &AVVEL, &AVS, avDIR, &S4, &stdN, &KBTNOW, AVV, AVNOW, &specS, &swimmers );
 	}
 	#ifdef DBG
 		if( DBUG > DBGRUN ) printf("Initialize simulation\n");

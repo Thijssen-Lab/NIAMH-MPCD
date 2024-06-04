@@ -645,8 +645,7 @@ void readbc( char fpath[],bc **WALL ) {
 /// This is used to resume an existing simulation. The only thing that is not checkpointed is the random number
 /// generator state, which is re-seeded outside of this routine.
 ///
-/// @param fpath Path to the directory where the checkpoint file is.
-/// @param in Pointer to object containing input parameters (corresponding to legacy input.inp). Expected to be &in.
+/// @param in Pointer to object containing input parameters, most importantly the path to the 'chckpntInputFile' file.
 /// @param SP Pointer to the species list. Expected to be &SP.
 /// @param pSRD Pointer to the particle list. Expected to be &pSRD.
 /// @param CL Pointer to the cell array. Expected to be &CL.
@@ -667,7 +666,7 @@ void readbc( char fpath[],bc **WALL ) {
 /// @param specS Pointer to the object containing the swimmer species hyperparameters. Expected to be &specS.
 /// @param sw Pointer to the swimmer list. Expected to be &sw.
 ///
-void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cell ****CL, int *MD_mode, bc **WALL, outputFlagsList *out, int *runtime, int *warmtime, kinTheory **theorySP, kinTheory *theoryGl, double *AVVEL, double *AVS, double avDIR[_3D], double *S4, double *stdN, double *KBTNOW, double AVV[_3D], double AVNOW[_3D], specSwimmer *specS, swimmer **sw ) {
+void readchckpnt(inputList *in, spec **SP, particleMPC **pSRD, cell ****CL, int *MD_mode, bc **WALL, outputFlagsList *out, int *runtime, int *warmtime, kinTheory **theorySP, kinTheory *theoryGl, double *AVVEL, double *AVS, double avDIR[_3D], double *S4, double *stdN, double *KBTNOW, double AVV[_3D], double AVNOW[_3D], specSwimmer *specS, swimmer **sw ) {
 	FILE *finput;
 	int i,j;
 

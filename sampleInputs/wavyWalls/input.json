@@ -5,7 +5,6 @@
     "rFrame": 0,
     "comment":"Active nematic fluid",
     "lc":1,
-    "mfpot":10,
     "collOp":17,
     "species":
     [
@@ -15,6 +14,7 @@
             "qDist":        0,
             "vDist":        0,
             "oDist":        1,
+            "mfpot":        10,
             "interMatr":    [0],
             "rfc":          0.01,
             "len":          0.007,

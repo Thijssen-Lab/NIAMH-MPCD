@@ -1,0 +1,121 @@
+{
+    "domain":           [60, 60],
+    "simSteps":         5000,
+    "warmUp":           0,
+    "collOp":           21,
+    "lc":               1,
+    "mdIn":             "md.inp",
+    "stepsMD":          50,
+    "species":
+    [
+        {
+            "comment":      "Passive NEMATIC fluid (will be the top/cis fluid)",
+            "dens":         20,
+            "oDist":        2,
+            "mfpot":        0,
+            "act":          0.0
+        },
+        {
+            "comment":      "Active nematic fluid (will be the bottom/trans fluid)",
+            "dens":         20,
+            "act":          0.08,
+            "sigWidth":     0.1,
+            "mfpot":        20,
+            "sigPos":       0.5
+        }
+    ],
+    "comment":          "domainWalls=1 sets PBCs around the domain, which is the default so this is extreneous",
+    "domainWalls":      1,
+    "BC":
+    [
+        {
+            "comment":      "The wall that makes up the nanopore is created by a long rectangular squircle",
+            "phantom":      1,
+            "Q":            [0, 30, 0],
+            "comment":      "Wall 'radius' (half-length) = R*aInv_x=29",
+            "aInv":         [14.5, 1, 0],
+            "P":            [16, 16, 16, 16],
+            "comment":      "Wall 'radius' (thickness) = R*aInv_y=2",
+            "R":            2,
+            "DN":           0,
+            "MVN":          -1,
+            "MVT":          -1,
+            "MUN":          1,
+            "MUT":          0,
+            "comment":      "The wall is applied to both MPCD fluid species",
+            "interSRD":     [1,1],
+            "comment":      "The wall is applied to the MD monomers",
+            "interMD":      1
+        },
+        {
+            "comment":      "Impermeable, perfect-slip BCs for top wall, species 1 (passive)",
+            "phantom":      0,
+            "Q":            [0, 59, 0],
+            "aInv":         [0, -1, 0],
+            "P":            [1, 1, 1, 1],
+            "R":            0,
+            "DN":           0,
+            "MVN":          -1,
+            "MVT":          1,
+            "MUN":          1,
+            "MUT":          1,
+            "comment":      "This boundary is only seen by MPCD species 0; not species 1 nor monomers",
+            "interSRD":     [1,0],
+            "interMD":      0
+        },
+        {
+            "comment":      "Impermeable, perfect-slip BCs for bottom wall, species 1 (passive)",
+            "phantom":      0,
+            "Q":            [0, 30.25, 0],
+            "aInv":         [0, 1, 0],
+            "P":            [1, 1, 1, 1],
+            "R":            0,
+            "DN":           0,
+            "MVN":          -1,
+            "MVT":          1,
+            "MUN":          1,
+            "MUT":          1,
+            "comment":      "This boundary is only seen by MPCD species 0; not species 1 nor monomers",
+            "interSRD":     [1,0],
+            "interMD":      0
+        },
+        {
+            "comment":      "Impermeable, perfect-slip BCs for bottom wall, species 2 (active)",
+            "phantom":      0,
+            "Q":            [0, 1, 0],
+            "aInv":         [0, 1, 0],
+            "P":            [1, 1, 1, 1],
+            "R":            0,
+            "DN":           0,
+            "MVN":          -1,
+            "MVT":          1,
+            "MUN":          1,
+            "MUT":          1,
+            "comment":      "This boundary is only seen by MPCD species 1; not species 0 nor monomers",
+            "interSRD":     [0,1],
+            "interMD":      0
+        },
+        {
+            "comment":      "Impermeable, perfect-slip BCs for top wall, species 2 (active)",
+            "phantom":      0,
+            "Q":            [0, 29.75, 0],
+            "aInv":         [0, -1, 0],
+            "P":            [1, 1, 1, 1],
+            "R":            0,
+            "DN":           0,
+            "MVN":          -1,
+            "MVT":          1,
+            "MUN":          1,
+            "MUT":          1,
+            "comment":      "This boundary is only seen by MPCD species 1; not species 0 nor monomers",
+            "interSRD":     [0,1],
+            "interMD":      0
+        }
+    ],
+    "debugOut":         3,
+    "coarseOut":        0,
+    "flowOut":          0,
+    "dirSOut":          50,
+    "avSOut":           0,
+    "synopsisOut":      1
+}
