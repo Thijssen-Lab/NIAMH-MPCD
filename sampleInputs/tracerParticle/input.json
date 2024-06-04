@@ -1,13 +1,16 @@
 {
     "domain":           [10, 10],
-    "simSteps":         2000,
+    "simSteps":         5000,
     "species":
     [
         {
             "pop":      1
+        },
+        {
+            "dens":     20
         }
     ],
-    "domainWalls":      1,
-    "trajSpecOut":      0,
+    "domainWalls":      2,
+    "trajSpecOut":      1,
     "trajOut":          10
 }

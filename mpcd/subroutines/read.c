@@ -1120,7 +1120,7 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 
 	cJSON *arrBC = NULL;
 	getCJsonArray(jObj, &arrBC, "BC", jsonTagList, arrayList, 1);
-	if(arrBC != NULL){ // if this can be found in the json
+	if(arrBC != NULL) { // if this can be found in the json
 		NBC = cJSON_GetArraySize(arrBC); // get the number of BCs
 
 		//Allocate the needed amount of memory for the BCs
@@ -1417,8 +1417,10 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 			}
 		}
 	} else { // otherwise default to periodic BCs about domain
-		domainWalls = 1; // just trigger the domain walls override w PBCs
 		NBC = 0;
+		if(domainWalls==1) domainWalls=1; 
+		else if(domainWalls==2) domainWalls=2; 
+		else  domainWalls=1; // trigger the domain walls override w PBCs
 	}
 
 	// handle domainWalls override
@@ -1492,11 +1494,18 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 				currWall->PHANTOM = 0;
 				currWall->MVN = 1;
 				currWall->MVT = 1;
-			} else { // otherwise, set flags for solid walls
+				currWall->MUN = 1.0;
+				currWall->MUT = 1.0;
+			} else if (domainWalls == 2) { // set flags for solid walls
 				currWall->PHANTOM = 1;
 				currWall->DN = 0; // override the value of DN from earlier, needs to be 0 for solid
 				currWall->MVN = -1.0;
 				currWall->MVT = -1.0;
+				currWall->MUN = 1.0;
+				currWall->MUT = 1.0;
+			} else{	// shouldn't get here
+				printf("Error: domainWalls unknown.\n");
+				exit(EXIT_FAILURE);
 			}
 
 			// set all the default values
@@ -1747,7 +1756,7 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 	out->SWORIOUT = getJObjInt(jObj, "swimOOut", 0, jsonTagList); // swOriOut
     const char* swimROutTags[2] = {"swimROut", "swimRTOut"}; // possible tags for collision operator
     out->RTOUT = getJObjIntMultiple(jObj, swimROutTags, 2, 0, jsonTagList); // RTECH
-	out->SYNOUT = getJObjInt(jObj, "synopsisOut", 1, jsonTagList); // swSynOut
+	out->SYNOUT = getJObjInt(jObj, "synopsisOut", 1, jsonTagList); // SynOut
 	out->CHCKPNT = getJObjInt(jObj, "checkpointOut", 0, jsonTagList); // chkpntOut
 
 	// 5. Swimmers /////////////////////////////////////////////////////////////

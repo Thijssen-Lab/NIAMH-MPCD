@@ -153,7 +153,7 @@ Tag             | Type          | Default Value | Description
 #### Overrides          {#overrides}
 Override Tag    | Type  | Override param | Description
 ---             |-------|--------------| ---
-`domainWalls`   | int   | `BC`         | This override will add extra BCs to the simulation, on top of the declared ones, on the domain walls. If set to 1, it places PBCs, and if set to 0 it places solid walls. 
+`domainWalls`   | int   | `BC`         | This override will add extra BCs to the simulation, on top of the declared ones, on the domain walls. If set to 1, it places PBCs. If set to 2 it places solid walls. If 0, off.
 `checkpointTimerOut`| float| `checkpointOut`| This override enables checkpointing, but puts it on a timer. It will checkpoint every X **hours**, where X is specified by this parameter. 
 
 ### Species Tag Table           {#species-tag-table}
