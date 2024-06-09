@@ -2703,26 +2703,29 @@ void spectout( FILE *fout,double spect[],double t ) {
 void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mode, bc *WALL, outputFlagsList outFlag, int runtime, int warmtime, double AVVEL, double AVS, double avDIR[_3D], double S4, double stdN, double KBTNOW, double AVV[_3D], double AVNOW[_3D], kinTheory theorySP[], kinTheory theoryGl, specSwimmer specS, swimmer *sw ) {
 	int i,j;
 
-	fprintf( fout,"%d\n",in.simSteps );		//total time (or number of iterations)
-	fprintf( fout,"%d %lf\n",in.warmupSteps,in.dt );		//Warmup time iterations, and time step
+	fprintf( fout,"%d\n",in.simSteps );					//total time (or number of iterations)
+	fprintf( fout,"%d %lf\n",in.warmupSteps,in.dt );	//Warmup time iterations, and time step
 
-	fprintf( fout,"%ld\n",in.seed );				//Random seed (0 if read from time)
+	fprintf( fout,"%ld\n",in.seed );					//Random seed (0 if read from time)
 	fprintf( fout,"%d %d %d %d %lf %lf\n",DIM,XYZ[0],XYZ[1],XYZ[2],in.KBT,KBTNOW );
 	fprintf( fout,"%d %d %d %d %d %d\n",in.RFRAME,in.zeroNetMom,in.GALINV,in.TSTECH,in.RTECH,in.LC );
 	fprintf( fout,"%lf %lf %lf\n",in.TAU,in.RA,in.FRICCO );
-	fprintf( fout,"%d %d %d\n",in.noHI,in.inCOMP,in.MULTIPHASE );
-	fprintf( fout,"%lf %lf %lf\n",in.GRAV[0],in.GRAV[1],in.GRAV[2] );		//Acceleration (external force)
-	fprintf( fout,"%lf %lf %lf\n",in.MAG[0],in.MAG[1],in.MAG[2] );			//External magnetic field
-	fprintf(fout, "%d %d\n", MD_mode, in.stepsMD );		//MD coupling mode and number of MD steps per SRD step
-	fprintf( fout,"%d %d\n",GPOP,NSPECI);			//Total number of particles and number of species
+	fprintf( fout,"%d %d %d %d\n",in.noHI,in.inCOMP,in.MULTIPHASE,in.MFPLAYERH );
+	fprintf( fout,"%lf %lf %lf\n",in.GRAV[0],in.GRAV[1],in.GRAV[2] );	//Acceleration (external force)
+	fprintf( fout,"%lf %lf %lf\n",in.MAG[0],in.MAG[1],in.MAG[2] );		//External magnetic field
+	fprintf(fout, "%d %d\n", MD_mode, in.stepsMD );						//MD coupling mode and number of MD steps per SRD step
+	fprintf( fout,"%d %d\n",GPOP,NSPECI);								//Total number of particles and number of species
 
-	fprintf( fout,"%d %d %lf %lf %d %d\n",runtime,warmtime,in.C,in.S,in.GRAV_FLAG,in.MAG_FLAG );
+	fprintf( fout,"%d %d %lf %lf %d %d %lf\n",runtime,warmtime,in.C,in.S,in.GRAV_FLAG,in.MAG_FLAG,in.tolD );
 	fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf\n", AVVEL, AVS, avDIR[0], avDIR[1], avDIR[2], S4, stdN, VOL );
 	fprintf( fout,"%lf %lf %lf %lf %lf %lf\n",AVV[0], AVV[1], AVV[2], AVNOW[0], AVNOW[1], AVNOW[2] );
 	fprintf( fout,"%lf %lf %lf %lf %lf %lf\n", theoryGl.MFP, theoryGl.VISC, theoryGl.THERMD, theoryGl.SDIFF, theoryGl.SPEEDOFSOUND, theoryGl.sumM );
+	fprintf( fout,"%d %d\n",in.chckpntIn,MDmode );		//MD and Checkpointing strings don't currently get read
+	// fprintf( fout,"%d %s\n",in.chckpntIn,in.chckpntInputFile );		//Checkpointing
+	// fprintf( fout,"%d %s\n",MDmode,mdInputFile );					//MD
 
 	//Output variables
-	fprintf( fout,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n",DBUG,outFlag.TRAJOUT,outFlag.printSP,outFlag.COAROUT,outFlag.FLOWOUT,outFlag.SWFLOWOUT,outFlag.VELOUT,outFlag.AVVELOUT,outFlag.AVORIOUT,outFlag.ORDEROUT,outFlag.QTENSOUT,outFlag.QKOUT,outFlag.AVSOUT,outFlag.SOLOUT,outFlag.ENOUT,outFlag.ENFIELDOUT,outFlag.ENNEIGHBOURS,outFlag.ENSTROPHYOUT,outFlag.DENSOUT,outFlag.CVVOUT,outFlag.CNNOUT,outFlag.CWWOUT,outFlag.CDDOUT,outFlag.CSSOUT,outFlag.CPPOUT,outFlag.BINDER,outFlag.BINDERBIN,outFlag.SYNOUT,outFlag.CHCKPNT,outFlag.CHCKPNTrcvr );
+	fprintf( fout,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %f\n",DBUG,outFlag.TRAJOUT,outFlag.printSP,outFlag.COAROUT,outFlag.FLOWOUT,outFlag.SWFLOWOUT,outFlag.VELOUT,outFlag.AVVELOUT,outFlag.AVORIOUT,outFlag.ORDEROUT,outFlag.QTENSOUT,outFlag.QKOUT,outFlag.AVSOUT,outFlag.SOLOUT,outFlag.ENOUT,outFlag.ENFIELDOUT,outFlag.ENNEIGHBOURS,outFlag.ENSTROPHYOUT,outFlag.DENSOUT,outFlag.CVVOUT,outFlag.CNNOUT,outFlag.CWWOUT,outFlag.CDDOUT,outFlag.CSSOUT,outFlag.CPPOUT,outFlag.BINDER,outFlag.BINDERBIN,outFlag.SYNOUT,outFlag.CHCKPNT,outFlag.CHCKPNTrcvr,outFlag.CHCKPNTTIMER );
 	fprintf( fout,"%d %d\n",outFlag.SPOUT,outFlag.PRESOUT );
 	fprintf( fout,"%d %d %d %d %d %d %d\n",outFlag.HISTVELOUT,outFlag.HISTSPEEDOUT,outFlag.HISTVORTOUT,outFlag.HISTENSTROUT,outFlag.HISTDIROUT,outFlag.HISTSOUT,outFlag.HISTNOUT );
 	fprintf( fout,"%d %d %d %d %d\n",outFlag.ENERGYSPECTOUT,outFlag.ENSTROPHYSPECTOUT,outFlag.TOPOOUT,outFlag.DEFECTOUT,outFlag.DISCLINOUT );
@@ -2732,16 +2735,18 @@ void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mo
 	for( i=0; i<NSPECI; i++ ) {
 		fprintf( fout,"%lf %i %i %i %i ",(SP+i)->MASS,(SP+i)->POP,(SP+i)->QDIST,(SP+i)->VDIST,(SP+i)->ODIST );
 		fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf ",(SP+i)->RFC, (SP+i)->LEN, (SP+i)->TUMBLE, (SP+i)->CHIHI, (SP+i)->CHIA, (SP+i)->ACT, (SP+i)->MFPOT, (SP+i)->SIGWIDTH, (SP+i)->SIGPOS, (SP+i)->DAMP );
-		fprintf( fout,"%lf %lf %lf\n",(SP+i)->VOL,(SP+i)->nDNST,(SP+i)->mDNST );
+		fprintf( fout,"%lf %lf %lf %lf %lf\n",(SP+i)->VOL,(SP+i)->nDNST,(SP+i)->mDNST,(SP+i)->MINACTRATIO,(SP+i)->BS );
 		for( j=0; j<NSPECI; j++ ) fprintf( fout,"%lf ",(SP+i)->M[j] );			//Binary fluid control parameters
 		fprintf( fout,"\n" );
 		fprintf( fout,"%lf %lf %lf %lf %lf %lf\n", theorySP[i].MFP, theorySP[i].VISC, theorySP[i].THERMD, theorySP[i].SDIFF, theorySP[i].SPEEDOFSOUND, theorySP[i].sumM );
 	}
+	fprintf( fout,"%lf %lf %lf %d\n",GnDNST,GmDNST,GMASS,maxXYZ );
+
 	//BCs
 	fprintf( fout,"%d\n",NBC );
 	for( i=0; i<NBC; i++ ) {
 		fprintf( fout,"%d %d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n",WALL[i].COLL_TYPE, WALL[i].PHANTOM, WALL[i].E, WALL[i].Q[0], WALL[i].Q[1], WALL[i].Q[2], WALL[i].V[0], WALL[i].V[1], WALL[i].V[2], WALL[i].O[0], WALL[i].O[1], WALL[i].O[2] );
-		fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", WALL[i].L[0], WALL[i].L[1], WALL[i].L[2], WALL[i].G[0], WALL[i].G[1], WALL[i].G[2], WALL[i].A[0], WALL[i].A[1], WALL[i].A[2], WALL[i].AINV[0], WALL[i].AINV[1], WALL[i].AINV[2],WALL[i].P[0],WALL[i].P[1],WALL[i].P[2],WALL[i].P[3], WALL[i].R );
+		fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", WALL[i].L[0], WALL[i].L[1], WALL[i].L[2], WALL[i].G[0], WALL[i].G[1], WALL[i].G[2], WALL[i].A[0], WALL[i].A[1], WALL[i].A[2], WALL[i].AINV[0], WALL[i].AINV[1], WALL[i].AINV[2],WALL[i].P[0],WALL[i].P[1],WALL[i].P[2],WALL[i].P[3], WALL[i].R, WALL[i].B[0],WALL[i].B[1],WALL[i].B[2] );
 		fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", WALL[i].DN, WALL[i].DT, WALL[i].DVN, WALL[i].DVT, WALL[i].DVxyz[0], WALL[i].DVxyz[1], WALL[i].DVxyz[2], WALL[i].MVN, WALL[i].MVT, WALL[i].MUN, WALL[i].MUT, WALL[i].MUxyz[0], WALL[i].MUxyz[1], WALL[i].MUxyz[2] );
 		fprintf( fout,"%lf %lf %lf %lf %d %d %lf\n", WALL[i].DUxyz[0], WALL[i].DUxyz[1], WALL[i].DUxyz[2], WALL[i].KBT, WALL[i].DSPLC, WALL[i].INV, WALL[i].MASS );
 		fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", WALL[i].W, WALL[i].VOL, WALL[i].Q_old[0], WALL[i].Q_old[1], WALL[i].Q_old[2], WALL[i].O_old[0], WALL[i].O_old[1], WALL[i].O_old[2], WALL[i].I[0][0], WALL[i].I[0][1], WALL[i].I[0][2], WALL[i].I[1][0], WALL[i].I[1][1], WALL[i].I[1][2], WALL[i].I[2][0], WALL[i].I[2][1], WALL[i].I[2][2] );
@@ -2759,8 +2764,6 @@ void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mo
 	//Swimmers
 	fprintf( fout,"%d %d %d %d %d %d %lf %lf %d %d\n", NS,specS.TYPE, specS.QDIST, specS.ODIST, specS.headM, specS.middM, specS.iheadM, specS.imiddM, specS.HSPid, specS.MSPid );
 	fprintf( fout,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %d %lf %lf %lf %lf %d %lf\n", specS.FS, specS.TS, specS.DS, specS.sizeShrink, specS.springShrink, specS.fixDist, specS.k, specS.ro, specS.iro, specS.sig, specS.isig, specS.eps, specS.dep, specS.range, specS.depth, specS.runTime, specS.tumbleTime, specS.shrinkTime, specS.MAGMOM );
-
-
 	for( i=0; i<NS; i++ ) {
 		fprintf( fout,"%d %lf %lf %lf %d %d %lf %lf %lf %lf %lf\n",(sw+i)->RT,(sw+i)->n0[0],(sw+i)->n0[1],(sw+i)->n0[2],(sw+i)->timeCNT,(sw+i)->timeRND,(sw+i)->ro,(sw+i)->iro,(sw+i)->sig,(sw+i)->isig,(sw+i)->k );
 		fprintf( fout,"%d %lf %lf %lf %lf %lf %lf %lf %lf %lf\n",(sw+i)->H.HorM,(sw+i)->H.Q[0],(sw+i)->H.Q[1],(sw+i)->H.Q[2],(sw+i)->H.V[0],(sw+i)->H.V[1],(sw+i)->H.V[2],(sw+i)->H.A[0],(sw+i)->H.A[1],(sw+i)->H.A[2] );
