@@ -2,8 +2,8 @@
     "domain":           [50, 50],
     "simSteps":         1000,
     "warmUp":           0,
-    "comment":          "Collision operator 17 is an active nematic collision operator",
-    "collOp":           17,
+    "comment":          "Collision operator 21 is an active nematic collision operator",
+    "collOp":           21,
     "lc":               1,
     "species":
     [

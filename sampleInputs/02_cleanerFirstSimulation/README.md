@@ -1,0 +1,1 @@
+This is the same simulation as `01_FirstSimulation_PassiveIsotropic2D` but it has a much cleaner input script.

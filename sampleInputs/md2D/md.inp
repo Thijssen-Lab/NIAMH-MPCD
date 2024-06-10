@@ -8,6 +8,7 @@
 # ----------------------------------------------------------------------------------------------------
 #
 # parameter:	randomSeed		= 0
+# parameter:	warmupMD		= FREE_WARMUP 
 #
 # parameter:	unitCells	 	= (10,10,0)
 # parameter:	lattice		 	= LATT_BULK
@@ -18,6 +19,7 @@
 #
 # parameter:	geometry	 	= GEOM_BULK
 # parameter:	wallThickness		= 1 (in unit cells)
+# parameter:	boundaryType		= noREPULSION
 #
 # parameter:	bjerrum		 	= 0
 # parameter:	lambda_D		= 0

@@ -106,7 +106,7 @@ int main(int argc, char* argv[]) {
     zerovec_v(3, _3D, avDIR, AVV, AVNOW); // initialise to zero
 	//Input/Output
 	int CHCKPNTrcvr = 0;			//Flag for simulation from recovery of checkpoint
-	char ip[500],op[500];			//Path to input and output
+	char ip[STRLN],op[STRLN];			//Path to input and output
 	int inMode = 0;					//Input mode: 0 - JSON, 1 - Legacy .inp
 	outputFlagsList outFlags;		//Flags for what is outputted
 	outputFilesList outFiles;		//List of output files
@@ -170,13 +170,13 @@ int main(int argc, char* argv[]) {
 	}
 
 	//Check if recovering checkpointed simulation
-	if( inputVar.seed==-1 ) {
+	if( inputVar.chckpntIn ) {
 		CHCKPNTrcvr=1;
 		#ifdef DBG
 			if( DBUG >= DBGINIT ) printf( "Recovering checkpointed simulation\n" );
 		#endif
 		//Recovering checkpointed simulation
-		readchckpnt( ip, &inputVar, &SPECIES, &SRDparticles, &CL, &MDmode, &WALL, &outFlags, &runtime, &warmtime, &theorySP, &theoryGlobal, &AVVEL, &AVS, avDIR, &S4, &stdN, &KBTNOW, AVV, AVNOW, &specS, &swimmers );
+		readchckpnt( &inputVar, &SPECIES, &SRDparticles, &CL, &MDmode, &WALL, &outFlags, &runtime, &warmtime, &theorySP, &theoryGlobal, &AVVEL, &AVS, avDIR, &S4, &stdN, &KBTNOW, AVV, AVNOW, &specS, &swimmers );
 	}
 	#ifdef DBG
 		if( DBUG > DBGRUN ) printf("Initialize simulation\n");
@@ -225,6 +225,7 @@ int main(int argc, char* argv[]) {
 		//Normal initialization
 		initializeSIM( CL, SRDparticles, SPECIES, WALL, simMD, &specS, swimmers, argc, argv, &inputVar, &to, &co, &runtime, &warmtime, &AVVEL, theorySP, &theoryGlobal, &KBTNOW, &AVS, &S4, &stdN, AVNOW, AVV, avDIR, outFlags, MDmode, outFiles.fsynopsis, ip );
 	}
+	lastCheckpoint=time( NULL );
 	/* ****************************************** */
 	/* ****************************************** */
 	/* ****************************************** */
@@ -333,7 +334,7 @@ int main(int argc, char* argv[]) {
 	#ifdef DBG
 		if( DBUG >= DBGINIT ) {
             float cpuTime = (float) (cf-co)/CLOCKS_PER_SEC;
-            printf( "Wall compuation time: %e sec\nCPU compuation time:  %e CPUsec\n",(float)(tf-to), cpuTime );
+            printf( "Wall computation time: %e sec\nCPU compuation time:  %e CPUsec\n",(float)(tf-to), cpuTime );
 
             // compute particle updates per second (PUPS)
             int mpcUpdates = (inputVar.simSteps+inputVar.warmupSteps) * GPOP; // total # of mpc particle updates

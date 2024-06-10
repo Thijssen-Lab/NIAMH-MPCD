@@ -59,7 +59,7 @@ void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL
 	FILE *finput;
 	int i,j,MS,read;
 	double MF;
-	char STR[100],inSTR[100];
+	char STR[STRLN],inSTR[STRLN];
 
 	strcpy( inSTR,fpath );
 	strcat( inSTR,"input.inp" );
@@ -229,7 +229,7 @@ void readpc( char fpath[],outputFlagsList *out ) {
   the program what data to output
 */
 	FILE *finput;
-	char STR[100],inSTR[100];
+	char STR[STRLN],inSTR[STRLN];
 	int read;
 
 	strcpy( inSTR,fpath );
@@ -612,7 +612,7 @@ void readbc( char fpath[],bc **WALL ) {
 */
 	FILE *fbc;
 	int i,read;
-	char STR[100],inSTR[100];
+	char STR[STRLN],inSTR[STRLN];
 
 	strcpy( inSTR,fpath );
 	strcat( inSTR,"bc.inp" );
@@ -645,8 +645,7 @@ void readbc( char fpath[],bc **WALL ) {
 /// This is used to resume an existing simulation. The only thing that is not checkpointed is the random number
 /// generator state, which is re-seeded outside of this routine.
 ///
-/// @param fpath Path to the directory where the checkpoint file is.
-/// @param in Pointer to object containing input parameters (corresponding to legacy input.inp). Expected to be &in.
+/// @param in Pointer to object containing input parameters, most importantly the path to the 'chckpntInputFile' file.
 /// @param SP Pointer to the species list. Expected to be &SP.
 /// @param pSRD Pointer to the particle list. Expected to be &pSRD.
 /// @param CL Pointer to the cell array. Expected to be &CL.
@@ -667,16 +666,13 @@ void readbc( char fpath[],bc **WALL ) {
 /// @param specS Pointer to the object containing the swimmer species hyperparameters. Expected to be &specS.
 /// @param sw Pointer to the swimmer list. Expected to be &sw.
 ///
-void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cell ****CL, int *MD_mode, bc **WALL, outputFlagsList *out, int *runtime, int *warmtime, kinTheory **theorySP, kinTheory *theoryGl, double *AVVEL, double *AVS, double avDIR[_3D], double *S4, double *stdN, double *KBTNOW, double AVV[_3D], double AVNOW[_3D], specSwimmer *specS, swimmer **sw ) {
+void readchckpnt(inputList *in, spec **SP, particleMPC **pSRD, cell ****CL, int *MD_mode, bc **WALL, outputFlagsList *out, int *runtime, int *warmtime, kinTheory **theorySP, kinTheory *theoryGl, double *AVVEL, double *AVS, double avDIR[_3D], double *S4, double *stdN, double *KBTNOW, double AVV[_3D], double AVNOW[_3D], specSwimmer *specS, swimmer **sw ) {
 	FILE *finput;
 	int i,j;
-	char STR[100];
 
-	strcpy( STR,fpath );
-	strcat( STR,"checkpoint.dat" );
-	finput = fopen( STR, "r" );
+	finput = fopen( in->chckpntInputFile, "r" );
 	if( !finput ) {					// file couldn't be opened
-		printf( "Error:\tFile '%s' could not be opened.\n",STR );
+		printf( "Error:\tFile '%s' could not be opened.\n",in->chckpntInputFile );
 		exit( 1 );
 	}
 	if(fscanf( finput,"%d",&(in->simSteps) ));		//Read time
@@ -693,7 +689,7 @@ void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cel
 	else printf("Warning: Failed to Galilean transform, rest frame, thermostat mode, collision mode or liquid crystal mode.\n");
 	if(fscanf( finput,"%lf %lf %lf",&(in->TAU),&(in->RA),&(in->FRICCO) ));				//Read the thermal relaxation time scale
 	else printf("Warning: Failed to read relaxation time, rotation angle, friction coefficient or mean-field potential.\n");
-	if(fscanf( finput,"%d %d %d",&(in->noHI),&(in->inCOMP),&(in->MULTIPHASE) ));		//Read no hydrodynamics, incompressibility and multi-phase
+	if(fscanf( finput,"%d %d %d %d",&(in->noHI),&(in->inCOMP),&(in->MULTIPHASE),&(in->MULTIPHASE) ));		//Read no hydrodynamics, incompressibility and multi-phase
 	else printf("Warning: Failed to read no hydrodynamics or incompressibility.\n");
 	if(fscanf( finput,"%lf %lf %lf",&(in->GRAV[0]),&(in->GRAV[1]),&(in->GRAV[2]) ));	//Read the constant external acceleration
 	else printf("Warning: Failed to read acceleration.\n");
@@ -706,7 +702,7 @@ void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cel
 	if(fscanf( finput,"%d %d",&GPOP,&NSPECI ));	//Read the number of MPC particles
 	else printf("Warning: Failed to read total number of particles or number of species.\n");
 
-	if(fscanf( finput,"%d %d %lf %lf %d %d",runtime,warmtime,&(in->C),&(in->S),&(in->GRAV_FLAG),&(in->MAG_FLAG) ));//Read program variables
+	if(fscanf( finput,"%d %d %lf %lf %d %d %lf",runtime,warmtime,&(in->C),&(in->S),&(in->GRAV_FLAG),&(in->MAG_FLAG),&(in->tolD) ));//Read program variables
 	else printf("Warning: Failed to read various program variables.\n");
 	if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf", AVVEL, AVS, &avDIR[0], &avDIR[1], &avDIR[2], S4, stdN, &VOL ));//Read program variables
 	else printf("Warning: Failed to read various program variables.\n");
@@ -715,8 +711,15 @@ void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cel
 	if(fscanf( finput,"%lf %lf %lf %lf %lf %lf",&(theoryGl->MFP), &(theoryGl->VISC), &(theoryGl->THERMD), &(theoryGl->SDIFF), &(theoryGl->SPEEDOFSOUND), &(theoryGl->sumM) ));//Read program variables
 	else printf("Warning: Failed to read global theoretical predictions.\n");
 
+	// if(fscanf( finput,"%d %s",&(in->chckpntIn), (in->chckpntInputFile) ));//Read checkpoint variables
+	// else printf("Warning: Failed to read global theoretical predictions.\n");
+	// if(fscanf( finput,"%d %s",&MDmode,mdInputFile ));//Read MD path
+	// else printf("Warning: Failed to read MD path.\n");
+	if(fscanf( finput,"%d %d",&(in->chckpntIn), &MDmode ));//Read checkpoint and MD modes variables
+	else printf("Warning: Failed to read checkpoint and MD modes.\n");
+
 	//Read output
-	if(fscanf( finput,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",&DBUG, &(out->TRAJOUT), &(out->printSP), &(out->COAROUT), &(out->FLOWOUT), &(out->VELOUT), &(out->SWFLOWOUT), &(out->AVVELOUT), &(out->AVORIOUT), &(out->ORDEROUT), &(out->QTENSOUT), &(out->QKOUT), &(out->AVSOUT), &(out->SOLOUT), &(out->ENOUT), &(out->ENFIELDOUT), &(out->ENNEIGHBOURS), &(out->ENSTROPHYOUT), &(out->DENSOUT), &(out->CVVOUT), &(out->CNNOUT), &(out->CWWOUT), &(out->CDDOUT), &(out->CSSOUT), &(out->CPPOUT), &(out->BINDER), &(out->BINDERBIN), &(out->SYNOUT), &(out->CHCKPNT), &(out->CHCKPNTrcvr) ));
+	if(fscanf( finput,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %f",&DBUG, &(out->TRAJOUT), &(out->printSP), &(out->COAROUT), &(out->FLOWOUT), &(out->VELOUT), &(out->SWFLOWOUT), &(out->AVVELOUT), &(out->AVORIOUT), &(out->ORDEROUT), &(out->QTENSOUT), &(out->QKOUT), &(out->AVSOUT), &(out->SOLOUT), &(out->ENOUT), &(out->ENFIELDOUT), &(out->ENNEIGHBOURS), &(out->ENSTROPHYOUT), &(out->DENSOUT), &(out->CVVOUT), &(out->CNNOUT), &(out->CWWOUT), &(out->CDDOUT), &(out->CSSOUT), &(out->CPPOUT), &(out->BINDER), &(out->BINDERBIN), &(out->SYNOUT), &(out->CHCKPNT), &(out->CHCKPNTrcvr), &(out->CHCKPNTTIMER) ));
 	else printf("Warning: Failed to read output.\n");
 	if(fscanf( finput,"%d %d",&(out->SPOUT), &(out->PRESOUT) ));
 	else printf("Warning: Failed to read output.\n");
@@ -731,7 +734,7 @@ void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cel
 	(*SP) = (spec*) calloc( NSPECI, sizeof( spec ) );
 	for( i=0; i<NSPECI; i++ ) {
 
-		if(fscanf( finput,"%lf %i %i %i %i %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&((*SP+i)->MASS), &((*SP+i)->POP), &((*SP+i)->QDIST), &((*SP+i)->VDIST), &((*SP+i)->ODIST), &((*SP+i)->RFC), &((*SP+i)->LEN), &((*SP+i)->TUMBLE), &((*SP+i)->CHIHI), &((*SP+i)->CHIA), &((*SP+i)->ACT),&((*SP+i)->BS), &((*SP+i)->SIGWIDTH), &((*SP+i)->SIGPOS), &((*SP+i)->DAMP), &((*SP+i)->VOL), &((*SP+i)->nDNST), &((*SP+i)->mDNST) ));	//Read the species' mass
+		if(fscanf( finput,"%lf %i %i %i %i %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&((*SP+i)->MASS), &((*SP+i)->POP), &((*SP+i)->QDIST), &((*SP+i)->VDIST), &((*SP+i)->ODIST), &((*SP+i)->RFC), &((*SP+i)->LEN), &((*SP+i)->TUMBLE), &((*SP+i)->CHIHI), &((*SP+i)->CHIA), &((*SP+i)->ACT),&((*SP+i)->MFPOT), &((*SP+i)->SIGWIDTH), &((*SP+i)->SIGPOS), &((*SP+i)->DAMP), &((*SP+i)->VOL), &((*SP+i)->nDNST), &((*SP+i)->mDNST), &((*SP+i)->MINACTRATIO), &((*SP+i)->BS) ));	//Read the species' properties
 		else printf("Warning: Failed to read species %i.\n",i);
 		for( j=0; j<NSPECI; j++ ) {
 			//Read the species' interaction matrix with other species
@@ -749,6 +752,9 @@ void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cel
 		GPOP=j;
 	}
 	(*pSRD) = (particleMPC*) calloc( GPOP, sizeof( particleMPC ) );
+	//Read the global densities
+	if(fscanf( finput,"%lf %lf %lf %d",&GnDNST,&GmDNST,&GMASS,&maxXYZ ));	//Read the global densities
+	else printf("Warning: Failed to read global densities.\n");
 
 	//Allocate memory for the cells
 	//Allocate rows (x first)
@@ -767,7 +773,7 @@ void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cel
 	for( i=0; i<NBC; i++ ) {
 		if(fscanf( finput,"%d %d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&((*WALL+i)->COLL_TYPE), &((*WALL+i)->PHANTOM), &((*WALL+i)->E), &((*WALL+i)->Q[0]), &((*WALL+i)->Q[1]), &((*WALL+i)->Q[2]), &((*WALL+i)->V[0]), &((*WALL+i)->V[1]), &((*WALL+i)->V[2]), &((*WALL+i)->O[0]), &((*WALL+i)->O[1]), &((*WALL+i)->O[2]) ));
 		else printf("Warning: Failed to read BC %d.\n",i);
-		if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &((*WALL+i)->L[0]), &((*WALL+i)->L[1]), &((*WALL+i)->L[2]), &((*WALL+i)->G[0]), &((*WALL+i)->G[1]), &((*WALL+i)->G[2]), &((*WALL+i)->A[0]), &((*WALL+i)->A[1]), &((*WALL+i)->A[2]), &((*WALL+i)->AINV[0]), &((*WALL+i)->AINV[1]), &((*WALL+i)->AINV[2]), &((*WALL+i)->P[0]),&((*WALL+i)->P[1]),&((*WALL+i)->P[2]),&((*WALL+i)->P[3]), &((*WALL+i)->R) ));
+		if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &((*WALL+i)->L[0]), &((*WALL+i)->L[1]), &((*WALL+i)->L[2]), &((*WALL+i)->G[0]), &((*WALL+i)->G[1]), &((*WALL+i)->G[2]), &((*WALL+i)->A[0]), &((*WALL+i)->A[1]), &((*WALL+i)->A[2]), &((*WALL+i)->AINV[0]), &((*WALL+i)->AINV[1]), &((*WALL+i)->AINV[2]), &((*WALL+i)->P[0]),&((*WALL+i)->P[1]),&((*WALL+i)->P[2]),&((*WALL+i)->P[3]), &((*WALL+i)->R), &((*WALL+i)->B[0]),&((*WALL+i)->B[1]),&((*WALL+i)->B[2]) ));
 		else printf("Warning: Failed to read BC %d.\n",i);
 		if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &((*WALL+i)->DN), &((*WALL+i)->DT), &((*WALL+i)->DVN), &((*WALL+i)->DVT), &((*WALL+i)->DVxyz[0]), &((*WALL+i)->DVxyz[1]), &((*WALL+i)->DVxyz[2]), &((*WALL+i)->MVN), &((*WALL+i)->MVT), &((*WALL+i)->MUN), &((*WALL+i)->MUT), &((*WALL+i)->MUxyz[0]), &((*WALL+i)->MUxyz[1]), &((*WALL+i)->MUxyz[2]) ));
 		else printf("Warning: Failed to read BC %d.\n",i);
@@ -795,7 +801,7 @@ void readchckpnt(char fpath[], inputList *in, spec **SP, particleMPC **pSRD, cel
 	//Swimmers
 	if(fscanf( finput,"%d %d %d %d %d %d %lf %lf %d %d",&NS, &(specS->TYPE), &(specS->QDIST), &(specS->ODIST), &(specS->headM), &(specS->middM), &(specS->iheadM), &(specS->imiddM), &(specS->HSPid), &(specS->MSPid) ));
 	else printf("Warning: Failed to read swimmer-type variables.\n");
-	if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %ld %lf %lf %lf %lf %d %lf", &(specS->FS), &(specS->TS), &(specS->DS), &(specS->sizeShrink), &(specS->springShrink), &(specS->fixDist), &(specS->k), &(specS->ro), &(specS->iro), &(specS->sig), &(specS->isig), &(specS->eps), &(specS->dep), &(specS->range), &(specS->depth), &(specS->runTime), &(specS->tumbleTime), &(specS->shrinkTime), &(specS->MAGMOM) ));
+	if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %d %lf %lf %lf %lf %d %lf", &(specS->FS), &(specS->TS), &(specS->DS), &(specS->sizeShrink), &(specS->springShrink), &(specS->fixDist), &(specS->k), &(specS->ro), &(specS->iro), &(specS->sig), &(specS->isig), &(specS->eps), &(specS->dep), &(specS->range), &(specS->depth), &(specS->runTime), &(specS->tumbleTime), &(specS->shrinkTime), &(specS->MAGMOM) ));
 	else printf("Warning: Failed to read swimmer-type variables.\n");
 
 	//Allocate the memory for the swimmers
@@ -1103,6 +1109,12 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 	// second set of primitives
 	in->seed = getJObjInt(jObj, "seed", 0, jsonTagList); // seed
 
+	// Handle checkpoint
+	getJObjStr(jObj, "checkpointIn", "", &(in->chckpntInputFile), jsonTagList);
+	if (strcmp(in->chckpntInputFile, "") == 0){ // if no input file was found
+		in->chckpntIn = 0;
+	} else in->chckpntIn = 1; // otherwise set set checkpoint
+
 	// Handle MD
 	getJObjStr(jObj, "mdIn", "", &mdInputFile, jsonTagList);
     int mdCoupleMode = getJObjInt(jObj, "mdCoupleMode", 1, jsonTagList); // coupling mode for MD
@@ -1118,7 +1130,7 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 
 	cJSON *arrBC = NULL;
 	getCJsonArray(jObj, &arrBC, "BC", jsonTagList, arrayList, 1);
-	if(arrBC != NULL){ // if this can be found in the json
+	if(arrBC != NULL) { // if this can be found in the json
 		NBC = cJSON_GetArraySize(arrBC); // get the number of BCs
 
 		//Allocate the needed amount of memory for the BCs
@@ -1415,8 +1427,10 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 			}
 		}
 	} else { // otherwise default to periodic BCs about domain
-		domainWalls = 1; // just trigger the domain walls override w PBCs
 		NBC = 0;
+		if(domainWalls==1) domainWalls=1; 
+		else if(domainWalls==2) domainWalls=2; 
+		else  domainWalls=1; // trigger the domain walls override w PBCs
 	}
 
 	// handle domainWalls override
@@ -1490,11 +1504,18 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 				currWall->PHANTOM = 0;
 				currWall->MVN = 1;
 				currWall->MVT = 1;
-			} else { // otherwise, set flags for solid walls
+				currWall->MUN = 1.0;
+				currWall->MUT = 1.0;
+			} else if (domainWalls == 2) { // set flags for solid walls
 				currWall->PHANTOM = 1;
 				currWall->DN = 0; // override the value of DN from earlier, needs to be 0 for solid
 				currWall->MVN = -1.0;
 				currWall->MVT = -1.0;
+				currWall->MUN = 1.0;
+				currWall->MUT = 1.0;
+			} else{	// shouldn't get here
+				printf("Error: domainWalls unknown.\n");
+				exit(EXIT_FAILURE);
 			}
 
 			// set all the default values
@@ -1745,7 +1766,7 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 	out->SWORIOUT = getJObjInt(jObj, "swimOOut", 0, jsonTagList); // swOriOut
     const char* swimROutTags[2] = {"swimROut", "swimRTOut"}; // possible tags for collision operator
     out->RTOUT = getJObjIntMultiple(jObj, swimROutTags, 2, 0, jsonTagList); // RTECH
-	out->SYNOUT = getJObjInt(jObj, "synopsisOut", 1, jsonTagList); // swSynOut
+	out->SYNOUT = getJObjInt(jObj, "synopsisOut", 1, jsonTagList); // SynOut
 	out->CHCKPNT = getJObjInt(jObj, "checkpointOut", 0, jsonTagList); // chkpntOut
 
 	// 5. Swimmers /////////////////////////////////////////////////////////////

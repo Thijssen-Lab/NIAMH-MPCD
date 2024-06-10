@@ -1,15 +1,15 @@
 {
     "domain":           [80, 80, 80],
-    "simSteps":         5000,
+    "simSteps":         1000,
     "warmUp":           0,
     "comment":          "Active nematic fluid",
-    "collOp":           17,
+    "collOp":           21,
     "lc":               1,
     "species":
     [
         {
             "comment":      "Number of particles should be 20*vol",
-            "pop":          1329941,
+            "dens":         20,
             "act":          0.08
         }
     ],

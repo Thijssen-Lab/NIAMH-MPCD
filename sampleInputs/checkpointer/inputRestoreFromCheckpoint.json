@@ -1,21 +1,22 @@
 {
-    "domain":           [20, 20],
-    "simSteps":         50000,
-    "comment":          "Isotropic fluid using Andersen MPCD",
+    "comment":          "Tell the input script where to find the checkpointed file",
+    "comment":          "It is safest if the rest of the input file is as similar to the original input file as possible.",
+    "checkpointIn":     "./originalOut/checkpoint.dat",
+    "domain":           [30, 30],
+    "simSteps":         5000,
     "collOp":           2,
     "species":
     [
         {
-            "comment":      "For the density to be 20, must subtract the volume of the colloid. Or could just use 'dens':20 ",
-            "pop":          7435
+            "dens":     20
         }
     ],
+    "checkpointOut":    100,
+    
     "debugOut":         3,
-    "flowOut":          1000,
-    "solidTrajOut":     1000,
-    "energyOut":        0,
+    "flowOut":          100,
+    "solidTrajOut":     100,
     "synopsisOut":      1,
-    "comment":          "Periodic boundary conditions on the domain",
     "domainWalls":      1,
     "BC":
     [
@@ -25,14 +26,17 @@
             "Q":            [10, 10, 0],
             "aInv":         [1, 1, 0],
             "P":            [2, 2, 2, 2],
-            "comment":      "Colloid radius",
             "R":            3,
             "DN":           0,
             "MVN":          -1,
             "MVT":          -1,
-            "comment":      "The colloid should be mobile, i.e. free to be displaced",
             "dsplc":        1,
             "mass":         565
         }
     ]
+}
+
+
+{
+    "checkpointIn":     "./checkpoint.dat"
 }

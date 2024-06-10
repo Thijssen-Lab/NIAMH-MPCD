@@ -49,7 +49,7 @@
 /// @see opencoarse()
 ///
 void openBasic( FILE **fout,char dir[],char filestring[],char fileextension[] ) {
-	char filename[200];
+	char filename[STRLN];
 
 	strcpy( filename,dir );
 	strcat( filename,filestring );
@@ -71,7 +71,7 @@ void openBasic( FILE **fout,char dir[],char filestring[],char fileextension[] ) 
 /// @param dir Path to the directory of the checkpoint.dat file.
 ///
 void openCheckpoint( FILE **fout,char dir[] ) {
-	char filename[200];
+	char filename[STRLN];
 	char filechckpoint[]="checkpoint";
 	char fileextension[]=".dat";
 
@@ -99,7 +99,7 @@ void openCheckpoint( FILE **fout,char dir[] ) {
 /// @param fileextension Extension of the file being opened.
 ///
 void opendetails( int i,FILE *fdetail[],char dir[],char fileprefix[],char filesuffix[],char fileextension[] ) {
-	char filename[200];
+	char filename[STRLN];
 	strcpy( filename,dir );
 	strcat( filename,fileprefix );
 	sprintf( filesuffix,"%i",i );
@@ -481,7 +481,7 @@ void openenergyneighbours( FILE **f,char dir[],char fname[],char ext[] ) {
 /// @param firsttime Integer specifying if it is the first time opening the synopsis file.
 ///
 void opensynopsis( FILE **fsynopsis,char dir[],int firsttime ) {
-	char filename[200];
+	char filename[STRLN];
 	char filesynopsis[]="synopsis";
 	char fileextension[]=".dat";
 
@@ -511,7 +511,7 @@ void opensynopsis( FILE **fsynopsis,char dir[],int firsttime ) {
 /// @param fileextension Extension of the BC motion output file.
 ///
 void opentraj( int bc,FILE *fsolids[],char dir[],char filesolids[],char filesuffix[],char fileextension[] ){
-	char filename[200];
+	char filename[STRLN];
 
 	strcpy( filename,dir );
 	strcat( filename,filesolids );
@@ -540,7 +540,7 @@ void opentraj( int bc,FILE *fsolids[],char dir[],char filesolids[],char filesuff
 /// @param fileextension Extension of the MPCD particles position file.
 ///
 void openplace( int i,FILE *fin[],char dir[],char fileprefix[],char filesuffix[16],char fileextension[] ){
-	char filename[200];
+	char filename[STRLN];
 
 	strcpy( filename,dir );
 	strcat( filename,fileprefix );

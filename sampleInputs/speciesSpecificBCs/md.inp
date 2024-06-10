@@ -8,17 +8,18 @@
 # ----------------------------------------------------------------------------------------------------
 #
 # parameter:	randomSeed		= 0
-# parameter:	warmupMD		= FREE_WARMUP
+# parameter:	warmupMD		= PINNED_WARMUP 
 #
-# parameter:	unitCells	 	= (30,10,10)
+# parameter:	unitCells	 	= (60,60,0)
 # parameter:	lattice		 	= LATT_BULK
 # parameter:	rCut			= CUTOFF_WCA
 # parameter:	sigma_lj		= 1.0
 # parameter:	rNebrShell	 	= 0.3
 # parameter:	dt		 	= 0.002
 #
-# parameter:	geometry	 	= GEOM_CYLINDER
+# parameter:	geometry	 	= GEOM_BULK
 # parameter:	wallThickness		= 1 (in unit cells)
+# parameter:	boundaryType		= noREPULSION
 #
 # parameter:	bjerrum		 	= 0
 # parameter:	lambda_D		= 0
@@ -28,8 +29,8 @@
 # parameter:	kFene			= 120.0
 # parameter:	r0Fene			= 1.5
 # parameter:	kSqu				= 0.0
-# parameter:	kBend				= 5.0
-# parameter:	kNemMPC			= 50.0
+# parameter:	kBend				= 0.0
+# parameter:	kNemMPC			= 0.0
 #
 # parameter:	overlapMin		= 0.1
 # parameter:	overlapMinMonomer	= 0.9
@@ -65,14 +66,14 @@
 # polymer sets:
 # ----------------------------------------------------------------------------------------------------
 #
-# parameter:	polyLayout		= (LAYOUT_FLUID)
+# parameter:	polyLayout		= (LAYOUT_RODY)
 # parameter:	polyAtomType		= (TYPE_MONOMER)
 # parameter:	polyDensityKind		= (SURFACE)
 # parameter:	polyDensity		= (0.0)
 # parameter:	polySpread		= (0.0)
 # parameter:	monoCharge		= (0)
 # parameter:	polyM			= (1)
-# parameter:	polyN			= (6)
+# parameter:	polyN			= (60)
 #
 #
 # ---------------------------------------------------------------------------------------------------
@@ -80,7 +81,7 @@
 # ----------------------------------------------------------------------------------------------------
 #
 # parameter:	phaseName	 	=     	Equilibration,	Production
-# parameter:	nStep		 	= (0, 	50000,			600000000)
+# parameter:	nStep		 	= (0, 	50000,			50000000)
 #
 #
 # ----------------------------------------------------------------------------------------------------
@@ -105,11 +106,11 @@
 # step counters:
 # ----------------------------------------------------------------------------------------------------
 #
-# parameter:	stepAvg		 	= (0, 	5000, 			5000)
+# parameter:	stepAvg		 	= (0, 	2500, 			2500)
 # parameter:	stepHistCollect 	= (0,	0, 			0)
 # parameter:	stepHistPrint 		= (0,	0, 			0)
-# parameter:	stepSceneSlow	 	= (0, 	5000, 			5000)
-# parameter:	stepSceneFast	 	= (0, 	5000, 			5000)
+# parameter:	stepSceneSlow	 	= (0, 	2500, 			2500)
+# parameter:	stepSceneFast	 	= (0, 	2500, 			2500)
 # parameter:	stepCheckpoint		= (0,   0,				0)
 #
 #

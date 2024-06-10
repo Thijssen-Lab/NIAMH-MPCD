@@ -1,1 +1,1 @@
-Simulates a single 2D polymer in suspended in a nematic fluid with periodic boundary conditions.
+Simulates a single 2D polymer composed of 10 monomers suspended in a nematic fluid with periodic boundary conditions. The polymer is initialized in a U-configuration.

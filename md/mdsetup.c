@@ -2002,12 +2002,11 @@ void SetupFeneList (simptr sim)
 {
 	// Initializes a list of pairs that are bounded by a FENE interaction.
 
-	int			n, nn, i, nAtom, nPolymer, nMonomer;
+	int			n, nn, i, nPolymer, nMonomer;
 	particleMD	*atom, *p;
 
 	// local sim variables
 	atom  = sim->atom.items;
-	nAtom = sim->atom.n;
 	// need to consider multiple polymer chains
 	nPolymer = sim->polyM[0];
 	nMonomer = sim->polyN[0];

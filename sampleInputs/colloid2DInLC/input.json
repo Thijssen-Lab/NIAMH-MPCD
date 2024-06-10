@@ -8,7 +8,7 @@
     "species":
     [
         {
-            "comment":      "For the density to be 20, must subtract the volume of the colloid",
+            "comment":      "For the density to be 20, must subtract the volume of the colloid. Or could just use 'dens'.",
             "pop":          65717
         }
     ],
@@ -16,7 +16,7 @@
     [
         {
             "comment":      "Colloid",
-            "comment":      "Colloids require phantom particles enabled",
+            "comment":      "Colloids require phantom particles enabled for no-slip boundaries",
             "phantom":      1,
             "Q":            [30, 30, 0],
             "aInv":         [1, 1, 1],

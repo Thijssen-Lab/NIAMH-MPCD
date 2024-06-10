@@ -372,7 +372,6 @@ void PolymerPersistence (simptr sim)
 {
 	int			i, nPolymer;
 	real		r1, r2, s;
-// 	real		cosQ;
 	real		v1x, v1y, v1z;
 	real		v2x, v2y, v2z;
 	itemPoly 	*polymer;
@@ -387,10 +386,7 @@ void PolymerPersistence (simptr sim)
 		p1 = polymer[i].p1;
 		p2 = p1->next;
 		s = 0;
-// 		cosQ = 1;
-
 		while (p1 && p2) {
-
 			// vector 1
 			v1x = p2->wx - p1->wx;
 			v1y = p2->wy - p1->wy;
@@ -399,7 +395,6 @@ void PolymerPersistence (simptr sim)
 
 			// arc length
 			s = r1;
-
 			while (p2 && p2->next) {
 
 				// vector 2
@@ -408,9 +403,6 @@ void PolymerPersistence (simptr sim)
 				v2z = p2->next->wz - p2->wz;
 				r2  = sqrt(v2x*v2x + v2y*v2y + v2z*v2z);
 
-				// dot product
-// 				cosQ = (v1x*v2x + v1y*v2y + v1z*v2z) / (r1*r2);
-
 				// next bond
 				p2 = p2->next;
 				s += r2;
@@ -418,5 +410,6 @@ void PolymerPersistence (simptr sim)
 			p1 = p1->next;
 			p2 = p1->next;
 		}
+		printf("Polymer %d persistence length %lf\n",i,s);
 	}
 }

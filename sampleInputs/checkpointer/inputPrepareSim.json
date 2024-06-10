@@ -1,0 +1,36 @@
+{
+    "domain":           [30, 30],
+    "simSteps":         5000,
+    "collOp":           2,
+    "species":
+    [
+        {
+            "dens":     20
+        }
+    ],
+    "comment":          "We set the checkpointer to save the entire simulation every 100 MPCD iterations.",
+    "comment":          "Checkpointing dumps ALL simulation information so that the simulation can be restarted from a fail point. Only use for big, important simulations",
+    "comment":          "It can also be put on a timer by the override ''checkpointTimerOut'':0.0056, which is in units of hours (so the example of 0.0056hrs is every 20sec). This should be on the scale of days or weeks.",
+    "checkpointOut":    100,
+    "debugOut":         3,
+    "flowOut":          100,
+    "solidTrajOut":     100,
+    "synopsisOut":      1,
+    "domainWalls":      1,
+    "BC":
+    [
+        {
+            "comment":      "The spherical colloid",
+            "phantom":      1,
+            "Q":            [10, 10, 0],
+            "aInv":         [1, 1, 0],
+            "P":            [2, 2, 2, 2],
+            "R":            3,
+            "DN":           0,
+            "MVN":          -1,
+            "MVT":          -1,
+            "dsplc":        1,
+            "mass":         565
+        }
+    ]
+}
