@@ -2776,7 +2776,7 @@ particleMD *GrowLinearChainTrans (simptr sim, int type, int layout, int n, parti
 				else {
 					p1.rz = 0.0;
 				}
-				if(p1.ry > sim->box[x_]*0.5 + transPoreWidth*0.5){
+				if(p1.ry > sim->box[y_]*0.5 + transPoreWidth*0.5){
 					picked=1;
 				}
 			}
