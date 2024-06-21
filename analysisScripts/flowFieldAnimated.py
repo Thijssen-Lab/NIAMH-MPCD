@@ -104,15 +104,15 @@ xyzSize=array([30,30,1])
 dim=2
 if "domain" in input:
 	xyzSize[0]=input['domain'][0]
-	dim=1
+	dim=0
 	if(len(input['domain'])>1):
 		xyzSize[1]=input['domain'][1]
-		dim=2
+		dim=1
 	else:
 		xyzSize[1]=1
 	if(len(input['domain'])>2):
 		xyzSize[2]=input['domain'][2]
-		dim=3
+		dim=2
 	else:
 		xyzSize[2]=1
 # Data
