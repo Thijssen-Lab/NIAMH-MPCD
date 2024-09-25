@@ -1438,6 +1438,64 @@ void ComputeBendForces (simptr sim)
 	sim->bendE  = bendE;
 }
 
+/// Computes all the forces between DIHEDRAL-bonded atom pairs. We compute the dr from
+/// the WORLD positions, therefore we do not ever have to worry about the PBC
+/// here! But the world coordinates of the FENE pairs MUST be initialized
+/// accordingly.
+///
+/// @param		sim	a pointer to a simulation structure
+/// @param		sim	a pointer to a simulation structure
+/// @return 	void
+/// @warning	Real-world coordinates of the fene pairs MUST be initialized correctly
+///				because we don't consider the PBC in the BEND calculation.
+// TYLER, ZAHRA, HOLLY, EMMA, CHeck what this warning means with Zahra
+
+//================================================================================
+void ComputeDihedralForces (simptr sim)
+//================================================================================
+{
+	int	  		i, nDihedral;
+	particleMD	*p1, *p2, *p3, *p4;
+	item4STD	*dihedral;
+	real		E=0, potE=0, dihedralE=0, kDihedral=0, phi0=0;
+	real		dx12, dy12, dz12, dx23, dy23, dz23, dx34, dy34, dz34;
+
+	// local sim variables
+	dihedral	= sim->dihedral.items;
+	nDihedral   = sim->dihedral.n;
+	kDihedral   = sim->kDihedral;
+	phi0		= sim->phi0Dihedral;
+	if(kDihedral>=TOL) {
+		// loop over dihedral pairs
+		printf("Hello world\n");
+		for (i=0; i<nDihedral; i++) {
+			// extract pair pointers
+			p1 = dihedral[i].p1;
+			p2 = dihedral[i].p2;
+			p3 = dihedral[i].p3;
+			p4 = dihedral[i].p4;
+			// compute dr (using WORLD positions)
+			dx12 = p2->wx - p1->wx;
+			dy12 = p2->wy - p1->wy;
+			dz12 = p2->wz - p1->wz;
+			dx23 = p3->wx - p2->wx;
+			dy23 = p3->wy - p2->wy;
+			dz23 = p3->wz - p2->wz;
+			dx34 = p4->wx - p3->wx;
+			dy34 = p4->wy - p3->wy;
+			dz34 = p4->wz - p3->wz;
+			// calculate harmonic four-particle dihedral interaction
+			E = dihedralHarmonic (p1, p2, p3, p4, dx12, dy12, dz12, dx23, dy23, dz23, dx34, dy34, dz34, kDihedral, phi0);
+			dihedralE += E;
+			potE  += E;
+		}
+	}
+
+	// add potential energies in sim structure
+	sim->potE  += potE;
+	sim->dihedralE  = dihedralE;
+}
+
 /// Computes all the forces between the bond defined by FENE-bonded atom pairs
 /// and the background nematic solvent. We compute the dr from
 /// the WORLD positions, therefore we do not ever have to worry about the PBC
@@ -2143,13 +2201,121 @@ real bendHarmonic (particleMD *p1, particleMD *p2, particleMD *p3,
 }
 
 
+/// Compute the dihedralHarmonic (simple harmonic angle) interaction between
+/// four bond vectors . 
+/// This is written the same as origami dihedralforce in origami code written by Tyler Shendruk and the Origami Senior Honours Group.
+///The four bond vectors and k
+/// the strength of the DIHEDRAL potential are passed as parameters. Divergence of
+/// the force is also calculated for the configurational temperature.
+///
+/// @param		p1 pointer to the first atom
+/// @param		p2 pointer to the second atom
+/// @param		p3 pointer to the third atom
+/// @param		p4 pointer to the forth atom
+/// @param		dx12,dy12,dz12 position difference between atoms 1 and 2
+/// @param		dx23,dy23,dz23 position difference between atoms 2 and 3
+/// @param		dx34,dy34,dz34 position difference between atoms 2 and 3
+/// @param		k dihedral constant
+/// @param		equi equilibrium angle
+/// @return		the value of the harmonic angle interaction energy
 
+//================================================================================
+real dihedralHarmonic (particleMD *p1, particleMD *p2, particleMD *p3, particleMD *p4, real dx12, real dy12, real dz12, real dx23, real dy23, real dz23, real dx34, real dy34, real dz34, real k, real equi)
+//================================================================================
+{
+	real ang, c, k_eff;
+	real fx1=0, fy1=0, fz1=0, fx4=0, fy4=0, fz4=0;
+	real potE=0;
+	int mode=1;                              //0==angularHarmonic 1==cosineHarmonic 2==cosineExpansion
 
+	double c22,c23,c24,c33,c34,c44;
+	double p,q,Q,t1,t2,t3,t4,t5,t6,t7;
+	double beta1,beta2,beta3,beta4;
 
+	// Calculate Rapaport's coefficients
+	c22 = (dx12*dx12 + dy12*dy12 + dz12*dz12);
+	c23 = (dx12*dx23 + dy12*dy23 + dz12*dz23);
+	c24 = (dx12*dx34 + dy12*dy34 + dz12*dz34);
+	c33 = (dx23*dx23 + dy23*dy23 + dz23*dz23);
+	c34 = (dx23*dx34 + dy23*dy34 + dz23*dz34);
+	c44 = (dx34*dx34 + dy34*dy34 + dz34*dz34);
+	// p = -(u.v) where u = r12 x r23 and v = r23 x r34, normal vectors to planes including r12,r23 and r23,r34 
+	// will be used to calculate angle between planes
+	p=c24*c33-c23*c34;
+	/// q = |u|^2 * |v|^2                                              
+	q=(c22*c33-c23*c23)*(c33*c44-c34*c34);							
 
+	t1=p;
+	t2=c22*c34-c23*c24;
+	t3=c23*c23-c22*c33;
+	t4=c33*c44-c34*c34;
+	t5=c24*c34-c23*c44;
+	t6=-t1;
+	t7=c22*c33-c23*c23;
+	beta2=c34/c33;
+	beta3=c23/c33;
+	beta1=-1.0-beta3;
+	beta4=-1.0-beta2;
 
+	if( sqrt(t7)>TOL && sqrt(t4)>TOL ) {
+		// Trig
+		Q=1.0/sqrt(q);
+		c = p*Q;
+		if( c>0.99999 && c<1.00001 ) ang=0.0;
+		else if( c<-0.999999 && c>-1.00001 ) ang=M_PI;
+		else ang = acos(c);
+		k_eff = k;
 
+		// Angular-harmonic version of the force
+		if(mode==0) {
+			if(fabs(ang)<0.00001) k_eff*=1.0;
+			else if(fabs(fabs(ang)-M_PI)<0.00001) k_eff*=0.0;
+			else k_eff*=(ang-equi)/sin(ang);
 
+			// compute the energy
+			potE  = 0.5*k*(ang-equi)*(ang-equi);	
+		}
+		// Cosine-harmonic version of the force
+		else if(mode==1) {
+			k_eff *= -2.0*(c-cos(equi));
+
+			// compute the energy
+			potE  = k*(c-cos(equi))*(c-cos(equi));
+		}
+		// Cosine-expansion version of the force
+		else if(mode==2) {
+			k_eff*=1.0;	
+
+			// compute the energy
+			potE  = k*(1.0-cos(ang-equi));              
+		}
+		// Calculate first and last force
+		// first
+		fx1 = k_eff*Q*c33*( t1*dx12 + t2*dx23 + t3*dx34 )/t7;
+		fy1 = k_eff*Q*c33*( t1*dy12 + t2*dy23 + t3*dy34 )/t7;
+		fz1 = k_eff*Q*c33*( t1*dz12 + t2*dz23 + t3*dz34 )/t7;
+
+		// last
+		fx4 = k_eff*Q*c33*( t4*dx12 + t5*dx23 + t6*dx34 )/t4;
+		fy4 = k_eff*Q*c33*( t4*dy12 + t5*dy23 + t6*dy34 )/t4;
+		fz4 = k_eff*Q*c33*( t4*dz12 + t5*dz23 + t6*dz34 )/t4;
+
+		// Apply the force p1, p2, p3 and p4
+		p1->ax += fx1;
+		p1->ay += fy1;
+		p1->az += fz1;
+		p4->ax += fx4;
+		p4->ay += fy4;
+		p4->az += fz4;
+		p2->ax += beta1*fx1+beta2*fx4;
+		p2->ay += beta1*fy1+beta2*fy4;
+		p2->az += beta1*fz1+beta2*fz4;
+		p3->ax += beta3*fx1+beta4*fx4;
+		p3->ay += beta3*fy1+beta4*fy4;
+		p3->az += beta3*fz1+beta4*fz4;
+	}
+	return potE;
+}
 
 /// Compute the bendNematic (simple harmonic angle) interaction between
 /// the bond vector of the polymer and the nematic background solvent.

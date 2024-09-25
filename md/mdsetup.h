@@ -36,6 +36,7 @@ void 			SetupNeighborList			(simptr sim);
 void 			SetupAnchorList				(simptr sim);
 void 			SetupFeneList				(simptr sim);
 void 			SetupBendList				(simptr sim);
+void 			SetupDihedralList			(simptr sim);
 void 			SetupGroups 				(simptr sim);
 void 			SetupMeasurements 			(simptr sim);
 void 			SetupStepCounters			(simptr sim);
