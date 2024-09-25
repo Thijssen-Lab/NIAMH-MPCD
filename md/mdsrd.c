@@ -631,6 +631,7 @@ void ComputeForcesSRD (simptr sim,int MDmode,struct particleMPC *pSRD,struct spe
 	ComputeAnchorForces(sim);
 	ComputeFeneForces(sim);
 	ComputeBendForces(sim);
+	ComputeDihedralForces(sim);
 	ComputeNemForces(sim,SP,CL);
 	ComputeSqueezeForces(sim);
 }
@@ -682,6 +683,7 @@ void ComputeForces (simptr sim)
 	ComputeAnchorForces(sim);
 	ComputeFeneForces(sim);
 	ComputeBendForces(sim);
+	ComputeDihedralForces(sim);
 	ComputeSqueezeForces(sim);
 }
 
@@ -731,6 +733,7 @@ void ComputeCapForces (simptr sim)
 	ComputeAnchorForces(sim);
 	ComputeFeneForces(sim);
 	ComputeBendForces(sim);
+	ComputeDihedralForces(sim);
 	ComputeSqueezeForces(sim);
 }
 
@@ -1448,7 +1451,7 @@ void ComputeBendForces (simptr sim)
 /// @return 	void
 /// @warning	Real-world coordinates of the fene pairs MUST be initialized correctly
 ///				because we don't consider the PBC in the BEND calculation.
-// TYLER, ZAHRA, HOLLY, EMMA, CHeck what this warning means with Zahra
+// TYLER, ZAHRA, HOLLY, EMMA, Check what this warning means with Zahra
 
 //================================================================================
 void ComputeDihedralForces (simptr sim)
@@ -1467,7 +1470,6 @@ void ComputeDihedralForces (simptr sim)
 	phi0		= sim->phi0Dihedral;
 	if(kDihedral>=TOL) {
 		// loop over dihedral pairs
-		printf("Hello world\n");
 		for (i=0; i<nDihedral; i++) {
 			// extract pair pointers
 			p1 = dihedral[i].p1;
