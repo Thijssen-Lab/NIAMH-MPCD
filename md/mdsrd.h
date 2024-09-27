@@ -46,7 +46,7 @@ real QuadraticSpringTube	        (particleMD *p1, real dy, real dz, real k);
 real SexticSpringTube       		(particleMD *p1, real dy, real dz, real k);
 real LennardJonesTube		        (particleMD *p1, real dy, real dz, real k, simptr sim);
 real FENE        			        (particleMD *p1, particleMD *p2, real dx, real dy, real dz, real k, real r0);
-real bendHarmonic                   (particleMD *p1, particleMD *p2, particleMD *p3, real dx12, real dy12, real dz12, real dx23, real dy23, real dz23, real k);
+real bendHarmonic                   (particleMD *p1, particleMD *p2, particleMD *p3, real dx12, real dy12, real dz12, real dx23, real dy23, real dz23, real k, real equi);
 real dihedralHarmonic               (particleMD *p1, particleMD *p2, particleMD *p3, particleMD *p4, real dx12, real dy12, real dz12, real dx23, real dy23, real dz23, real dx34, real dy34, real dz34, real k, real equi);
 real bendNematic                    (particleMD *p1, particleMD *p2, real dx12, real dy12, real dz12, real dx23, real dy23, real dz23, real k, real S, real dt, struct spec *SP, struct cell *CL);
 

@@ -1405,15 +1405,16 @@ void ComputeBendForces (simptr sim)
 	int	  		i, nBend;
 	particleMD	*p1, *p2, *p3;
 	item3STD	*bend;
-	real		E=0, potE=0, bendE=0, kBend;
+	real		E=0, potE=0, bendE=0, kBend=0, theta0=0;
 	real		dx12, dy12, dz12, dx23, dy23, dz23;
 
 	// local sim variables
 	bend	= sim->bend.items;
 	nBend   = sim->bend.n;
 	kBend   = sim->kBend;
+	theta0	= sim->theta0Bend;
 
-	if(kBend>0.0) {
+	if(kBend>TOL) {
 		// loop over bend pairs
 		for (i=0; i<nBend; i++) {
 			// extract pair pointers
@@ -1428,11 +1429,9 @@ void ComputeBendForces (simptr sim)
 			dy23 = p2->wy - p3->wy;
 			dz23 = p2->wz - p3->wz;
 			// calculate harmonic three-particle bend interaction
-			if (kBend>=TOL) {
-				E = bendHarmonic (p1, p2, p3, dx12, dy12, dz12, dx23, dy23, dz23, kBend);
-				bendE += E;
-				potE  += E;
-			}
+			E = bendHarmonic (p1, p2, p3, dx12, dy12, dz12, dx23, dy23, dz23, kBend, theta0);
+			bendE += E;
+			potE  += E;
 		}
 	}
 
@@ -2107,15 +2106,18 @@ real FENE (particleMD *p1, particleMD *p2, real dx, real dy, real dz,
 /// @param		dx12,dy12,dz12 position difference between atoms 1 and 2
 /// @param		dx23,dy23,dz23 position difference between atoms 2 and 3
 /// @param		k bend spring constant
+/// @param		equi equilibrium angle
 /// @return		the value of the harmonic angle interaction energy
+// TYLER, ZAHRA, HOLLY, EMMA <---Zahra check what is needed for 3 different forms
+		//Currently only bendStyle==0 and ==1 is definitely correctn but 2 is NOT
 
 //================================================================================
 real bendHarmonic (particleMD *p1, particleMD *p2, particleMD *p3,
-				  real dx12, real dy12, real dz12, real dx23, real dy23, real dz23, real k)
+				  real dx12, real dy12, real dz12, real dx23, real dy23, real dz23, real k, real equi)
 //================================================================================
 {
 	real r12r23, ir12, ir23;
-	real theta, c, isinc, dcx1, dcy1, dcz1, dcx3, dcy3, dcz3;
+	real theta, c, c0, isinc, dcx1, dcy1, dcz1, dcx3, dcy3, dcz3;
 	real fx1=0, fy1=0, fz1=0, fx3=0, fy3=0, fz3=0;
 	real potE=0;
 	int bendStyle=0; //0==angularHarmonic 1==cosineHarmonic 2==cosineExpansion
@@ -2133,6 +2135,8 @@ real bendHarmonic (particleMD *p1, particleMD *p2, particleMD *p3,
 		if( c>0.99999 && c<1.00001 ) theta=0.0;
 		else if( c<-0.999999 && c>-1.00001 ) theta=0.0;
 		else theta=acos(c);
+		//Shift by equibrium angle
+		c0=cos(equi);
 
 		// compute the derivative of the cosine for the first and third particle *k
 		// first
@@ -2149,7 +2153,7 @@ real bendHarmonic (particleMD *p1, particleMD *p2, particleMD *p3,
 			// computes 1/sinc(theta)
 			if(fabs(theta)<0.00001) isinc=1.0;
 			else if(fabs(fabs(theta)-M_PI)<0.00001) isinc=0.0;
-			else isinc=theta/sin(theta);
+			else isinc=(theta-equi)/sin(theta);
 
 			//computes the forces
 			fx1 = isinc*dcx1;
@@ -2164,15 +2168,15 @@ real bendHarmonic (particleMD *p1, particleMD *p2, particleMD *p3,
 		}
 		else if (bendStyle==1) { //cosine harmonic
 			//computes the forces
-			fx1 = -2.0*(c-1.0)*dcx1;
-			fy1 = -2.0*(c-1.0)*dcy1;
-			fz1 = -2.0*(c-1.0)*dcz1;
-			fx3 = -2.0*(c-1.0)*dcx3;
-			fy3 = -2.0*(c-1.0)*dcy3;
-			fz3 = -2.0*(c-1.0)*dcz3;
+			fx1 = -2.0*(c-c0)*dcx1;
+			fy1 = -2.0*(c-c0)*dcy1;
+			fz1 = -2.0*(c-c0)*dcz1;
+			fx3 = -2.0*(c-c0)*dcx3;
+			fy3 = -2.0*(c-c0)*dcy3;
+			fz3 = -2.0*(c-c0)*dcz3;
 
 			// compute the energy
-			potE  = k*(c-1.0)*(c-1.0);
+			potE  = k*(c-c0)*(c-c0);
 		}
 		else if (bendStyle==2) { // cosine expansion
 			//computes the forces
@@ -2228,7 +2232,7 @@ real dihedralHarmonic (particleMD *p1, particleMD *p2, particleMD *p3, particleM
 	real ang, c, k_eff;
 	real fx1=0, fy1=0, fz1=0, fx4=0, fy4=0, fz4=0;
 	real potE=0;
-	int mode=1;                              //0==angularHarmonic 1==cosineHarmonic 2==cosineExpansion
+	int mode=0;                              //0==angularHarmonic 1==cosineHarmonic 2==cosineExpansion
 
 	double c22,c23,c24,c33,c34,c44;
 	double p,q,Q,t1,t2,t3,t4,t5,t6,t7;

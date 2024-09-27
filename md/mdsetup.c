@@ -1250,9 +1250,8 @@ void InitPolymers (simptr sim)
 					// Curved layout 
 					else if (polyLayout[set]==LAYOUT_BANANA ) {
 						p1 = p3;
-						// TYLER, ZAHRA, HOLLY + EMMA: CURRENTLY A RANDOM WALK 
-						// BUT SHOULD BE BANANA IN RANDOM ORIENTATION
-						p1->next = GrowLinearChain (sim, polyAtomType[set], layout, polyN[set],  NULL, &grown);
+						if(fabs(sim->theta0Bend)<TOL) p1->next = GrowRodChain (sim, polyAtomType[set], layout, polyN[set],  NULL, &grown, y_, 0);
+						else p1->next = GrowBananaChain (sim, polyAtomType[set], layout, polyN[set], (polyN[set]-1)*(sim->theta0Bend), (sim->sigma_lj)*polyN[set]/((polyN[set]-1)*(sim->theta0Bend)), NULL, &grown);
 					}
 					// same as above
 					else if (polyLayout[set]==LAYOUT_U ) {
@@ -1267,42 +1266,9 @@ void InitPolymers (simptr sim)
 								// just register the polymer
 								AddItemPoly (&polymer, p1, 1);
 								break;
-							case LAYOUT_FLUID:
+							case LAYOUT_FLUID: case LAYOUT_RODX: case LAYOUT_RODY: case LAYOUT_U: case LAYOUT_TRANS: case LAYOUT_BANANA:
 								// detach from first fluid atom and register polymer
 								// note this has been modded so we don't need to detach...
-								p1 = p1->next;
-								p1->prev = NULL;
-								AddItemPoly (&polymer, p1, 0);
-								break;
-							// Identical to LAYOUT_FLUID
-							case LAYOUT_RODX:
-								p1 = p1->next;
-								p1->prev = NULL;
-								AddItemPoly (&polymer, p1, 0);
-								break;
-							// Identical to above
-							case LAYOUT_RODY:
-								p1 = p1->next;
-								p1->prev = NULL;
-								AddItemPoly (&polymer, p1, 0);
-								break;
-							// Identical to above
-							case LAYOUT_U:
-								p1 = p1->next;
-								p1->prev = NULL;
-								AddItemPoly (&polymer, p1, 0);
-								break;
-							// Identical to above
-							case LAYOUT_TRANS:
-								p1 = p1->next;
-								p1->prev = NULL;
-								AddItemPoly (&polymer, p1, 0);
-								break;
-							// Identical to above
-							// TYLER, ZAHRA, HOLLY, EMMA: Note all these identical cases can be simplified by 
-							// case 'a': case 'e': case 'i': case 'o': case 'u': case 'y':
-							// Do once sure layout is working
-							case LAYOUT_BANANA:
 								p1 = p1->next;
 								p1->prev = NULL;
 								AddItemPoly (&polymer, p1, 0);
@@ -2952,6 +2918,73 @@ particleMD *GrowRodChain (simptr sim, int type, int layout, int n, particleMD *p
 		if (pNew) {
 			pNew->prev = p0;
 			pNew->next = GrowRodChain (sim, type, layout, n-1, pNew, &grown, dir, flag);
+			if (!grown) AtomRemove (sim, type, PICK_POINTER, pNew);
+		}
+	}
+
+	// update growth status
+	*status = grown;
+
+	// growth failure
+	if (!grown) return NULL;
+
+	// growth success
+	return pNew;
+}
+
+//================================================================================
+particleMD *GrowBananaChain (simptr sim, int type, int layout, int n, real centralAng, real R, particleMD *p0, int *status)
+//================================================================================
+{
+	// RECURSIVE function to grow a n-monomer subchain from the particle pointed
+	// to by p0. If p0 is null, a new random starting point is generated. If the
+	// growth is successful, it returns a pointer to the subchain, or a NULL
+	// pointer otherwise. It also sets the status variable to 1 for a fully
+	// grown subchain, 0 otherwise.
+	// Grown primarily in the y-direction
+
+	int		grown, loop;
+	particleMD	p1, *pNew=0;
+	real	theta0=sim->theta0Bend;		// Equilibrium bend angle
+	real	sigma=sim->sigma_lj;		// Bead size
+	
+	// return if there is no monomer to add
+	if (n==0) {
+		*status = 1;
+		return 0;
+	}
+
+	printf("centralAng=%lf\nR=%lf\n",centralAng,R);
+	// add a monomer in the chain
+	grown = 0;
+	loop  = GROWLOOP_MAX;
+	while (!grown && loop--) {
+
+		// new monomer location
+		if (p0) {
+			p1.rx = p0->rx + sigma*cos(theta0);
+			p1.ry = p0->ry + sigma*sin(theta0);
+			p1.rz = p0->rz;
+			pNew = AtomInsert (sim, type, layout, &p1, CHECK, CHECK);
+		}
+		else {
+			pNew = AtomInsert (sim, type, layout, 0, CHECK, CHECK);
+			// Force it to be at a give position rather than the random position it was inserted at
+			pNew->rx = sim->box[x_]*0.5 - 0.5*R*(1.0-cos(0.5*centralAng));
+			pNew->ry = sim->box[y_]*0.5 - R*sin(0.5*centralAng);
+			pNew->rz = sim->box[z_]*0.5;
+			pNew->wx = sim->box[x_]*0.5 - 0.5*R*(1.0-cos(0.5*centralAng));
+			pNew->wy = sim->box[y_]*0.5 - R*sin(0.5*centralAng);
+			pNew->wz = sim->box[z_]*0.5;
+			pNew->x0 = sim->box[x_]*0.5 - 0.5*R*(1.0-cos(0.5*centralAng));
+			pNew->y0 = sim->box[y_]*0.5 - R*sin(0.5*centralAng);
+			pNew->z0 = sim->box[z_]*0.5;
+		}
+
+		// continue growing (recursively), and remove candidate if stunted growth
+		if (pNew) {
+			pNew->prev = p0;
+			pNew->next = GrowBananaChain (sim, type, layout, n-1, centralAng, R, pNew, &grown);
 			if (!grown) AtomRemove (sim, type, PICK_POINTER, pNew);
 		}
 	}

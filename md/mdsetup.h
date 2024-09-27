@@ -48,6 +48,7 @@ void			FinishSimulation			(simptr sim);
 particleMD*		GrowLinearChain 			(simptr sim, int type, int layout, int n, particleMD *p0, int *status);
 particleMD*		GrowLinearChainTrans 		(simptr sim, int type, int layout, int n, particleMD *p0, int *status);
 particleMD*		GrowRodChain 			    (simptr sim, int type, int layout, int n, particleMD *p0, int *status, int dir, int flag);
+particleMD *GrowBananaChain (simptr sim, int type, int layout, int n, real centralAng, real R, particleMD *p0, int *status);
 particleMD*		GrowUChain 			        (simptr sim, int type, int layout, int n, particleMD *p0, int *status);
 particleMD*       AtomInsert 				(simptr sim, int type, int layout, particleMD *p0, int chkolap, int chkptrs);
 int       		AtomRemove 					(simptr sim, int type, int n, particleMD *p0);
