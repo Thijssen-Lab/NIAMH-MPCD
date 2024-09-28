@@ -2232,6 +2232,7 @@ real dihedralHarmonic (particleMD *p1, particleMD *p2, particleMD *p3, particleM
 	real ang, c, k_eff;
 	real fx1=0, fy1=0, fz1=0, fx4=0, fy4=0, fz4=0;
 	real potE=0;
+	real sign = 0.0;						  // to establish the quadrant of phi 
 	int mode=0;                              //0==angularHarmonic 1==cosineHarmonic 2==cosineExpansion
 
 	double c22,c23,c24,c33,c34,c44;
@@ -2248,15 +2249,20 @@ real dihedralHarmonic (particleMD *p1, particleMD *p2, particleMD *p3, particleM
 	// p = -(u.v) where u = r12 x r23 and v = r23 x r34, normal vectors to planes including r12,r23 and r23,r34 
 	// will be used to calculate angle between planes
 	p=c24*c33-c23*c34;
-	/// q = |u|^2 * |v|^2                                              
+	/// q = |u|^2 * |v|^2 , |u|^2 =  (c22*c33-c23*c23) and |v|^2 = (c33*c44-c34*c34)                                      
 	q=(c22*c33-c23*c23)*(c33*c44-c34*c34);							
+
+	// to establish the quadrant of phi
+	sign = dx34*(dy12*dz23 - dy23*dz12) + dy23*(dx23*dz12 - dx12*dz23) + dz34*(dx12*dy23 - dx23*dy12);
 
 	t1=p;
 	t2=c22*c34-c23*c24;
 	t3=c23*c23-c22*c33;
+	// (r23 X r34)^2 = v^2
 	t4=c33*c44-c34*c34;
 	t5=c24*c34-c23*c44;
 	t6=-t1;
+	// (r12 X r23)^2 = u^2
 	t7=c22*c33-c23*c23;
 	beta2=c34/c33;
 	beta3=c23/c33;
@@ -2265,11 +2271,14 @@ real dihedralHarmonic (particleMD *p1, particleMD *p2, particleMD *p3, particleM
 
 	if( sqrt(t7)>TOL && sqrt(t4)>TOL ) {
 		// Trig
-		Q=1.0/sqrt(q);
+		Q = 1.0/sqrt(q);
 		c = p*Q;
 		if( c>0.99999 && c<1.00001 ) ang=0.0;
 		else if( c<-0.999999 && c>-1.00001 ) ang=M_PI;
 		else ang = acos(c);
+
+		// if (sign<0) ang=0.0-ang;
+
 		k_eff = k;
 
 		// Angular-harmonic version of the force
