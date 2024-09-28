@@ -2947,6 +2947,7 @@ particleMD *GrowBananaChain (simptr sim, int type, int layout, int n, real centr
 	particleMD	p1, *pNew=0;
 	real	theta0=sim->theta0Bend;		// Equilibrium bend angle
 	real	sigma=sim->sigma_lj;		// Bead size
+	int 	Ntot = sim->polyN[POLY_SETS-1];  // total number of monomers 
 	
 	// return if there is no monomer to add
 	if (n==0) {
@@ -2962,8 +2963,8 @@ particleMD *GrowBananaChain (simptr sim, int type, int layout, int n, real centr
 
 		// new monomer location
 		if (p0) {
-			p1.rx = p0->rx + sigma*cos(theta0);
-			p1.ry = p0->ry + sigma*sin(theta0);
+			p1.rx = p0->rx + sigma*cos((Ntot-n)*theta0);
+			p1.ry = p0->ry + sigma*sin((Ntot-n)*theta0);
 			p1.rz = p0->rz;
 			pNew = AtomInsert (sim, type, layout, &p1, CHECK, CHECK);
 		}
