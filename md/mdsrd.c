@@ -2272,12 +2272,12 @@ real dihedralHarmonic (particleMD *p1, particleMD *p2, particleMD *p3, particleM
 	if( sqrt(t7)>TOL && sqrt(t4)>TOL ) {
 		// Trig
 		Q = 1.0/sqrt(q);
-		c = p*Q;
+		c = -1.0*p*Q;
 		if( c>0.99999 && c<1.00001 ) ang=0.0;
 		else if( c<-0.999999 && c>-1.00001 ) ang=M_PI;
 		else ang = acos(c);
 
-		// if (sign<0) ang=0.0-ang;
+		if (sign<0) ang=0.0-ang;
 
 		k_eff = k;
 
@@ -2306,14 +2306,14 @@ real dihedralHarmonic (particleMD *p1, particleMD *p2, particleMD *p3, particleM
 		}
 		// Calculate first and last force
 		// first
-		fx1 = k_eff*Q*c33*( t1*dx12 + t2*dx23 + t3*dx34 )/t7;
-		fy1 = k_eff*Q*c33*( t1*dy12 + t2*dy23 + t3*dy34 )/t7;
-		fz1 = k_eff*Q*c33*( t1*dz12 + t2*dz23 + t3*dz34 )/t7;
+		fx1 = -1.0*k_eff*Q*c33*( t1*dx12 + t2*dx23 + t3*dx34 )/t7;
+		fy1 = -1.0*k_eff*Q*c33*( t1*dy12 + t2*dy23 + t3*dy34 )/t7;
+		fz1 = -1.0*k_eff*Q*c33*( t1*dz12 + t2*dz23 + t3*dz34 )/t7;
 
 		// last
-		fx4 = k_eff*Q*c33*( t4*dx12 + t5*dx23 + t6*dx34 )/t4;
-		fy4 = k_eff*Q*c33*( t4*dy12 + t5*dy23 + t6*dy34 )/t4;
-		fz4 = k_eff*Q*c33*( t4*dz12 + t5*dz23 + t6*dz34 )/t4;
+		fx4 = -1.0*k_eff*Q*c33*( t4*dx12 + t5*dx23 + t6*dx34 )/t4;
+		fy4 = -1.0*k_eff*Q*c33*( t4*dy12 + t5*dy23 + t6*dy34 )/t4;
+		fz4 = -1.0*k_eff*Q*c33*( t4*dz12 + t5*dz23 + t6*dz34 )/t4;
 
 		// Apply the force p1, p2, p3 and p4
 		p1->ax += fx1;
