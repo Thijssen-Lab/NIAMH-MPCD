@@ -1450,7 +1450,6 @@ void ComputeBendForces (simptr sim)
 /// @return 	void
 /// @warning	Real-world coordinates of the fene pairs MUST be initialized correctly
 ///				because we don't consider the PBC in the BEND calculation.
-// TYLER, ZAHRA, HOLLY, EMMA, Check what this warning means with Zahra
 
 //================================================================================
 void ComputeDihedralForces (simptr sim)
@@ -2108,8 +2107,6 @@ real FENE (particleMD *p1, particleMD *p2, real dx, real dy, real dz,
 /// @param		k bend spring constant
 /// @param		equi equilibrium angle
 /// @return		the value of the harmonic angle interaction energy
-// TYLER, ZAHRA, HOLLY, EMMA <---Zahra check what is needed for 3 different forms
-		//Currently only bendStyle==0 and ==1 is definitely correctn but 2 is NOT
 
 //================================================================================
 real bendHarmonic (particleMD *p1, particleMD *p2, particleMD *p3,
@@ -2179,6 +2176,8 @@ real bendHarmonic (particleMD *p1, particleMD *p2, particleMD *p3,
 			potE  = k*(c-c0)*(c-c0);
 		}
 		else if (bendStyle==2) { // cosine expansion
+			printf("Error: BendStyle=2 (cosine expansion) needs to be fixed.\n");
+			exit(1);
 			//computes the forces
 			fx1 = dcx1;
 			fy1 = dcy1;
@@ -2299,6 +2298,8 @@ real dihedralHarmonic (particleMD *p1, particleMD *p2, particleMD *p3, particleM
 		}
 		// Cosine-expansion version of the force
 		else if(mode==2) {
+			printf("Error: mode=2 (cosine expansion) needs to be fixed.\n");
+			exit(1);
 			k_eff*=1.0;	
 
 			// compute the energy

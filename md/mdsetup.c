@@ -906,22 +906,8 @@ void InitPolymers (simptr sim)
 									break;
 			case LAYOUT_PLATES:		polySurfaceTot+=polyM[set];
 									break;
-			case LAYOUT_FLUID:		polyBulkTot+=polyM[set];
-									break;
-			// Tyler added this to place the polymer as a rod in x-direction - almost identical to LAYOUT_FLUID
-			case LAYOUT_RODX:		polyBulkTot+=polyM[set];
-									break;
-			// Zahra added this to place the polymer as a rod in y-direction - almost identical to LAYOUT_RODX
-			case LAYOUT_RODY:		polyBulkTot+=polyM[set];
-									break;
-			// Zahra added this for translocation project, mixes LAYOUT_RODY and LAYOUT_FLUID
-			case LAYOUT_TRANS:		polyBulkTot+=polyM[set];
-									break;
-			// Added by Karolina to initialise polymer as a hairpin
-			case LAYOUT_U:			polyBulkTot+=polyM[set];
-									break;
-			// Tyler added this for curved rods project
-			case LAYOUT_BANANA:		polyBulkTot+=polyM[set];
+			case LAYOUT_FLUID: case LAYOUT_RODX: case LAYOUT_RODY: case LAYOUT_TRANS: case LAYOUT_U: case LAYOUT_BANANA:
+									polyBulkTot+=polyM[set];
 									break;
 			case LAYOUT_ANCHOR:		polyM[set] = 1;
 									polyBulkTot+=polyM[set];
@@ -954,35 +940,7 @@ void InitPolymers (simptr sim)
 				layout 	   = LAYOUT_FLUID;
 				layoutList = surface;
 				break;
-			case LAYOUT_FLUID:
-				d2Min  	   = pow (polySpread[set]*pow(V/polyBulkTot,1/3.0), 2.0);
-				layout 	   = LAYOUT_FLUID;
-				layoutList = fluid;
-				break;
-			// Identical to LAYOUT_FLUID
-			case LAYOUT_RODX:
-				d2Min  	   = pow (polySpread[set]*pow(V/polyBulkTot,1/3.0), 2.0);
-				layout 	   = LAYOUT_FLUID;
-				layoutList = fluid;
-				break;
-			// Identical to LAYOUT_RODX 
-			case LAYOUT_RODY:
-				d2Min  	   = pow (polySpread[set]*pow(V/polyBulkTot,1/3.0), 2.0);
-				layout 	   = LAYOUT_FLUID;
-				layoutList = fluid;
-				break;
-			// Mixes LAYOUT_RODY and LAYOUT_FLUID  
-			case LAYOUT_TRANS:
-				d2Min  	   = pow (polySpread[set]*pow(V/polyBulkTot,1/3.0), 2.0);
-				layout 	   = LAYOUT_FLUID;
-				layoutList = fluid;
-				break;
-			case LAYOUT_BANANA:
-				d2Min  	   = pow (polySpread[set]*pow(V/polyBulkTot,1/3.0), 2.0);
-				layout 	   = LAYOUT_FLUID;
-				layoutList = fluid;
-				break;
-			case LAYOUT_U:
+			case LAYOUT_FLUID: case LAYOUT_RODX: case LAYOUT_RODY: case LAYOUT_TRANS: case LAYOUT_BANANA: case LAYOUT_U:
 				d2Min  	   = pow (polySpread[set]*pow(V/polyBulkTot,1/3.0), 2.0);
 				layout 	   = LAYOUT_FLUID;
 				layoutList = fluid;
@@ -1103,69 +1061,9 @@ void InitPolymers (simptr sim)
 							}
 							break;
 
-						case LAYOUT_FLUID:
+						case LAYOUT_FLUID: case LAYOUT_RODX: case LAYOUT_RODY: case LAYOUT_U: case LAYOUT_TRANS: case LAYOUT_BANANA:
 							// distance with ALL other polymers
 							// this may cause a crash...  I commented it out in another code
-							for (j=0; j<polymer.n; j++) {
-								p2 = polymer.items[j].p1;
-								d2 = DistanceSquared (p1, p2, CARTESIAN, 0);
-								if (d2 < d2Min) {
-									keep = 0;
-									break;
-								}
-							}
-							break;
-
-						// Identical to LAYOUT_FLUID (shouldn't be necessary)
-						case LAYOUT_RODX:
-							for (j=0; j<polymer.n; j++) {
-								p2 = polymer.items[j].p1;
-								d2 = DistanceSquared (p1, p2, CARTESIAN, 0);
-								if (d2 < d2Min) {
-									keep = 0;
-									break;
-								}
-							}
-							break;
-
-						// Identical to LAYOUT_RODX 
-						case LAYOUT_RODY:
-							for (j=0; j<polymer.n; j++) {
-								p2 = polymer.items[j].p1;
-								d2 = DistanceSquared (p1, p2, CARTESIAN, 0);
-								if (d2 < d2Min) {
-									keep = 0;
-									break;
-								}
-							}
-							break;
-
-						// Identical to LAYOUT_FLUID
-						case LAYOUT_U:
-							for (j=0; j<polymer.n; j++) {
-								p2 = polymer.items[j].p1;
-								d2 = DistanceSquared (p1, p2, CARTESIAN, 0);
-								if (d2 < d2Min) {
-									keep = 0;
-									break;
-								}
-							}
-							break;
-
-						// Identical to LAYOUT_FLUID
-						case LAYOUT_TRANS:
-							for (j=0; j<polymer.n; j++) {
-								p2 = polymer.items[j].p1;
-								d2 = DistanceSquared (p1, p2, CARTESIAN, 0);
-								if (d2 < d2Min) {
-									keep = 0;
-									break;
-								}
-							}
-							break;
-
-						// Identical to LAYOUT_FLUID
-						case LAYOUT_BANANA:
 							for (j=0; j<polymer.n; j++) {
 								p2 = polymer.items[j].p1;
 								d2 = DistanceSquared (p1, p2, CARTESIAN, 0);
@@ -1223,8 +1121,6 @@ void InitPolymers (simptr sim)
 				// grow it
 				if (keep){
 					if (polyLayout[set]==LAYOUT_FLUID ) {
-						//this ia bad hack I think, it just avoids building from an existing atom
-						//in my simulations I realized making multiple polymers cause cutting of bonds
 						p1 = p3;
 						p1->next = GrowLinearChain (sim, polyAtomType[set], layout, polyN[set],  NULL, &grown);
 					}
@@ -1490,27 +1386,7 @@ void InitCharges (simptr sim)
 			case LAYOUT_SURFACE:
 				qSurfaceTot+=qNumber[set];
 				break;
-			case LAYOUT_FLUID:
-				qBulkTot+=qNumber[set];
-				break;
-			// Identical to LAYOUT_FLUID
-			case LAYOUT_RODX:
-				qBulkTot+=qNumber[set];
-				break;
-			// Identical to above
-			case LAYOUT_RODY:
-				qBulkTot+=qNumber[set];
-				break;
-			// Identical to above
-			case LAYOUT_U:
-				qBulkTot+=qNumber[set];
-				break;
-			// Identical to above
-			case LAYOUT_TRANS:
-				qBulkTot+=qNumber[set];
-				break;
-			// Identical to above
-			case LAYOUT_BANANA:
+			case LAYOUT_FLUID: case LAYOUT_RODX: case LAYOUT_RODY: case LAYOUT_U: case LAYOUT_TRANS: case LAYOUT_BANANA:
 				qBulkTot+=qNumber[set];
 				break;
 			default:			
@@ -1532,35 +1408,10 @@ void InitCharges (simptr sim)
 		switch (qLayout[set]) {
 			case LAYOUT_SURFACE:
 				d2Min  	   = pow (qSpread[set]*sqrt(A/qSurfaceTot), 2.0);
-// 				layout 	   = LAYOUT_SURFACE;
+ 				// layout 	   = LAYOUT_SURFACE;
 				layoutList = surface;
 				break;
-			case LAYOUT_FLUID:
-				d2Min  	   = pow (qSpread[set]*pow(V/qBulkTot,1/3.0), 2.0);
-				layoutList = fluid;
-				break;
-			// Identical to LAYOUT_FLUID
-			case LAYOUT_RODX:
-				d2Min  	   = pow (qSpread[set]*pow(V/qBulkTot,1/3.0), 2.0);
-				layoutList = fluid;
-				break;
-			// Identical to above
-			case LAYOUT_RODY:
-				d2Min  	   = pow (qSpread[set]*pow(V/qBulkTot,1/3.0), 2.0);
-				layoutList = fluid;
-				break;
-			// Identical to above
-			case LAYOUT_U:
-				d2Min  	   = pow (qSpread[set]*pow(V/qBulkTot,1/3.0), 2.0);
-				layoutList = fluid;
-				break;
-			// Identical to above
-			case LAYOUT_TRANS:
-				d2Min  	   = pow (qSpread[set]*pow(V/qBulkTot,1/3.0), 2.0);
-				layoutList = fluid;
-				break;
-			// Identical to above
-			case LAYOUT_BANANA:
+			case LAYOUT_FLUID: case LAYOUT_RODX: case LAYOUT_RODY: case LAYOUT_U: case LAYOUT_TRANS: case LAYOUT_BANANA:
 				d2Min  	   = pow (qSpread[set]*pow(V/qBulkTot,1/3.0), 2.0);
 				layoutList = fluid;
 				break;
@@ -1609,68 +1460,8 @@ void InitCharges (simptr sim)
 						}
 						break;
 
-					case LAYOUT_FLUID:
+					case LAYOUT_FLUID: case LAYOUT_RODX: case LAYOUT_RODY: case LAYOUT_U: case LAYOUT_TRANS: case LAYOUT_BANANA:
 						// distance with ALL other charges
-						for (j=0; j<charge.n; j++) {
-							p2 = charge.items[j].p1;
-							d2 = DistanceSquared (p1, p2, CARTESIAN,0);
-							if (d2 < d2Min) {
-								keep = 0;
-								break;
-							}
-						}
-						break;
-
-					// Identical to LAYOUT_FLUID
-					case LAYOUT_RODX:
-						for (j=0; j<charge.n; j++) {
-							p2 = charge.items[j].p1;
-							d2 = DistanceSquared (p1, p2, CARTESIAN,0);
-							if (d2 < d2Min) {
-								keep = 0;
-								break;
-							}
-						}
-						break;
-
-					// Identical to above
-					case LAYOUT_RODY:
-						for (j=0; j<charge.n; j++) {
-							p2 = charge.items[j].p1;
-							d2 = DistanceSquared (p1, p2, CARTESIAN,0);
-							if (d2 < d2Min) {
-								keep = 0;
-								break;
-							}
-						}
-						break;
-
-					// Identical to above
-					case LAYOUT_U:
-						for (j=0; j<charge.n; j++) {
-							p2 = charge.items[j].p1;
-							d2 = DistanceSquared (p1, p2, CARTESIAN,0);
-							if (d2 < d2Min) {
-								keep = 0;
-								break;
-							}
-						}
-						break;
-
-					// Identical to above
-					case LAYOUT_TRANS:
-						for (j=0; j<charge.n; j++) {
-							p2 = charge.items[j].p1;
-							d2 = DistanceSquared (p1, p2, CARTESIAN,0);
-							if (d2 < d2Min) {
-								keep = 0;
-								break;
-							}
-						}
-						break;
-
-					// Identical to above
-					case LAYOUT_BANANA:
 						for (j=0; j<charge.n; j++) {
 							p2 = charge.items[j].p1;
 							d2 = DistanceSquared (p1, p2, CARTESIAN,0);
@@ -2955,12 +2746,10 @@ particleMD *GrowBananaChain (simptr sim, int type, int layout, int n, real centr
 		return 0;
 	}
 
-	printf("centralAng=%lf\nR=%lf\n",centralAng,R);
 	// add a monomer in the chain
 	grown = 0;
 	loop  = GROWLOOP_MAX;
 	while (!grown && loop--) {
-
 		// new monomer location
 		if (p0) {
 			p1.rx = p0->rx + sigma*cos((Ntot-n)*theta0);
@@ -3428,43 +3217,8 @@ int LayoutRule (simptr sim, int layout, real x, real y, real z)
 						return 0;
 					}
 					break;
-				case LAYOUT_FLUID:
+				case LAYOUT_FLUID: case LAYOUT_RODX: case LAYOUT_RODY: case LAYOUT_U: case LAYOUT_TRANS: case LAYOUT_BANANA:
 					// keep only if inside capillary
-					rMax2  = sim->caprIn-0.5;
-					rMax2 *= rMax2;
-					if (r2 < rMax2) return 1;
-					else return 0;
-					break;
-				// Identical to above
-				case LAYOUT_RODX:
-					rMax2  = sim->caprIn-0.5;
-					rMax2 *= rMax2;
-					if (r2 < rMax2) return 1;
-					else return 0;
-					break;
-				// Identical to above
-				case LAYOUT_RODY:
-					rMax2  = sim->caprIn-0.5;
-					rMax2 *= rMax2;
-					if (r2 < rMax2) return 1;
-					else return 0;
-					break;
-				// Identical to above
-				case LAYOUT_U:
-					rMax2  = sim->caprIn-0.5;
-					rMax2 *= rMax2;
-					if (r2 < rMax2) return 1;
-					else return 0;
-					break;
-				// Identical to above
-				case LAYOUT_TRANS:
-					rMax2  = sim->caprIn-0.5;
-					rMax2 *= rMax2;
-					if (r2 < rMax2) return 1;
-					else return 0;
-					break;
-				// Identical to above
-				case LAYOUT_BANANA:
 					rMax2  = sim->caprIn-0.5;
 					rMax2 *= rMax2;
 					if (r2 < rMax2) return 1;
@@ -3496,43 +3250,8 @@ int LayoutRule (simptr sim, int layout, real x, real y, real z)
 						return 0;
 					}
 					break;
-				case LAYOUT_FLUID:
+				case LAYOUT_FLUID: case LAYOUT_RODX: case LAYOUT_RODY: case LAYOUT_U: case LAYOUT_TRANS: case LAYOUT_BANANA:
 					// keep only if inside capillary
-					rMax2  = sim->caprIn-0.5;
-					rMax2 *= rMax2;
-					if (r2 < rMax2) return 1;
-					else return 0;
-					break;
-				// Identical to above
-				case LAYOUT_RODX:
-					rMax2  = sim->caprIn-0.5;
-					rMax2 *= rMax2;
-					if (r2 < rMax2) return 1;
-					else return 0;
-					break;
-				// Identical to above
-				case LAYOUT_RODY:
-					rMax2  = sim->caprIn-0.5;
-					rMax2 *= rMax2;
-					if (r2 < rMax2) return 1;
-					else return 0;
-					break;
-				// Identical to above
-				case LAYOUT_U:
-					rMax2  = sim->caprIn-0.5;
-					rMax2 *= rMax2;
-					if (r2 < rMax2) return 1;
-					else return 0;
-					break;
-				// Identical to above
-				case LAYOUT_TRANS:
-					rMax2  = sim->caprIn-0.5;
-					rMax2 *= rMax2;
-					if (r2 < rMax2) return 1;
-					else return 0;
-					break;
-				// Identical to above
-				case LAYOUT_BANANA:
 					rMax2  = sim->caprIn-0.5;
 					rMax2 *= rMax2;
 					if (r2 < rMax2) return 1;
