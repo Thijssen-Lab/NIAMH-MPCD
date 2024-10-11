@@ -2757,7 +2757,8 @@ particleMD *GrowLinearChain (simptr sim, int type, int layout, int n, particleMD
 	// grown subchain, 0 otherwise.
 
 	int		grown, loop;
-	real		v[3];
+	real	v[3];
+	real	dr=0.0;
 	particleMD	p1, *pNew=0;
 
 	// return if there is no monomer to add
@@ -2769,16 +2770,17 @@ particleMD *GrowLinearChain (simptr sim, int type, int layout, int n, particleMD
 	// add a monomer in the chain
 	grown = 0;
 	loop  = GROWLOOP_MAX;
+	dr=0.5*(sim->sigma_lj+sim->r0Fene);
 	while (!grown && loop--) {
 
 		// new monomer location
 		if (p0) {
 			RandomVector3D (v);
-			p1.rx = p0->rx + v[x_]*sim->r0Fene/1.5;
-			p1.ry = p0->ry + v[y_]*sim->r0Fene/1.5;
+			p1.rx = p0->rx + v[x_]*dr;
+			p1.ry = p0->ry + v[y_]*dr;
 			// To allow 2d and 3d operation
 			if (sim->box[z_] != 0.0 ){
-				p1.rz = p0->rz + v[z_]*sim->r0Fene/1.5;
+				p1.rz = p0->rz + v[z_]*dr;
 			}
 			else {
 				p1.rz = 0.0;
@@ -2813,9 +2815,10 @@ particleMD *GrowLinearChainTrans (simptr sim, int type, int layout, int n, parti
 {
 
 	int		grown, loop1, loop2, picked;
-	real		v[3];
+	real	v[3];
+	real	dr=0.0;
 	particleMD	p1, *pNew=0;
-	int width=2;        				// width of pore in translocation
+	int 	width=2;        				// width of pore in translocation
 	// return if there is no monomer to add
 	if (n==0) {
 		*status = 1;
@@ -2825,6 +2828,7 @@ particleMD *GrowLinearChainTrans (simptr sim, int type, int layout, int n, parti
 	// add a monomer in the chain
 	grown = 0;
 	loop1  = GROWLOOP_MAX;
+	dr=0.5*(sim->sigma_lj+sim->r0Fene);
 	while (!grown && loop1--) {
 		// new monomer location
 		if (p0) {
@@ -2833,10 +2837,10 @@ particleMD *GrowLinearChainTrans (simptr sim, int type, int layout, int n, parti
 			while (!picked && loop2--) {
 				// pick a random vector
 				RandomVector3D (v);
-				p1.rx = p0->rx + v[x_]*sim->r0Fene/1.5;
-				p1.ry = p0->ry + v[y_]*sim->r0Fene/1.5;
+				p1.rx = p0->rx + v[x_]*dr;
+				p1.ry = p0->ry + v[y_]*dr;
 				if (sim->box[z_] != 0.0 ){
-					p1.rz = p0->rz + v[z_]*sim->r0Fene/1.5;
+					p1.rz = p0->rz + v[z_]*dr;
 				}
 				else {
 					p1.rz = 0.0;
@@ -2882,6 +2886,7 @@ particleMD *GrowRodChain (simptr sim, int type, int layout, int n, particleMD *p
 	int		grown, loop,Ntotal;
 	particleMD	p1, *pNew=0;
 	int width = 2;						// width of pore in tranlocation
+	real	dr=0.0;
 
 	// number of monomers left for random part of LAYOUT_TRANS, works if translocation flag is on
 	Ntotal = sim->polyN[POLY_SETS-1]-((sim->polyN[POLY_SETS-1]/2)+1+width/2+2);
@@ -2894,12 +2899,13 @@ particleMD *GrowRodChain (simptr sim, int type, int layout, int n, particleMD *p
 	// add a monomer in the chain
 	grown = 0;
 	loop  = GROWLOOP_MAX;
+	dr=0.5*(sim->sigma_lj+sim->r0Fene);
 	while (!grown && loop--) {
 
 		// new monomer location
 		if (p0) {
-			p1.rx = p0->rx + (1-dir)*sim->r0Fene/1.5;
-			p1.ry = p0->ry + (dir)*sim->r0Fene/1.5;
+			p1.rx = p0->rx + (1-dir)*dr;
+			p1.ry = p0->ry + (dir)*dr;
 			p1.rz = p0->rz;
 			pNew = AtomInsert (sim, type, layout, &p1, CHECK, CHECK);
 		}
@@ -2944,8 +2950,9 @@ particleMD *GrowUChain (simptr sim, int type, int layout, int n, particleMD *p0,
 	// number of monomers. If the growth is successful, it returns a pointer to
 	// the subchain, or a NULL pointer otherwise. It also sets the status
 	// variable to 1 for a fully grown subchain, 0 otherwise.
-	int		grown, loop;
+	int			grown, loop;
 	particleMD	p1, *pNew=0;
+	real		dr=0.0;
 
 	// return if there is no monomer to add
 	if (n==0) {
@@ -2956,6 +2963,7 @@ particleMD *GrowUChain (simptr sim, int type, int layout, int n, particleMD *p0,
 	// add a monomer in the chain
 	grown = 0;
 	loop  = GROWLOOP_MAX;
+	dr=0.5*(sim->sigma_lj+sim->r0Fene);
 	//even length monomer
 	if ((sim->polyN[0] % 2) == 0) { // if even length
 		while (!grown && loop--) {
@@ -2963,16 +2971,16 @@ particleMD *GrowUChain (simptr sim, int type, int layout, int n, particleMD *p0,
 			// new monomer location
 			if (p0) {
 				if (n > (sim->polyN[0]/2)) { // before turn
-					p1.rx = p0->rx + sim->r0Fene/1.5;
+					p1.rx = p0->rx + dr;
 					p1.ry = p0->ry;
 					p1.rz = p0->rz;
 				}
 				else if (n == (sim->polyN[0]/2)) { // turn
 					p1.rx = p0->rx;
-					p1.ry = p0->ry - sim->r0Fene/1.5;
+					p1.ry = p0->ry - dr;
 					p1.rz = p0->rz;
 				} else { // after turn
-					p1.rx = p0->rx - sim->r0Fene/1.5;
+					p1.rx = p0->rx - dr;
 					p1.ry = p0->ry;
 					p1.rz = p0->rz;
 				}
@@ -2982,14 +2990,14 @@ particleMD *GrowUChain (simptr sim, int type, int layout, int n, particleMD *p0,
 			else {
 				pNew = AtomInsert (sim, type, layout, 0, CHECK, CHECK);
 				// Force it to be at a give position rather than the random position it was inserted at
-				pNew->rx = sim->box[x_]*0.5 - n*0.25*sim->r0Fene/1.5; // n can be used as this is always the first iteration with highest n
-				pNew->ry = sim->box[y_]*0.5 + sim->r0Fene/3.0;
+				pNew->rx = sim->box[x_]*0.5 - n*0.25*dr; // n can be used as this is always the first iteration with highest n
+				pNew->ry = sim->box[y_]*0.5 + dr*0.5;
 				pNew->rz = sim->box[z_]*0.5;
-				pNew->wx = sim->box[x_]*0.5 - n*0.25*sim->r0Fene/1.5;
-				pNew->wy = sim->box[y_]*0.5 + sim->r0Fene/3.0;
+				pNew->wx = sim->box[x_]*0.5 - n*0.25*dr;
+				pNew->wy = sim->box[y_]*0.5 + dr*0.5;
 				pNew->wz = sim->box[z_]*0.5;
-				pNew->x0 = sim->box[x_]*0.5 - n*0.25*sim->r0Fene/1.5;
-				pNew->y0 = sim->box[y_]*0.5 + sim->r0Fene/3.0;
+				pNew->x0 = sim->box[x_]*0.5 - n*0.25*dr;
+				pNew->y0 = sim->box[y_]*0.5 + dr*0.5;
 				pNew->z0 = sim->box[z_]*0.5;
 			}
 
@@ -3007,21 +3015,21 @@ particleMD *GrowUChain (simptr sim, int type, int layout, int n, particleMD *p0,
 			// new monomer location
 			if (p0) {
 				if (n > ((sim->polyN[0] + 1)/2)) { // before turn
-					p1.rx = p0->rx + sim->r0Fene/1.5;
+					p1.rx = p0->rx + dr;
 					p1.ry = p0->ry;
 					p1.rz = p0->rz;
 				}
 				else if (n == ((sim->polyN[0] + 1)/2)) { // turn1
-					p1.rx = p0->rx + sim->r0Fene*sqrt(3.0)/3.0;
-					p1.ry = p0->ry - sim->r0Fene/3.0;
+					p1.rx = p0->rx + dr*sqrt(3.0)*0.5;
+					p1.ry = p0->ry - dr*0.5;
 					p1.rz = p0->rz;
 				}
 				else if (n == (((sim->polyN[0] + 1)/2) - 1)) { // turn2
-					p1.rx = p0->rx - sim->r0Fene*sqrt(3.0)/3.0;
-					p1.ry = p0->ry - sim->r0Fene/3.0;
+					p1.rx = p0->rx - dr*sqrt(3.0)*0.5;
+					p1.ry = p0->ry - dr*0.5;
 					p1.rz = p0->rz;
 				} else { // after turn
-					p1.rx = p0->rx - sim->r0Fene/1.5;
+					p1.rx = p0->rx - dr;
 					p1.ry = p0->ry;
 					p1.rz = p0->rz;
 				}
@@ -3032,14 +3040,14 @@ particleMD *GrowUChain (simptr sim, int type, int layout, int n, particleMD *p0,
 			else {
 				pNew = AtomInsert (sim, type, layout, 0, CHECK, CHECK);
 				// Force it to be at a give position rather than the random position it was inserted at
-				pNew->rx = sim->box[x_]*0.5 - (n+1)*0.25*sim->r0Fene/1.5; // n can be used as this is always the first iteration with highest n
-				pNew->ry = sim->box[y_]*0.5 + sim->r0Fene/3.0;
+				pNew->rx = sim->box[x_]*0.5 - (n+1)*0.25*dr; // n can be used as this is always the first iteration with highest n
+				pNew->ry = sim->box[y_]*0.5 + dr*0.5;
 				pNew->rz = sim->box[z_]*0.5;
-				pNew->wx = sim->box[x_]*0.5 - (n+1)*0.25*sim->r0Fene/1.5;
-				pNew->wy = sim->box[y_]*0.5 + sim->r0Fene/3.0;
+				pNew->wx = sim->box[x_]*0.5 - (n+1)*0.25*dr;
+				pNew->wy = sim->box[y_]*0.5 + dr*0.5;
 				pNew->wz = sim->box[z_]*0.5;
-				pNew->x0 = sim->box[x_]*0.5 - (n+1)*0.25*sim->r0Fene/1.5;
-				pNew->y0 = sim->box[y_]*0.5 + sim->r0Fene/3.0;
+				pNew->x0 = sim->box[x_]*0.5 - (n+1)*0.25*dr;
+				pNew->y0 = sim->box[y_]*0.5 + dr*0.5;
 				pNew->z0 = sim->box[z_]*0.5;
 			}
 
