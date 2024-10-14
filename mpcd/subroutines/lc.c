@@ -1649,19 +1649,11 @@ void andersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double dt,doubl
 			MASS = tmd->mass;
 			//Position relative to centre of mass
 			relQ[i][0] = tmd->rx - CL->CM[0];
-			relQ[i][1] = tmd->ry - CL->CM[1];
-			relQ[i][2] = tmd->rz - CL->CM[2];
+			if( DIM > _1D) relQ[i][1] = tmd->ry - CL->CM[1];
+			if( DIM > _2D) relQ[i][2] = tmd->rz - CL->CM[2];
 			diffV[0] = MASS * (tmd->vx - RV[i][0]);
-			diffV[1] = MASS * (tmd->vy - RV[i][1]);
-			diffV[2] = MASS * (tmd->vz - RV[i][2]);
-			if( DIM < _3D ) {
-				relQ[i][2] = 0.;
-				diffV[2] = 0.;
-			}
-			if( DIM < _2D ) {
-				relQ[i][1] = 0.;
-				diffV[1] = 0.;
-			}
+			if( DIM > _1D) diffV[1] = MASS * (tmd->vy - RV[i][1]);
+			if( DIM > _2D) diffV[2] = MASS * (tmd->vz - RV[i][2]);
 			crossprod( relQ[i],diffV,angmom );
 			for( j=0; j<_3D; j++ ) Llm[j] += angmom[j];
 			tmd = tmd->nextSRD;
@@ -1718,12 +1710,8 @@ void andersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double dt,doubl
 	while( tmd!=NULL ) {
 		crossprod( W,relQ[i],angterm );
 		tmd->vx = VCM[0] + RV[i][0] - RS[0] + angterm[0];
-		if( DIM > _1D ){
-			tmd->vy = VCM[1] + RV[i][1] - RS[1] + angterm[1];
-		}
-		if( DIM > _2D ){
-			tmd->vz = VCM[2] + RV[i][2] - RS[2] + angterm[2];
-		}
+		if( DIM > _1D ) tmd->vy = VCM[1] + RV[i][1] - RS[1] + angterm[1];
+		if( DIM > _2D ) tmd->vz = VCM[2] + RV[i][2] - RS[2] + angterm[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -1976,19 +1964,11 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 			M = tmd->mass;
 			//Position relative to centre of mass
 			relQ[i][0] = tmd->rx - CL->CM[0];
-			relQ[i][1] = tmd->ry - CL->CM[1];
-			relQ[i][2] = tmd->rz - CL->CM[2];
+			if( DIM > _1D) relQ[i][1] = tmd->ry - CL->CM[1];
+			if( DIM > _2D) relQ[i][2] = tmd->rz - CL->CM[2];
 			diffV[0] = M * (tmd->vx - RV[i][0]);
-			diffV[1] = M * (tmd->vy - RV[i][1]);
-			diffV[2] = M * (tmd->vz - RV[i][2]);
-			if( DIM < _3D ) {
-				relQ[i][2] = 0.;
-				diffV[2] = 0.;
-			}
-			if( DIM < _2D ) {
-				relQ[i][1] = 0.;
-				diffV[1] = 0.;
-			}
+			if( DIM > _1D) diffV[1] = M * (tmd->vy - RV[i][1]);
+			if( DIM > _2D) diffV[2] = M * (tmd->vz - RV[i][2]);
 			crossprod( relQ[i],diffV,angmom );
 			for( j=0; j<_3D; j++ ) Llm[j] += angmom[j];
 			tmd = tmd->nextSRD;
@@ -2045,12 +2025,8 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 	while( tmd!=NULL ) {
 		crossprod( W,relQ[i],angterm );
 		tmd->vx = VCM[0] + RV[i][0] - RS[0] + angterm[0] ;
-		if( DIM > _1D ){
-			tmd->vy = VCM[1] + RV[i][1] - RS[1] + angterm[1];
-		}
-		if( DIM > _2D ){
-			tmd->vz = VCM[2] + RV[i][2] - RS[2] + angterm[2];
-		}
+		if( DIM > _1D ) tmd->vy = VCM[1] + RV[i][1] - RS[1] + angterm[1];
+		if( DIM > _2D ) tmd->vz = VCM[2] + RV[i][2] - RS[2] + angterm[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;

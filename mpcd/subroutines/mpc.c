@@ -1312,12 +1312,12 @@ void stochrotMPC( cell *CL,int RTECH,double C,double S,double *CLQ,int outP ) {
 	tmd = CL->MDpp;
 	while( tmd!=NULL ) {
 		V[0] = tmd->vx - CL->VCM[0];
-		V[1] = tmd->vy - CL->VCM[1];
-		V[2] = tmd->vz - CL->VCM[2];
+		if( DIM > _1D) V[1] = tmd->vy - CL->VCM[1];
+		if(DIM > _2D) V[2] = tmd->vz - CL->VCM[2];
 		rotate( RTECH,C,S,V,RV,SIGN,CA );
 		tmd->vx = CL->VCM[0] + V[0];
-		tmd->vy = CL->VCM[1] + V[1];
-		tmd->vz = CL->VCM[2] + V[2];
+		if( DIM > _1D) tmd->vy = CL->VCM[1] + V[1];
+		if(DIM > _2D) tmd->vz = CL->VCM[2] + V[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
 	}
@@ -1427,12 +1427,8 @@ void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 	tmd = CL->MDpp;
 	while( tmd!=NULL ) {
 		tmd->vx = CL->VCM[0] + RV[i][0] - RS[0];
-		if( DIM > _1D){
-			tmd->vy = CL->VCM[1] + RV[i][1] - RS[1];
-		}
-		if(DIM > _2D){
-			tmd->vz = CL->VCM[2] + RV[i][2] - RS[2];
-		}
+		if( DIM > _1D) tmd->vy = CL->VCM[1] + RV[i][1] - RS[1];
+		if(DIM > _2D) tmd->vz = CL->VCM[2] + RV[i][2] - RS[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -1586,19 +1582,11 @@ void andersenROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 		MASS = tmd->mass;
 		//Position relative to centre of mass
 		relQ[i][0] = tmd->rx - CL->CM[0];
-		relQ[i][1] = tmd->ry - CL->CM[1];
-		relQ[i][2] = tmd->rz - CL->CM[2];
+		if( DIM > _1D) relQ[i][1] = tmd->ry - CL->CM[1];
+		if( DIM > _2D) relQ[i][2] = tmd->rz - CL->CM[2];
 		diffV[0] = MASS * (tmd->vx - RV[i][0]);
-		diffV[1] = MASS * (tmd->vy - RV[i][1]);
-		diffV[2] = MASS * (tmd->vz - RV[i][2]);
-		if( DIM < _3D ) {
-			relQ[i][2] = 0.;
-			diffV[2] = 0.;
-		}
-		if( DIM < _2D ) {
-			relQ[i][1] = 0.;
-			diffV[1] = 0.;
-		}
+		if( DIM > _1D) diffV[1] = MASS * (tmd->vy - RV[i][1]);
+		if( DIM > _2D) diffV[2] = MASS * (tmd->vz - RV[i][2]);
 		crossprod( relQ[i],diffV,angmom );
 		for( j=0; j<_3D; j++ ) L[j] += angmom[j];
 
@@ -1651,8 +1639,8 @@ void andersenROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 	while( tmd!=NULL ) {
 		crossprod( W,relQ[i],angterm );
 		tmd->vx = VCM[0] + RV[i][0] - RS[0] + angterm[0];
-		tmd->vy = VCM[1] + RV[i][1] - RS[1] + angterm[1];
-		tmd->vz = VCM[2] + RV[i][2] - RS[2] + angterm[2];
+		if( DIM > _1D) tmd->vy = VCM[1] + RV[i][1] - RS[1] + angterm[1];
+		if(DIM > _2D) tmd->vz = VCM[2] + RV[i][2] - RS[2] + angterm[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -1769,12 +1757,8 @@ void langevinMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 		a = (MASS - FRICCO * Step * 0.5) / (MASS + 0.5 * FRICCO * Step);
 		b = sqrt( FRICCO*Step ) / ( MASS + 0.5 * FRICCO * Step );
 		tmd->vx = VCM[0] + a * (tmd->vx-VCM[0]) + b * (WN[i][0] - WNS[0]);
-		if( DIM > _1D ){
-			tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]);
-		}
-		if(DIM > _2D){
-			tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]);
-		}
+		if( DIM > _1D ) tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]);
+		if(DIM > _2D) tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]);
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -1951,19 +1935,11 @@ void langevinROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 		MASS = tmd->mass;
 		//Position relative to centre of mass
 		relQ[i][0] = tmd->rx - CL->CM[0];
-		relQ[i][1] = tmd->ry - CL->CM[1];
-		relQ[i][2] = tmd->rz - CL->CM[2];
+		if( DIM > _1D) relQ[i][1] = tmd->ry - CL->CM[1];
+		if( DIM > _2D) relQ[i][2] = tmd->rz - CL->CM[2];
 		diffV[0] = MASS * (FRICCO*tmd->vx - sqrt(FRICCO)*WN[i][0]);
-		diffV[1] = MASS * (FRICCO*tmd->vy - sqrt(FRICCO)*WN[i][1]);
-		diffV[2] = MASS * (FRICCO*tmd->vz - sqrt(FRICCO)*WN[i][2]);
-		if( DIM < _3D ) {
-			relQ[i][2] = 0.;
-			diffV[2] = 0.;
-		}
-		if( DIM < _2D ) {
-			relQ[i][1] = 0.;
-			diffV[1] = 0.;
-		}
+		if( DIM > _1D) diffV[1] = MASS * (FRICCO*tmd->vy - sqrt(FRICCO)*WN[i][1]);
+		if( DIM > _2D) diffV[2] = MASS * (FRICCO*tmd->vz - sqrt(FRICCO)*WN[i][2]);
 		crossprod( relQ[i],diffV,angmom );
 		for( j=0; j<_3D; j++ ) L[j] += angmom[j];
 
@@ -2020,8 +1996,8 @@ void langevinROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 		a = (MASS - FRICCO * Step * 0.5) / (MASS + 0.5 * FRICCO * Step);
 		b = sqrt( FRICCO*Step ) / ( MASS + 0.5 * FRICCO * Step );
 		tmd->vx = VCM[0] + a * (tmd->vx-VCM[0]) + b * (WN[i][0] - WNS[0]) + angterm[0];
-		tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]) + angterm[1];
-		tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]) + angterm[2];
+		if( DIM > _1D) tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]) + angterm[1];
+		if(DIM > _2D) tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]) + angterm[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -2297,12 +2273,8 @@ void vicsekAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 	tmd = CL->MDpp;
 	while( tmd!=NULL ) {
 		tmd->vx = VCM[0] + RV[i][0] - RS[0];
-		if( DIM > _1D){
-			tmd->vy = VCM[1] + RV[i][1] - RS[1];
-		}
-		if( DIM > _2D){
-			tmd->vz = VCM[2] + RV[i][2] - RS[2];
-		}
+		if( DIM > _1D) tmd->vy = VCM[1] + RV[i][1] - RS[1];
+		if( DIM > _2D) tmd->vz = VCM[2] + RV[i][2] - RS[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -2410,12 +2382,8 @@ void chateAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,int
 	tmd = CL->MDpp;
 	while( tmd!=NULL ) {
 		tmd->vx = VCM[0] + RV[i][0] - RS[0];
-		if( DIM > _1D){
-			tmd->vy = VCM[1] + RV[i][1] - RS[1];
-		}
-		if( DIM > _2D){
-			tmd->vz = VCM[2] + RV[i][2] - RS[2];
-		}
+		if( DIM > _1D) tmd->vy = VCM[1] + RV[i][1] - RS[1];
+		if( DIM > _2D) tmd->vz = VCM[2] + RV[i][2] - RS[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -2517,12 +2485,8 @@ void vicsekLangevinMPC( cell *CL,spec *SP,double KBT,double FRICCO,double Step,d
 		a = (MASS - FRICCO * Step * 0.5) / (MASS + 0.5 * FRICCO * Step);
 		b = sqrt( FRICCO*Step ) / ( MASS + 0.5 * FRICCO * Step );
 		tmd->vx = VCM[0] + a * (tmd->vx-VCM[0]) + b * (WN[i][0] - WNS[0]);
-		if( DIM > _1D){
-			tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]);
-		}
-		if( DIM > _2D){
-			tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]);
-		}
+		if( DIM > _1D) tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]);
+		if( DIM > _2D) tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]);
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -2627,12 +2591,8 @@ void chateLangevinMPC( cell *CL,spec *SP,double KBT,double FRICCO,double Step,do
 		a = (MASS - FRICCO * Step * 0.5) / (MASS + 0.5 * FRICCO * Step);
 		b = sqrt( FRICCO*Step ) / ( MASS + 0.5 * FRICCO * Step );
 		tmd->vx = VCM[0] + a * (tmd->vx-VCM[0]) + b * (WN[i][0] - WNS[0]);
-		if( DIM > _1D){
-			tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]);
-		}
-		if( DIM > _2D){
-			tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]);
-		}
+		if( DIM > _1D) tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]);
+		if( DIM > _2D) tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]);
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -2762,12 +2722,8 @@ void dipoleAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 	tmd = CL->MDpp;
 	while( tmd!=NULL ) {
 		tmd->vx = CL->VCM[0] + RV[i][0] - RS[0];
-		if( DIM > _1D){
-			tmd->vy = CL->VCM[1] + RV[i][1] - RS[1];
-		}
-		if( DIM > _2D){
-			tmd->vz = CL->VCM[2] + RV[i][2] - RS[2];
-		}
+		if( DIM > _1D) tmd->vy = CL->VCM[1] + RV[i][1] - RS[1];
+		if( DIM > _2D) tmd->vz = CL->VCM[2] + RV[i][2] - RS[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -3327,12 +3283,12 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 	while( tmd!=NULL ) {
 		M = tmd->mass;
 		V[0] = tmd->vx;
-		V[1] = tmd->vy;
-		V[2] = tmd->vz;
+		if( DIM > _1D) V[1] = tmd->vy;
+		if(DIM > _2D) V[2] = tmd->vz;
 		//Position relative to centre of mass
 		relQ[i][0] = tmd->rx - CL->CM[0];
-		relQ[i][1] = tmd->ry - CL->CM[1];
-		relQ[i][2] = tmd->rz - CL->CM[2];
+		if( DIM > _1D) relQ[i][1] = tmd->ry - CL->CM[1];
+		if(DIM > _2D) relQ[i][2] = tmd->rz - CL->CM[2];
 		//Initial divergence
 		for( j=0; j<DIM; j++ ) DIV[i] += (PCM[j]-M*V[j])/relQ[i][j];
 		tmd = tmd->nextSRD;
@@ -3373,8 +3329,8 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 			while( tmd!=NULL ) {
 				M = tmd->mass;
 				V[0] = tmd->vx;
-				V[1] = tmd->vy;
-				V[2] = tmd->vz;
+				if( DIM > _1D) V[1] = tmd->vy;
+				if( DIM > _2D) V[2] = tmd->vz;
 				// for( j=0; j<DIM; j++ ) EI += M*V[j]*V[j];
 				for( j=0; j<DIM; j++ ) PI[j] += M*V[j];
 				tmd = tmd->nextSRD;
@@ -3463,8 +3419,8 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 			while( tmd!=NULL ) {
 				M = tmd->mass;
 				V[0] = tmd->vx;
-				V[1] = tmd->vy;
-				V[2] = tmd->vz;
+				if( DIM > _1D) V[1] = tmd->vy;
+				if( DIM > _2D) V[2] = tmd->vz;
 				// for( j=0; j<DIM; j++ ) EF += M*V[j]*V[j];
 				for( j=0; j<DIM; j++ ) PF[j] += M*V[j];
 				tmd = tmd->nextSRD;
@@ -3583,12 +3539,12 @@ void incompSubtractDivergence( cell *CL,spec *SP,specSwimmer SS ) {
 	while( tmd!=NULL ) {
 		MASS = tmd->mass;
 		V[0] = tmd->vx;
-		V[1] = tmd->vy;
-		V[2] = tmd->vz;
+		if( DIM > _1D) V[1] = tmd->vy;
+		if( DIM > _2D) V[2] = tmd->vz;
 		//Position relative to centre of mass
 		relQ[i][0] = tmd->rx - CL->CM[0];
-		relQ[i][1] = tmd->ry - CL->CM[1];
-		relQ[i][2] = tmd->rz - CL->CM[2];
+		if( DIM > _1D) relQ[i][1] = tmd->ry - CL->CM[1];
+		if( DIM > _2D) relQ[i][2] = tmd->rz - CL->CM[2];
 		//Initial divergence, kinetic energy and momentum
 		for( j=0; j<DIM; j++ ) DIV0 += (PCM[j]-MASS*V[j])/relQ[i][j];
 		for( j=0; j<DIM; j++ ) DIVAV[j] += relQ[i][j]/MASS;
@@ -3647,18 +3603,18 @@ void incompSubtractDivergence( cell *CL,spec *SP,specSwimmer SS ) {
 	while( tmd!=NULL ) {
 		MASS = tmd->mass;
 		// tmd->vx = tmd->vx + relQ[i][0]*DIV0/MASS;
-		// tmd->vy = tmd->vy + relQ[i][1]*DIV0/MASS;
-		// tmd->vz = tmd->vz + relQ[i][2]*DIV0/MASS;
+		// if( DIM > _1D) tmd->vy = tmd->vy + relQ[i][1]*DIV0/MASS;
+		// if( DIM > _2D) tmd->vz = tmd->vz + relQ[i][2]*DIV0/MASS;
 		tmd->vx = tmd->vx + relQ[i][0]*DIV0/MASS - DIVAV[0];
-		tmd->vy = tmd->vy + relQ[i][1]*DIV0/MASS - DIVAV[1];
-		tmd->vz = tmd->vz + relQ[i][2]*DIV0/MASS - DIVAV[2];
+		if( DIM > _1D) tmd->vy = tmd->vy + relQ[i][1]*DIV0/MASS - DIVAV[1];
+		if( DIM > _2D) tmd->vz = tmd->vz + relQ[i][2]*DIV0/MASS - DIVAV[2];
 		// tmd->vx = tmd->vx - relQ[i][0]*DIV0/MASS + DIVAV[0];
-		// tmd->vy = tmd->vy - relQ[i][1]*DIV0/MASS + DIVAV[1];
-		// tmd->vz = tmd->vz - relQ[i][2]*DIV0/MASS + DIVAV[2];
+		// if( DIM > _1D) tmd->vy = tmd->vy - relQ[i][1]*DIV0/MASS + DIVAV[1];
+		// if( DIM > _2D) tmd->vz = tmd->vz - relQ[i][2]*DIV0/MASS + DIVAV[2];
 		//Final divergence, kinetic energy and momentum
 		V[0] = tmd->vx;
-		V[1] = tmd->vy;
-		V[2] = tmd->vz;
+		if( DIM > _1D) V[1] = tmd->vy;
+		if( DIM > _2D) V[2] = tmd->vz;
 		for( j=0; j<DIM; j++ ) DIV1 += (PCM[j]-MASS*V[j])/relQ[i][j];
 		for( j=0; j<DIM; j++ ) E1 += MASS*V[j]*V[j];
 		for( j=0; j<DIM; j++ ) P1[j] += MASS*V[j];
@@ -4522,8 +4478,8 @@ void cellVelSet( cell *CL,double vel[3] ) {
 	tmd = CL->MDpp;
 	while( tmd!=NULL ) {
 		tmd->vx += vel[0];
-		tmd->vy += vel[1];
-		tmd->vz += vel[2];
+		if( DIM > _1D) tmd->vy += vel[1];
+		if( DIM > _2D) tmd->vz += vel[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		// i++;
