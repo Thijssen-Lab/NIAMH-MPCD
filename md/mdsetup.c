@@ -2672,7 +2672,6 @@ particleMD *GrowLinearChainTrans (simptr sim, int type, int layout, int n, parti
 	real	v[3];
 	real	dr=0.0;
 	particleMD	p1, *pNew=0;
-	int 	width=2;        				// width of pore in translocation
 
 	// return if there is no monomer to add
 	if (n==0) {
@@ -2740,11 +2739,10 @@ particleMD *GrowRodChain (simptr sim, int type, int layout, int n, particleMD *p
 
 	int		grown, loop,Ntotal;
 	particleMD	p1, *pNew=0;
-	int width = 2;						// width of pore in tranlocation
 	real	dr=0.0;
 
 	// Number of monomers left for random part of LAYOUT_TRANS, works if translocation flag is on
-	Ntotal = sim->polyN[POLY_SETS-1]-((sim->polyN[POLY_SETS-1]/2)+1+transPoreWidth/2+2);
+	Ntotal = sim->polyN[POLY_SETS-1]-((sim->polyN[POLY_SETS-1]/2)+1+transPoreWidth*0.5+2.0);
 	// return if there is no monomer to add
 	if (n==0 || (flag==1 && n==Ntotal)) {
 		*status = 1;
