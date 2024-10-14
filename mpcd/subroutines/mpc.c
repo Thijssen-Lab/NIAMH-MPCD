@@ -11,7 +11,7 @@
 /// @see timestep()
 /// @see MPCcollision()
 /// @see binin()
-///
+/// 
 
 # include<math.h>
 # include<stdio.h>
