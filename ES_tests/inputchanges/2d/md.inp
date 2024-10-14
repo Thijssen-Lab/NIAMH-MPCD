@@ -8,17 +8,16 @@
 # ----------------------------------------------------------------------------------------------------
 #
 # parameter:	randomSeed		= 0
-# parameter:	warmupMD		= FREE_WARMUP 
 #
 # parameter:	unitCells	 	= (10,10,0)
 # parameter:	lattice		 	= LATT_BULK
 # parameter:	rCut			= CUTOFF_WCA
 # parameter:	sigma_lj		= 1.0
 # parameter:	rNebrShell	 	= 0.3
-# parameter:	dt		 	    = 0.002
+# parameter:	dt		 	= 0.002
 #
 # parameter:	geometry	 	= GEOM_BULK
-# parameter:	wallThickness	= 1 (in unit cells)
+# parameter:	wallThickness		= 1 (in unit cells)
 #
 # parameter:	bjerrum		 	= 0
 # parameter:	lambda_D		= 0
@@ -27,12 +26,9 @@
 #
 # parameter:	kFene			= 120.0
 # parameter:	r0Fene			= 1.5
-# parameter:	kSqu			= 0.0
-# parameter:	kBend			= 5.0
-# parameter:	theta0Bend		= 0.0
+# parameter:	kSqu				= 0.0
+# parameter:	kBend				= 5.0
 # parameter:	kNemMPC			= 50.0
-# parameter:	kDihedral		= 0.0
-# parameter:	phi0Dihedral	= 0.0
 #
 # parameter:	overlapMin		= 0.1
 # parameter:	overlapMinMonomer	= 0.9
@@ -40,9 +36,8 @@
 # parameter:	drRelax			= 0
 # parameter:	stepRelax		= 0
 #
-# parameter:    dStrength       = 0.0
+# parameter:    dStrength       = 1.5
 # parameter:    dChunks         = 1
-#
 #
 # ----------------------------------------------------------------------------------------------------
 # particle types:
@@ -78,7 +73,7 @@
 # parameter:	polySpread		= (0.0)
 # parameter:	monoCharge		= (0)
 # parameter:	polyM			= (1)
-# parameter:	polyN			= (10)
+# parameter:	polyN			= (11)
 #
 #
 # ---------------------------------------------------------------------------------------------------
@@ -91,7 +86,7 @@
 #
 # ----------------------------------------------------------------------------------------------------
 # external field:
-# ----------------------------------------------------------------------------------------------------
+# -----------------------------ifState-----------------------------------------------------------------------
 #
 # parameter:	Efield		 	= (0,   0.0, 				0.0)
 #

@@ -145,6 +145,8 @@ extern int snprintf (char *__restrict __s, size_t __maxlen, __const char *__rest
 #define	LAYOUT_U				8
 // Zahra added the following for translocation
 #define	LAYOUT_TRANS		9
+// Holly and Emma added for curved rods
+#define	LAYOUT_BANANA		10
 
 // atom types (index)
 #define TYPE_WALL				0
@@ -256,6 +258,7 @@ typedef struct particleMD {				// a particle					double		 float
     int		group;						// group bit field					 4		 	 4
     real  	wx, wy, wz;					// real world position				24			12
     real  	Tfx, Tfy, Tfz, Tdivf;		// for configurational temp.		32			16
+    real    dipole;                     // dipole magnitude, with sign       8           4 (?)
     int		pad[7];						// memory padding					28			28
     int		object;						// object id (for viewer)			 4			 4
     struct  particleMD *prev, *next;		// previous and next monomer		 8			 8
@@ -420,6 +423,12 @@ typedef struct item3STD {
 } item3STD;
 
 
+// elements of the list4STD list
+typedef struct item4STD {
+    particleMD	*p1, *p2, *p3, *p4;				///< pointers to the four particles
+} item4STD;
+
+
 // elements of the list2PBC list
 typedef struct item2PBC {
     particleMD	*p1, *p2;				///< pointers to the two particles
@@ -450,17 +459,24 @@ typedef struct list1STD {
 
 // list of pairs of std particles
 typedef struct list2STD {
-  item2STD	*items;					///< items of the list
+	item2STD	*items;					///< items of the list
 	int			n;						///< current number of items in the list
 	int			max;					///< maximum number of items
 } list2STD;
 
 // list of triplets of std particles
 typedef struct list3STD {
-  item3STD	*items;					///< items of the list
+	item3STD	*items;					///< items of the list
 	int			n;						///< current number of items in the list
 	int			max;					///< maximum number of items
 } list3STD;
+
+// list of quadruplets of std particles
+typedef struct list4STD {
+	item4STD	*items;					///< items of the list
+	int			n;						///< current number of items in the list
+	int			max;					///< maximum number of items
+} list4STD;
 
 // list of pairs of pbc particles
 typedef struct list2PBC {
@@ -505,6 +521,7 @@ typedef struct simulation {		 		// a simulation
     list1STD	charge;		 			///< list of coulombic charges
     list2STD	fene;					///< list of fene interaction pairs
     list3STD	bend;					///< list of bend interaction triplets
+    list4STD	dihedral;				///< list of dihedral interaction quartets
     listPoly	polymer;				///< list of polymers
 
     // neighbors
@@ -533,7 +550,7 @@ typedef struct simulation {		 		// a simulation
     int			polyM[PS];				///< number of polymer chains
     int			polyN[PS];				///< number of monomers per chain
 	real			monoCharge[PS];			///< charge of each monomer
-
+    
 	// charges
 	int			qLayout[QS];  			///< where to put the charges (e.g., SURFACE, TYPE_FLUID, ...)
 	int			qDensityKind[QS];		///< kind of density provided (e.g., BULK, SURFACE, ...)
@@ -541,6 +558,10 @@ typedef struct simulation {		 		// a simulation
 	real		qSpread[QS];			///< spacing factor for SURFACE charges
 	int			qCharge[QS];			///< the charge in units of the elementary charge
 	int			qNumber[QS];			///< the number of charges to put (will be compounded with density)
+
+    // dipoles
+    int         dChunks;                ///< number of alternating dipole 'chunks' per polymer
+    real        dStrength;              ///< dipole strength of each monomer, with sign for extensile or contractile
 
 	// layout quantities
     int			nPore;					///< number of sites in capillary pore
@@ -571,7 +592,10 @@ typedef struct simulation {		 		// a simulation
     real  		kFene;		 			///< strength of the FENE potential
     real  		kSqu;		 			///< strength of the 2D harmonic potential
     real  		kBend;		 			///< strength of the bend potential
-    real  		kNemMPC;		 			///< strength of the bend potential with the background nematic MPCD
+    real  		theta0Bend;		 		///< equilibrium angle of the bend potential
+    real  		kNemMPC;		 		///< strength of the bend potential with the background nematic MPCD
+    real  		kDihedral;		 		///< strength of the dihedral potential
+    real  		phi0Dihedral;		 	///< equilibrium angle of the dihedral potential
     real  		Efield[PC];				///< external electric field
     real  		overlapMin;				///< min initial distance between atoms
     real  		overlapMinMonomer;		///< min initial distance between monomers
@@ -616,7 +640,7 @@ typedef struct simulation {		 		// a simulation
     real  		potE;			 		///< total potential energy
     real  		ljE, harmE;				///< potential energies
     real  		coulE, feneE;			///< potential energies
-    real  		bendE, nemE;			///< potential energies
+    real  		bendE, nemE, dihedralE; ///< potential energies
     real  		s_kinE, ss_kinE;	 	///< kinetic energy accumulators
     real  		s_potE, ss_potE;	 	///< potential energy accumulators
     real  		s_totE, ss_totE;	 	///< total energy accumulators
