@@ -562,6 +562,11 @@ void TranslateMacros (char **stringptr)
 	snprintf (value, STRMAX, "%u", LAYOUT_TRANS);
 	ReplaceMacro (stringptr, macro, value);
 
+	// Tyler added the following for curved rods
+	snprintf (macro, STRMAX, "LAYOUT_BANANA");
+	snprintf (value, STRMAX, "%u", LAYOUT_BANANA);
+	ReplaceMacro (stringptr, macro, value);
+
 	snprintf (macro, STRMAX, "GROUP_NONE");
 	snprintf (value, STRMAX, "%#010X", GROUP_NONE);
 	ReplaceMacro (stringptr, macro, value);

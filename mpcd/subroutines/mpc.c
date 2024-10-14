@@ -1312,12 +1312,12 @@ void stochrotMPC( cell *CL,int RTECH,double C,double S,double *CLQ,int outP ) {
 	tmd = CL->MDpp;
 	while( tmd!=NULL ) {
 		V[0] = tmd->vx - CL->VCM[0];
-		V[1] = tmd->vy - CL->VCM[1];
-		V[2] = tmd->vz - CL->VCM[2];
+		if( DIM > _1D) V[1] = tmd->vy - CL->VCM[1];
+		if(DIM > _2D) V[2] = tmd->vz - CL->VCM[2];
 		rotate( RTECH,C,S,V,RV,SIGN,CA );
 		tmd->vx = CL->VCM[0] + V[0];
-		tmd->vy = CL->VCM[1] + V[1];
-		tmd->vz = CL->VCM[2] + V[2];
+		if( DIM > _1D) tmd->vy = CL->VCM[1] + V[1];
+		if(DIM > _2D) tmd->vz = CL->VCM[2] + V[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
 	}
@@ -1427,8 +1427,8 @@ void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 	tmd = CL->MDpp;
 	while( tmd!=NULL ) {
 		tmd->vx = CL->VCM[0] + RV[i][0] - RS[0];
-		tmd->vy = CL->VCM[1] + RV[i][1] - RS[1];
-		tmd->vz = CL->VCM[2] + RV[i][2] - RS[2];
+		if( DIM > _1D) tmd->vy = CL->VCM[1] + RV[i][1] - RS[1];
+		if(DIM > _2D) tmd->vz = CL->VCM[2] + RV[i][2] - RS[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -1582,19 +1582,11 @@ void andersenROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 		MASS = tmd->mass;
 		//Position relative to centre of mass
 		relQ[i][0] = tmd->rx - CL->CM[0];
-		relQ[i][1] = tmd->ry - CL->CM[1];
-		relQ[i][2] = tmd->rz - CL->CM[2];
+		if( DIM > _1D) relQ[i][1] = tmd->ry - CL->CM[1];
+		if( DIM > _2D) relQ[i][2] = tmd->rz - CL->CM[2];
 		diffV[0] = MASS * (tmd->vx - RV[i][0]);
-		diffV[1] = MASS * (tmd->vy - RV[i][1]);
-		diffV[2] = MASS * (tmd->vz - RV[i][2]);
-		if( DIM < _3D ) {
-			relQ[i][2] = 0.;
-			diffV[2] = 0.;
-		}
-		if( DIM < _2D ) {
-			relQ[i][1] = 0.;
-			diffV[1] = 0.;
-		}
+		if( DIM > _1D) diffV[1] = MASS * (tmd->vy - RV[i][1]);
+		if( DIM > _2D) diffV[2] = MASS * (tmd->vz - RV[i][2]);
 		crossprod( relQ[i],diffV,angmom );
 		for( j=0; j<_3D; j++ ) L[j] += angmom[j];
 
@@ -1647,8 +1639,8 @@ void andersenROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 	while( tmd!=NULL ) {
 		crossprod( W,relQ[i],angterm );
 		tmd->vx = VCM[0] + RV[i][0] - RS[0] + angterm[0];
-		tmd->vy = VCM[1] + RV[i][1] - RS[1] + angterm[1];
-		tmd->vz = VCM[2] + RV[i][2] - RS[2] + angterm[2];
+		if( DIM > _1D) tmd->vy = VCM[1] + RV[i][1] - RS[1] + angterm[1];
+		if(DIM > _2D) tmd->vz = VCM[2] + RV[i][2] - RS[2] + angterm[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -1765,8 +1757,8 @@ void langevinMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 		a = (MASS - FRICCO * Step * 0.5) / (MASS + 0.5 * FRICCO * Step);
 		b = sqrt( FRICCO*Step ) / ( MASS + 0.5 * FRICCO * Step );
 		tmd->vx = VCM[0] + a * (tmd->vx-VCM[0]) + b * (WN[i][0] - WNS[0]);
-		tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]);
-		tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]);
+		if( DIM > _1D ) tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]);
+		if(DIM > _2D) tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]);
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -1943,19 +1935,11 @@ void langevinROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 		MASS = tmd->mass;
 		//Position relative to centre of mass
 		relQ[i][0] = tmd->rx - CL->CM[0];
-		relQ[i][1] = tmd->ry - CL->CM[1];
-		relQ[i][2] = tmd->rz - CL->CM[2];
+		if( DIM > _1D) relQ[i][1] = tmd->ry - CL->CM[1];
+		if( DIM > _2D) relQ[i][2] = tmd->rz - CL->CM[2];
 		diffV[0] = MASS * (FRICCO*tmd->vx - sqrt(FRICCO)*WN[i][0]);
-		diffV[1] = MASS * (FRICCO*tmd->vy - sqrt(FRICCO)*WN[i][1]);
-		diffV[2] = MASS * (FRICCO*tmd->vz - sqrt(FRICCO)*WN[i][2]);
-		if( DIM < _3D ) {
-			relQ[i][2] = 0.;
-			diffV[2] = 0.;
-		}
-		if( DIM < _2D ) {
-			relQ[i][1] = 0.;
-			diffV[1] = 0.;
-		}
+		if( DIM > _1D) diffV[1] = MASS * (FRICCO*tmd->vy - sqrt(FRICCO)*WN[i][1]);
+		if( DIM > _2D) diffV[2] = MASS * (FRICCO*tmd->vz - sqrt(FRICCO)*WN[i][2]);
 		crossprod( relQ[i],diffV,angmom );
 		for( j=0; j<_3D; j++ ) L[j] += angmom[j];
 
@@ -2012,8 +1996,8 @@ void langevinROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 		a = (MASS - FRICCO * Step * 0.5) / (MASS + 0.5 * FRICCO * Step);
 		b = sqrt( FRICCO*Step ) / ( MASS + 0.5 * FRICCO * Step );
 		tmd->vx = VCM[0] + a * (tmd->vx-VCM[0]) + b * (WN[i][0] - WNS[0]) + angterm[0];
-		tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]) + angterm[1];
-		tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]) + angterm[2];
+		if( DIM > _1D) tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]) + angterm[1];
+		if(DIM > _2D) tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]) + angterm[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -2289,8 +2273,8 @@ void vicsekAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 	tmd = CL->MDpp;
 	while( tmd!=NULL ) {
 		tmd->vx = VCM[0] + RV[i][0] - RS[0];
-		tmd->vy = VCM[1] + RV[i][1] - RS[1];
-		tmd->vz = VCM[2] + RV[i][2] - RS[2];
+		if( DIM > _1D) tmd->vy = VCM[1] + RV[i][1] - RS[1];
+		if( DIM > _2D) tmd->vz = VCM[2] + RV[i][2] - RS[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -2398,8 +2382,8 @@ void chateAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,int
 	tmd = CL->MDpp;
 	while( tmd!=NULL ) {
 		tmd->vx = VCM[0] + RV[i][0] - RS[0];
-		tmd->vy = VCM[1] + RV[i][1] - RS[1];
-		tmd->vz = VCM[2] + RV[i][2] - RS[2];
+		if( DIM > _1D) tmd->vy = VCM[1] + RV[i][1] - RS[1];
+		if( DIM > _2D) tmd->vz = VCM[2] + RV[i][2] - RS[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -2501,8 +2485,8 @@ void vicsekLangevinMPC( cell *CL,spec *SP,double KBT,double FRICCO,double Step,d
 		a = (MASS - FRICCO * Step * 0.5) / (MASS + 0.5 * FRICCO * Step);
 		b = sqrt( FRICCO*Step ) / ( MASS + 0.5 * FRICCO * Step );
 		tmd->vx = VCM[0] + a * (tmd->vx-VCM[0]) + b * (WN[i][0] - WNS[0]);
-		tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]);
-		tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]);
+		if( DIM > _1D) tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]);
+		if( DIM > _2D) tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]);
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -2607,8 +2591,8 @@ void chateLangevinMPC( cell *CL,spec *SP,double KBT,double FRICCO,double Step,do
 		a = (MASS - FRICCO * Step * 0.5) / (MASS + 0.5 * FRICCO * Step);
 		b = sqrt( FRICCO*Step ) / ( MASS + 0.5 * FRICCO * Step );
 		tmd->vx = VCM[0] + a * (tmd->vx-VCM[0]) + b * (WN[i][0] - WNS[0]);
-		tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]);
-		tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]);
+		if( DIM > _1D) tmd->vy = VCM[1] + a * (tmd->vy-VCM[1]) + b * (WN[i][1] - WNS[1]);
+		if( DIM > _2D) tmd->vz = VCM[2] + a * (tmd->vz-VCM[2]) + b * (WN[i][2] - WNS[2]);
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -2738,8 +2722,8 @@ void dipoleAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 	tmd = CL->MDpp;
 	while( tmd!=NULL ) {
 		tmd->vx = CL->VCM[0] + RV[i][0] - RS[0];
-		tmd->vy = CL->VCM[1] + RV[i][1] - RS[1];
-		tmd->vz = CL->VCM[2] + RV[i][2] - RS[2];
+		if( DIM > _1D) tmd->vy = CL->VCM[1] + RV[i][1] - RS[1];
+		if( DIM > _2D) tmd->vz = CL->VCM[2] + RV[i][2] - RS[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		i++;
@@ -3299,12 +3283,12 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 	while( tmd!=NULL ) {
 		M = tmd->mass;
 		V[0] = tmd->vx;
-		V[1] = tmd->vy;
-		V[2] = tmd->vz;
+		if( DIM > _1D) V[1] = tmd->vy;
+		if(DIM > _2D) V[2] = tmd->vz;
 		//Position relative to centre of mass
 		relQ[i][0] = tmd->rx - CL->CM[0];
-		relQ[i][1] = tmd->ry - CL->CM[1];
-		relQ[i][2] = tmd->rz - CL->CM[2];
+		if( DIM > _1D) relQ[i][1] = tmd->ry - CL->CM[1];
+		if(DIM > _2D) relQ[i][2] = tmd->rz - CL->CM[2];
 		//Initial divergence
 		for( j=0; j<DIM; j++ ) DIV[i] += (PCM[j]-M*V[j])/relQ[i][j];
 		tmd = tmd->nextSRD;
@@ -3345,8 +3329,8 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 			while( tmd!=NULL ) {
 				M = tmd->mass;
 				V[0] = tmd->vx;
-				V[1] = tmd->vy;
-				V[2] = tmd->vz;
+				if( DIM > _1D) V[1] = tmd->vy;
+				if( DIM > _2D) V[2] = tmd->vz;
 				// for( j=0; j<DIM; j++ ) EI += M*V[j]*V[j];
 				for( j=0; j<DIM; j++ ) PI[j] += M*V[j];
 				tmd = tmd->nextSRD;
@@ -3435,8 +3419,8 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 			while( tmd!=NULL ) {
 				M = tmd->mass;
 				V[0] = tmd->vx;
-				V[1] = tmd->vy;
-				V[2] = tmd->vz;
+				if( DIM > _1D) V[1] = tmd->vy;
+				if( DIM > _2D) V[2] = tmd->vz;
 				// for( j=0; j<DIM; j++ ) EF += M*V[j]*V[j];
 				for( j=0; j<DIM; j++ ) PF[j] += M*V[j];
 				tmd = tmd->nextSRD;
@@ -3555,12 +3539,12 @@ void incompSubtractDivergence( cell *CL,spec *SP,specSwimmer SS ) {
 	while( tmd!=NULL ) {
 		MASS = tmd->mass;
 		V[0] = tmd->vx;
-		V[1] = tmd->vy;
-		V[2] = tmd->vz;
+		if( DIM > _1D) V[1] = tmd->vy;
+		if( DIM > _2D) V[2] = tmd->vz;
 		//Position relative to centre of mass
 		relQ[i][0] = tmd->rx - CL->CM[0];
-		relQ[i][1] = tmd->ry - CL->CM[1];
-		relQ[i][2] = tmd->rz - CL->CM[2];
+		if( DIM > _1D) relQ[i][1] = tmd->ry - CL->CM[1];
+		if( DIM > _2D) relQ[i][2] = tmd->rz - CL->CM[2];
 		//Initial divergence, kinetic energy and momentum
 		for( j=0; j<DIM; j++ ) DIV0 += (PCM[j]-MASS*V[j])/relQ[i][j];
 		for( j=0; j<DIM; j++ ) DIVAV[j] += relQ[i][j]/MASS;
@@ -3619,18 +3603,18 @@ void incompSubtractDivergence( cell *CL,spec *SP,specSwimmer SS ) {
 	while( tmd!=NULL ) {
 		MASS = tmd->mass;
 		// tmd->vx = tmd->vx + relQ[i][0]*DIV0/MASS;
-		// tmd->vy = tmd->vy + relQ[i][1]*DIV0/MASS;
-		// tmd->vz = tmd->vz + relQ[i][2]*DIV0/MASS;
+		// if( DIM > _1D) tmd->vy = tmd->vy + relQ[i][1]*DIV0/MASS;
+		// if( DIM > _2D) tmd->vz = tmd->vz + relQ[i][2]*DIV0/MASS;
 		tmd->vx = tmd->vx + relQ[i][0]*DIV0/MASS - DIVAV[0];
-		tmd->vy = tmd->vy + relQ[i][1]*DIV0/MASS - DIVAV[1];
-		tmd->vz = tmd->vz + relQ[i][2]*DIV0/MASS - DIVAV[2];
+		if( DIM > _1D) tmd->vy = tmd->vy + relQ[i][1]*DIV0/MASS - DIVAV[1];
+		if( DIM > _2D) tmd->vz = tmd->vz + relQ[i][2]*DIV0/MASS - DIVAV[2];
 		// tmd->vx = tmd->vx - relQ[i][0]*DIV0/MASS + DIVAV[0];
-		// tmd->vy = tmd->vy - relQ[i][1]*DIV0/MASS + DIVAV[1];
-		// tmd->vz = tmd->vz - relQ[i][2]*DIV0/MASS + DIVAV[2];
+		// if( DIM > _1D) tmd->vy = tmd->vy - relQ[i][1]*DIV0/MASS + DIVAV[1];
+		// if( DIM > _2D) tmd->vz = tmd->vz - relQ[i][2]*DIV0/MASS + DIVAV[2];
 		//Final divergence, kinetic energy and momentum
 		V[0] = tmd->vx;
-		V[1] = tmd->vy;
-		V[2] = tmd->vz;
+		if( DIM > _1D) V[1] = tmd->vy;
+		if( DIM > _2D) V[2] = tmd->vz;
 		for( j=0; j<DIM; j++ ) DIV1 += (PCM[j]-MASS*V[j])/relQ[i][j];
 		for( j=0; j<DIM; j++ ) E1 += MASS*V[j]*V[j];
 		for( j=0; j<DIM; j++ ) P1[j] += MASS*V[j];
@@ -3735,6 +3719,204 @@ void localVCM( double vcm[_3D],cell CL,spec *SP,specSwimmer specS ) {
 		}
 	}
 	for( i=0; i<DIM; i++ ) vcm[i] /= (summ ? summ : 1.);
+}
+
+///
+/// @brief This routine applies force dipoles from active MD particles onto the MPCD particles.
+///
+/// The function loops over all MD particles and finds their location and backbone tangent. It
+/// then finds the plane and applies a kick to all the MPCD particles in the cell either away from
+/// or towards the plane, depending on if extensile or contractile.
+/// @param simMD A pointer to the entire MD portion of the simulation.
+/// @param CL ALL cells. 
+/// @param SP The species-wide information about MPCD particles.
+///
+void activeMD(simptr simMD, cell ***CL, spec *SP, inputList in) {
+	int i, j, k, nAtom, cx, cy, cz, N_cl, id;
+	double pmOne;
+	double MDloc[_3D], prevloc[DIM], nextloc[DIM], vecprev[DIM], vecnext[DIM], tangent[DIM];  // stuff to calc plane and velocity
+	double mpcdCM[DIM];
+	double pW;  //The particle's pW for passing the plane
+	double force; // the dipole 'force'(=dt*d/m) on one mpcd particle, will be a constant for each cell. delta_v = 'force'/mass
+	double dt, deltaV;
+	float dipole;
+	bc PLANE;  //The plane that cuts the cell in half
+	particleMPC *tmpc;
+	particleMD	*atoms;
+	
+	atoms  = simMD->atom.items;
+	nAtom = simMD->atom.n;
+	dt = in.dt;
+
+	for (i=0; i<nAtom; i++) {
+		// zero things
+		for (j=0; j<_3D; j++) {
+			MDloc[j] = 0.;	// this has to be 3D always because CL is 3d always
+		}
+
+		for (j=0; j<DIM; j++) {
+			prevloc[j] = 0.;
+			nextloc[j] = 0.;
+			vecprev[j] = 0.;
+			vecnext[j] = 0.;
+			tangent[j] = 0.;
+		}
+		N_cl = 0;
+		cx = 0.;
+		cy = 0.;
+		cz = 0.;
+		force = 0.;
+		// find location of MD particle(s) in question
+		// there is probably a more concise way of doing this
+		MDloc[0] = atoms[i].rx;
+		MDloc[1] = atoms[i].ry;
+		MDloc[2] = atoms[i].rz;
+		
+		// get tangent of backbone at MD particle, and normalise it - different if first or last
+		
+		if (i==0) {
+			nextloc[0] = atoms[i+1].rx;
+			nextloc[1] = atoms[i+1].ry;
+			if (DIM>2){
+				nextloc[2] = atoms[i+1].rz;  // index 2 only exists if 3d
+			}
+			for (j=0; j<DIM; j++) {
+			tangent[j] = nextloc[j]-MDloc[j];
+			}
+		}
+		else if (i==nAtom) {
+			prevloc[0] = atoms[i-1].rx;
+			prevloc[1] = atoms[i-1].ry;
+			if (DIM>2){
+				prevloc[2] = atoms[i-1].rz;
+			}
+			for (j=0; j<DIM; j++) {
+			tangent[j] = MDloc[j]-prevloc[j];
+			}
+		}
+		else {
+			prevloc[0] = atoms[i-1].rx;
+			prevloc[1] = atoms[i-1].ry;
+			nextloc[0] = atoms[i+1].rx;
+			nextloc[1] = atoms[i+1].ry;
+			if (DIM>2){
+				prevloc[2] = atoms[i-1].rz;
+				nextloc[2] = atoms[i+1].rz;
+			}
+			for (j=0; j<DIM; j++) {
+				vecprev[j] = MDloc[j]-prevloc[j];
+				vecnext[j] = nextloc[j]-MDloc[j];
+			}
+			norm(vecprev, DIM); //normprev = sqrt(pow(vecprev[0],2) + pow(vecprev[1],2)+pow(vecprev[2],2));
+			norm(vecnext, DIM); //normnext = sqrt(pow(vecnext[0],2) + pow(vecnext[1],2)+pow(vecnext[2],2));
+			for (j=0; j<DIM; j++) {
+				//vecprev[j] = vecprev[j]/normprev;
+				//vecnext[j] = vecnext[j]/normnext;
+				tangent[j] = vecprev[j]+vecnext[j];
+			}
+		}
+		norm(tangent, DIM);//normtan = sqrt(pow(tangent[0],2) + pow(tangent[1],2)+pow(tangent[2],2));
+		//for (j=0; j<_3D; j++) {
+		//	tangent[j] = tangent[j]/normtan;
+		//}
+
+		// check
+		//printf("tangent for atom %d ", i+1);
+		//printf("is %f, ", tangent[0]);
+		//printf("%f, ", tangent[1]);
+		//if (DIM>2){
+		//	printf("%f\n", tangent[2]);
+		//}
+
+		// identify which MPCD cell it's in
+		cx = (int)MDloc[0];
+		cy = (int)MDloc[1];
+		cz = (int)MDloc[2];	// gotta be 3d always
+		// then use like CL[cx][cy][cz].pp
+
+		// find const 'force' on each MPCD particle from the MD in this cell
+		dipole = atoms[i].dipole;
+		N_cl = CL[cx][cy][cz].POPSRD;
+		force = dt*dipole/N_cl;
+
+		// Think these need introduced here rather than at the very start because looking at one cell rather than all
+		//double AV[CL[cx][cy][cz].POP][DIM];	//Active velocities
+		double AS[DIM];			//Sum of active velocities
+		// Zero arrays
+		//for( k=0;k<CL[cx][cy][cz].POP;k++ ) for( j=0;j<_3D;j++ ) {
+		//	AV[k][j] = 0.;
+		//}
+		for( j=0;j<DIM;j++ ) {
+			AS[j]=0.;
+			mpcdCM[j]=0.;
+		}
+
+		// find plane - line 1775 in lc.c
+		// Define the plane normal to the backbone tangent at the MD particle position
+		for( k=0;k<4;k++ ) PLANE.P[k]=1;
+		PLANE.INV=0;
+		PLANE.ABS=0;
+		PLANE.R=0.0;
+		PLANE.ROTSYMM[0]=4.0;
+		PLANE.ROTSYMM[1]=4.0;
+		// Normal is TANGENT
+		for( k=0; k<DIM; k++ ) PLANE.A[k] = tangent[k];
+		// Position is cell COM
+		// ONLY TAKE INTO ACCOUNT MPCD PARTICLES NOT MD AS WELL
+
+		localCM_SRD(CL[cx][cy][cz],SP,mpcdCM); //i think that's how this works??
+		for( k=0; k<DIM; k++ ) PLANE.Q[k] = mpcdCM[k];
+		
+		if(CL[cx][cy][cz].pp!=NULL) {
+			tmpc = CL[cx][cy][cz].pp;
+			// loop through MPCD particles
+			//m = 0;// counter for momentum conservation bits
+			while( tmpc!=NULL ) {
+				// zero things
+				pW = 0.;
+				id = 0;
+				deltaV = 0.;
+				// give a kick according to which side of plane - dipole AndersenROT_LC
+				// Check which side of the plane
+				pW = calcW( PLANE,*tmpc );
+				if( pW<=0 ) pmOne=-1.;
+				else pmOne=1.;
+
+				// change in velocity to be applied according to species mass
+				id = tmpc->SPID;
+				deltaV = force/(double)(SP+id)->MASS; //think this is correct way of getting mass?
+				//printf("vel kick: %f\n",deltaV);
+				// apply the change (hopefully). In direction of tangent, away from (or towards) plane.
+				for( k=0; k<DIM; k++ ){
+					tmpc->V[k] += tangent[k]*deltaV*pmOne;
+				}
+				
+				// stuff for momentum conservation
+				//for( j=0; j<DIM; j++ ) AV[m][j] = tmpc->V[j];
+				//for( j=0; j<DIM; j++ ) AS[j] += AV[m][j]*(double)(SP+id)->MASS;
+				for( j=0; j<DIM; j++ ) AS[j] += tangent[k]*force*pmOne;
+				//m++;
+				// Increment link in list
+				tmpc = tmpc->next;
+			}
+		}
+		// find net momentum - divided by N because then shared between all particles
+		for( j=0; j<DIM; j++ ) AS[j] = AS[j]/N_cl; // is this correct?
+
+		// subtract net momentum from all mpcd if non-zero - new loop
+		if(CL[cx][cy][cz].pp!=NULL) {
+			tmpc = CL[cx][cy][cz].pp;
+			while( tmpc!=NULL ) {
+				for (j=0; j<DIM; j++){
+					tmpc->V[j] -= AS[j]/(double)(SP+id)->MASS; // ;
+				}
+				// Increment link in list
+				tmpc = tmpc->next;
+			}
+		}	
+			
+	}
+
 }
 
 /// 
@@ -4296,8 +4478,8 @@ void cellVelSet( cell *CL,double vel[3] ) {
 	tmd = CL->MDpp;
 	while( tmd!=NULL ) {
 		tmd->vx += vel[0];
-		tmd->vy += vel[1];
-		tmd->vz += vel[2];
+		if( DIM > _1D) tmd->vy += vel[1];
+		if( DIM > _2D) tmd->vz += vel[2];
 		//Increment link in list
 		tmd = tmd->nextSRD;
 		// i++;
@@ -4588,6 +4770,12 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
     for (i = 0; i < NSPECI; i++) { // revert activity
         (SP+i)->ACT = savedAct[i];
     }
+
+
+	// Apply the MD active dipoles
+	if( MDmode && fabs(simMD->dStrength)>=TOL) {
+		activeMD(simMD, CL, SP, in );
+	}
 
 	// Brownian thermostat (no hydrodynamic interactions -scramble velocities)
 	if( in.noHI == HIOFF ) scramble( SRDparticles );

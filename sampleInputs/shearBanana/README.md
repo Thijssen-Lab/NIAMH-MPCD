@@ -1,0 +1,1 @@
+Simulates stiff bent polymer (a banana-like rod) composed of 6 monomers advecting due to a linear shear in 3D.
