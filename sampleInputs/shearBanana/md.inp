@@ -10,7 +10,7 @@
 # parameter:	randomSeed		= 0
 # parameter:	warmupMD		= FREE_WARMUP 
 #
-# parameter:	unitCells	 	= (10,10,0)
+# parameter:	unitCells	 	= (20,20,20)
 # parameter:	lattice		 	= LATT_BULK
 # parameter:	rCut			= CUTOFF_WCA
 # parameter:	sigma_lj		= 1.0
@@ -28,10 +28,10 @@
 # parameter:	kFene			= 120.0
 # parameter:	r0Fene			= 1.5
 # parameter:	kSqu			= 0.0
-# parameter:	kBend			= 5.0
-# parameter:	theta0Bend		= 0.0
-# parameter:	kNemMPC			= 50.0
-# parameter:	kDihedral		= 0.0
+# parameter:	kBend			= 1000.0
+# parameter:	theta0Bend		= 0.62
+# parameter:	kNemMPC			= 0.0
+# parameter:	kDihedral		= 1000.0
 # parameter:	phi0Dihedral	= 0.0
 #
 # parameter:	overlapMin		= 0.1
@@ -71,14 +71,14 @@
 # polymer sets:
 # ----------------------------------------------------------------------------------------------------
 #
-# parameter:	polyLayout		= (LAYOUT_U)
-# parameter:	polyAtomType		= (TYPE_MONOMER)
-# parameter:	polyDensityKind		= (SURFACE)
+# parameter:	polyLayout		= (LAYOUT_BANANA)
+# parameter:	polyAtomType	= (TYPE_MONOMER)
+# parameter:	polyDensityKind	= (SURFACE)
 # parameter:	polyDensity		= (0.0)
 # parameter:	polySpread		= (0.0)
 # parameter:	monoCharge		= (0)
 # parameter:	polyM			= (1)
-# parameter:	polyN			= (10)
+# parameter:	polyN			= (6)
 #
 #
 # ---------------------------------------------------------------------------------------------------
@@ -86,7 +86,7 @@
 # ----------------------------------------------------------------------------------------------------
 #
 # parameter:	phaseName	 	=     	Equilibration,	Production
-# parameter:	nStep		 	= (0, 	50000,			5000000)
+# parameter:	nStep		 	= (0, 	50000,			500000000)
 #
 #
 # ----------------------------------------------------------------------------------------------------
@@ -100,7 +100,7 @@
 # temperature:
 # ----------------------------------------------------------------------------------------------------
 #
-# parameter:	kT		 	= (0,   1.0, 			1.0)
+# parameter:	kT		 	        = (0,   1.0, 			1.0)
 # parameter:	groupThermRescale	= (0, 	GROUP_FLUID,		GROUP_FLUID)
 # parameter:	stepThermRescale	= (0, 	100, 			100)
 # parameter:	groupThermDPD		= (0,	GROUP_FLUID,	GROUP_FLUID)
@@ -111,11 +111,11 @@
 # step counters:
 # ----------------------------------------------------------------------------------------------------
 #
-# parameter:	stepAvg		 	= (0, 	5000, 			5000)
-# parameter:	stepHistCollect 	= (0,	5000, 			5000)
-# parameter:	stepHistPrint 		= (0,	5000, 			5000)
-# parameter:	stepSceneSlow	 	= (0, 	5000, 			5000)
-# parameter:	stepSceneFast	 	= (0, 	5000, 			5000)
+# parameter:	stepAvg		 	    = (0, 	10000, 			10000)
+# parameter:	stepHistCollect 	= (0,	0, 			0)
+# parameter:	stepHistPrint 		= (0,	0, 			0)
+# parameter:	stepSceneSlow	 	= (0, 	20000, 			10000)
+# parameter:	stepSceneFast	 	= (0, 	20000, 			10000)
 # parameter:	stepCheckpoint		= (0,   0,				0)
 #
 #

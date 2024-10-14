@@ -8,6 +8,7 @@
 # ----------------------------------------------------------------------------------------------------
 #
 # parameter:	randomSeed		= 0
+# parameter:	warmupMD		= FREE_WARMUP
 #
 # parameter:	unitCells	 	= (30,10,10)
 # parameter:	lattice		 	= LATT_BULK
@@ -26,15 +27,21 @@
 #
 # parameter:	kFene			= 120.0
 # parameter:	r0Fene			= 1.5
-# parameter:	kSqu				= 0.0
-# parameter:	kBend				= 5.0
+# parameter:	kSqu			= 0.0
+# parameter:	kBend			= 5.0
+# parameter:	theta0Bend		= 0.0
 # parameter:	kNemMPC			= 50.0
+# parameter:	kDihedral		= 0.0
+# parameter:	phi0Dihedral	= 0.0
 #
 # parameter:	overlapMin		= 0.1
 # parameter:	overlapMinMonomer	= 0.9
 #
 # parameter:	drRelax			= 0
 # parameter:	stepRelax		= 0
+#
+# parameter:    dStrength       = 0.0
+# parameter:    dChunks         = 1
 #
 #
 # ----------------------------------------------------------------------------------------------------

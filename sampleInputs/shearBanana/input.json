@@ -1,0 +1,90 @@
+{
+    "domain":           [20, 20, 20],
+    "simSteps":         10000,
+    "warmUp":           2000,
+    "collOp":           2,
+    "mdIn":             "md.inp",
+    "stepsMD":          50,
+    "species":
+    [
+        {
+            "comment":      "Passive isotropic fluid fluid",
+            "dens":         20
+        }
+    ],
+    "comment":          "BCs are four periodic boundary conditions (PBC) and two impermeable, no-slip walls",
+    "BC":
+    [
+        {
+            "comment":      "Left PBC",
+            "phantom":      0,
+            "Q":            [0, 0, 0],
+            "aInv":         [1, 0, 0],
+            "P":            [1, 1, 1, 1],
+            "R":            0,
+            "DN":           20,
+            "MVN":          1,
+            "MVT":          1
+        },
+        {
+            "comment":      "Right PBC",
+            "phantom":      0,
+            "Q":            [20, 0, 0],
+            "aInv":         [-1, 0, 0],
+            "P":            [1, 1, 1, 1],
+            "R":            0,
+            "DN":           20,
+            "MVN":          1,
+            "MVT":          1
+        },
+        {
+            "comment":      "Bottom wall",
+            "phantom":      1,
+            "Q":            [0, 0, 0],
+            "aInv":         [0, 1, 0],
+            "P":            [1, 1, 1, 1],
+            "R":            0,
+            "DN":           0,
+            "MVN":          -1,
+            "MVT":          -1,
+            "DVxyz":        [-7.5,0,0]
+        },
+        {
+            "comment":      "Top wall",
+            "phantom":      1,
+            "Q":            [0, 20, 0],
+            "aInv":         [0, -1, 0],
+            "P":            [1, 1, 1, 1],
+            "R":            0,
+            "DN":           0,
+            "MVN":          -1,
+            "MVT":          -1,
+            "DVxyz":        [7.5, 0, 0]
+        },
+        {
+            "comment":      "Front PBC",
+            "phantom":      0,
+            "Q":            [0, 0, 0],
+            "aInv":         [0, 0, 1],
+            "P":            [1, 1, 1, 1],
+            "R":            0,
+            "DN":           20,
+            "MVN":          1,
+            "MVT":          1
+        },
+        {
+            "comment":      "Back PBC",
+            "phantom":      0,
+            "Q":            [0, 0, 20],
+            "aInv":         [0, 0, -1],
+            "P":            [1, 1, 1, 1],
+            "R":            0,
+            "DN":           20,
+            "MVN":          1,
+            "MVT":          1
+        }
+    ],
+    "debugOut":         3,
+    "flowOut":          1000,
+    "synopsisOut":      1
+}

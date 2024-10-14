@@ -115,6 +115,12 @@
 # define NOUT 0
 
 /* ****************************************** */
+/* *************** FILE NAMES *************** */
+/* ****************************************** */
+/// @brief Assumed string length for file names, etc. Long because clusters often have long paths
+# define STRLN 500
+
+/* ****************************************** */
 /* ***************** STREAM ***************** */
 /* ****************************************** */
 /// @brief If the particle needs to stream its STREAM.
@@ -238,6 +244,13 @@
 # define HEYES 3
 /// @brief Thermostat settings. MAXV is not really a thermostat. Use it with RTECH=MPCAT to have a maximum velocity vector (which is inputted as GRAV[] in input.inp).
 # define MAXV 4
+
+/* ****************************************** */
+/* ********** POLYMER TRANSLOCATION ********* */
+/* ****************************************** */
+//For translocation, the pore width can be changed in the BC inputs
+//HOWEVER, for initializing the polymer conformation, we need to know the pore width and it is hardcoded as transPoreWidth
+# define transPoreWidth 2
 
 /* ****************************************** */
 /* *********** COLLISION OPERATOR *********** */

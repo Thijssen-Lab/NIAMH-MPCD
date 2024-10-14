@@ -67,7 +67,8 @@ Tag             | Type          | Default Value | Description
 `multiphase`    | int           | 0             | Enable multiphase mode, applying multiphase interactions. 1 = on, 0 = off
 `grav`          | array(double) | [0,0,0]       | Constant acceleration due to external force. **Must** be 3D
 `mag`           | array(double) | [0,0,0]       | Constant external magnetic field. **Must** be 3D
-`seed`          | int           | 0             | Seed for random number generator. 0 for pseudorandom seed. Set to -1 to load a checkpoint
+`seed`          | int           | 0             | Seed for random number generator. 0 for pseudorandom seed. 
+`checkpointIn`  | string        | ""            | Path to checkpoint input file. 
 `mdIn`          | string        | ""            | Path to the MD input file. This also acts as the switch for enabling MD --- If set to `""`, then MD is disabled, otherwise MD is enabled with the corresponding input file
 `mdCoupleMode`  | int           | 1             | Coupling mode for MD. Only matters if `mdIn` is set. Set to 1 for MD particles to be treated as MPCD particles, 2 for MD particles to be treated as MD particles in the MPCD simulator
 `stepsMD`       | int           | 20            | MD time steps per MPCD time step
@@ -152,7 +153,7 @@ Tag             | Type          | Default Value | Description
 #### Overrides          {#overrides}
 Override Tag    | Type  | Override param | Description
 ---             |-------|--------------| ---
-`domainWalls`   | int   | `BC`         | This override will add extra BCs to the simulation, on top of the declared ones, on the domain walls. If set to 1, it places PBCs, and if set to 0 it places solid walls. 
+`domainWalls`   | int   | `BC`         | This override will add extra BCs to the simulation, on top of the declared ones, on the domain walls. If set to 1, it places PBCs. If set to 2 it places solid walls. If 0, off.
 `checkpointTimerOut`| float| `checkpointOut`| This override enables checkpointing, but puts it on a timer. It will checkpoint every X **hours**, where X is specified by this parameter. 
 
 ### Species Tag Table           {#species-tag-table}

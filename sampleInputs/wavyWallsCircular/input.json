@@ -79,8 +79,6 @@
    "dirSOut":10,
    "coarseOut":10,
    "debugOut":3,
-   "histVortOut":10,
-   "histVelOut":10,
    "vortCorrOut":10,
    "velCorrOut":10,
    "topoFieldOut":10 

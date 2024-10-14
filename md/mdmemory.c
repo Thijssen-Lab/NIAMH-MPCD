@@ -137,12 +137,26 @@ void GrowList2STD (list2STD *list)
 void GrowList3STD (list3STD *list)
 //================================================================================
 {
-	// Allocates additional memory to hold the neighbor pointer pairs. Each
+	// Allocates additional memory to hold the neighbor pointer triplets. Each
 	// element is a structure of p1, p2, p3.
 
 	int	n = list->n + BLOCK_LARGE;
 
 	list->items = (item3STD *) myrealloc (list->items, (size_t) (n*sizeof(item3STD)));
+	list->max   = n;
+}
+
+
+//================================================================================
+void GrowList4STD (list4STD *list)
+//================================================================================
+{
+	// Allocates additional memory to hold the neighbor pointer quadruplets. Each
+	// element is a structure of p1, p2, p3, p4.
+
+	int	n = list->n + BLOCK_LARGE;
+
+	list->items = (item4STD *) myrealloc (list->items, (size_t) (n*sizeof(item4STD)));
 	list->max   = n;
 }
 
@@ -219,6 +233,7 @@ int AddItem2STD (list2STD *list, particleMD *p1, particleMD *p2)
 	return k;
 }
 
+
 //================================================================================
 int AddItem3STD (list3STD *list, particleMD *p1, particleMD *p2, particleMD *p3)
 //================================================================================
@@ -229,6 +244,22 @@ int AddItem3STD (list3STD *list, particleMD *p1, particleMD *p2, particleMD *p3)
 	list->items[k].p1 = p1;
 	list->items[k].p2 = p2;
 	list->items[k].p3 = p3;
+	list->n++;
+	return k;
+}
+
+
+//================================================================================
+int AddItem4STD (list4STD *list, particleMD *p1, particleMD *p2, particleMD *p3, particleMD *p4)
+//================================================================================
+{
+	int	k = list->n;
+
+	if (k >= list->max) GrowList4STD (list);
+	list->items[k].p1 = p1;
+	list->items[k].p2 = p2;
+	list->items[k].p3 = p3;
+	list->items[k].p4 = p4;
 	list->n++;
 	return k;
 }
@@ -307,6 +338,16 @@ void ResetList2STD (list2STD *list)
 
 //================================================================================
 void ResetList3STD (list3STD *list)
+//================================================================================
+{
+	list->items = NULL;
+	list->n     = 0;
+	list->max   = 0;
+}
+
+
+//================================================================================
+void ResetList4STD (list4STD *list)
 //================================================================================
 {
 	list->items = NULL;

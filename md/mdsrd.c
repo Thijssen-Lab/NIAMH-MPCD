@@ -161,13 +161,10 @@ void ComputeElectrostaticForcesSRD (simptr sim,struct particleMPC *pSRD,struct s
 	int 		xc,yc,zc;
 	int		a,b,c,pbcx1,pbcy1,pbcz1,pbcx2,pbcy2,pbcz2;
 	real		drTotMax;
-	real		qeff;
 	real		condenseCriteria,q0;
-	real junk = 0;
 
 	condenseCriteria=sim->condenseCriteria;
 	q0 = sim->monoCharge[0];
-	qeff = 0;
 
 	// calculate coulomb interaction variables (here for clarity)
 	if (sim->charge.n > 0) {
@@ -400,10 +397,7 @@ void ComputeElectrostaticForcesSRD (simptr sim,struct particleMPC *pSRD,struct s
 							ApplyPBC_dr (sim,&dx,&dy,&dz);
 							// calculate DH weighting
 							r = sqrt(dx*dx+dy*dy+dz*dz);
-							if (r<rCutCoul && p2->q/q0>0) {
-								p1->q -= q0*exp(-r/lambda_D)/weight[i]/r;
-								junk += q0*exp(-r/lambda_D)/weight[i]/r;
-							}
+							if (r<rCutCoul && p2->q/q0>0) p1->q -= q0*exp(-r/lambda_D)/weight[i]/r;
 							p2=p2->next;
 						}
 					}
@@ -415,8 +409,7 @@ void ComputeElectrostaticForcesSRD (simptr sim,struct particleMPC *pSRD,struct s
 	for (j=0; j<GPOP; j++) {
 		// adjust counter ion speed
 		if ( (pSRD+j)->q/q0<0) {
-		  (pSRD+j)->V[0] += Efield*(pSRD+j)->q*dt; //N.B. dt is not sim->dt but sim->dt*mdSteps
-		  qeff+=(pSRD+j)->q;
+			(pSRD+j)->V[0] += Efield*(pSRD+j)->q*dt; //N.B. dt is not sim->dt but sim->dt*mdSteps
 		}
 	}
 	// add potential energies in sim structure
@@ -638,6 +631,7 @@ void ComputeForcesSRD (simptr sim,int MDmode,struct particleMPC *pSRD,struct spe
 	ComputeAnchorForces(sim);
 	ComputeFeneForces(sim);
 	ComputeBendForces(sim);
+	ComputeDihedralForces(sim);
 	ComputeNemForces(sim,SP,CL);
 	ComputeSqueezeForces(sim);
 }
@@ -689,6 +683,7 @@ void ComputeForces (simptr sim)
 	ComputeAnchorForces(sim);
 	ComputeFeneForces(sim);
 	ComputeBendForces(sim);
+	ComputeDihedralForces(sim);
 	ComputeSqueezeForces(sim);
 }
 
@@ -738,6 +733,7 @@ void ComputeCapForces (simptr sim)
 	ComputeAnchorForces(sim);
 	ComputeFeneForces(sim);
 	ComputeBendForces(sim);
+	ComputeDihedralForces(sim);
 	ComputeSqueezeForces(sim);
 }
 
@@ -1172,7 +1168,7 @@ void ComputeCapDispersionForces (simptr sim)
 	particleMD	*atom, *p1, *p2;
 	real		dx, dy, dz;
 	real		rCut2, ljShift;
-	real		E=0, potE=0, ljE=0;
+	real		E=0, potE=0;
 	real		r2min=10;
 	real		sigma_lj;
 
@@ -1190,7 +1186,7 @@ void ComputeCapDispersionForces (simptr sim)
 		default   (none) \
 		shared	  (n, nebrSTD, rCut2, ljShift) \
 		private   (i, p1, p2, dx, dy, dz, E) \
-		reduction (+: ljE, potE)
+		reduction (+: r2min, potE)
 	#endif
 
 	for (i=0; i<n; i++) {
@@ -1209,7 +1205,6 @@ void ComputeCapDispersionForces (simptr sim)
 			dz /= sigma_lj;
 			E = LennardJonesCap (p1, p2, dx, dy, dz, rCut2, sim) + ljShift;
 			if (E<r2min) r2min = E;
-			ljE  += E;
 			potE += E;
 		}
 	}
@@ -1410,15 +1405,16 @@ void ComputeBendForces (simptr sim)
 	int	  		i, nBend;
 	particleMD	*p1, *p2, *p3;
 	item3STD	*bend;
-	real		E=0, potE=0, bendE=0, kBend;
+	real		E=0, potE=0, bendE=0, kBend=0, theta0=0;
 	real		dx12, dy12, dz12, dx23, dy23, dz23;
 
 	// local sim variables
 	bend	= sim->bend.items;
 	nBend   = sim->bend.n;
 	kBend   = sim->kBend;
+	theta0	= sim->theta0Bend;
 
-	if(kBend>0.0) {
+	if(kBend>TOL) {
 		// loop over bend pairs
 		for (i=0; i<nBend; i++) {
 			// extract pair pointers
@@ -1433,17 +1429,71 @@ void ComputeBendForces (simptr sim)
 			dy23 = p2->wy - p3->wy;
 			dz23 = p2->wz - p3->wz;
 			// calculate harmonic three-particle bend interaction
-			if (kBend>=TOL) {
-				E = bendHarmonic (p1, p2, p3, dx12, dy12, dz12, dx23, dy23, dz23, kBend);
-				bendE += E;
-				potE  += E;
-			}
+			E = bendHarmonic (p1, p2, p3, dx12, dy12, dz12, dx23, dy23, dz23, kBend, theta0);
+			bendE += E;
+			potE  += E;
 		}
 	}
 
 	// add potential energies in sim structure
 	sim->potE  += potE;
 	sim->bendE  = bendE;
+}
+
+/// Computes all the forces between DIHEDRAL-bonded atom pairs. We compute the dr from
+/// the WORLD positions, therefore we do not ever have to worry about the PBC
+/// here! But the world coordinates of the FENE pairs MUST be initialized
+/// accordingly.
+///
+/// @param		sim	a pointer to a simulation structure
+/// @param		sim	a pointer to a simulation structure
+/// @return 	void
+/// @warning	Real-world coordinates of the fene pairs MUST be initialized correctly
+///				because we don't consider the PBC in the BEND calculation.
+
+//================================================================================
+void ComputeDihedralForces (simptr sim)
+//================================================================================
+{
+	int	  		i, nDihedral;
+	particleMD	*p1, *p2, *p3, *p4;
+	item4STD	*dihedral;
+	real		E=0, potE=0, dihedralE=0, kDihedral=0, phi0=0;
+	real		dx12, dy12, dz12, dx23, dy23, dz23, dx34, dy34, dz34;
+
+	// local sim variables
+	dihedral	= sim->dihedral.items;
+	nDihedral   = sim->dihedral.n;
+	kDihedral   = sim->kDihedral;
+	phi0		= sim->phi0Dihedral;
+	if(kDihedral>=TOL) {
+		// loop over dihedral pairs
+		for (i=0; i<nDihedral; i++) {
+			// extract pair pointers
+			p1 = dihedral[i].p1;
+			p2 = dihedral[i].p2;
+			p3 = dihedral[i].p3;
+			p4 = dihedral[i].p4;
+			// compute dr (using WORLD positions)
+			dx12 = p2->wx - p1->wx;
+			dy12 = p2->wy - p1->wy;
+			dz12 = p2->wz - p1->wz;
+			dx23 = p3->wx - p2->wx;
+			dy23 = p3->wy - p2->wy;
+			dz23 = p3->wz - p2->wz;
+			dx34 = p4->wx - p3->wx;
+			dy34 = p4->wy - p3->wy;
+			dz34 = p4->wz - p3->wz;
+			// calculate harmonic four-particle dihedral interaction
+			E = dihedralHarmonic (p1, p2, p3, p4, dx12, dy12, dz12, dx23, dy23, dz23, dx34, dy34, dz34, kDihedral, phi0);
+			dihedralE += E;
+			potE  += E;
+		}
+	}
+
+	// add potential energies in sim structure
+	sim->potE  += potE;
+	sim->dihedralE  = dihedralE;
 }
 
 /// Computes all the forces between the bond defined by FENE-bonded atom pairs
@@ -2055,15 +2105,16 @@ real FENE (particleMD *p1, particleMD *p2, real dx, real dy, real dz,
 /// @param		dx12,dy12,dz12 position difference between atoms 1 and 2
 /// @param		dx23,dy23,dz23 position difference between atoms 2 and 3
 /// @param		k bend spring constant
+/// @param		equi equilibrium angle
 /// @return		the value of the harmonic angle interaction energy
 
 //================================================================================
 real bendHarmonic (particleMD *p1, particleMD *p2, particleMD *p3,
-				  real dx12, real dy12, real dz12, real dx23, real dy23, real dz23, real k)
+				  real dx12, real dy12, real dz12, real dx23, real dy23, real dz23, real k, real equi)
 //================================================================================
 {
 	real r12r23, ir12, ir23;
-	real theta, c, isinc, dcx1, dcy1, dcz1, dcx3, dcy3, dcz3;
+	real theta, c, c0, isinc, dcx1, dcy1, dcz1, dcx3, dcy3, dcz3;
 	real fx1=0, fy1=0, fz1=0, fx3=0, fy3=0, fz3=0;
 	real potE=0;
 	int bendStyle=0; //0==angularHarmonic 1==cosineHarmonic 2==cosineExpansion
@@ -2081,6 +2132,8 @@ real bendHarmonic (particleMD *p1, particleMD *p2, particleMD *p3,
 		if( c>0.99999 && c<1.00001 ) theta=0.0;
 		else if( c<-0.999999 && c>-1.00001 ) theta=0.0;
 		else theta=acos(c);
+		//Shift by equibrium angle
+		c0=cos(equi);
 
 		// compute the derivative of the cosine for the first and third particle *k
 		// first
@@ -2097,7 +2150,7 @@ real bendHarmonic (particleMD *p1, particleMD *p2, particleMD *p3,
 			// computes 1/sinc(theta)
 			if(fabs(theta)<0.00001) isinc=1.0;
 			else if(fabs(fabs(theta)-M_PI)<0.00001) isinc=0.0;
-			else isinc=theta/sin(theta);
+			else isinc=(theta-equi)/sin(theta);
 
 			//computes the forces
 			fx1 = isinc*dcx1;
@@ -2112,17 +2165,19 @@ real bendHarmonic (particleMD *p1, particleMD *p2, particleMD *p3,
 		}
 		else if (bendStyle==1) { //cosine harmonic
 			//computes the forces
-			fx1 = -2.0*(c-1.0)*dcx1;
-			fy1 = -2.0*(c-1.0)*dcy1;
-			fz1 = -2.0*(c-1.0)*dcz1;
-			fx3 = -2.0*(c-1.0)*dcx3;
-			fy3 = -2.0*(c-1.0)*dcy3;
-			fz3 = -2.0*(c-1.0)*dcz3;
+			fx1 = -2.0*(c-c0)*dcx1;
+			fy1 = -2.0*(c-c0)*dcy1;
+			fz1 = -2.0*(c-c0)*dcz1;
+			fx3 = -2.0*(c-c0)*dcx3;
+			fy3 = -2.0*(c-c0)*dcy3;
+			fz3 = -2.0*(c-c0)*dcz3;
 
 			// compute the energy
-			potE  = k*(c-1.0)*(c-1.0);
+			potE  = k*(c-c0)*(c-c0);
 		}
 		else if (bendStyle==2) { // cosine expansion
+			printf("Error: BendStyle=2 (cosine expansion) needs to be fixed.\n");
+			exit(1);
 			//computes the forces
 			fx1 = dcx1;
 			fy1 = dcy1;
@@ -2151,13 +2206,132 @@ real bendHarmonic (particleMD *p1, particleMD *p2, particleMD *p3,
 }
 
 
+/// Compute the dihedralHarmonic (simple harmonic angle) interaction between
+/// four bond vectors . 
+/// This is written the same as origami dihedralforce in origami code written by Tyler Shendruk and the Origami Senior Honours Group.
+///The four bond vectors and k
+/// the strength of the DIHEDRAL potential are passed as parameters. Divergence of
+/// the force is also calculated for the configurational temperature.
+///
+/// @param		p1 pointer to the first atom
+/// @param		p2 pointer to the second atom
+/// @param		p3 pointer to the third atom
+/// @param		p4 pointer to the forth atom
+/// @param		dx12,dy12,dz12 position difference between atoms 1 and 2
+/// @param		dx23,dy23,dz23 position difference between atoms 2 and 3
+/// @param		dx34,dy34,dz34 position difference between atoms 2 and 3
+/// @param		k dihedral constant
+/// @param		equi equilibrium angle
+/// @return		the value of the harmonic angle interaction energy
 
+//================================================================================
+real dihedralHarmonic (particleMD *p1, particleMD *p2, particleMD *p3, particleMD *p4, real dx12, real dy12, real dz12, real dx23, real dy23, real dz23, real dx34, real dy34, real dz34, real k, real equi)
+//================================================================================
+{
+	real ang, c, k_eff;
+	real fx1=0, fy1=0, fz1=0, fx4=0, fy4=0, fz4=0;
+	real potE=0;
+	real sign = 0.0;						  // to establish the quadrant of phi 
+	int mode=0;                              //0==angularHarmonic 1==cosineHarmonic 2==cosineExpansion
 
+	double c22,c23,c24,c33,c34,c44;
+	double p,q,Q,t1,t2,t3,t4,t5,t6,t7;
+	double beta1,beta2,beta3,beta4;
 
+	// Calculate Rapaport's coefficients
+	c22 = (dx12*dx12 + dy12*dy12 + dz12*dz12);
+	c23 = (dx12*dx23 + dy12*dy23 + dz12*dz23);
+	c24 = (dx12*dx34 + dy12*dy34 + dz12*dz34);
+	c33 = (dx23*dx23 + dy23*dy23 + dz23*dz23);
+	c34 = (dx23*dx34 + dy23*dy34 + dz23*dz34);
+	c44 = (dx34*dx34 + dy34*dy34 + dz34*dz34);
+	// p = -(u.v) where u = r12 x r23 and v = r23 x r34, normal vectors to planes including r12,r23 and r23,r34 
+	// will be used to calculate angle between planes
+	p=c24*c33-c23*c34;
+	/// q = |u|^2 * |v|^2 , |u|^2 =  (c22*c33-c23*c23) and |v|^2 = (c33*c44-c34*c34)                                      
+	q=(c22*c33-c23*c23)*(c33*c44-c34*c34);							
 
+	// to establish the quadrant of phi
+	sign = dx34*(dy12*dz23 - dy23*dz12) + dy23*(dx23*dz12 - dx12*dz23) + dz34*(dx12*dy23 - dx23*dy12);
 
+	t1=p;
+	t2=c22*c34-c23*c24;
+	t3=c23*c23-c22*c33;
+	// (r23 X r34)^2 = v^2
+	t4=c33*c44-c34*c34;
+	t5=c24*c34-c23*c44;
+	t6=-t1;
+	// (r12 X r23)^2 = u^2
+	t7=c22*c33-c23*c23;
+	beta2=c34/c33;
+	beta3=c23/c33;
+	beta1=-1.0-beta3;
+	beta4=-1.0-beta2;
 
+	if( sqrt(t7)>TOL && sqrt(t4)>TOL ) {
+		// Trig
+		Q = 1.0/sqrt(q);
+		c = -1.0*p*Q;
+		if( c>0.99999 && c<1.00001 ) ang=0.0;
+		else if( c<-0.999999 && c>-1.00001 ) ang=M_PI;
+		else ang = acos(c);
 
+		if (sign<0) ang=0.0-ang;
+
+		k_eff = k;
+
+		// Angular-harmonic version of the force
+		if(mode==0) {
+			if(fabs(ang)<0.00001) k_eff*=1.0;
+			else if(fabs(fabs(ang)-M_PI)<0.00001) k_eff*=0.0;
+			else k_eff*=(ang-equi)/sin(ang);
+
+			// compute the energy
+			potE  = 0.5*k*(ang-equi)*(ang-equi);	
+		}
+		// Cosine-harmonic version of the force
+		else if(mode==1) {
+			k_eff *= -2.0*(c-cos(equi));
+
+			// compute the energy
+			potE  = k*(c-cos(equi))*(c-cos(equi));
+		}
+		// Cosine-expansion version of the force
+		else if(mode==2) {
+			printf("Error: mode=2 (cosine expansion) needs to be fixed.\n");
+			exit(1);
+			k_eff*=1.0;	
+
+			// compute the energy
+			potE  = k*(1.0-cos(ang-equi));              
+		}
+		// Calculate first and last force
+		// first
+		fx1 = -1.0*k_eff*Q*c33*( t1*dx12 + t2*dx23 + t3*dx34 )/t7;
+		fy1 = -1.0*k_eff*Q*c33*( t1*dy12 + t2*dy23 + t3*dy34 )/t7;
+		fz1 = -1.0*k_eff*Q*c33*( t1*dz12 + t2*dz23 + t3*dz34 )/t7;
+
+		// last
+		fx4 = -1.0*k_eff*Q*c33*( t4*dx12 + t5*dx23 + t6*dx34 )/t4;
+		fy4 = -1.0*k_eff*Q*c33*( t4*dy12 + t5*dy23 + t6*dy34 )/t4;
+		fz4 = -1.0*k_eff*Q*c33*( t4*dz12 + t5*dz23 + t6*dz34 )/t4;
+
+		// Apply the force p1, p2, p3 and p4
+		p1->ax += fx1;
+		p1->ay += fy1;
+		p1->az += fz1;
+		p4->ax += fx4;
+		p4->ay += fy4;
+		p4->az += fz4;
+		p2->ax += beta1*fx1+beta2*fx4;
+		p2->ay += beta1*fy1+beta2*fy4;
+		p2->az += beta1*fz1+beta2*fz4;
+		p3->ax += beta3*fx1+beta4*fx4;
+		p3->ay += beta3*fy1+beta4*fy4;
+		p3->az += beta3*fz1+beta4*fz4;
+	}
+	return potE;
+}
 
 /// Compute the bendNematic (simple harmonic angle) interaction between
 /// the bond vector of the polymer and the nematic background solvent.
