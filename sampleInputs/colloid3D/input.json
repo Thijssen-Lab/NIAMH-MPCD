@@ -4,12 +4,12 @@
     "warmUp":           0,
     "collOp":           2,
     "lc":               1,
-    "mfpot":            20,
     "species":
     [
         {
             "comment":      "For the density to be 20, must subtract the volume of the colloid. Or use 'dens':20.",
-            "pop":          521904
+            "pop":          521904,
+            "mfpot":        20
         }
     ],
     "BC":
