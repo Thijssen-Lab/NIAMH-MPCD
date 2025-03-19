@@ -6,12 +6,12 @@
     "comment":          "Active nematic fluid",
     "collOp":           17,
     "lc":               1,
-    "mfpot":            10,
     "species":
     [
         {
             "mass":         1,
             "pop":          6786,
+            "mfpot":        10,
             "qDist":        0,
             "vDist":        0,
             "oDist":        2,

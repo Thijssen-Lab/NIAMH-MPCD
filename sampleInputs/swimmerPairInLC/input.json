@@ -4,13 +4,13 @@
     "comment":          "Nematic LC using Andersen MPCD",
     "collOp":           2,
     "lc":               1,
-    "mfpot":            20,
     "species":
     [
         {
             "dens":         20,
             "comment":      "Susceptibility of LC to align with swimmers",
-            "magnSusc":     0.1
+            "magnSusc":     0.1,
+            "mfpot":        20
         }
     ],
     "comment":          "Output",

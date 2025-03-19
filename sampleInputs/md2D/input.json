@@ -6,7 +6,6 @@
     "comment":          "Nematic fluid using Andersen MPCD",
     "collOp":           2,
     "lc":               1,
-    "mfpot":            10,
     "seed":             0,
     "comment":          "Location of the MD input file",
     "mdIn":             "md.inp",
@@ -17,7 +16,8 @@
     "species":
     [
         {
-            "dens":         20
+            "dens":         20,
+            "mfpot":        10
         }
     ],
     "debugOut":         3,

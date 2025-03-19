@@ -5,7 +5,6 @@
     "comment":          "Nematic fluid using Andersen MPCD",
     "collOp":           2,
     "lc":               1,
-    "mfpot":            10,
     "comment":          "Location of the MD input file",
     "mdIn":             "md.inp",
     "comment":          "Number of MD steps per MPCD step",
@@ -13,7 +12,8 @@
     "species":
     [
         {
-            "pop":         30159
+            "pop":         30159,
+            "mfpot":       10
         }
     ],
     "debugOut":         3,

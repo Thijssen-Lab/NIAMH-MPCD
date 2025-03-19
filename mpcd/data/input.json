@@ -13,7 +13,6 @@
     "tau":              0.5,
     "rotAng":           1.570796,
     "fricCoef":         1.0,
-    "mfpot":            10,
     "grav":             [0, 0, 0],
     "mag":              [0, 0, 0],
     "seed":             0,
@@ -25,6 +24,7 @@
         {
             "mass":         1,
             "pop":          18000,
+            "mfpot":        10,
             "qDist":        0,
             "vDist":        0,
             "oDist":        2,
