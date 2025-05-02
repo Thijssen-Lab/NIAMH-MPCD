@@ -98,7 +98,7 @@ void readswimmers( char fpath[],specSwimmer *specS,swimmer **sw ) {
 	else printf("Warning: Failed to read swimming dipole strength.\n");
 	specS->DS = MF;
 	if(fscanf( finput,"%lf %s",&MF,STR ));			//Read swimming rotlet dipole torque
-	else printf("Warning: Failed to read swimming dipole strength.\n");
+	else printf("Warning: Failed to read swimming rotlet dipole strength.\n");
 	specS->TS = MF;
 
 	if(fscanf( finput,"%lf %s",&MF,STR ));			//Read tumbling shrink size (i.e. what ro and sigma are scaled by for the tumbling)
@@ -142,8 +142,8 @@ void readswimmers( char fpath[],specSwimmer *specS,swimmer **sw ) {
 	else printf("Warning: Failed to read swimmer magnetic susceptibility.\n");
 	specS->MAGMOM = MS;
 
-	if(fscanf( finput,"%lf %s",&MF,STR ));			//Read swimming rotlet dipole torque
-	else printf("Warning: Failed to read swimming dipole strength.\n");
+	if(fscanf( finput,"%lf %s",&MF,STR ));			//Read swimmer fixed plane
+	else printf("Warning: Failed to read swimmer fixed plane.\n");
 	specS->fixDist = MF;
 
 	//Allocate the memory for the swimmers

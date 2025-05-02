@@ -148,7 +148,7 @@ Tag             | Type          | Default Value | Description
 `tumTSwim`      | double        | 0                  | Average tumble time in units of MPCD timesteps dt (iterations, not MPCD time units)
 `shrTSwim`      | double        | 2                  | Set time to shrink/ extend in units of MPCD timesteps dt (iterations, not MPCD time units)
 `magMomSwim`    | double        | 1                  | Magnetic moment/ strength
-`fixDistSwim`   | double        | 0                  | The fixed distance from the wall for `DUMBELL_NEARWALL` mode
+`fixDistSwim`   | double        | 0                  | The fixed distance from the wall. Must set typeSwim variable to `DUMBELL_NEARWALL` mode
 
 #### Overrides          {#overrides}
 Override Tag    | Type  | Override param | Description

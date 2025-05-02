@@ -1545,7 +1545,7 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 			fprintf( fsynopsis,"\tInteraction matrix with swimmer particles: %i\n",WALL[i].INTER[MAXSPECI+1] );
 		}
 		fprintf( fsynopsis,"\nSwimmer variables:\n" );
-		fprintf( fsynopsis,"\tTyper: %d\n",SS.TYPE );
+		fprintf( fsynopsis,"\tType: %d\n",SS.TYPE );
 		fprintf( fsynopsis,"\tNumber of swimmers: %d\n",NS );
 		fprintf( fsynopsis,"\tInitialize position: %d\n",SS.QDIST );
 		fprintf( fsynopsis,"\tInitialize orientation: %d\n",SS.ODIST );
@@ -1566,6 +1566,7 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 		if(SS.dep==0){fprintf( fsynopsis," --- No short range attractive potential.\n" ); }
 		if(SS.dep==1) {fprintf( fsynopsis," --- AO potential turned on.\n" );fprintf( fsynopsis,"\tAO potential depth: %lf\n",SS.depth );fprintf( fsynopsis,"\tAO potential range: %lf\n",SS.range );}
 		if(SS.dep==2) {fprintf( fsynopsis," --- Square attractive potential turned on.\n" );fprintf( fsynopsis,"\t Square potential depth: %lf\n",SS.depth );fprintf( fsynopsis,"\t Square potential range: %lf\n",SS.range ); }
+		fprintf( fsynopsis,"\tFixed distance from bottom wall (if type==DUMBBELL_NEARWALL): %lf\n",SS.fixDist );
 		fprintf( fsynopsis,"\tAverage run time: %lf\n",SS.runTime );
 		fprintf( fsynopsis,"\tAverage tumble time: %lf\n",SS.tumbleTime );
 		fprintf( fsynopsis,"\tMagnetic moment strength: %lf\n",SS.MAGMOM );
@@ -1596,7 +1597,7 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 		fprintf( fsynopsis,"Binder cumulant:\t\t%d --- bin size:\t\t%d\n",out.BINDER,out.BINDERBIN);
 		fprintf( fsynopsis,"How often  solids' trajectories outputted: %i\n",out.SOLOUT );
 		fprintf( fsynopsis,"Print distributions:\n" );
-		fprintf( fsynopsis,"\tVel: %d\n\tSpeed: %d\n\tVorticity: %d\\n\tEnstrophy: %d\n\tDirector: %d\n\tScalar order parameter: %d\n\tDensity: %d\n",out.HISTVELOUT,out.HISTSPEEDOUT,out.HISTVORTOUT,out.HISTENSTROUT,out.HISTDIROUT,out.HISTSOUT,out.HISTNOUT );
+		fprintf( fsynopsis,"\tVel: %d\n\tSpeed: %d\n\tVorticity: %d\n\tEnstrophy: %d\n\tDirector: %d\n\tScalar order parameter: %d\n\tDensity: %d\n",out.HISTVELOUT,out.HISTSPEEDOUT,out.HISTVORTOUT,out.HISTENSTROUT,out.HISTDIROUT,out.HISTSOUT,out.HISTNOUT );
 		fprintf( fsynopsis,"Synopsis of Simulation: %i\n",out.SYNOUT );
 	}
 }
