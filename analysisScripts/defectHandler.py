@@ -10,7 +10,7 @@
 from dataclasses import dataclass
 import numpy as np
 import matplotlib.pyplot as plt
-
+import os
 @dataclass
 class Defect:
     """
@@ -89,6 +89,90 @@ class TimestepDefectContainer:
     """
     time: float 
     defectList : list
+def readTopologicalFile(sysDim, infile):
+    # topochargefield file part
+    # data to return later
+    timeStepList = []
+
+    DEFECTIDARRAY = -1*np.ones((sysDim[0], sysDim[1], sysDim[2])) 
+    # 3D array containing defect ID info, [x][y][z], default -1
+
+    lastT = 0. #last Time measured
+    DEFECTDATA = [] #list of defects on the current timestep
+
+    error = False # error catching
+    currLine = 14
+    t = 0
+    while infile: #loop through file to look for the target data we want
+        line = infile.readline()
+        def endTStep(t : float): # code to be run at the end of each timestep
+            collatedDefect = _collapseDefects(DEFECTDATA, DEFECTIDARRAY, 
+                sysDim)
+            timeStepList.append(TimestepDefectContainer(t, collatedDefect))
+        if (not line): #leave loop if EoF
+            endTStep(t)
+            break
+        else:
+            try:
+                t,qx,qy,qz,charge,angle = line.split("\t", 6)
+                t = float(t)
+                charge = float(charge)
+            except:
+                error = True
+                print("Error reading file "+dir+" on line +"+str(currLine))
+                continue
+            if t > lastT: # if there's a new timestep worth of data, prepare for the next block of data
+                if not error: endTStep(t) # only append data if not error
+                lastT = t                
+                error = False
+                DEFECTDATA = [] #clear defect data list
+                DEFECTIDARRAY = -1*np.ones((sysDim[0], sysDim[1], sysDim[2]))  
+                # 3D array containing defect ID info, [x][y][z], default -1
+            if abs(abs(charge)-0.5) < 0.001: # if we have charge \pm 1/2 then we have a defect
+                DEFECTDATA.append(Defect(pos=np.array([float(qx), float(qy), 
+                    float(qz)]), charge=float(charge), angle=float(angle)))
+                #add to the defect ID array too
+                DEFECTIDARRAY[int(qx)][int(qy)][int(qz)] = len(DEFECTDATA) - 1
+        currLine += 1
+    return timeStepList
+
+def readDefectsFile(infile):
+    # defects.dat file part
+    # data to return later
+    timeStepList = []
+    DEFECTDATA = [] #list of defects on the current timestep
+    timeStepCaptured = False
+    # defects.dat file part
+    def captureTimestep():
+        nonlocal DEFECTDATA, timeStepCaptured
+        if DEFECTDATA or timeStepCaptured:
+            timeStepList.append(TimestepDefectContainer(t, DEFECTDATA))
+            timeStepCaptured = False
+            DEFECTDATA = []
+    while infile: 
+        line = infile.readline()
+        if (not line): #leave loop if EoF
+            captureTimestep()
+            break
+        else:
+            if (len(line.split("\t")) == 4):
+                qx,qy,charge,angle = line.split("\t", 4)
+                try:
+                    DEFECTDATA.append(Defect(pos=np.array([float(qx), float(qy), 0.0]), charge=float(charge), angle=float(angle))) #another 0.0 for backward compatibility
+                except Exception as e:
+                    print("Error reading defect {} data: {}".format(line, e))
+                    continue
+            elif (len(line.split("\t")) == 2):
+                t,_ = line.split("\t", 2)
+                try:
+                    t = float(t)
+                except Exception as e:
+                    print("Error reading time value from line: {}, {}".format(line, e))
+                    continue
+                timeStepCaptured = True
+            else:
+                captureTimestep()
+    return timeStepList
 
 def getDefectData(dir: str, sysDim):
     """
@@ -106,59 +190,15 @@ def getDefectData(dir: str, sysDim):
     #load data file, cannot use numpy for this because of the data format
     file = dir
     infile = open(file, "r")
-    for i in range(13): #toss header
+
+    for _ in range(13): #toss header
         line = infile.readline()
 
-    # data to return later
-    timeStepList = []
-
-    lastT = 0. #last Time measured
-    DEFECTDATA = [] #list of defects on the current timestep
-    
-    DEFECTIDARRAY = -1*np.ones((sysDim[0], sysDim[1], sysDim[2])) 
-    # 3D array containing defect ID info, [x][y][z], default -1
-
-    error = False # error catching
-    currLine = 14
-    t = 0
-    while infile: #loop through file to look for the target data we want
-        line = infile.readline()
-
-        def endTStep(t : float): # code to be run at the end of each timestep
-            collatedDefect = _collapseDefects(DEFECTDATA, DEFECTIDARRAY, 
-                sysDim)
-            timeStepList.append(TimestepDefectContainer(t, collatedDefect))
-
-        if (not line): #leave loop if EoF
-            endTStep(t)
-            break
-        else:
-            try:
-                t,qx,qy,qz,charge,angle = line.split("\t", 6)
-                t = float(t)
-                charge = float(charge)
-            except:
-                error = True
-                print("Error reading file "+dir+" on line +"+str(currLine))
-                continue
-
-            if t > lastT: # if there's a new timestep worth of data, prepare for the next block of data
-                if not error: endTStep(t) # only append data if not error
-                lastT = t                
-                error = False
-
-                DEFECTDATA = [] #clear defect data list
-                DEFECTIDARRAY = -1*np.ones((sysDim[0], sysDim[1], sysDim[2]))  
-                # 3D array containing defect ID info, [x][y][z], default -1
-
-            if abs(abs(charge)-0.5) < 0.001: # if we have charge \pm 1/2 then we have a defect
-                DEFECTDATA.append(Defect(pos=np.array([float(qx), float(qy), 
-                    float(qz)]), charge=float(charge), angle=float(angle)))
-
-                #add to the defect ID array too
-                DEFECTIDARRAY[int(qx)][int(qy)][int(qz)] = len(DEFECTDATA) - 1
-        
-        currLine += 1
+    # to handle defects.dat and topochargefield.dat    
+    if os.path.basename(file).startswith("defects") and file.endswith(".dat"):
+        timeStepList = readDefectsFile(infile)
+    else:
+        timeStepList = readTopologicalFile(sysDim, infile)
     
     infile.close()
     return timeStepList
