@@ -168,6 +168,8 @@ typedef struct bc {
 	double O_old[3];	    ///< The BC's last orientation.
 	double dV[3];		    ///< The BC's change in velocity due to collisions.
 	double dL[3];		    ///< The BC's change in angular velocity due to collisions.
+	double KOPT;			///< Optical trap strength;
+
 
 	// Qualities of the object
 	int DSPLC;				///< Flags whether BC can be pushed around by particles (0-no; 1-yes) --- json `'dsplc'`.
@@ -405,6 +407,7 @@ typedef struct inputList {
 	double GRAV[_3D];			///< Constant acceleration from external force --- json `'grav'`.
 	double MAG[_3D];			///< Constant external magnetic field to torque nematogens --- json `'mag'`.
 	int GRAV_FLAG;              ///< Flag for if no acceleration.
+	int Opt_Trap_FLAG;          ///< Flag for optical trap on colloid
     int MAG_FLAG;		        ///< Flag for if no torque.
 	double FRICCO;				///< Friction coefficient for Langevin thermostat --- json `'fricCoef'`.
 	int TSTECH;					///< Temperature scaling technique --- json `'tsTech'`.

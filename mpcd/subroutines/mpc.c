@@ -655,6 +655,29 @@ void acc_BC( bc *WALL,double t,double GRAV[] ) {
 	int i;
 	for( i=0; i<DIM; i++ ) WALL->V[i] = acc( t,GRAV[i],WALL->V[i] );
 }
+///
+/// @brief Apply a force to keep the particle in the optical trap
+///
+/// This function simply updates the velocity vector (in `DIM` dimensions) of a single wall (boundary condition).
+/// @param WALL One of the walls (boundary conditions).
+/// @param t The time interval for which the wall (boundary condition) accelerates.
+/// @param KOPT The spring constant of the trap
+/// @param runtime The current timestep. At the moment, I am hardcoding the optical trap position. Currently only works in 2D
+
+///
+void acc_Opt_Trap_BC( bc *WALL,double t , double KOPT, int runtime) {
+	int i;
+	double KOPT_force[DIM];
+
+    //if ((runtime*0.02)<50){KOPT_force[0]=-2*(WALL->Q[0]-runtime*0.02-XYZ[0]/2);}
+    //else {KOPT_force[0]=-2*(WALL->Q[0]-50-XYZ[0]/2);}
+    KOPT_force[0]=-2*(WALL->Q[0]-XYZ[0]/2);
+    KOPT_force[1]=-2*(WALL->Q[1]-XYZ[0]/2);
+    //printf("time is %d, Force is %f and %f\n",runtime, KOPT_force[0],KOPT_force[1]);
+    //printf("Pos is %f and %f, Des is %f and %f\n",WALL->Q[0],WALL->Q[1], (runtime*0.0005+XYZ[0]/2), (runtime*0.0005));
+    for( i=0; i<DIM; i++ ) WALL->V[i] = acc( t,KOPT*KOPT_force[i],WALL->V[i] );
+}
+
 
 /// 
 /// @brief Accelerating the velocity of a single MPCD particle. 

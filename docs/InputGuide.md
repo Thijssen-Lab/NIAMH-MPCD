@@ -197,6 +197,7 @@ Tag             | Type          | Default Value | Description
 `O`             | array(double) | [0,0,0]       | Orientation of the boundary about (x,y,z), **must** be 3D
 `L`             | array(double) | [0,0,0]       | Angular velocity of the boundary, **must** be 3D
 `G`             | array(double) | [0,0,0]       | External acceleration (ie, due to gravity) of the boundary, **must** be 3D
+`KOPT`   	    | double        | 0             | Force on colloid to keep it in an optical trap
 `aInv`          | array(double) | NECESSARY     | Sets the geometry of the surface. Principal semi-axes of the ellipsoid (see SRDClass for explanation). **Must** be 3D. If you declare a BC then this **must** be given, or the simulation will not run
 `rotSym`        | array(double) | [4,4]         | Sets rotational symmetry of shapes. **Must** be of form (a,b)
 `abs`           | int           | 0             | Flags if each term should be absolute only. 1 = yes, 0 = no
