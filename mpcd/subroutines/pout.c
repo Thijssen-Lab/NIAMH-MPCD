@@ -2183,6 +2183,7 @@ void solidout( FILE *fout,bc WALL,double t ) {
 	fprintf( fout,"%12.5e\t%12.5e\t%12.5e\t",WALL.V[0],WALL.V[1],WALL.V[2] );
 	fprintf( fout,"%12.5e\t%12.5e\t%12.5e\t",WALL.O[0],WALL.O[1],WALL.O[2] );
 	fprintf( fout,"%12.5e\t%12.5e\t%12.5e\n",WALL.L[0],WALL.L[1],WALL.L[2] );
+	fprintf( fout,"%12.5e\t%12.5e\t%12.5e\n",WALL.dV[0],WALL.dV[1],WALL.dV[2] );
 	#ifdef FFLSH
 		fflush(fout);
 	#endif
