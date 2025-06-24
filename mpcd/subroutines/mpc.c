@@ -672,7 +672,7 @@ void acc_Opt_Trap_BC( bc *WALL,double t , double KOPT, int runtime) {
     //if ((runtime*0.02)<50){KOPT_force[0]=-2*(WALL->Q[0]-runtime*0.02-XYZ[0]/2);}
     //else {KOPT_force[0]=-2*(WALL->Q[0]-50-XYZ[0]/2);}
     KOPT_force[0]=-2*(WALL->Q[0]-XYZ[0]/2);
-    KOPT_force[1]=-2*(WALL->Q[1]-XYZ[0]/2);
+    KOPT_force[1]=-2*(WALL->Q[1]-XYZ[1]/2);
     //printf("time is %d, Force is %f and %f\n",runtime, KOPT_force[0],KOPT_force[1]);
     //printf("Pos is %f and %f, Des is %f and %f\n",WALL->Q[0],WALL->Q[1], (runtime*0.0005+XYZ[0]/2), (runtime*0.0005));
     for( i=0; i<DIM; i++ ) WALL->V[i] = acc( t,KOPT*KOPT_force[i],WALL->V[i] );
@@ -4972,6 +4972,21 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 		#ifdef DBG
 			if( DBUG == DBGBCCNT ) if( bcCNT>0 ) printf( "\t%d particles had difficulty with the BCs when the BCs moved (%d rewind events; %d rethermalization events).\n",bcCNT,reCNT,rethermCNT );
 		#endif
+	/* ****************************************** */
+	/* ***************** BC-Swimmer **************** */
+	/* ****************************************** */
+	// if( BC_FLAG ) {
+		#ifdef DBG
+			if( DBUG >= DBGTITLE ) printf( "Check BCs Against MPCs after BC-Swimmer collisions.\n" );
+		#endif
+		// Check each BC for collisions Swimmer
+		for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) {
+           BC_Swimmercollision(WALL,i,swimmers,*SS,in.dt);
+		}
+		#ifdef DBG
+			if( DBUG == DBGBCCNT ) if( bcCNT>0 ) printf( "\t%d particles had difficulty with the BCs when the BCs moved (%d rewind events; %d rethermalization events).\n",bcCNT,reCNT,rethermCNT );
+		#endif
+
 	// }
 	/* ****************************************** */
 	/* ************* APPLY IMPULSE ************** */
@@ -4993,6 +5008,7 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 	#endif
 	//Accelerate each of the BCs
 	if( in.GRAV_FLAG ) for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) acc_BC( (WALL+i),in.dt,(WALL+i)->G );
+	if( in.Opt_Trap_FLAG ) for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) acc_Opt_Trap_BC( (WALL+i),in.dt,(WALL+i)->KOPT,runtime );
 }
 	/* ****************************************** */
 	/* ***************** RE-BIN ***************** */
