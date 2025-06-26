@@ -9,8 +9,8 @@
     "species":
     [
         {
-            "comment":      "For the density to be 20, must subtract the volume of the obstacle",
-            "pop":         398000
+            "comment":      "For the density to be 20, must subtract the volume of the obstacle (398000) or just use `dens`",
+            "dens":     20
         }
     ],
     "debugOut":         3,

@@ -6,8 +6,8 @@
     "species":
     [
         {
-            "comment":      "For the density to be 20, must subtract the volume of the colloid. Or could just use 'dens':20 ",
-            "pop":          7435
+            "comment":      "The dens override will take the smaller volume fraction for the fluid into account",
+            "dens":         20
         }
     ],
     "debugOut":         3,
@@ -32,6 +32,7 @@
             "MVT":          -1,
             "comment":      "The colloid should be mobile, i.e. free to be displaced",
             "dsplc":        1,
+            "comment":      "The colloid mass should equal that of the fluid it is displacing",
             "mass":         565
         }
     ]

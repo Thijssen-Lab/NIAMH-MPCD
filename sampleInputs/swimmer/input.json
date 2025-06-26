@@ -12,7 +12,7 @@
     ],
     "comment":          "Periodic boundary conditions on the domain",
     "domainWalls":      1,
-    "comment":          "Dumb-dumbell swimmer",
+    "comment":          "TADPole swimmer",
     "typeSwim":         2,
     "comment":          "One swimmer",
     "nSwim":            2,

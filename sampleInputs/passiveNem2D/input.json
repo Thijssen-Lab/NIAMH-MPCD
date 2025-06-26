@@ -1,10 +1,12 @@
 {
+    "comment":          "Square geometry",
     "domain":           [50, 50],
     "simSteps":         500,
+    "comment":          "No warmup, in order to capture the relaxation towards the ordered state",
     "warmUp":           0,
-    "comment":          "Andersenm collision operator",
-    "rTech":            2,
-    "comment":          "Nematic liquid crystal",
+    "comment":          "Andersen MPCD preserving angular momentum",
+    "rTech":            3,
+    "comment":          "Liquid crystal mode turned on",
     "lc":               1,
     "species":
     [
@@ -15,11 +17,12 @@
             "oDist":        0
         }
     ],
-    "comment":          "domainWalls=1 sets PBCs around the domain, which is the default so this is also extreneous",
+    "comment":          "Periodic Boundary Contions",
     "domainWalls":      1,
-    "debugOut":         3,
-    "coarseOut":        0,
-    "flowOut":          0,
+    "comment":          "We output the director and scalar order parameter fields",
     "dirSOut":          10,
+    "comment":          "We output the position, orientation and charge of topological defects, if present",
+    "defectsOut":       10,
+    "comment":          "Outputting summary of the parameters used in the simulation",
     "synopsisOut":      1
 }

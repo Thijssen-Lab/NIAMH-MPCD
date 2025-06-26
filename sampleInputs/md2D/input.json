@@ -4,9 +4,8 @@
     "simSteps":         2000,
     "rFrame":           1,
     "comment":          "Nematic fluid using Andersen MPCD",
-    "collOp":           2,
+    "collOp":           3,
     "lc":               1,
-    "seed":             0,
     "comment":          "Location of the MD input file",
     "mdIn":             "md.inp",
     "comment":          "Number of MD steps per MPCD step",
@@ -21,11 +20,6 @@
         }
     ],
     "debugOut":         3,
-    "flowOut":          0,
     "dirSOut":          100,
-    "densSDOut":        0,
-    "topoFieldOut":     0,
-    "energyOut":        0,
-    "synopsisOut":      1,
-    "checkpointOut":    0
+    "synopsisOut":      1
 }

@@ -1,5 +1,9 @@
 {
+    "comment":          "Make a rectangular domain",
     "domain":           [100, 25, 25],
+    "comment":          "To have PBCs at walls of the cuboid geometry on top of a cylider within this geometry",
+    "domainWalls":      1,
+    "comment":          "Warmup to develop the flow",
     "warmUp":           500,
     "simSteps":         500,
     "comment":          "Isotropic fluid using Andersen MPCD",
@@ -9,8 +13,8 @@
     "species":
     [
         {
-            "comment":      "Fluid density of 20 within cylindrical volume",
-            "pop":          628319
+            "comment":      "Fluid density of 20 within cylindrical volume can be calculated as 20 * pi * R^2 * L = 628319 or just use dens",
+            "dens":          20
         }
     ],
     "comment":          "Output",
@@ -21,20 +25,22 @@
     "energyOut":        5,
     "synopsisOut":      1,
     "checkpointOut":    0,
-    "comment":          "Periodic boundary conditions on the domain",
-    "domainWalls":      1,
-    "comment":          "Impermeable, no-slip cylindrical pipe",
+    "comment":          "BC for a cylinder with two periodic ends and impermeable no-slip walls",
     "BC":
     [
         {
-            "phantom":      1,
+            "comment":      "The position of the center of the base of the cylinder lying in the yz-plane",
             "Q":            [0, 12.5, 12.5],
             "aInv":         [0, 1, 1],
             "P":            [1, 2, 2, 2],
             "comment":      "Radius",
             "R":            10,
             "DN":           0,
+            "comment":      "Since the walls are no-slip, include phantom particles",
+            "phantom":      1,
+            "comment":      "The normal component of velocity is reversed to make impermeable",
             "MVN":          -1,
+            "comment":      "The tangent component of velocity is reversed to make no-slip",
             "MVT":          -1,
             "comment":      "Invert the surface so the fluid is inside the pipe",
             "inv":          1
