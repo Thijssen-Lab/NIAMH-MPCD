@@ -5,7 +5,7 @@
     "rFrame": 0,
     "comment":"Active nematic fluid",
     "lc":1,
-    "collOp":17,
+    "collOp":21,
     "species":
     [
         {
