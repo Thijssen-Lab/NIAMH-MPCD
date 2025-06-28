@@ -491,6 +491,6 @@ if flowtag==1:
     name='%s/swimmerVelField_refFrameRotated_av.pdf'%(dataPath)
   else:
     name='%s/swimmerVelField_RefFrameCentred_av.pdf'%(dataPath)
-savefig( name )
+savefig( name, bbox_inches='tight', transparent=True )
 
 show()

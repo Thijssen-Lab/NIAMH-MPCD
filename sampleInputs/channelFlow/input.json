@@ -1,12 +1,12 @@
 {
     "comment":          "Rectangular geometry",
-    "domain":           [150, 30],
-    "warmUp":           500,
-    "simSteps":         500,
+    "domain":           [90, 30],
+    "warmUp":           100,
+    "simSteps":         5000,
     "comment":          "Isotropic fluid using Andersen MPCD",
     "collOp":           2,
     "comment":          "Gravity-generated pressure gradient",
-    "grav":             [0.01, 0, 0],
+    "grav":             [0.003, 0, 0],
     "species":
     [
         {
@@ -14,7 +14,7 @@
         }
     ],
     "debugOut":         3,
-    "flowOut":          20,
+    "flowOut":          100,
     "pressureOut":      0,
     "avVelOut":         10,
     "energyOut":        10,
@@ -30,18 +30,18 @@
             "aInv":         [1, 0, 0],
             "P":            [1, 1, 1, 1],
             "R":            0,
-            "DN":           150,
+            "DN":           90,
             "MVN":          1,
             "MVT":          1
         },
         {
             "comment":      "Right PBC",
             "phantom":      0,
-            "Q":            [150, 0, 0],
+            "Q":            [90, 0, 0],
             "aInv":         [-1, 0, 0],
             "P":            [1, 1, 1, 1],
             "R":            0,
-            "DN":           150,
+            "DN":           90,
             "MVN":          1,
             "MVT":          1
         },

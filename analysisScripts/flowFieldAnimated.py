@@ -20,26 +20,17 @@ from defectHandler import getDefectData
 ### Set up argsparse
 ###########################################################
 parser = argparse.ArgumentParser(description='Flow field rendering script.')
-parser.add_argument("dataname", type=str, help="Path to the data (should be "
-                                               "flowfield.dat)")
+parser.add_argument("dataname", type=str, help="Path to the data (should be flowfield.dat)")
 parser.add_argument("inputname", type=str, help="Path to input .json file")
 parser.add_argument("start", type=int, help="Starting timestep for averaging")
 parser.add_argument("finish", type=int, help="Finishing timestep for averaging")
-parser.add_argument("--qx", type=int, help="Only show every qx arrow in x",
-                    default=1)
-parser.add_argument("--qy", type=int, help="Only show every qy arrow in y",
-                    default=1)
+parser.add_argument("--qx", type=int, help="Only show every qx arrow in x",default=1)
+parser.add_argument("--qy", type=int, help="Only show every qy arrow in y",default=1)
 parser.add_argument("avdim", type=str, help="Dimension to average over")
-parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'",
-                    default="auto")
-parser.add_argument("-k", "--keepFrames", type=int,
-                    help="0=don't keep (delete) frames; 1=keep frames",
-                    default=0)
-parser.add_argument("-p", "--savePDF", type=int,
-                    help="1 saves transparent pdfs for papers, 0 for none",
-                    default=0)
-parser.add_argument("-d", "--defectData", type=str,
-                    help="Path to defect data (if any)", default="")
+parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'",default="auto")
+parser.add_argument("-k", "--keepFrames", type=int, help="0=don't keep (delete) frames; 1=keep frames", default=0)
+parser.add_argument("-p", "--savePDF", type=int, help="1 saves transparent pdfs for papers, 0 for none", default=0)
+parser.add_argument("-d", "--defectData", type=str, help="Path to defect data (if any)", default="")
 args = parser.parse_args()
 
 ###########################################################
@@ -102,20 +93,17 @@ if not os.path.isfile(inputName):
 with open(inputName, 'r') as f:
   input = json.load(f)
 xyzSize=array([30,30,1])
-dim=2
 if "domain" in input:
 	xyzSize[0]=input['domain'][0]
-	dim=0
 	if(len(input['domain'])>1):
 		xyzSize[1]=input['domain'][1]
-		dim=1
 	else:
 		xyzSize[1]=1
 	if(len(input['domain'])>2):
 		xyzSize[2]=input['domain'][2]
-		dim=2
 	else:
 		xyzSize[2]=1
+
 # Data
 XYZ = zeros(shape=(3,xyzSize[0],xyzSize[1],xyzSize[2]),dtype=float)
 VEL = zeros(shape=(3,xyzSize[0],xyzSize[1],xyzSize[2]),dtype=float)
@@ -170,6 +158,13 @@ infile = open(file,"r")
 for i in range(13):
   line = infile.readline()
 
+# fig1, axes = plt.subplots(nrows=1, ncols=1)
+fig1, ax = plt.subplots()
+if myAspect == 'auto':
+    shrink_factor = 1.0
+else:
+    shrink_factor = float(xyzSize[d2])/float(xyzSize[d1])
+
 i=0
 j=0
 n=-1
@@ -205,12 +200,12 @@ while infile:
         for x in range(xyzSize[0]):
           for y in range(xyzSize[1]):
             for z in range(xyzSize[2]):
-              MEAN[0][y][z]=MEAN[0][y][z]+VEL[0][x][y][z]
-              MEAN[1][y][z]=MEAN[1][y][z]+VEL[1][x][y][z]
-              MEAN[2][y][z]=MEAN[2][y][z]+VEL[2][x][y][z]
-              currentMEAN[0][y][z]=currentMEAN[0][y][z]+VEL[0][x][y][z]
-              currentMEAN[1][y][z]=currentMEAN[1][y][z]+VEL[1][x][y][z]
-              currentMEAN[2][y][z]=currentMEAN[2][y][z]+VEL[2][x][y][z]
+              MEAN[0][y][z]+=VEL[0][x][y][z]
+              MEAN[1][y][z]+=VEL[1][x][y][z]
+              MEAN[2][y][z]+=VEL[2][x][y][z]
+              currentMEAN[0][y][z]+=VEL[0][x][y][z]
+              currentMEAN[1][y][z]+=VEL[1][x][y][z]
+              currentMEAN[2][y][z]+=VEL[2][x][y][z]
         for y in range(xyzSize[1]):
           for z in range(xyzSize[2]):
             for i in range(3):
@@ -219,12 +214,12 @@ while infile:
         for x in range(xyzSize[0]):
           for y in range(xyzSize[1]):
             for z in range(xyzSize[2]):
-              MEAN[0][x][z]=MEAN[0][x][z]+VEL[0][x][y][z]
-              MEAN[1][x][z]=MEAN[1][x][z]+VEL[1][x][y][z]
-              MEAN[2][x][z]=MEAN[2][x][z]+VEL[2][x][y][z]
-              currentMEAN[0][x][z]=currentMEAN[0][x][z]+VEL[0][x][y][z]
-              currentMEAN[1][x][z]=currentMEAN[1][x][z]+VEL[1][x][y][z]
-              currentMEAN[2][x][z]=currentMEAN[2][x][z]+VEL[2][x][y][z]
+              MEAN[0][x][z]+=VEL[0][x][y][z]
+              MEAN[1][x][z]+=VEL[1][x][y][z]
+              MEAN[2][x][z]+=VEL[2][x][y][z]
+              currentMEAN[0][x][z]+=VEL[0][x][y][z]
+              currentMEAN[1][x][z]+=VEL[1][x][y][z]
+              currentMEAN[2][x][z]+=VEL[2][x][y][z]
         for x in range(xyzSize[0]):
           for z in range(xyzSize[2]):
             for i in range(3):
@@ -233,12 +228,12 @@ while infile:
         for x in range(xyzSize[0]):
           for y in range(xyzSize[1]):
             for z in range(xyzSize[2]):
-              MEAN[0][x][y]=MEAN[0][x][y]+VEL[0][x][y][z]
-              MEAN[1][x][y]=MEAN[1][x][y]+VEL[1][x][y][z]
-              MEAN[2][x][y]=MEAN[2][x][y]+VEL[2][x][y][z]
-              currentMEAN[0][x][y]=currentMEAN[0][x][y]+VEL[0][x][y][z]
-              currentMEAN[1][x][y]=currentMEAN[1][x][y]+VEL[1][x][y][z]
-              currentMEAN[2][x][y]=currentMEAN[2][x][y]+VEL[2][x][y][z]
+              MEAN[0][x][y]+=VEL[0][x][y][z]
+              MEAN[1][x][y]+=VEL[1][x][y][z]
+              MEAN[2][x][y]+=VEL[2][x][y][z]
+              currentMEAN[0][x][y]+=VEL[0][x][y][z]
+              currentMEAN[1][x][y]+=VEL[1][x][y][z]
+              currentMEAN[2][x][y]+=VEL[2][x][y][z]
         for x in range(xyzSize[0]):
           for y in range(xyzSize[1]):
             for i in range(3):
@@ -275,48 +270,33 @@ while infile:
     ### Plot the frame
     ###########################################################
     # Save frame
-    n=n+1
-    fig1, axes = plt.subplots(nrows=1, ncols=1)
-    if j==1:
-      #Setup the density image
-      plt.subplot(1,1,1)
-      plt.cla()
-      #Setup the velocity image
-      quiv = quiver( XY[0][::qx, ::qy], XY[1][::qx, ::qy], currentMEAN[d1][::qx, ::qy], currentMEAN[d2][::qx, ::qy] )
-      velImage = imshow(currentMAG.T,cmap=myMap,origin='lower',aspect=myAspect,vmin=minV,vmax=maxV)
-      velCB = colorbar()
-      velCB.ax.set_ylabel(r'Velocity, $\left|\vec{v}\right|$')
-      xlabel(r'$%s$'%labX)
-      ylabel(r'$%s$'%labY)
-    else:
-      #Velocity image
-      plt.subplot(1,1,1)
-      plt.cla()
-      quiv = quiver( XY[0][::qx, ::qy], XY[1][::qx, ::qy], currentMEAN[d1][::qx, ::qy], currentMEAN[d2][::qx, ::qy] )
-      velImage = imshow(currentMAG.T,cmap=myMap,origin='lower',aspect=myAspect,vmin=minV,vmax=maxV)
-      velCB = colorbar()
-      velCB.ax.set_ylabel(r'Velocity, $\left|\vec{v}\right|$')
-      fig1.canvas.draw()
-      xlabel(r'$%s$'%labX)
-      ylabel(r'$%s$'%labY)    
+    plt.subplot(1,1,1)
+    plt.cla()
+    # Draw fields
+    quiv = quiver( XY[0][::qx, ::qy], XY[1][::qx, ::qy], currentMEAN[d1][::qx, ::qy], currentMEAN[d2][::qx, ::qy] )
+    velImage = imshow(currentMAG.T,cmap=myMap,origin='lower',aspect=myAspect,vmin=minV,vmax=maxV,extent=[0,xyzSize[d1],0,xyzSize[d2]])
+    velCB=colorbar(velImage,shrink=shrink_factor,aspect=20*shrink_factor, pad=0.04)
+    velCB.ax.set_ylabel(r'Velocity, $\left|\vec{v}\right|$')
+    xlabel(r'$%s$'%labX)
+    ylabel(r'$%s$'%labY)
     plt.axis(xmax=xyzSize[d1], xmin=0, ymax=xyzSize[d2], ymin=0)
-
+    if(j>=start and j<=finish):
+      fig1.canvas.draw()
     # load defects and draw them as necessary
     # FIXME: only works for 2d for now, doesnt take into account d1 or d2
     if LOADDEFECTS and (j < len(defects)):
       print(f"Drawing defects {j}/{len(defects)-1}")
       for defect in defects[j-1]: # j is not 0 indexed reeeeee
         defect.drawDefect(0.5*(qx+qy), 2)
-    name='frame%04d.png'%(n)
-    namepdf='frame%04d.pdf'%(n)
-
-    ## uncomment below for snapshots!
-    plt.axis('off') 
-    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-    
-    plt.savefig(name, bbox_inches='tight')
-    # save trans pdf
-    if savePDF: plt.savefig(namepdf, transparent=True, bbox_inches='tight')
+    if(j>=start and j<=finish):
+      n=n+1
+      name='frame%04d.png'%(n)
+      namepdf='frame%04d.pdf'%(n)
+      ## uncomment below for snapshots!
+      plt.axis('off') 
+      plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+      plt.savefig(name, bbox_inches='tight')
+      if savePDF: plt.savefig(namepdf, transparent=True, bbox_inches='tight')
 
     #Zero matrix
     VEL= zeros( (3,xyzSize[0],xyzSize[1],xyzSize[2]),dtype=float )
@@ -330,11 +310,13 @@ infile.close()
 #This x and y aren't necessarily the actual x and y
 print( "Averaging data over %d instances ..."%(j-start) )
 norm=float(xyzSize[dim])
+print( "Normalizing by %s,%i,%f, %f, %f"%(avdim,dim,norm,j-start,norm*float(j-start)) )
+print(xyzSize)
 for x in range(xyzSize[d1]):
   for y in range(xyzSize[d2]):
-    MEAN[0][x][y]=MEAN[0][x][y]/norm/float(j-start)
-    MEAN[1][x][y]=MEAN[1][x][y]/norm/float(j-start)
-    MEAN[2][x][y]=MEAN[2][x][y]/norm/float(j-start)
+    MEAN[0][x][y]/=(norm*float(j-start))
+    MEAN[1][x][y]/=(norm*float(j-start))
+    MEAN[2][x][y]/=(norm*float(j-start))
     MAG[x][y]=sqrt( MEAN[0][x][y]**2+MEAN[1][x][y]**2+MEAN[2][x][y]**2 )
 
 ###########################################################
@@ -342,7 +324,7 @@ for x in range(xyzSize[d1]):
 ###########################################################
 # Animate
 print( "Animating ..." )
-name='2Dvelocity_animation%s'%suffix
+name='velocity_%s%s'%(avdim,suffix)
 myCommand="rm %s"%name
 call(myCommand,shell=True)
 myCommand = "ffmpeg -f image2 -r %d"%(framerate)+" -i frame%04d.png"+" -vcodec %s -b %dk -r %d %s"%(codec,bitrate,framerate,name)
@@ -352,17 +334,19 @@ if not keepFrames:
     call(myCommand,shell=True)
 
 print( "Plotting ..." )
-fig, ax = plt.subplots()
-imshow(MAG.T,cmap=myMap,origin='lower',aspect='auto')
-cb=colorbar()
-cb.ax.set_ylabel(r'$\left|\vec{u}\right|$')
+fig, ax = plt.subplots( )
+velImage=imshow(MAG.T,cmap=myMap,origin='lower',aspect=myAspect,extent=[0,xyzSize[d1],0,xyzSize[d2]])
+velCB=colorbar(velImage,shrink=shrink_factor,aspect=20*shrink_factor,pad=0.04)
+velCB.ax.set_ylabel(r'$\left|\left\langle\vec{v}\right\rangle\right|$')
 quiver( XY[0][::qx, ::qy], XY[1][::qx, ::qy], MEAN[d1][::qx, ::qy], MEAN[d2][::qx, ::qy] )
 xlabel(r'$%s$'%labX)
 ylabel(r'$%s$'%labY)
+ax.grid(False)
 ax.tick_params(axis='both', which='major')
 plt.axis(xmax=xyzSize[d1], xmin=0, ymax=xyzSize[d2], ymin=0)
-name='2D_av_%s.pdf'%avdim
-savefig( name )
+name='velocity_av_%s'%avdim
+savefig( name+'.pdf', transparent=True, bbox_inches='tight' )
+savefig( name+'.png', transparent=True, bbox_inches='tight' )
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
@@ -370,9 +354,10 @@ surf = ax.plot_surface(XY[0],XY[1],MAG, rstride=1,cstride=1,cmap=myMap,linewidth
 ax.plot_wireframe(XY[0],XY[1],MAG, rstride=1,cstride=1,linewidth=0.25,color='k',alpha=1.0)
 ax.set_xlabel(r'$%s$'%labX)
 ax.set_ylabel(r'$%s$'%labY)
-ax.set_zlabel(r'$\left|\vec{u}\right|$')
+ax.set_zlabel(r'$\left|\left\langle\vec{v}\right\rangle\right|$')
 ax.tick_params(axis='both', which='major')
-name='2Dcontour_av_%s.pdf'%avdim
-savefig( name )
+name='velocity_av_contour_%s'%avdim
+savefig( name+'.pdf', transparent=True )
+savefig( name+'.png', transparent=True )
 
 #plt.show()

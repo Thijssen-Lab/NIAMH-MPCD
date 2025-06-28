@@ -186,8 +186,8 @@ if(plotAv):
 	xlabel(r'%s'%xaxis)
 	ylabel(r'PDF')
 	plt.axis(xmax=max, xmin=min, ymin=0)
-	savefig('%s.png'%(avOutName), bbox_inches='tight')
-	savefig('%s.pdf'%(avOutName), bbox_inches='tight')
+	savefig('%s.png'%(avOutName), bbox_inches='tight', transparent=True)
+	savefig('%s.pdf'%(avOutName), bbox_inches='tight', transparent=True)
 	show()
 
 exit()

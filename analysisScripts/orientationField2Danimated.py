@@ -25,20 +25,13 @@ parser.add_argument("dataname", type=str, help="Path to the data (should be "
 parser.add_argument("inputname", type=str, help="Path to input .json file")
 parser.add_argument("start", type=int, help="Starting timestep for averaging")
 parser.add_argument("finish", type=int, help="Finishing timestep for averaging")
-parser.add_argument("--qx", type=int, help="Only show every qx arrow in x",
-                    default=1)
-parser.add_argument("--qy", type=int, help="Only show every qy arrow in y",
-                    default=1)
+parser.add_argument("--qx", type=int, help="Only show every qx arrow in x", default=1)
+parser.add_argument("--qy", type=int, help="Only show every qy arrow in y",default=1)
 parser.add_argument("avdim", type=str, help="Dimension to 'slice' over")
-parser.add_argument("-c", "--length", type=float,
-					help="Length of director lines", default=0.5)
-parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'",
-                    default="auto")
-parser.add_argument("-k", "--keepFrames", type=int,
-                    help="0=don't keep (delete) frames; 1=keep frames",
-                    default=0)
-parser.add_argument("-d", "--defectData", type=str,
-                    help="Path to defect data (if any)", default="")
+parser.add_argument("-c", "--length", type=float, help="Length of director lines", default=0.5)
+parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'", default="auto")
+parser.add_argument("-k", "--keepFrames", type=int, help="0=don't keep (delete) frames; 1=keep frames", default=0)
+parser.add_argument("-d", "--defectData", type=str, help="Path to defect data (if any)", default="")
 args = parser.parse_args()
 
 ###########################################################
@@ -108,15 +101,12 @@ xyzSize=array([30,30,1])
 dim=2
 if "domain" in input:
 	xyzSize[0]=input['domain'][0]
-	dim=1
 	if(len(input['domain'])>1):
 		xyzSize[1]=input['domain'][1]
-		dim=2
 	else:
 		xyzSize[1]=1
 	if(len(input['domain'])>2):
 		xyzSize[2]=input['domain'][2]
-		dim=3
 	else:
 		xyzSize[2]=1
 # Data
@@ -131,9 +121,13 @@ AVS = zeros(shape=(xyzSize[d1],xyzSize[d2]),dtype=float)
 ### Setup the animation
 # Figure
 fig1 = plt.figure(1)
+if myAspect == 'auto':
+    shrink_factor = 1.0
+else:
+    shrink_factor = float(xyzSize[d2])/float(xyzSize[d1])
 #Create the colorbar
-CS3 = imshow(AVS.T,cmap=myMap,vmin=0, vmax=1,aspect=myAspect)
-cb=colorbar(CS3,shrink=float(xyzSize[d2])/float(xyzSize[d1]))
+CS3 = imshow(AVS.T,cmap=myMap,vmin=0, vmax=1,aspect=myAspect,extent=[0,xyzSize[d1],0,xyzSize[d2]])
+cb=colorbar(CS3,shrink=shrink_factor,aspect=20*shrink_factor,pad=0.04)
 cb.ax.set_ylabel(r'Scalar order, $S$')
 # Make labels
 if avdim=='x':
@@ -278,7 +272,7 @@ while infile:
 			# uncomment below for snapshots
 			plt.axis('off') 
 			plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-			savefig( name,bbox_inches='tight',pad_inches=0 )
+			savefig( name, bbox_inches='tight', pad_inches=0 )
 		#Zero matrix
 		DIR= zeros( (3,xyzSize[0],xyzSize[1],xyzSize[2]),dtype=float )
 		MEAN = zeros(shape=(3,xyzSize[d1],xyzSize[d2]),dtype=float)
@@ -290,7 +284,7 @@ infile.close()
 ### Visualize data
 ###########################################################
 print( "Animating ..." )
-name='2Dorientation_animation%s'%suffix
+name='orientation_%s%s'%(avdim,suffix)
 myCommand="rm %s"%name
 call(myCommand,shell=True)
 myCommand = "ffmpeg -f image2 -r %d"%(framerate)+" -i frame%04d.png"+" -vcodec %s -b %dk -r %d %s"%(codec,bitrate,framerate,name)

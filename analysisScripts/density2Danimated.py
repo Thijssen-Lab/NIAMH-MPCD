@@ -16,27 +16,17 @@ from defectHandler import getDefectData
 ### Set up argsparse
 ###########################################################
 parser = argparse.ArgumentParser(description='Density field rendering script.')
-parser.add_argument("dataname", type=str, help="Path to the data (should be "
-											   "coarsegrain.dat)")
+parser.add_argument("dataname", type=str, help="Path to the data (should be coarsegrain.dat)")
 parser.add_argument("inputname", type=str, help="Path to input .json file")
 parser.add_argument("start", type=int, help="Starting timestep for averaging")
 parser.add_argument("finish", type=int, help="Finishing timestep for averaging")
-parser.add_argument("sliceDim", type=str,
-					help="Dimension to 'slice' over for averaging")
-parser.add_argument("sliceIndex", type=int,
-					help="Index of the plane to be sliced for averaging")
-parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'",
-					default='auto')
-parser.add_argument("-k", "--keepFrames", type=int,
-					help="0=don't keep (delete) frames; 1=keep frames",
-					default=0)
-parser.add_argument("-N", "--normalise", type=int,
-					help="Normalise the colourbar (1) or not (0)", default=0)
-parser.add_argument("-p", "--savePDF", type=int,
-					help="1 saves transparent pdfs for papers, 0 for none",
-					default=0)
-parser.add_argument("-d", "--defectData", type=str,
-					help="Path to defect data (if any)", default="")
+parser.add_argument("sliceDim", type=str, help="Dimension to 'slice' over for averaging")
+parser.add_argument("sliceIndex", type=int, help="Index of the plane to be sliced for averaging")
+parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'", default='auto')
+parser.add_argument("-k", "--keepFrames", type=int, help="0=don't keep (delete) frames; 1=keep frames", default=0)
+parser.add_argument("-N", "--normalise", type=int, help="Normalise the colourbar (1) or not (0)", default=0)
+parser.add_argument("-p", "--savePDF", type=int, help="1 saves transparent pdfs for papers, 0 for none", default=0)
+parser.add_argument("-d", "--defectData", type=str, help="Path to defect data (if any)", default="")
 args = parser.parse_args()
 
 ###########################################################
@@ -102,18 +92,14 @@ if not os.path.isfile(inputName):
 with open(inputName, 'r') as f:
   input = json.load(f)
 xyzSize=array([30,30,1])
-dim=2
 if "domain" in input:
 	xyzSize[0]=input['domain'][0]
-	dim=1
 	if(len(input['domain'])>1):
 		xyzSize[1]=input['domain'][1]
-		dim=2
 	else:
 		xyzSize[1]=1
 	if(len(input['domain'])>2):
 		xyzSize[2]=input['domain'][2]
-		dim=3
 	else:
 		xyzSize[2]=1
 species=len(input['species'])		#1 = do total pop only; 2 = two species; will fail if more than 1
@@ -176,6 +162,10 @@ if defectData != "":
 
 # Figure
 fig1 = plt.figure(1)
+if myAspect == 'auto':
+    shrink_factor = 1.0
+else:
+    shrink_factor = float(xyzSize[d2])/float(xyzSize[d1])
 ###########################################################
 ### Read the data for animation
 ###########################################################
@@ -244,11 +234,11 @@ while infile:
 				renderTOTPOP = renderTOTPOP/sliceMax
 
 			#handle single species render first
-			imshow(renderTOTPOP,cmap=myMap,vmin=0, aspect=myAspect)
+			imshow(renderTOTPOP,cmap=myMap,vmin=0, aspect=myAspect,extent=[0,xyzSize[d1],0,xyzSize[d2]])
 
 			#Create the colorbar
-			CS3 = imshow(renderTOTPOP.T,vmin=0,cmap=myMap,aspect=myAspect)
-			cb=colorbar(CS3)
+			CS3 = imshow(renderTOTPOP.T,vmin=0,cmap=myMap,aspect=myAspect,extent=[0,xyzSize[d1],0,xyzSize[d2]])
+			cb=colorbar(CS3,shrink=shrink_factor,aspect=20*shrink_factor,pad=0.04)
 			if normalise:
 				cb.ax.set_ylabel(r'Number, $N_C / N_C^\mathrm{max}$')
 			else:
@@ -259,8 +249,8 @@ while infile:
 			ylabel(r'$%s$'%labY)
 			plt.axis(xmax=xyzSize[d1], xmin=0, ymax=xyzSize[d2], ymin=0)
 
-			name='s=1frame%04d.png'%(n)
-			namepdf='s=1frame%04d.pdf'%(n)
+			name='frame_s=1_%04d.png'%(n)
+			namepdf='frame_s=1_%04d.pdf'%(n)
 			
 			## uncomment below for snapshots!
 			plt.axis('off') 
@@ -273,32 +263,33 @@ while infile:
 			if species == 2: # for multispecies
 				plt.clf()
 				sliceRGBA = getRGBAColField(sliceTOTPOP, sliceMax, slicePop0prop)
-				imshow(sliceRGBA, aspect=myAspect)
+				imshow(sliceRGBA, aspect=myAspect, extent=[0,xyzSize[d1],0,xyzSize[d2]])
 				# perform matplotlib bits and save
 				xlabel(r'$%s$'%labX)
 				ylabel(r'$%s$'%labY)
 				plt.axis(xmax=xyzSize[d1], xmin=0, ymax=xyzSize[d2], ymin=0)
-				name='s=2frame%04d.png'%(n)
-				savefig( name )
+				name='frame_s=2_%04d.png'%(n)
+				savefig( name, bbox_inches='tight' )
+				if savePDF: savefig(namepdf, transparent=True, bbox_inches='tight')
 			i=0 # reset tStep line counter
 infile.close()
 
 #Animate
 print( "Animating ..." )
 # single species
-name='2Ddens_%s%d%s'%(sliceDim,sliceIndex,suffix)
+name='density_%s%d%s'%(sliceDim,sliceIndex,suffix)
 myCommand="rm %s"%name
 call(myCommand,shell=True)
-myCommand = "ffmpeg -f image2 -r %d"%(framerate)+" -i s=1frame%04d.png"+" -vcodec %s -b %dk -r %d %s"%(codec,bitrate,framerate,name)
+myCommand = "ffmpeg -f image2 -r %d"%(framerate)+" -i frame_s=1_%04d.png"+" -vcodec %s -b %dk -r %d %s"%(codec,bitrate,framerate,name)
 call(myCommand,shell=True)
 
 if species == 2: # for multispecies
 	name='2Ddens_s=%d_%s%d%s'%(species,sliceDim,sliceIndex,suffix)
 	myCommand="rm %s"%name
 	call(myCommand,shell=True)
-	myCommand = "ffmpeg -f image2 -r %d"%(framerate)+" -i s=2frame%04d.png"+" -vcodec %s -b %dk -r %d %s"%(codec,bitrate,framerate,name)
+	myCommand = "ffmpeg -f image2 -r %d"%(framerate)+" -i frame_s=2_%04d.png"+" -vcodec %s -b %dk -r %d %s"%(codec,bitrate,framerate,name)
 	call(myCommand,shell=True)
 
 if not keepFrames:
-	myCommand="rm s*frame*.png"
+	myCommand="rm frame*.png"
 	call(myCommand,shell=True)

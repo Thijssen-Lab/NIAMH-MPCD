@@ -1,6 +1,6 @@
 {
     "comment":          "cuboid geometry",
-    "domain":           [20, 10, 10],
+    "domain":           [20, 30, 30],
     "comment":          "To have PBCs at walls of the cuboid geometry on top of a cylider within this geometry",
     "domainWalls":      1,
     "simSteps":         500,
@@ -10,7 +10,7 @@
     [
         {
             "comment":     "The total number of particles in a cylider = pi * r^2 * L * 20",
-            "pop":         20106
+            "pop":         45239
         }
     ],
     "debugOut":         3,
@@ -21,16 +21,18 @@
     "BC":
     [
         {
-            "comment":      "Since the particle are transfering momentum to the walls",
-            "E":            1,
+            "comment":      "Since we have no-slip boundary conditions, include phantom particles",
+            "phantom":            1,
             "comment":      "The position of the centeral axis of the cylinder in yz planes",
-            "Q":            [0, 5,5],
+            "Q":            [0, 15,15],
             "aInv":         [0, 1, 1],
             "rotSym":       [4, 4],
             "abs":          0,
             "P":            [2, 2, 2, 2],
             "comment":      "The radius of the cylinder",
-            "R":            4,
+            "R":            6,
+            "comment":      "No positional shift if collide with cylnder",
+            "DN":           0,
             "comment":      "The normal component of velocity is reversed",
             "MVN":          -1,
             "comment":      "The tangent component of velocity is kept what it was",

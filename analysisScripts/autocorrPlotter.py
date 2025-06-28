@@ -1,6 +1,6 @@
 """
-	Probability density rendering script.
-	To average histograms of vector values since histogram range fluctuates.
+	Autocorrelation rendering script.
+	To average autocorrelations in time.
 
 	Created by Tyler Shendruk
 """
@@ -12,15 +12,13 @@ import os
 import argparse
 
 ###########################################################
-### Set up argparse
+### Set up argsparse
 ###########################################################
-parser = argparse.ArgumentParser(description='Probability density rendering '
-											 'script.')
+parser = argparse.ArgumentParser(description='Autocorrelation rendering script.')
 parser.add_argument('dataName', type=str,
-					help="Path to data (should be a histogram output for a "
-						 "vector quantity)")
-parser.add_argument('xaxis', type=str,
-					help="x axis label --- What is this the histogram of?")
+					help="Path to data (should be an autocorrelation output)")
+parser.add_argument('yaxis', type=str,
+					help="y axis label --- What is this the autocorrelation of?")
 parser.add_argument("start", type=int, help="Starting timestep for averaging")
 parser.add_argument("finish", type=int, help="Finishing timestep for averaging")
 parser.add_argument("-m", "--makeMovie", type=int, default=0,
@@ -31,12 +29,6 @@ parser.add_argument("-k", "--keepFrames", type=int,
 parser.add_argument("-a", "--plotAv", type=int,
 					help="Whether or not to plot average (0 or 1)",
 					default=0)
-parser.add_argument("-x", "--includeX", type=int,
-					help="Whether or not to include x (0 or 1)", default=1)
-parser.add_argument("-y", "--includeY", type=int,
-					help="Whether or not to include y (0 or 1)", default=1)
-parser.add_argument("-z", "--includeZ", type=int,
-					help="Whether or not to include z (0 or 1)", default=1)
 args = parser.parse_args()
 
 ###########################################################
@@ -46,20 +38,16 @@ print("Arguments:")
 for arg, value in vars(args).items():
 	print(f"\t{arg}: {value}")
 dataName = args.dataName
-xaxis = args.xaxis
+yaxis = args.yaxis
 start = args.start
 finish = args.finish
 makeMovie = args.makeMovie
 keepFrames = args.keepFrames
 plotAv = args.plotAv
-_x = args.includeX
-_y = args.includeY
-_z = args.includeZ
 
 ###########################################################
 ### Assumed arguments that a user could change
 ###########################################################
-numBins=101
 avOutName=dataName.split(".dat")[0]+"_av"
 
 ###########################################################
@@ -75,13 +63,34 @@ framerate=12		#Number of frames per second in the output video
 codec='libx264'		#Other options include mpeg4
 suffix='.mp4'
 
-# Figure
-fig1 = plt.figure(1)
+###########################################################
+### Number of bins
+###########################################################
+print( 'Reading file for bin size ...' )
+numBins=101
+if not os.path.isfile(dataName):
+	print("%s not found."%dataName)
+	exit()
+infile = open(dataName,"r")
+#toss header
+for i in range(13):
+	line = infile.readline()
+# Read the time
+line=infile.readline()
+while line!="\n":
+	# Read the first line of the data
+	oldLine = line
+	line = infile.readline()
+oldLine = oldLine.split("\t")
+numBins=int(oldLine[1])
+print( "\tnumBins: %s"%numBins )
 
 ###########################################################
-### Animation
+### Animation/Average
 ###########################################################
-print( 'Reading file for min/max/movie ...' )
+# Figure
+fig1 = plt.figure(1)
+print( 'Reading file for data ...' )
 if not os.path.isfile(dataName):
 	print("%s not found."%dataName)
 	exit()
@@ -90,51 +99,39 @@ infile = open(dataName,"r")
 for i in range(13):
 	line = infile.readline()
 t=0
-min=999999.
-max=-999999.
-maxC=0.0
-X=zeros(shape=(numBins),dtype=float)	#Start of the bins
-C=zeros(shape=(3,numBins),dtype=float)
+rad=linspace(0,numBins,num=numBins+1,endpoint=True,dtype=float)
+corr=zeros(shape=(numBins+1),dtype=float)
+corrAv=zeros(shape=(numBins+1),dtype=float)
+corrStd=zeros(shape=(numBins+1),dtype=float)
+minC=999999.
+maxC=-999999.
 while infile:
 	line = infile.readline()
 	if( not line ):
 		break
 	else:
-		time=float(line)
-		for i in range(numBins):
+		time=float(line) 			# Read the time
+		for i in range(numBins+1):	# Read the correlation function data
 			line = infile.readline()
-			toss,x,cx,cy,cz = line.split("\t")
-			X[i]=float(x)
-			C[0][i]=float(cx)
-			C[1][i]=float(cy)
-			C[2][i]=float(cz)
-		line = infile.readline()
-		if(t>=start):
-			dx=X[1]-X[0]
-			min=minimum(min,X[0])
-			max=maximum(max,X[-1]+dx)
-			if(_x):
-				maxC=maximum(maxC,C[0].max())
-			if(_y):
-				maxC=maximum(maxC,C[1].max())
-			if(_z):
-				maxC=maximum(maxC,C[2].max())
-			if(makeMovie):
-				X+=0.5*dx
-				fig1 = plt.figure(1)
-				plt.clf()
-				title(r'Time, %s$\tau$'%(time))
-				if(_x):
-					plot(X,C[0],'-o',label=r'$x$')
-				if(_y):
-					plot(X,C[1],'-s',label=r'$y$')
-				if(_z):
-					plot(X,C[2],'-^',label=r'$z$')
-				xlabel(r'%s'%xaxis)
-				ylabel(r'Counts')
-				plt.axis(xmax=max, xmin=min, ymax=maxC, ymin=0)
-				name='frame%04d.png'%(t)
-				savefig(name, bbox_inches='tight')
+			toss,x,c = line.split("\t")
+			corr[i]=float(c)
+		line = infile.readline()	# Read the empty line
+		minC = minimum(minC, corr.min())
+		maxC = maximum(maxC, corr.max())
+		if(t>=start and t<=finish):
+			for i in range(numBins+1):
+				corrAv[i]+=corr[i]
+				corrStd[i]+=corr[i]**2
+		if(makeMovie):
+			fig1 = plt.figure(1)
+			plt.clf()
+			title(r'Time, %s$\tau$'%(time))
+			plot(rad,corr,'-o')
+			xlabel(r'Radial distance, $r$')
+			ylabel(r'Autocorr. %s'%yaxis)
+			plt.axis(ymax=maxC, ymin=minC)
+			name='frame%04d.png'%(t)
+			savefig(name, bbox_inches='tight')
 		t+=1
 infile.close()
 if(makeMovie):
@@ -152,71 +149,35 @@ if(makeMovie):
 ###########################################################
 ### Average
 ###########################################################
-print( 'Reading data ...' )
+if t<finish:
+	finish=t
+T=float(finish-start+1)
+for i in range(numBins+1):
+	if T>1:
+		corrStd[i]=sqrt(corrStd[i]/T - (corrAv[i]/T)**2)
+	corrAv[i]/=T
+corrErr=corrStd/sqrt(T)
+
 infile = open(dataName,"r")
 # Keep header
 header=[]
-for i in range(13):
+for i in range(12):
 	header.append(infile.readline())
-t=0
-MmM=max-min
-avX=linspace(min,max,num=numBins,endpoint=True,dtype=float)	#Start of the bins
-avP=zeros(shape=(3,numBins),dtype=float)
-while infile:
-	line = infile.readline()
-	if( not line ):
-		break
-	else:
-		time=float(line)
-		for i in range(numBins):
-			line = infile.readline()
-			toss,x,cx,cy,cz = line.split("\t")
-			X[i]=float(x)
-			C[0][i]=float(cx)
-			C[1][i]=float(cy)
-			C[2][i]=float(cz)
-		line = infile.readline()
-		if(t>=start):
-			# Integrate under the curve
-			dx=X[1]-X[0]
-			for d in range(3):
-				norm=integrate.simpson(C[d],dx=dx)
-				C[d]/=norm
-			X+=0.5*dx
-			for i in range(numBins):
-				I=int(numBins*(X[i]-min)/MmM)
-				for d in range(3):
-					avP[d][I]+=C[d][i]
-		t+=1
 infile.close()
-dx=avX[1]-avX[0]
-for d in range(3):
-	norm=integrate.simpson(avP[d],dx=dx)
-	avP[d]/=norm
-
 outfile=open(avOutName+".dat", "w")
-cutTime=header[-1].split("\t")[1:]
-header[-1]="%s\t%s\t%s\t%s"%(cutTime[0],cutTime[3],cutTime[5],cutTime[7])
 for h in header:
 	outfile.write(h)
+outfile.write("dt\tav\tStd\tErr\n")
 for i in range(numBins):
-	outfile.write("%e\t%e\t%e\t%e\n"%(avX[i],avP[0][i],avP[1][i],avP[2][i]))
+	outfile.write("%e\t%e\t%e\t%e\n"%(rad[i],corrAv[i],corrStd[i],corrErr[i]))
 outfile.close()
 
-avX+=0.5*dx
 if(plotAv):
 	fig1 = plt.figure(1)
 	plt.clf()
-	if(_x):
-		plot(X,avP[0],'-o',label=r'$x$')
-	if(_y):
-		plot(X,avP[1],'-s',label=r'$y$')
-	if(_z):
-		plot(X,avP[2],'-^',label=r'$z$')
-	xlabel(r'%s'%xaxis)
-	ylabel(r'PDF')
-	plt.axis(xmax=max, xmin=min, ymin=0)
-	plt.legend(loc='best',frameon=False)
+	ed.errorbar_fill(rad,corrAv,corrErr)
+	xlabel(r'Radial distance, $r$')
+	ylabel(r'Autocorr. %s'%yaxis)
 	savefig('%s.png'%(avOutName), bbox_inches='tight', transparent=True)
 	savefig('%s.pdf'%(avOutName), bbox_inches='tight', transparent=True)
 	show()

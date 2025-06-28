@@ -1,7 +1,7 @@
 {
     "comment":          "Square geometry",
     "domain":           [50, 50],
-    "simSteps":         1000,
+    "simSteps":         5000,
     "warmUp":           0,
     "comment":          "No warmup, in order to see the trnaisition to active turbulence",
     "warmUp":           0,
@@ -19,11 +19,11 @@
     "comment":          "Periodic Boundary Contions",
     "domainWalls":      1,
     "comment":          "To see the active spontaneous flows, output the flow field",
-    "flowOut":          250,
+    "flowOut":          20,
     "comment":          "Output the director and scalar order parameter fields",
-    "dirSOut":          250,
+    "dirSOut":          20,
     "comment":          "Output the position, orientation and charge of topological defects, if present",
-    "defectsOut":       250,
+    "defectsOut":       20,
     "comment":          "Outputting summary of the parameters used in the simulation",
     "synopsisOut":      1
 }
