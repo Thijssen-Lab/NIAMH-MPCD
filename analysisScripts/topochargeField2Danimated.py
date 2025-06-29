@@ -44,6 +44,8 @@ c1 = args.deflength
 myAspect = args.myAspect
 keepFrames = args.keepFrames
 
+makeTransparent = 1 # Transparent backgrounds make crappy videos, but look good on webpages
+
 ###########################################################
 ### Format and style
 ###########################################################
@@ -263,7 +265,10 @@ while datainfile:
 			ylabel(r'$%s$'%labY)
 			plt.axis(xmax=xyzSize[d1], xmin=0, ymax=xyzSize[d2], ymin=0)
 			name='frame%04d.png'%(n)
-			savefig( name,bbox_inches='tight',pad_inches=0 )
+			if makeTransparent:
+				savefig( name,bbox_inches='tight',pad_inches=0, transparent=True )
+			else:
+				savefig( name,bbox_inches='tight',pad_inches=0 )
 		#Zero matrix
 		DIR= zeros( (3,xyzSize[0],xyzSize[1],xyzSize[2]),dtype=float )
 		MEAN = zeros(shape=(3,xyzSize[d1],xyzSize[d2]),dtype=float)

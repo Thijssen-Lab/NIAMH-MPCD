@@ -3,7 +3,7 @@
     "domain":           [20, 30, 30],
     "comment":          "To have PBCs at walls of the cuboid geometry on top of a cylider within this geometry",
     "domainWalls":      1,
-    "simSteps":         500,
+    "simSteps":         2000,
     "comment":          "Isotropic fluid using Andersen MPCD",
     "collOp":           2,
     "species":

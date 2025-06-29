@@ -114,8 +114,8 @@
 # parameter:	stepAvg		 	    = (0, 	10000, 			10000)
 # parameter:	stepHistCollect 	= (0,	0, 			0)
 # parameter:	stepHistPrint 		= (0,	0, 			0)
-# parameter:	stepSceneSlow	 	= (0, 	20000, 			10000)
-# parameter:	stepSceneFast	 	= (0, 	20000, 			10000)
+# parameter:	stepSceneSlow	 	= (0, 	10000, 			10000)
+# parameter:	stepSceneFast	 	= (0, 	10000, 			10000)
 # parameter:	stepCheckpoint		= (0,   0,				0)
 #
 #

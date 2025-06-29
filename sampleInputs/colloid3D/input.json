@@ -40,5 +40,6 @@
     "domainWalls":      1,
     "debugOut":         3,
     "dirSOut":          100,
+    "solidTrajOut":     100,
     "synopsisOut":      1
 }

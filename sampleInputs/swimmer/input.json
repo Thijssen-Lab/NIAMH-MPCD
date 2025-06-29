@@ -1,7 +1,7 @@
 {
     "debugOut":         3,
     "domain":           [50, 50],
-    "simSteps":         20000,
+    "simSteps":         2000,
     "comment":          "Isotropic fluid using Andersen MPCD",
     "collOp":           2,
     "species":

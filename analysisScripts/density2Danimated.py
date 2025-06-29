@@ -47,6 +47,8 @@ normalise = args.normalise
 savePDF = args.savePDF
 defectData = args.defectData
 
+makeTransparent = True # Transparent backgrounds make crappy videos, but look good on webpages
+
 ###########################################################
 ### Format and style
 ###########################################################
@@ -255,21 +257,22 @@ while infile:
 			## uncomment below for snapshots!
 			plt.axis('off') 
 			plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-			savefig(name, bbox_inches='tight')
+			savefig(name, bbox_inches='tight', transparent=makeTransparent)
 			# save trans pdf
 			if savePDF: savefig(namepdf, transparent=True, bbox_inches='tight')
 				
 			# also handle multispecies render if necessary
 			if species == 2: # for multispecies
 				plt.clf()
-				sliceRGBA = getRGBAColField(sliceTOTPOP, sliceMax, slicePop0prop)
+				sliceRGBA = getRGBAColField(sliceTOTPOP.T, sliceMax, slicePop0prop.T)
 				imshow(sliceRGBA, aspect=myAspect, extent=[0,xyzSize[d1],0,xyzSize[d2]])
 				# perform matplotlib bits and save
 				xlabel(r'$%s$'%labX)
 				ylabel(r'$%s$'%labY)
 				plt.axis(xmax=xyzSize[d1], xmin=0, ymax=xyzSize[d2], ymin=0)
 				name='frame_s=2_%04d.png'%(n)
-				savefig( name, bbox_inches='tight' )
+				# savefig( name, bbox_inches='tight' )
+				savefig( name, bbox_inches='tight', transparent=True )
 				if savePDF: savefig(namepdf, transparent=True, bbox_inches='tight')
 			i=0 # reset tStep line counter
 infile.close()
@@ -284,7 +287,7 @@ myCommand = "ffmpeg -f image2 -r %d"%(framerate)+" -i frame_s=1_%04d.png"+" -vco
 call(myCommand,shell=True)
 
 if species == 2: # for multispecies
-	name='2Ddens_s=%d_%s%d%s'%(species,sliceDim,sliceIndex,suffix)
+	name='density_s=%d_%s%d%s'%(species,sliceDim,sliceIndex,suffix)
 	myCommand="rm %s"%name
 	call(myCommand,shell=True)
 	myCommand = "ffmpeg -f image2 -r %d"%(framerate)+" -i frame_s=2_%04d.png"+" -vcodec %s -b %dk -r %d %s"%(codec,bitrate,framerate,name)

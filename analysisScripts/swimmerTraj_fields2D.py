@@ -1,5 +1,13 @@
+"""
+	Animates swimmers and 2D fields, averaging over user defined direction
+	Uses defect handler (from https://github.com/Shendruk-Lab/MPCDDefectLoader)
+
+	Originally from Tyler N. Shendruk
+	Modified by Francois de Tournemire
+"""
+
 ###########################################################
-### Animates swimmers and 2D fields, averaging over user defined direction
+### 
 ###########################################################
 
 ###########################################################
@@ -11,30 +19,25 @@ import os
 import json
 import argparse
 
+from defectHandler import getDefectData
+
 ###########################################################
 ### Set up argparse
 ###########################################################
 parser = argparse.ArgumentParser(
-  description='Animate swimmers and 2D fields, averaging over user defined '
-              'direction.')
+  description='Animate swimmers and 2D fields, averaging over user defined direction.')
 parser.add_argument('dataPath', type=str, help="Path to the data")
-parser.add_argument('inputName', type=str,
-                    help="Input json file to read inputs")
+parser.add_argument('inputName', type=str, help="Input json file to read inputs")
 parser.add_argument('start', type=int, help="Average after this number")
 parser.add_argument('finish', type=int, help="Average before this number")
-parser.add_argument("--qx", type=int, help="Only show every qx arrow in x",
-                    default=1)
-parser.add_argument("--qy", type=int, help="Only show every qy arrow in y",
-                    default=1)
+parser.add_argument("--qx", type=int, help="Only show every qx arrow in x", default=1)
+parser.add_argument("--qy", type=int, help="Only show every qy arrow in y",default=1)
 parser.add_argument('avdim', type=str, help="Dimension to average over")
-parser.add_argument('fieldType', type=str,
-                    help="Field type: 'vel', 'vor' or 'nem' for velocity, "
-                         "vorticity or director field, respectively")
-parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'",
-                    default="auto")
-parser.add_argument("-k", "--keepFrames", type=int,
-                    help="0=don't keep (delete) frames; 1=keep frames",
-                    default=0)
+parser.add_argument('fieldType', type=str, help="Field type: 'vel', 'vor' or 'nem' for velocity, vorticity or director field, respectively")
+parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'", default="auto")
+parser.add_argument("-k", "--keepFrames", type=int, help="0=don't keep (delete) frames; 1=keep frames", default=0)
+parser.add_argument("-p", "--savePDF", type=int, help="1 saves transparent pdfs for papers, 0 for none", default=0)
+parser.add_argument("-d", "--defectData", type=str, help="Path to defect data (if any)", default="")
 args = parser.parse_args()
 
 ###########################################################
@@ -53,6 +56,8 @@ avdim = args.avdim
 fieldType = args.fieldType
 myAspect = args.myAspect
 keepFrames = args.keepFrames
+savePDF = args.savePDF
+defectData = args.defectData
 
 fieldType=fieldType.lower()
 if(fieldType=="v" or fieldType=="vel" or fieldType=="velocity"):
@@ -61,6 +66,8 @@ elif(fieldType=="w" or fieldType=="vor" or fieldType=="vort" or fieldType=="vort
   fieldType="vor"
 elif(fieldType=="n" or fieldType=="nem" or fieldType=="nematic" or fieldType=="dir" or fieldType=="director"):
   fieldType="nem"
+
+makeTransparent = True # Transparent backgrounds make crappy videos, but look good on webpages
 
 ###########################################################
 ### Style/formating stuff
@@ -94,18 +101,14 @@ if not os.path.isfile(inputName):
 with open(inputName, 'r') as f:
   input = json.load(f)
 xyzSize=array([30,30,1])
-dim=2
 if "domain" in input:
 	xyzSize[0]=input['domain'][0]
-	dim=1
 	if(len(input['domain'])>1):
 		xyzSize[1]=input['domain'][1]
-		dim=2
 	else:
 		xyzSize[1]=1
 	if(len(input['domain'])>2):
 		xyzSize[2]=input['domain'][2]
-		dim=3
 	else:
 		xyzSize[2]=1
 numSw=0
@@ -165,6 +168,25 @@ if(fieldType=="nem"):
 
 # Setup figure
 fig1, axes = plt.subplots(nrows=1, ncols=1)
+if myAspect == 'auto':
+    shrink_factor = 1.0
+else:
+    shrink_factor = float(xyzSize[d2])/float(xyzSize[d1])
+
+###########################################################
+### defect handling if needed
+###########################################################
+LOADDEFECTS = False
+defects = []
+if defectData != "":
+	print("Loading defects for rendering")
+	LOADDEFECTS = True
+
+	defContainer = getDefectData(defectData, np.array([xyzSize[0], xyzSize[1], xyzSize[2]]))
+	for defList in defContainer:
+		defects.append(defList.defectList)
+	print("Finished loading defects")
+
 
 ###########################################################
 ### Read the data for min/max
@@ -478,17 +500,23 @@ while( velFile ):
     quiv = quiver( XY[0][::qx, ::qy], XY[1][::qx, ::qy], currentMEAN[d1][::qx, ::qy], currentMEAN[d2][::qx, ::qy] )
     if(fieldType=="vel"):
       image = imshow(currentMAG.T,cmap=fieldMap,origin='lower',aspect=myAspect,vmin=minV,vmax=maxV)
-      CB = colorbar()
+      CB = colorbar(image,shrink=shrink_factor,aspect=20*shrink_factor, pad=0.04)
       CB.ax.set_ylabel(r'Velocity, $\left|\vec{v}\right|$')
     elif(fieldType=="vor"):
       image = imshow(VORTZ.T,cmap=fieldMap,origin='lower',aspect=myAspect,vmin=minW,vmax=maxW)
-      CB = colorbar()
+      CB = colorbar(image,shrink=shrink_factor,aspect=20*shrink_factor, pad=0.04)
       CB.ax.set_ylabel(r'Vorticity, $\omega_{%s}$'%(avdim))
     elif(fieldType=="nem"):
       for x in range(xyzSize[d1]):
         for y in range(xyzSize[d2]):
           if( x%qx==0 and y%qy==0 ):
             plot( [ XYorder[0][x][y]-dirL*currentDIR[d1][x][y],XYorder[0][x][y]+dirL*currentDIR[d1][x][y] ],[ XYorder[1][x][y]-dirL*currentDIR[d2][x][y],XYorder[1][x][y]+dirL*currentDIR[d2][x][y] ],color=fieldMap(currentS[x][y],1) )
+    # Load defects and draw them as necessary
+    # FIXME: only works for 2d for now, doesnt take into account d1 or d2
+    if LOADDEFECTS and (j < len(defects)):
+      print(f"Drawing defects {j}/{len(defects)-1}")
+      for defect in defects[j-1]: # j is not 0 indexed reeeeee
+        defect.drawDefect(0.5*(qx+qy), 2)
     # Plot the swimmers
     for ns in range(numSw):
       if( fabs(H[ns][d1]-B[ns][d1])<0.5*xyzSize[d1] and fabs(H[ns][d2]-B[ns][d2])<0.5*xyzSize[d2] ):
@@ -508,7 +536,9 @@ while( velFile ):
     ylabel(r'$%s$'%labY)
     plt.axis(xmax=xyzSize[0], xmin=0, ymax=xyzSize[1], ymin=0)
     name='frame%04d.png'%(n)
-    savefig( name )
+    namepdf='frame%04d.pdf'%(n)
+    savefig( name, bbox_inches='tight', transparent=makeTransparent )
+    if savePDF: plt.savefig(namepdf, transparent=True, bbox_inches='tight')
     plt.clf()
     #Zero matrices
     VEL= zeros( (3,xyzSize[0],xyzSize[1],xyzSize[2]),dtype=float )
@@ -526,11 +556,11 @@ if(fieldType=="nem"):
 # Animate
 print( "Animating ..." )
 if(fieldType=="vel"):
-  name='%s/swimmerVelField_animation%s'%(dataPath,suffix)
+  name='%s/swimmerVelField%s'%(dataPath,suffix)
 elif(fieldType=="vor"):
-  name='%s/swimmerVorField_animation%s'%(dataPath,suffix)
+  name='%s/swimmerVorField%s'%(dataPath,suffix)
 elif(fieldType=="nem"):
-  name='%s/swimmerDirField_animation%s'%(dataPath,suffix)
+  name='%s/swimmerDirField%s'%(dataPath,suffix)
 myCommand="rm %s"%name
 call(myCommand,shell=True)
 myCommand = "ffmpeg -f image2 -r %d"%(framerate)+" -i frame%04d.png"+" -vcodec %s -b %dk -r %d %s"%(codec,bitrate,framerate,name)

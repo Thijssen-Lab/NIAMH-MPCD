@@ -1,1 +1,1 @@
-Simulates 3D flow in a cylindrical pipe of radius 10 with a pressure gradient driven by gravity. No-slip boundary conditions on the pipe wall and periodic boundary conditions on the ends
+Simulates 3D flow in a cylindrical pipe of radius 7 with a pressure gradient driven by gravity. No-slip boundary conditions on the pipe wall and periodic boundary conditions on the ends

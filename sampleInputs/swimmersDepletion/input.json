@@ -12,6 +12,8 @@
     ],
     "comment":          "Periodic boundary conditions on the domain",
     "domainWalls":      1,
+    "comment":          "Zero the net momentum of the fluid every 500 steps",
+    "zeroNetMom":       500,
     "comment":          "Dumb-dumbell swimmer",
     "typeSwim":         2,
     "comment":          "One swimmer",
@@ -41,6 +43,5 @@
     "swimQOut":         50,
     "swimOOut":         0,
     "swimROut":         0,
-    "synopsisOut":      1,
-    "zeroNetMom":       1
+    "synopsisOut":      1
 }

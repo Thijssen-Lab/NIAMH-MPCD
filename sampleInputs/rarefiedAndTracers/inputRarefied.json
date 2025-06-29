@@ -1,0 +1,23 @@
+{
+    "comment":          "A tiny system with three species of two particles each",
+    "domain":           [15, 15],
+    "simSteps":         500,
+    "dt":               0.2,
+    "collOp":           3,
+    "species":
+    [
+        {
+            "pop":     2
+        },
+        {
+            "pop":     2
+        },
+        {
+            "pop":     2
+        }
+    ],
+    "domainWalls":      1,
+    "energyOut":        1,
+    "trajSpecOut":      3,
+    "trajOut":          1
+}

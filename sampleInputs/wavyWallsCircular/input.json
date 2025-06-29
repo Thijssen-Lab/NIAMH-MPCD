@@ -75,11 +75,8 @@
             "dsplc":        0
         }
     ],
-   "flowOut":10,
-   "dirSOut":10,
-   "coarseOut":10,
    "debugOut":3,
-   "vortCorrOut":10,
-   "velCorrOut":10,
-   "topoFieldOut":10 
+   "flowOut":50,
+   "dirSOut":50,
+   "defectsOut":50
 }

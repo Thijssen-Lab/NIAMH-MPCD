@@ -1,7 +1,7 @@
 {
     "domain":           [20, 20, 20],
-    "simSteps":         10000,
-    "warmUp":           2000,
+    "simSteps":         2000,
+    "warmUp":           200,
     "collOp":           2,
     "mdIn":             "md.inp",
     "stepsMD":          50,
@@ -85,6 +85,6 @@
         }
     ],
     "debugOut":         3,
-    "flowOut":          1000,
+    "flowOut":          200,
     "synopsisOut":      1
 }

@@ -52,6 +52,8 @@ myAspect = args.myAspect
 keepFrames = args.keepFrames
 defectData = args.defectData
 
+makeTransparent = True # Transparent backgrounds make crappy videos, but look good on webpages
+
 ###########################################################
 ### Format and style
 ###########################################################
@@ -272,7 +274,7 @@ while infile:
 			# uncomment below for snapshots
 			plt.axis('off') 
 			plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-			savefig( name, bbox_inches='tight', pad_inches=0 )
+			savefig( name, bbox_inches='tight', pad_inches=0, transparent=makeTransparent )
 		#Zero matrix
 		DIR= zeros( (3,xyzSize[0],xyzSize[1],xyzSize[2]),dtype=float )
 		MEAN = zeros(shape=(3,xyzSize[d1],xyzSize[d2]),dtype=float)

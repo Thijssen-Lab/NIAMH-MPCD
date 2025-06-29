@@ -1,6 +1,6 @@
 {
     "comment":          "Make a rectangular domain",
-    "domain":           [100, 25, 25],
+    "domain":           [48, 16, 16],
     "comment":          "To have PBCs at walls of the cuboid geometry on top of a cylider within this geometry",
     "domainWalls":      1,
     "comment":          "Warmup to develop the flow",
@@ -13,7 +13,7 @@
     "species":
     [
         {
-            "comment":      "Fluid density of 20 within cylindrical volume can be calculated as 20 * pi * R^2 * L = 628319 or just use dens",
+            "comment":      "Fluid density of 20 within cylindrical volume can be calculated as 20 * pi * R^2 * L = 772078 or just use dens",
             "dens":          20
         }
     ],
@@ -30,11 +30,11 @@
     [
         {
             "comment":      "The position of the center of the base of the cylinder lying in the yz-plane",
-            "Q":            [0, 12.5, 12.5],
+            "Q":            [0, 8, 8],
             "aInv":         [0, 1, 1],
             "P":            [1, 2, 2, 2],
             "comment":      "Radius",
-            "R":            10,
+            "R":            7,
             "DN":           0,
             "comment":      "Since the walls are no-slip, include phantom particles",
             "phantom":      1,

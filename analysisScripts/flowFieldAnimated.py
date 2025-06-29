@@ -51,6 +51,8 @@ keepFrames = args.keepFrames
 savePDF = args.savePDF
 defectData = args.defectData
 
+makeTransparent = True # Transparent backgrounds make crappy videos, but look good on webpages
+
 ###########################################################
 ### Format and style
 ###########################################################
@@ -295,7 +297,7 @@ while infile:
       ## uncomment below for snapshots!
       plt.axis('off') 
       plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-      plt.savefig(name, bbox_inches='tight')
+      plt.savefig(name, bbox_inches='tight', transparent=makeTransparent)
       if savePDF: plt.savefig(namepdf, transparent=True, bbox_inches='tight')
 
     #Zero matrix

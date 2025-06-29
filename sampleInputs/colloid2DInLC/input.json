@@ -1,6 +1,6 @@
 {
     "domain":           [60, 60],
-    "simSteps":         1000,
+    "simSteps":         2000,
     "warmUp":           0,
     "comment":          "Nematic fluid using Andersen MPCD",
     "collOp":           2,
@@ -40,5 +40,6 @@
     "domainWalls":      1,
     "debugOut":         3,
     "dirSOut":          100,
+    "defectsOut":       100,
     "synopsisOut":      1
 }
