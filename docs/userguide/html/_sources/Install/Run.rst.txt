@@ -1,0 +1,95 @@
+.. _runGuide:
+
+Run guide
+##########################
+
+This section explains how to run NIAMH-MPCD from the command line.
+
+.. _ProgArgs:
+
+Program arguments
+*********************************
+NIAMH-MPCD is designed to be run from command line, and as such has an arguments interface.
+This section describes the arguments and the required input files for the two input modes.
+
+Command line arguments
+----------------------
+.. note:: 
+    All arguments are case sensitive.
+
+NIAMH-MPCD arguments are purely programmatic --- There is no GUI, or interacive mode, and all physics is specified by the input files.
+There are only two required arguments for NIAMH-MPCD
+
+* Input files, which can either use ``-i`` and point to a ``.json`` file for :ref:`JSONInput`, or use :ref:`LegacyInput`.
+* An output directory, which can be set using ``-o``.
+
+Optional arguments include
+
+* ``-h``: 
+    Prints a help message, explaining arguments and their usage, then exits.
+* ``-v``: 
+    Prints a legacy version message.
+
+Some examples of valid calls are
+
+.. code-block:: console
+
+    ./mpcd.out -i ./path/to/input.json -o ./path/to/output
+    ./mpcd.out -h 
+    ./mpcd.out -v
+
+
+.. _InputFiles:
+
+Input files
+*********************************
+NIAMH-MPCD sets its initialization, boundary conditions and all program variables through input files. 
+These files are read in at the start of the simulation, and are used to set up the simulation environment. 
+
+Tutorials with example input files can be found in the :ref:`Tutorials <tutorials>` section and a detailed description of all the input parameters is provided in the :ref:`Usage <usageChapter>` section. 
+
+.. _JSONInput:
+
+JSON input
+----------
+
+The recommended way to run NIAMH-MPCD is by using a JSON input file. 
+This is a single file that is .json formatted, and contains all of the physics information for the simulation.
+
+See the guide to :ref:`JSON input files <inputGuide>` for explanations on how to set up input files. Additionally, the :ref:`Usage <usageChapter>` section provides detailed explanations of the input parameters and :ref:`Tutorials <tutorials>` presents example input files for specific simulations.
+
+
+.. note:: 
+    If you want to use the molecular dynamics (MD) subsystem, you will need to also provide an MD .inp file along with a .json input file. 
+    See `the MD input guide <https://github.com/Shendruk-Lab/MPCD/blob/master/docs/MDguide.md>`_ for more information.
+
+.. _LegacyInput:
+
+Legacy input
+------------
+
+.. warning:: 
+    Legacy input files have been considered depreciated since the introduction of JSON input files in summer 2021.
+    They are still supported, but no features implemented since 2020 are supported in them.
+
+    Use of legacy input is strongly discouraged.
+
+To use legacy input files, you pass them to the ``mpcd.out`` using the legacy input argument ``-Li`` followed by the path to the input files.
+For example
+
+.. code-block:: console
+
+    ./mpcd.out -Li ./path/to/input/files/directory -o ./path/to/output
+
+Legacy input files are a series of 5 ``.inp`` files, which are read in order to set up the simulation. 
+These include
+
+* input.inp
+* bc.inp
+* printcom.inp
+* swimmer.inp
+* md.inp
+
+These files are read in order, and are all required for the simulation to run.
+Furthermore, these files expect parameters input in a particular order to function.
+Examples are provided within the ``sampleInputs`` folder of the NIAMH-MPCD repository, and an incomplete guide is provided `on Github <https://github.com/Shendruk-Lab/MPCD/blob/master/docs/legacyInputSummary.txt>`_.

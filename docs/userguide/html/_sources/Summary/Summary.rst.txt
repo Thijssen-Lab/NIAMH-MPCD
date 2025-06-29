@@ -1,0 +1,19 @@
+.. _execSummary:
+
+Summary
+#######
+
+*NoIsy Algorithm for Mesoscale Hydrodynamics* (**NIAMH-MPCD**; pronounced 'neev-M.P.C.D') is an implementation of *Multi-Particle Collision Dynamics* (MPCD)---a coarse-grained, particle-based, numerical technique for simulating thermally fluctuating hydrodynamics within fluids. 
+MPCD is ideal for situations involving moderate Peclet numbers, where diffusion and advection are of comparable significance. 
+
+This implementation of MPCD is written in *C* and requires no external libraries. 
+It is serial, because it is expected that numerical studies utilizing this code will invariably run many parallel instances to acquire statistical significance for stochastic processes. 
+The code is versatile, able to simulate complex boundary conditions, polymer suspensions, nematic fluids, colloids, active fluids and swimming bacteria. 
+
+.. include:: References.txt
+
+.. include:: Acknowledgements.txt
+
+.. error::
+
+   Add a license section.

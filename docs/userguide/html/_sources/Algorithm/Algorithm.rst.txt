@@ -1,0 +1,18 @@
+.. _backgroundChapter:
+
+Algorithm
+#########
+
+.. _introMPCD:
+
+What is MPCD ?
+**************
+
+.. include:: intro.txt
+
+.. _chapterUnits:
+
+Units
+*****
+
+.. include:: units.txt

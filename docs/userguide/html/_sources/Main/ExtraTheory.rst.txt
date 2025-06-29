@@ -1,0 +1,52 @@
+.. _Theory:
+
+Additional theoretical background
+#################################
+
+.. _chapterVisc:
+
+Transport coefficients
+**********************
+
+.. error:: 
+    TNS: This doesn't feel like the right place for this, but I don't know where else to put it. 
+    Likewise, no where do we give the Navier-Stokes eq, which we need to
+
+    Maybe the Navier-Stokes eq should be in the Algorithm section between ``Two-step algorithm`` and ``units``
+
+.. include:: Viscosity/viscosity.txt
+
+.. _chapter8:
+
+Nematic MPCD
+************
+
+.. include:: Nematic/Nematic.txt
+
+.. _chapter9:
+
+Viscek MPCD
+***********
+
+.. include:: VicsekMPCD/vicsek.txt
+
+.. _chapter10:
+
+Multiphase
+**********
+
+.. include:: Multiphase/multiphase.txt
+
+.. _chapter11:
+
+Molecular dynamics
+******************
+
+.. include:: MD/MD.txt
+
+.. _chapter12:
+
+Swimmers
+********
+
+.. include:: Swimmers/Swimmers.txt

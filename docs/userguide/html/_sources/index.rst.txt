@@ -1,0 +1,47 @@
+
+
+NIAMH-MPCD Userguide
+================================
+
+.. .. figure:: Logos/PNG/niamh-logo-text.png
+..    :alt: Logo
+..    :scale: 50%
+..    :align: center
+
+
+This is the userguide for the *NoIsy Algorithm for Mesoscale Hydrodynamics* (**NIAMH**). NIAMH is an open-source *Multi-Particle Collision Dynamics* (**MPCD**) code developed by the `Shendruk Lab <https://tnshendruk.com>`_ for simulating hydrodynamic interactions in complex fluids, such as colloidal suspensions, polymer solutions, and active matter. NIAMH-MPCD is designed to be flexible and extensible, allowing users to easily add new features and customize the code to their specific needs.
+
+This userguide provides installation guidance, tutorials and explanations of the algorithm.
+It is primarily intended for users of the code, which is available from `GitHub <https://github.com/Shendruk-Lab/MPCD>`_, along with the `developer guide <https://github.com/Shendruk-Lab/MPCD/blob/master/docs/DevGuide.md>`_.
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Contents:
+
+   Summary/Summary
+   Algorithm/Algorithm
+   Install/Install
+   Install/Run
+   Input/inputFiles
+   Tutorials/Tutorials
+   Usage/Usage
+   HardCoded/HardCoded
+   Inclusions/Inclusions
+   ExtraTheory/ExtraTheory
+   Outputs/Outputs
+   Analysis/Analysis
+   DeveloperGuide/DeveloperGuide
+   References/References
+
+.. caution::
+
+   This project is under continual active development.
+
+.. include:: Acknowledgements/Acknowledgements.txt
+
+.. Indices and tables
+.. ==================
+
+.. * :ref:`genindex`
+.. * :ref:`modindex`
+.. * :ref:`search`

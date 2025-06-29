@@ -1,0 +1,31 @@
+.. _inputGuide:
+
+Input guide
+###########
+
+This section introduces the NIAMH-MPCD input files.
+
+A guide to all input parameters is provided on Github `here <https://github.com/Shendruk-Lab/MPCD/blob/master/docs/InputGuide.md>`_.
+Furthermore, the :ref:`Usage <usageChapter>` section in this user guide give detailed explanations on how to interpret each parameter and the :ref:`Tutorials <tutorials>` give examples of how to set up input files for specific simulations.
+
+All input parameters must be listed in a **single JSON file**. Every parameter in the simulation can be fed in with a corresponding name/value pair. The name, or "**tag**", uniquely represents each parameter, is case sensitive, but can be given in **any order** within the json file. 
+
+There are some exceptions to this rule, namely :ref:`overrides <mainOverrides>`. Overrides do not correspond to simulation input parameters, but instead will override some other behaviour in a helpful manner. 
+
+If a tag is not specified, then that parameter will assume the default value. This means that not every parameter needs to be explicitly set in the input file.
+
+.. _inputJSONFiles:
+
+Input json files
+****************
+
+.. include:: inputJSON.txt
+
+
+.. _inputTable:
+
+Input Tables
+************
+
+.. include:: inputTable.txt
+

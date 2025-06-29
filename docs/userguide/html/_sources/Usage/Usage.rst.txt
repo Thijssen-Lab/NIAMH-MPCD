@@ -1,0 +1,81 @@
+.. _usageChapter:
+
+MPCD usage
+##########
+
+NIAMH-MPCD sets its particle properties, cell properties, initialization, boundary conditions, etc. through json input files (see the :ref:`Input guide<runGuide>` for command line arguments to provide input files to the code and the :ref:`Input json files <inputGuide>` section for details on the json format). 
+The :ref:`Tutorials<tutorials>` provide different example input files for specific simulations. 
+The following sections provide a detailed review of the different input parameters in these files.
+
+.. contents:: Usage
+   :depth: 2
+   :class: 'this-will-duplicate-information-and-it-is-still-useful-here'
+
+.. _chapterSimulations:
+
+System properties
+*****************
+
+.. include:: System/system.txt
+
+.. _chapterParticles:
+
+MPCD particle properties
+************************
+
+.. include:: Particles/particle.txt
+
+.. _chapterCell:
+
+MPCD cell properties
+********************
+
+.. include:: Cells/cell.txt
+
+.. _chapterCollOp:
+
+Collision operators
+*******************
+
+.. include:: CollisionOperators/CollisionOperators.txt
+
+.. include:: CollisionOperators/Nematic.txt
+
+.. include:: CollisionOperators/Active.txt
+
+.. include:: CollisionOperators/Multiphase.txt
+
+.. include:: CollisionOperators/ExternalFields.txt
+
+.. _chapterBC:
+
+Boundary conditions
+*******************
+
+.. include:: BC/bc.txt
+
+.. _extrasChapter:
+
+Extra options
+*************
+
+.. _thermostats:
+
+Thermostats
+===========
+
+.. include:: Thermostats/Thermostats.txt
+
+.. _zeroMom:
+
+Zeroing the net momentum
+========================
+
+.. include:: HIoff/zeroMom.txt
+
+.. _noHI:
+
+Turn-off hydrodynamics
+======================
+
+.. include:: HIoff/noHI.txt

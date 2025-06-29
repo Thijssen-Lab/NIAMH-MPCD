@@ -1,0 +1,27 @@
+.. _Inclusions:
+
+Inclusions and solutes
+######################
+
+MPCD is ideal for :ref:`moderate Péclet number<dimensionlessNumbers>`, where advection and diffusion are both significant. However, this implicitly implies that MPCD is ideal for embedded mesoscale particles or solutes that are being advected and diffusing. Indeed the very first applications of MPCD was to simulate polymer solutes suspended in an MPCD solvent [Malevanets2000]_. 
+
+.. _mobileBCs:
+
+Mobile boundary conditions
+**************************
+
+.. include:: BC/bc_mobile.txt
+
+.. _chapter11:
+
+Molecular dynamics
+******************
+
+.. include:: MD/MD.txt
+
+.. _Swimmers:
+
+TADPole swimmers
+****************
+
+.. include:: Swimmers/Swimmers.txt

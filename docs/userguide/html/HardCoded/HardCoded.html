@@ -1,0 +1,439 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Inclusions and solutes" href="../Inclusions/Inclusions.html" /><link rel="prev" title="MPCD usage" href="../Usage/Usage.html" />
+
+    <link rel="shortcut icon" href="../_static/niamh-favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2023.03.27 -->
+        <title>Hard-coded options - NIAMH-MPCD documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">NIAMH-MPCD  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/niamh-logo.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">NIAMH-MPCD  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Summary/Summary.html">Summary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Algorithm/Algorithm.html">Algorithm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Install/Install.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Install/Run.html">Run guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Input/inputFiles.html">Input guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials/Tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Usage/Usage.html">MPCD usage</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Hard-coded options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Inclusions/Inclusions.html">Inclusions and solutes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ExtraTheory/ExtraTheory.html">Additional theoretical background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Outputs/Outputs.html">Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Analysis/Analysis.html">Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DeveloperGuide/DeveloperGuide.html">Developer’s guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/References.html">Bibliography</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="hard-coded-options">
+<h1>Hard-coded options<a class="headerlink" href="#hard-coded-options" title="Permalink to this heading">#</a></h1>
+<p>While MPCD is almost entirely configureable from its input files, there are a several options that are hard coded.
+These hard-coded options are in the form of preprocessor defines (such as <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">define</span> <span class="pre">DBG</span></code>), which are read by the compiler at compile time and are within the <code class="docutils literal notranslate"><span class="pre">mpcd/headers/definitions.h</span></code> file.
+The majority of these options relate to the operation of the simulator, rather than the simulation of the physics, and are detailed on this page.</p>
+<p>There are two variants of these options, which are configured in different ways:</p>
+<ul class="simple">
+<li><p>Toggle options, which are either on or off, are set or unset by commenting them out. This is done by placing a <code class="docutils literal notranslate"><span class="pre">//</span></code> at the start of the line, which prevents it from being read by the compiler.</p></li>
+<li><p>Numbered options, which have either a decimal or integer number following their definition (ie, <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">define</span> <span class="pre">NN</span> <span class="pre">624</span></code>). These are set by changing the number to the desired value.</p></li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Changing these options will require the simulator to be re-compiled to enable them.</p>
+</div>
+<section id="random-number-generation">
+<span id="randnumgen"></span><h2>Random number generation<a class="headerlink" href="#random-number-generation" title="Permalink to this heading">#</a></h2>
+<p>MPCD uses two types of random number generators:</p>
+<ol class="arabic simple">
+<li><p>A Xoshiro128++ generator, derived from <a class="reference external" href="https://prng.di.unimi.it/xoshiro128plusplus.c">this example</a>.</p></li>
+<li><p>A Mersenne-Twister, taken from <a class="reference external" href="http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/CODES/mt19937ar.c">this source</a>.</p></li>
+</ol>
+<p>By default, the Xoroshiro generator is used, as it is significantly faster while still retaining a sufficiently large period for MPCD simulations.
+To enable the Mersenne-Twister method, uncomment the <code class="docutils literal notranslate"><span class="pre">//</span> <span class="pre">#</span> <span class="pre">define</span> <span class="pre">RNG_MERSENNE</span></code> line in <code class="docutils literal notranslate"><span class="pre">mpcd/headers/definitions.h</span></code>.</p>
+<section id="mersenne-twister-options">
+<h3>Mersenne-Twister options<a class="headerlink" href="#mersenne-twister-options" title="Permalink to this heading">#</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>These options only take effect if the Mersenne-Twister random number generator is enabled.</p>
+</div>
+<p>Of the two random number generator options, only the <a class="reference external" href="http://www.math.sci.hiroshima-u.ac.jp/m-mat/MT/emt.html">Mersenne-Twister</a> has configureable options.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>These options are not designed to be configurable by a typical user.
+We strongly discourage altering these options unless you are familiar with the Mersenne-Twister algorithm, and the implications of changing these options.</p>
+<p>This is especially true due to MPCD’s dependence on random number generation.</p>
+</div>
+<p>These options include:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">define</span> <span class="pre">NN</span> <span class="pre">624</span></code>:</dt><dd><p>The size of the state vector.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">define</span> <span class="pre">MM</span> <span class="pre">397</span></code>:</dt><dd><p>A middle element of the state vector.
+Used in the process of shifting the state vector between states, such that generating a new integer performs <code class="docutils literal notranslate"><span class="pre">NN-MM</span></code> iterations.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">define</span> <span class="pre">MATRIX_A</span> <span class="pre">0x9908b0dfUL</span></code>:</dt><dd><p>A constant vector used in the process of shifting the state vector.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">define</span> <span class="pre">UPPER_MASK</span> <span class="pre">0x80000000UL</span></code>:</dt><dd><p>The most significant w-r bits of the state vector.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">define</span> <span class="pre">LOWER_MASK</span> <span class="pre">0x7fffffffUL</span></code>:</dt><dd><p>The least significant r bits of the state vector.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+</section>
+<section id="debug-modes-verbosity">
+<span id="verbosity"></span><h2>Debug modes/verbosity<a class="headerlink" href="#debug-modes-verbosity" title="Permalink to this heading">#</a></h2>
+<p>All non-essential and non-error verbosity in MPCD is enabled by enabling “debug mode”.
+This occurs if the <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">define</span> <span class="pre">DBG</span></code> line is uncommented in <code class="docutils literal notranslate"><span class="pre">mpcd/headers/definitions.h</span></code>.
+For production-level simulation, such as on clusters, this should usually be disabled by commenting out that line prior to recompiling.
+However it can be helpful to keep it enabled when testing and or debugging simulation input scripts.</p>
+<p>If debug mode is enabled, then the verbosity level of the MPCD simulator is controlled by the integer assigned to the input <code class="docutils literal notranslate"><span class="pre">.json</span></code> option called <code class="docutils literal notranslate"><span class="pre">&quot;debugOut&quot;</span></code>.
+Common values for this are discussed in the <span class="xref std std-ref">Terminal output&lt;debugOut&gt;`</span> (and defined in <code class="docutils literal notranslate"><span class="pre">mpcd/headers/definitions.h</span></code>). Generally a given value will also output all messages of lower values. The following debug levels are less frequently used, and are most helpful when debugging the code itself:</p>
+<ol class="arabic simple" start="5">
+<li><p>Wait — Unused.</p></li>
+<li><p>Therm — Outputs thermostat related properties, such as system temperature. Only outputs at this verbosity level.</p></li>
+<li><p>Hist — Outputs whenever cell quantities are binned for output as a histogram.</p></li>
+<li><p>BC Count — Outputs number of particles that bounce between many BCs in a single timestep. Only outputs at this verbosity level.</p></li>
+<li><p>MPC BC — States operations occurred during MPC particle to BC interactions. Only outputs at this verbosity level.</p></li>
+<li><p>BC MPC — State operations occurred during BC to MPC particle interactions. Only outputs at this verbosity level.</p></li>
+<li><p>BC BC — States operations occurred during BC to BC interactions. Only outputs at this verbosity level.</p></li>
+<li><p>BC Maximal — States a summary of all BC collision related operations that occur during a particle-BC collision. Only outputs at this verbosity level.</p></li>
+<li><p>LC Collision — Outputs intermediate states that occur during the liquid crystal collision algorithm. Only outputs at this verbosity level.</p></li>
+<li><p>BC Ori — Outputs intermediate states that occur during the BC re-orientation algorithm. Only outputs at this verbosity level.</p></li>
+<li><p>Jeffery’s Torque — Outputs intermediate states that occur during the Jeffery’s torque algorithm. Only outputs at this verbosity level.</p></li>
+<li><p>Magnetic — Outputs intermediary debug information when magnetic fields are applied to liquid crystals and swimmers. Only outputs at this verbosity level.</p></li>
+<li><p>Binary — Unused.</p></li>
+<li><p>Swimmer — Outputs intermediary debug information when swimmers are present. Only outputs at this verbosity level.</p></li>
+<li><p>Run Tumble — Outputs intermediary debug information when swimmers perform the run-tumble algorithm. Only outputs at this verbosity level.</p></li>
+<li><p>Escape — Legacy: Used to be used for debugging particle escapes from the domain. Currently identical to LC Collision.</p></li>
+<li><p>Swimmer Details — Outputs high level detail of all intermediary debug information when swimmers are present. Only outputs at this verbosity level.</p></li>
+<li><p>Swimmer Torque — Outputs intermediary debug information on swimmer torques. Only outputs at this verbosity level.</p></li>
+<li><p>Incompressibility — Outputs intermediary debug information for the incompressibility algorithm. Only outputs at this verbosity level.</p></li>
+</ol>
+</section>
+<section id="floating-point-error-handling">
+<h2>Floating-point error handling<a class="headerlink" href="#floating-point-error-handling" title="Permalink to this heading">#</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This feature only works on Linux (and WSL) systems. It does not function on Mac OS.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For normal operation, this should be kept disabled.</p>
+</div>
+<p>Primarily for debugging purposes, it is possible to set MPCD to halt execution upon receipt of a <code class="docutils literal notranslate"><span class="pre">SIGFPE</span></code> hardware signal.
+This hardware signal is thrown by the CPU when a floating-point error occurs, such as a division by zero or an overflow.
+Typically, such errors will cause the program to be flooded with <code class="docutils literal notranslate"><span class="pre">NaN</span></code> values, which will either cause the simulation to crash, or propagate through the system to give garbled output.</p>
+<p>To enable this feature, uncomment the <code class="docutils literal notranslate"><span class="pre">//</span> <span class="pre">#define</span> <span class="pre">FPE</span></code> line in <code class="docutils literal notranslate"><span class="pre">mpcd/headers/definitions.h</span></code>.
+This is most useful when running through a debugger, such as <code class="docutils literal notranslate"><span class="pre">gdb</span></code>, to identify the source of the error.</p>
+</section>
+<section id="file-flush">
+<h2>File flush<a class="headerlink" href="#file-flush" title="Permalink to this heading">#</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>There are few drawbacks to enabling this, and it is recommended to keep this on.
+There is a slight slowdown associated with writting to file before the buffer is full.</p>
+</div>
+<p>By default, codes written in the <em>C</em> programming language do not immediatly write to terminal or file.
+Instead, they write to a buffer controlled by the operating system, which will periodically flush the buffer.
+It is possible to force the operating system to flush the buffer immediatly, which in MPCD is controlled by the <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">define</span> <span class="pre">FFLSH</span></code> line in <code class="docutils literal notranslate"><span class="pre">mpcd/headers/definitions.h</span></code>.
+To disable this option, comment out the definition.</p>
+</section>
+<section id="maximum-number-of-species">
+<span id="maxspeci"></span><h2>Maximum number of species<a class="headerlink" href="#maximum-number-of-species" title="Permalink to this heading">#</a></h2>
+<p>NIAMH-MPCD supports multiple species of particles, which can be used to simulate different types of particles in the same simulation. The total number of allowed species is hard-coded in the simulator, for memory reasons. The maximum is defined by the <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">define</span> <span class="pre">MAXSPECI</span></code> line in <code class="docutils literal notranslate"><span class="pre">mpcd/headers/definitions.h</span></code>.</p>
+<blockquote>
+<div><div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>define<span class="w"> </span>MAXSPECI<span class="w"> </span><span class="m">10</span>
+</pre></div>
+</div>
+</div></blockquote>
+</section>
+<section id="maximum-number-of-bcs">
+<span id="maxbc"></span><h2>Maximum number of BCs<a class="headerlink" href="#maximum-number-of-bcs" title="Permalink to this heading">#</a></h2>
+<p>Typical NIAMH-MPCD simulations require multiple boundary conditions. The total number of allowed BCs is hard-coded in the simulator, for memory reasons. The maximum is defined by the <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">define</span> <span class="pre">MAXSPECI</span></code> line in <code class="docutils literal notranslate"><span class="pre">mpcd/headers/definitions.h</span></code>.</p>
+<blockquote>
+<div><div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>define<span class="w"> </span>MAXBC<span class="w"> </span><span class="m">50</span>
+</pre></div>
+</div>
+</div></blockquote>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../Inclusions/Inclusions.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Inclusions and solutes</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../Usage/Usage.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">MPCD usage</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2023, Shendruk Lab
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Hard-coded options</a><ul>
+<li><a class="reference internal" href="#random-number-generation">Random number generation</a><ul>
+<li><a class="reference internal" href="#mersenne-twister-options">Mersenne-Twister options</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#debug-modes-verbosity">Debug modes/verbosity</a></li>
+<li><a class="reference internal" href="#floating-point-error-handling">Floating-point error handling</a></li>
+<li><a class="reference internal" href="#file-flush">File flush</a></li>
+<li><a class="reference internal" href="#maximum-number-of-species">Maximum number of species</a></li>
+<li><a class="reference internal" href="#maximum-number-of-bcs">Maximum number of BCs</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/scripts/furo.js"></script>
+    </body>
+</html>
