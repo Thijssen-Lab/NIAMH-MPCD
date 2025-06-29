@@ -1,16 +1,13 @@
-# Multi-Particle Collision Dynamics
-This is the Multi-Particle Collision Dynamics (MPCD) code developed by the [Shendruk Lab](https://tnshendruk.com). 
-It is primarily intended for people that want to extend or just understand the C core of MPCD.
+# NIAMH-MPCD
+This is the NoIsy Algorithm for Mesoscale Hydrodynamics Multi-Particle Collision Dynamics (NIAMH-MPCD) code developed by the [Shendruk Lab](https://tnshendruk.com). The primary distribution for the simulator is available at [Shendruk-Lab/NIAMH-MPCD](https://github.com/Shendruk-Lab/NIAMH-MPCD).
 
-The primary distribution for the simulator is available at [Shendruk-Lab/MPCD](https://github.com/Shendruk-Lab/MPCD).
-
-If you just have obtained the code, and you are looking for documentation on how to use it, you might first want to have a look at the User's Guide (under construction).
+If you just have obtained the code, and you are looking for documentation on how to use it, you might first want to have a look at the User's Guide at [docs/userguide/html](https://github.com/Shendruk-Lab/NIAMH-MPCD/docs/userguide/html).
 
 ## Useful Links
 - [Shendruk Lab website](https://tnshendruk.com)
-- [Main MPCD repository](https://github.com/Shendruk-Lab/MPCD)
-- Code documentation (under construction)
-- User's guide (under construction)
+- [Main NAIMH-MPCD repository](https://github.com/Shendruk-Lab/NIAMH-MPCD)
+- [Code documentation](https://github.com/Shendruk-Lab/NIAMH-MPCD/docs/DevGuide.md)
+- [User's guide](https://github.com/Shendruk-Lab/NIAMH-MPCD/docs/userguide/html)
 
 ## Make
 After downloading, build the code by running `make` in the main directory. 
