@@ -6,8 +6,7 @@ If you just have obtained the code, and you are looking for documentation on how
 ## Useful Links
 - [Shendruk Lab website](https://tnshendruk.com)
 - [Main NAIMH-MPCD repository](https://github.com/Shendruk-Lab/NIAMH-MPCD)
-- [Code documentation](https://github.com/Shendruk-Lab/NIAMH-MPCD/docs/DevGuide.md)
-- [User's guide](https://github.com/Shendruk-Lab/NIAMH-MPCD/docs/userguide/html)
+- [Userguide/Documentation](https://github.com/Shendruk-Lab/NIAMH-MPCD/blob/master/docs/README.md)
 
 ## Make
 After downloading, build the code by running `make` in the main directory. 
