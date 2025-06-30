@@ -606,6 +606,8 @@ elif(fieldType=="vor"):
   name='%s/swimmerVorField%s'%(dataPath,suffix)
 elif(fieldType=="nem"):
   name='%s/swimmerDirField%s'%(dataPath,suffix)
+elif(fieldType=="none"):
+  name='%s/swimmer%s'%(dataPath,suffix)
 myCommand="rm %s"%name
 call(myCommand,shell=True)
 myCommand = "ffmpeg -f image2 -r %d"%(framerate)+" -i frame%04d.png"+" -vcodec %s -b %dk -r %d %s"%(codec,bitrate,framerate,name)
