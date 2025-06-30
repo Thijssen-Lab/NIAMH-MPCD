@@ -182,11 +182,17 @@ if(fieldType=="nem"):
   dirL=0.25*sqrt(qx*qx+qy*qy)
 
 # Setup figure
-fig1, axes = plt.subplots(nrows=1, ncols=1)
+width=8
+height=6
 if myAspect == 'auto':
-    shrink_factor = 1.0
+	shrink_factor = 1.0
 else:
-    shrink_factor = float(xyzSize[d2])/float(xyzSize[d1])
+	shrink_factor = float(xyzSize[d2])/float(xyzSize[d1])
+	if xyzSize[d1] > xyzSize[d2]:
+		height*= shrink_factor
+	else:
+		width*= shrink_factor
+fig1, ax = plt.subplots(figsize=(width, height))
 
 ###########################################################
 ### defect handling if needed
