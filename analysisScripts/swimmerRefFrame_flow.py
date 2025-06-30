@@ -1,15 +1,22 @@
-###########################################################
-### Animates 2D fields in swimmers' reference frame
-###########################################################
+"""
+	NIAMH-MPCD
+	Animates 2D fields in swimmers' reference frame
 
-###########################################################
-### Imports
-###########################################################
+	Uses shendrukGroupStyle for formatting (from https://github.com/Shendruk-Lab/MPCDDefectLoader)
+	Must install it or remove calls to shendrukGroupFormat
+
+	Created by Tyler Shendruk and Francois de Tournemire
+"""
+
 from pylab import *
 from subprocess import call
 import os
 import json
 import argparse
+
+# Use our custom style and colours
+plt.style.use('shendrukGroupStyle')
+import shendrukGroupFormat as ed
 
 ###########################################################
 ### Set up argparse
@@ -63,9 +70,6 @@ flowtag = args.flowtag
 ###########################################################
 ### Style/formating stuff
 ###########################################################
-# Use our custom style and colours
-plt.style.use('shendrukGroupStyle')
-import shendrukGroupFormat as ed
 # Colours
 swimmerMap=ed.viridis
 myMap = ed.truncate_colormap(ed.viridis, minval=0.1, maxval=0.7)

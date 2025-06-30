@@ -1,5 +1,9 @@
 """
-    Fluid particle and mobile colloid trajectory rendering script.
+    NIAMH-MPCD
+    Fluid particle and mobile colloid trajectory rendering script
+
+	Uses shendrukGroupStyle for formatting (from https://github.com/Shendruk-Lab/MPCDDefectLoader)
+	Must install it or remove calls to shendrukGroupFormat
 
     Originally from Tyler N. Shendruk
 """
@@ -11,6 +15,10 @@ import os
 import json
 import argparse
 from matplotlib import patches
+
+# Use our custom style and colours
+plt.style.use('shendrukGroupStyle')
+import shendrukGroupFormat as ed
 
 ###########################################################
 ### Set up argsparse
@@ -42,9 +50,6 @@ savePDF = args.savePDF
 ###########################################################
 ### Format and style
 ###########################################################
-# Use our custom style and colours
-plt.style.use('shendrukGroupStyle')
-import shendrukGroupFormat as ed
 # Colour map to use
 myMap=ed.plasma
 # Adjust line width

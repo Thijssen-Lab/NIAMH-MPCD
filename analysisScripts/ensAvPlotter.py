@@ -1,7 +1,11 @@
 """
-	Ensemble-average rendering script.
-	To plot ensemble-averages in time.
+	NIAMH-MPCD 
+	Ensemble-average rendering script
+	To plot ensemble-averages in time
 
+	Uses shendrukGroupStyle for formatting (from https://github.com/Shendruk-Lab/MPCDDefectLoader)
+	Must install it or remove calls to shendrukGroupFormat
+	
 	Created by Tyler Shendruk
 """
 
@@ -10,6 +14,10 @@ from subprocess import call
 from scipy import integrate
 import os
 import argparse
+
+# Use our custom style and colours
+plt.style.use('shendrukGroupStyle')
+import shendrukGroupFormat as ed
 
 ###########################################################
 ### Set up argsparse
@@ -22,13 +30,6 @@ parser.add_argument('-c','--columns', nargs='+', type=str,
 					help="data --- What columns would you like to plot? 0 will be x-axis, 1 will be y-axis, etc. If you want to plot multiple columns, use -c 0 1 2 ...",
 					default=['1'])
 args = parser.parse_args()
-
-###########################################################
-### Format and style
-###########################################################
-# Use our custom style and colours
-plt.style.use('shendrukGroupStyle')
-import shendrukGroupFormat as ed
 
 ###########################################################
 ### Initialize

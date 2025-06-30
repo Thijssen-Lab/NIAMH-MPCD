@@ -1,6 +1,10 @@
 """
-	Probability density rendering script.
-	To average histograms of vector values since histogram range fluctuates.
+	NIAMH-MPCD
+	Probability density rendering script
+	To average histograms of vector values since histogram range fluctuates
+
+	Uses shendrukGroupStyle for formatting (from https://github.com/Shendruk-Lab/MPCDDefectLoader)
+	Must install it or remove calls to shendrukGroupFormat
 
 	Created by Tyler Shendruk
 """
@@ -10,6 +14,10 @@ from subprocess import call
 from scipy import integrate
 import os
 import argparse
+
+# Use our custom style and colours
+plt.style.use('shendrukGroupStyle')
+import shendrukGroupFormat as ed
 
 ###########################################################
 ### Set up argparse
@@ -65,9 +73,6 @@ avOutName=dataName.split(".dat")[0]+"_av"
 ###########################################################
 ### Format and style
 ###########################################################
-# Use our custom style and colours
-plt.style.use('shendrukGroupStyle')
-import shendrukGroupFormat as ed
 #Animation stuff
 bitrate=5000
 framerate=12		#Number of frames per second in the output video

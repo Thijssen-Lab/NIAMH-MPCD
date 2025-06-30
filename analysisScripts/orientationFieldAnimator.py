@@ -1,6 +1,10 @@
 """
-	Orientation field (director) rendering script.
+	NIAMH-MPCD
+	Orientation field (director) rendering script
 	Uses defect handler (from https://github.com/Shendruk-Lab/MPCDDefectLoader)
+
+	Uses shendrukGroupStyle for formatting (from https://github.com/Shendruk-Lab/MPCDDefectLoader)
+	Must install it or remove calls to shendrukGroupFormat
 
 	Originally from Tyler N. Shendruk
 	Modified by Timofey Kozhukhov
@@ -14,6 +18,10 @@ import json
 import argparse
 
 from defectHandler import getDefectData
+
+# Use our custom style and colours
+plt.style.use('shendrukGroupStyle')
+import shendrukGroupFormat as ed
 
 ###########################################################
 ### Set up argsparse
@@ -59,9 +67,6 @@ makeTransparent = True # Transparent backgrounds make crappy videos, but look go
 ###########################################################
 ### Format and style
 ###########################################################
-# Use our custom style and colours
-plt.style.use('shendrukGroupStyle')
-import shendrukGroupFormat as ed
 # Colour map to use
 myMap=ed.plasma
 # Adjust line width
