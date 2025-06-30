@@ -25,3 +25,6 @@ NIAMH-MPCD is documented in a number of ways:
   - To create the developers guide use the docs-phony in the make: `make docs`
   - View the developer's guide in `docs/doxyout/html/index.html`
   - Or generate a pdf by `cd docs/doxyout/latex` and `make` to create refman.pdf, which is the reference manual. 
+
+## Logos
+- Please use the NIAMH-MPCD logos (in `docs/logos`) to acknowledge use of the package in talks, posters, etc (in addition to citing appropriate papers in publications).
