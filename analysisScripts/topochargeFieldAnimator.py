@@ -1,3 +1,13 @@
+"""
+	NIAMH-MPCD
+	Topological charge rendering script
+
+	Uses shendrukGroupStyle for formatting (from https://github.com/Shendruk-Lab/MPCDDefectLoader)
+	Must install it or remove calls to shendrukGroupFormat
+
+	Originally from Tyler N. Shendruk
+"""
+
 from pylab import *
 from numpy import ma
 from subprocess import call
@@ -6,6 +16,10 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import os
 import json
 import argparse
+
+# Use our custom style and colours
+plt.style.use('shendrukGroupStyle')
+import shendrukGroupFormat as ed
 
 ###########################################################
 ### Set up argparse
@@ -49,9 +63,6 @@ makeTransparent = 1 # Transparent backgrounds make crappy videos, but look good 
 ###########################################################
 ### Format and style
 ###########################################################
-# Use our custom style and colours
-plt.style.use('shendrukGroupStyle')
-import shendrukGroupFormat as ed
 # Colour map to use
 myMap=ed.plasma
 # Adjust line width

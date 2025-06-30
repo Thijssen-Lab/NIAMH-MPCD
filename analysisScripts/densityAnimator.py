@@ -1,5 +1,9 @@
 """
-	Density field rendering script.
+	NIAMH-MPCD
+	Density field rendering script
+
+	Uses shendrukGroupStyle for formatting (from https://github.com/Shendruk-Lab/MPCDDefectLoader)
+	Must install it or remove calls to shendrukGroupFormat
 
 	Created by Timofey Kozhukhov
 """
@@ -11,6 +15,11 @@ import json
 import argparse
 
 from defectHandler import getDefectData
+
+# Use our custom style and colours
+plt.style.use('shendrukGroupStyle')
+import shendrukGroupFormat as ed
+
 
 ###########################################################
 ### Set up argsparse
@@ -52,9 +61,6 @@ makeTransparent = True # Transparent backgrounds make crappy videos, but look go
 ###########################################################
 ### Format and style
 ###########################################################
-# Use our custom style and colours
-plt.style.use('shendrukGroupStyle')
-import shendrukGroupFormat as ed
 # Colour map to use # TODO: adjust this!
 myMap=ed.plasma # colour map used when species=1
 pop0Col = np.array([0, 1, 0]) # colour to show when ONLY pop0 is present (RGB)

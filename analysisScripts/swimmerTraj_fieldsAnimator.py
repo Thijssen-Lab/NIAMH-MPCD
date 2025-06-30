@@ -1,18 +1,15 @@
 """
+  NIAMH-MPCD
 	Animates swimmers and 2D fields, averaging over user defined direction
 	Uses defect handler (from https://github.com/Shendruk-Lab/MPCDDefectLoader)
+
+	Uses shendrukGroupStyle for formatting (from https://github.com/Shendruk-Lab/MPCDDefectLoader)
+	Must install it or remove calls to shendrukGroupFormat
 
 	Originally from Tyler N. Shendruk
 	Modified by Francois de Tournemire
 """
 
-###########################################################
-### 
-###########################################################
-
-###########################################################
-### Imports
-###########################################################
 from pylab import *
 from subprocess import call
 import os
@@ -20,6 +17,10 @@ import json
 import argparse
 
 from defectHandler import getDefectData
+
+# Use our custom style and colours
+plt.style.use('shendrukGroupStyle')
+import shendrukGroupFormat as ed
 
 ###########################################################
 ### Set up argparse
@@ -72,9 +73,6 @@ makeTransparent = True # Transparent backgrounds make crappy videos, but look go
 ###########################################################
 ### Style/formating stuff
 ###########################################################
-# Use our custom style and colours
-plt.style.use('shendrukGroupStyle')
-import shendrukGroupFormat as ed
 # Colours
 swimmerMap=ed.viridis
 if(fieldType=="vel"):

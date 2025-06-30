@@ -1,8 +1,8 @@
 ///
 /// @file
-/// @brief Helper code for parsing JSON files used in MPCD inputs.
+/// @brief Helper code for parsing JSON files used in NIAMH-MPCD inputs.
 ///
-/// Variety of helper methods set up to aid in parsing JSON files for MPCD. Based around the cJson library released by
+/// Variety of helper methods set up to aid in parsing JSON files for NIAMH-MPCD. Based around the cJson library released by
 /// Dave Gramble, released under MIT license. Broadly speaking, these methods fall under one of the following
 /// categories:
 /// - Methods for handling the linked list containing all JSON tags/names recognised by the code, used for error

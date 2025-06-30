@@ -1,7 +1,7 @@
 ///
 /// @file
 ///
-/// @brief Implementation of dumbbell swimmers.
+/// @brief Implementation of TADPole (Two-length Active Dumbbell diPole) swimmers.
 ///
 /// The number, type, size, and other properties of the swimmers are read from the input file. They are initialised,
 /// then forces are taken into account.

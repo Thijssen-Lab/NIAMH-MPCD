@@ -1,6 +1,6 @@
 ///
 /// @file
-/// @brief Functions needed to include liquid crystal in the MPCD code (either as solvent particles, or individual MD rod-like particles).
+/// @brief Functions needed to include liquid crystal in the NIAMH-MPCD code (either as solvent particles, or individual MD rod-like particles).
 ///
 ///
 
@@ -495,9 +495,9 @@ void LCcollision( cell *CL,spec *SP,double KBT,int zeroMFPot,double dt,double SG
 		MFPOT_scaled=avMFPOT*0.5*(double)DIM;
 	}
 
-	//Generate random orientations for MPC particles
+	//Generate random orientations for MPCD particles
 	if( CL->POPSRD>1 ) {
-		//Collision of MPC particles
+		//Collision of MPCD particles
 		tmpc = CL->pp;
 		while( tmpc!=NULL ) {
 			id = tmpc->SPID;
@@ -923,15 +923,15 @@ void magTorque_CL( cell *CL,spec *SP,double dt,double MAG[] ) {
 	crossprod( DIR,MAG,mT );
 	for( i=0; i<_3D; i++ ) mT[i] *= nH;		//Will need to multiply chia
 
-	//Rotate each MPC particles due to the torque on the whole cell
+	//Rotate each MPCD particles due to the torque on the whole cell
 	if( CL->POPSRD>0 ) {
-		//Collision of MPC particles
+		//Collision of MPCD particles
 		tmpc = CL->pp;
 		while( tmpc!=NULL ) {
 			id = tmpc->SPID;
 			chia = (SP+id)->CHIA;
 			rfc = (SP+id)->RFC;
-			//Update torque on MPC particles
+			//Update torque on MPCD particles
 			//Torque must always be 3D (needs to be multiplied by particle's susceptibility)
 			// for( i=0; i<_3D; i++ ) tmpc->T[i]+=chia*mT[i];		//it's not required!cuz it is balanced!
 			//Calculate change in orientation due to magnetic torque
@@ -1124,7 +1124,7 @@ void addToTensOrderParamVel( particleMPC *pMPC,double **S ) {
 ///
 void tensOrderParam( cell *CL,double **S,int LC ) {
 	int i,j;
-	particleMPC *pMPC;	//Temporary pointer to MPC particles
+	particleMPC *pMPC;	//Temporary pointer to MPCD particles
 	double POPinv,fDIM,c;
 
 	fDIM = (double) DIM;
@@ -1163,7 +1163,7 @@ void tensOrderParam( cell *CL,double **S,int LC ) {
 void tensOrderParamNNN( cell ***CL,double **S,int LC,int a,int b,int c ) {
 	int i,j,x,y,z;
 	int POP;
-	particleMPC *pMPC;	//Temporary pointer to MPC particles
+	particleMPC *pMPC;	//Temporary pointer to MPCD particles
 	double POPinv,fDIM,cnst;
 
 	//Initialize
@@ -1213,7 +1213,7 @@ double binderCumulant( cell ***CL,int L,int LC ) {
 	// double avS;
 	double avS2,avS4;		//Average of the square and power 4 of order parameter and the Binder cumulant
 	double **S,eigval[_3D];			//Order parameter tensor and it's eigenvalues
-	particleMPC *pMPC;			//Temporary pointer to MPC particles
+	particleMPC *pMPC;			//Temporary pointer to MPCD particles
 	double POPinv,fDIM,invDconst,invBinVol;
 	int binPOP,cL;
 
@@ -1502,7 +1502,7 @@ void torqueLCBC( bc *WALL,double n[], double U0[], double torqueMPC[],double rod
 /// MPC collision that conserves angular momentum (uses andersen thermostat), and returns the CoM velocity and the local temperature of the cell.
 /// See https://pubs.rsc.org/en/content/articlelanding/2015/sm/c5sm00839e
 /// Notice that all of this must be entirely in 3D even if system is 2D since angular momentum is a cross product.
-/// It takes into account the total mass, velocity and angular momentum of MPC particles, MD particles and swimmers.
+/// It takes into account the total mass, velocity and angular momentum of MPCD particles, MD particles and swimmers.
 ///
 /// @param CL Class containing cell data (pointed to local cell considered).
 /// @param SP List of species.
@@ -1549,7 +1549,7 @@ void andersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double dt,doubl
 	/* ******* Generate random velocities ******* */
 	/* ****************************************** */
 	i=0;
-	//MPC particles
+	//MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -1615,7 +1615,7 @@ void andersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double dt,doubl
 			Lnm[i] = 0.;
 		}
 		i=0;
-		//MPC particles
+		//MPCD particles
 		tmpc = CL->pp;
 		while( tmpc!=NULL ) {
 			//First account for the change in angular momentum due to the effect of the linear momenum collision
@@ -1692,7 +1692,7 @@ void andersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double dt,doubl
 	/* *************** Collision **************** */
 	/* ****************************************** */
 	i=0;
-	//MPC particles
+	//MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -1732,7 +1732,7 @@ void andersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double dt,doubl
 /// MPC collision that conserves angular momentum (uses andersen thermostat), and returns the CoM velocity and the local temperature of the cell.
 /// See https://pubs.rsc.org/en/content/articlelanding/2015/sm/c5sm00839e.
 /// Notice that all of this must be entirely in 3D even if system is 2D since angular momentum is a cross product.
-/// It takes into account the total mass, velocity and angular momentum of MPC particles, MD particles and swimmers.
+/// It takes into account the total mass, velocity and angular momentum of MPCD particles, MD particles and swimmers.
 /// It also splits the cell in two along the intersection of the centre of mass and perpendicular to the local director.
 /// It then adds a velocity component to the particles in opposite direction on either side of this plane to mimic a dipole.
 ///
@@ -1844,7 +1844,7 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 	/* ******* Generate random velocities ******* */
 	/* ****************************************** */
 	i=0;
-	//MPC particles
+	//MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -1929,7 +1929,7 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 			Lnm[i] = 0.;
 		}
 		i=0;
-		//MPC particles
+		//MPCD particles
 		tmpc = CL->pp;
 		while( tmpc!=NULL ) {
 			//First account for the change in angular momentum due to the effect of the linear momenum collision
@@ -2007,7 +2007,7 @@ void dipoleAndersenROT_LC( cell *CL,spec *SP,specSwimmer SS,double KBT,double RE
 	/* *************** Collision **************** */
 	/* ****************************************** */
 	i=0;
-	//MPC particles
+	//MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;

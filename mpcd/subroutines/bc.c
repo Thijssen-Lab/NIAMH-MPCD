@@ -1,9 +1,9 @@
 ///
 /// @file
 ///
-/// @brief This file applies boundary conditions (bc) to mpcd particles.
+/// @brief This file applies boundary conditions (bc) to MPCD particles.
 ///
-/// This file applies boundary conditions (bc) to mpcd particles crossing through a boundary.
+/// This file applies boundary conditions (bc) to MPCD particles crossing through a boundary.
 ///
 
 # include<stdio.h>
@@ -46,7 +46,7 @@
 ///
 /// @param WALL The boundary.
 /// @note For this routine to work as intended, then the WALL parameter must have A, Q, ROTSYMM, ABS, P, and B set!
-/// @param P The individual mpcd particle.
+/// @param P The individual MPCD particle.
 /// @see calcW_PLANE()
 /// @see calcW_BC()
 /// @see calcWavyW()
@@ -186,7 +186,7 @@ double calcW_BC( bc movingWall,bc stillWall,int flagCentre ) {
 /// This method interpolates the path taken by the particle and finds the
 /// time when the particle crossed the boundary.
 ///
-/// @param p The individual mpcd particle.
+/// @param p The individual MPCD particle.
 /// @param WALL The boundary.
 /// @param tc_pos Return pointer for candidate 1 for cross-time.
 /// @param tc_neg Return pointer for candidate 2 for cross-time.
@@ -238,7 +238,7 @@ void crosstime( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,double t_st
 /// This routine calculates the time after the particle crosses the boundary (tstep - particle crosstime) by
 /// interpolating back the path taken by the particle (time = distance / negative velocity).
 ///
-/// @param p The individual mpcd particle.
+/// @param p The individual MPCD particle.
 /// @param WALL The boundary.
 /// @param tc_pos Return pointer for candidate 1 for reverse cross-time.
 /// @param tc_neg Return pointer for candidate 2 for reverse cross-time.
@@ -299,7 +299,7 @@ void crosstimeReverse( particleMPC p,bc WALL,double *tc_pos, double *tc_neg,doub
 /// - \f$<0\f$ inside the boundary.
 ///
 /// @param WALL The boundary.
-/// @param P The individual mpcd particle.
+/// @param P The individual MPCD particle.
 /// @see calcW()
 /// @return Returns the inside-boundary check parameter.
 ///
@@ -320,7 +320,7 @@ double calcW_PLANE( bc WALL,particleMPC P ) {
 ///
 /// Applies the secant root finding algorithm to calculate the particle crosstime.
 ///
-/// @param p The individual mpcd particle.
+/// @param p The individual MPCD particle.
 /// @param WALL The boundary.
 /// @param t_step The time step interval.
 /// @see crosstimeReverse()
@@ -888,7 +888,7 @@ double chooseT( double tstep,double tp,double tn,int p,int *flag ) {
 /// within the boundary and its corresponding W.
 ///
 /// @param WALL The boundary.
-/// @param pp Pointer to the first element in the mpcd particle array.
+/// @param pp Pointer to the first element in the MPCD particle array.
 /// @param chosenW Return pointer to the `W` value (flag) of a particle identified 
 ///				   as being within the boundary. If no particle is within a boundary,
 ///                it is returned as 1.0.
@@ -1242,7 +1242,7 @@ void BC_MPCcollision(bc WALL[], int BCcurrent, particleMPC *pp, spec *pSP, doubl
 ///
 /// @param WALL The boundary.
 /// @param currentP Index for the current particle.
-/// @param pp The individual mpcd particle.
+/// @param pp The individual MPCD particle.
 /// @param t_minColl The time for the paricle to go from current position to the collision point (the boundary).
 /// @param chosenW The W value (flag).
 /// @param chosenBC Index for the boundary.
@@ -1720,7 +1720,7 @@ double *normalNon4foldSymm( double *n,bc WALL,double *point,int dimension ) {
 ///
 /// Applies a hardcoded periodic boundary condition shift to a particle (along a particular axis).y
 ///
-/// @param pp Return pointer to the individual mpcd particle.
+/// @param pp Return pointer to the individual MPCD particle.
 /// @param axis Cartesian axis.
 /// @note Not currently used but might be useful for testing.
 ///
@@ -1738,7 +1738,7 @@ void rudimentaryPBC( particleMPC *pp,int axis ) {
 /// Applies a hardcoded bounce-back wall transformation to the particle's velocity (along a particular axis).
 /// This models (impermeable, no-slip walls).
 ///
-/// @param pp Return pointer to the individual mpcd particle being transformed.
+/// @param pp Return pointer to the individual MPCD particle being transformed.
 /// @param axis Cartesian axis.
 /// @note Not currently used but might be useful for testing.
 ///
@@ -1762,7 +1762,7 @@ void rudimentaryBBBC( particleMPC *pp,int axis ) {
 ///
 /// Applies a hard-coded periodic boundary condition shift to a particle (along all axes).
 ///
-/// @param pp Return pointer to ghe individual mpcd particle being shifted.
+/// @param pp Return pointer to ghe individual MPCD particle being shifted.
 /// @note Not currently used but might be useful for testing.
 ///
 void rudimentaryPBC_box( particleMPC *pp ) {
@@ -1776,7 +1776,7 @@ void rudimentaryPBC_box( particleMPC *pp ) {
 ///
 /// Applies a hard-coded bounce-back wall transformation to the particle's velocity (along all axes).
 ///
-/// @param pp Return pointer to the individual mpcd particle whose velocity is being transformed.
+/// @param pp Return pointer to the individual MPCD particle whose velocity is being transformed.
 /// @note Not currently used but might be useful for testing.
 ///
 void rudimentaryBBBC_box( particleMPC *pp ) {
@@ -1790,7 +1790,7 @@ void rudimentaryBBBC_box( particleMPC *pp ) {
 ///
 /// Applies a hard-coded bounce-back (along x) and periodic boundary condition tranformations (along y and z (if 3D)) for a particle.
 ///
-/// @param pp Return pointer to the individual mpcd particle being modified.
+/// @param pp Return pointer to the individual MPCD particle being modified.
 /// @note Not currently used but might be useful for testing.
 ///
 void rudimentaryChannel_x( particleMPC *pp ) {
@@ -1804,7 +1804,7 @@ void rudimentaryChannel_x( particleMPC *pp ) {
 ///
 /// Applies a hard-coded bounce-back (along y) and periodic boundary condition tranformations (along x and z (if 3D)) for a particle.
 ///
-/// @param pp Return pointer to the individual mpcd particle being modified.
+/// @param pp Return pointer to the individual MPCD particle being modified.
 /// @note Not currently used but might be useful for testing.
 ///
 void rudimentaryChannel_y( particleMPC *pp ) {
@@ -1819,7 +1819,7 @@ void rudimentaryChannel_y( particleMPC *pp ) {
 ///
 /// Applies a hard-coded bounce-back (along z (if 3D)) and periodic boundary condition tranformations (along x and y) for a particle.
 ///
-/// @param pp Return pointer to the individual mpcd particle being modified.
+/// @param pp Return pointer to the individual MPCD particle being modified.
 /// @note Not currently used but might be useful for testing.
 ///
 void rudimentaryChannel_z( particleMPC *pp ) {

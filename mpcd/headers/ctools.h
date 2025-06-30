@@ -10,7 +10,7 @@
 /* ****************************************** */
 /*
    These functions are nonspecific routines which
-   I find useful when coding.
+   are useful when coding.
 */
 
 void zerowarning( double test, double zero,double mult );

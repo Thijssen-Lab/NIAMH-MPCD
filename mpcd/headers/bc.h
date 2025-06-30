@@ -10,7 +10,7 @@
 /* ****************************************** */
 /*
    These functions are related to the interaction
-   of MPC particles with boundary conditions.
+   of MPCD particles with boundary conditions.
 */
 
 void BC_BCcollision( bc *WALL1,bc *WALL2,double t_step,int *flag );
