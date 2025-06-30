@@ -31,6 +31,7 @@ parser.add_argument("avdim", type=str, help="Dimension to 'slice' over")
 parser.add_argument("-c", "--length", type=float, help="Length of director lines", default=0.5)
 parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'", default="auto")
 parser.add_argument("-k", "--keepFrames", type=int, help="0=don't keep (delete) frames; 1=keep frames", default=0)
+parser.add_argument("-p", "--savePDF", type=int, help="1 saves transparent pdfs for papers, 0 for none", default=0)
 parser.add_argument("-d", "--defectData", type=str, help="Path to defect data (if any)", default="")
 args = parser.parse_args()
 
@@ -50,6 +51,7 @@ avdim = args.avdim
 c = args.length
 myAspect = args.myAspect
 keepFrames = args.keepFrames
+savePDF = args.savePDF
 defectData = args.defectData
 
 makeTransparent = True # Transparent backgrounds make crappy videos, but look good on webpages
@@ -122,11 +124,17 @@ AVS = zeros(shape=(xyzSize[d1],xyzSize[d2]),dtype=float)
 
 ### Setup the animation
 # Figure
-fig1 = plt.figure(1)
+width=8
+height=6
 if myAspect == 'auto':
-    shrink_factor = 1.0
+	shrink_factor = 1.0
 else:
-    shrink_factor = float(xyzSize[d2])/float(xyzSize[d1])
+	shrink_factor = float(xyzSize[d2])/float(xyzSize[d1])
+	if xyzSize[d1] > xyzSize[d2]:
+		height*= shrink_factor
+	else:
+		width*= shrink_factor
+fig1, ax = plt.subplots(figsize=(width, height))
 #Create the colorbar
 CS3 = imshow(AVS.T,cmap=myMap,vmin=0, vmax=1,aspect=myAspect,extent=[0,xyzSize[d1],0,xyzSize[d2]])
 cb=colorbar(CS3,shrink=shrink_factor,aspect=20*shrink_factor,pad=0.04)
@@ -255,13 +263,14 @@ while infile:
 						XY[1][x][y]=XYZ[d2][x][y][0]
 			# Save frame
 			n=n+1
-			fig1 = plt.figure(1)
+			plt.subplot(1,1,1)
 			plt.clf()
 			quiver( XY[0][::qx, ::qy], XY[1][::qx, ::qy], 
 					c*MEAN[0][::qx, ::qy], c*MEAN[1][::qx, ::qy], 
 					AVS[::qx, ::qy], cmap=myMap, clim=(0, 1), scale=50/c,
 					width=0.005*myLW, headlength=0, headwidth=0, 
 					headaxislength=0, pivot='middle')
+			fig1.canvas.draw()
 			# load defects and draw them as necessary
 			# FIXME: only works for 2d for now, doesnt take into account d1 or d2
 			if LOADDEFECTS and (j < len(defects)):
@@ -271,10 +280,12 @@ while infile:
 			ylabel(r'$%s$'%labY)
 			plt.axis(xmax=xyzSize[d1], xmin=0, ymax=xyzSize[d2], ymin=0)
 			name='frame%04d.png'%(n)
+			namepdf='frame%04d.pdf'%(n)
 			# uncomment below for snapshots
 			plt.axis('off') 
 			plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
 			savefig( name, bbox_inches='tight', pad_inches=0, transparent=makeTransparent )
+			if savePDF: plt.savefig(namepdf, transparent=True, bbox_inches='tight')
 		#Zero matrix
 		DIR= zeros( (3,xyzSize[0],xyzSize[1],xyzSize[2]),dtype=float )
 		MEAN = zeros(shape=(3,xyzSize[d1],xyzSize[d2]),dtype=float)
