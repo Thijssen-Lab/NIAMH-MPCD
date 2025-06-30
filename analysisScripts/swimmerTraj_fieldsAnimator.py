@@ -1,15 +1,19 @@
+
 """
-  NIAMH-MPCD
 	Animates swimmers and 2D fields, averaging over user defined direction
 	Uses defect handler (from https://github.com/Shendruk-Lab/MPCDDefectLoader)
-
-	Uses shendrukGroupStyle for formatting (from https://github.com/Shendruk-Lab/MPCDDefectLoader)
-	Must install it or remove calls to shendrukGroupFormat
 
 	Originally from Tyler N. Shendruk
 	Modified by Francois de Tournemire
 """
 
+###########################################################
+### 
+###########################################################
+
+###########################################################
+### Imports
+###########################################################
 from pylab import *
 from subprocess import call
 import os
@@ -17,10 +21,6 @@ import json
 import argparse
 
 from defectHandler import getDefectData
-
-# Use our custom style and colours
-plt.style.use('shendrukGroupStyle')
-import shendrukGroupFormat as ed
 
 ###########################################################
 ### Set up argparse
@@ -34,7 +34,7 @@ parser.add_argument('finish', type=int, help="Average before this number")
 parser.add_argument("--qx", type=int, help="Only show every qx arrow in x", default=1)
 parser.add_argument("--qy", type=int, help="Only show every qy arrow in y",default=1)
 parser.add_argument('avdim', type=str, help="Dimension to average over")
-parser.add_argument('fieldType', type=str, help="Field type: 'vel', 'vor' or 'nem' for velocity, vorticity or director field, respectively")
+parser.add_argument('fieldType', type=str, help="Field type: 'vel', 'vor' or 'nem' for velocity, vorticity or director field, respectively. For a blank canvas, select 'none'.")
 parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'", default="auto")
 parser.add_argument("-k", "--keepFrames", type=int, help="0=don't keep (delete) frames; 1=keep frames", default=0)
 parser.add_argument("-p", "--savePDF", type=int, help="1 saves transparent pdfs for papers, 0 for none", default=0)
@@ -67,12 +67,17 @@ elif(fieldType=="w" or fieldType=="vor" or fieldType=="vort" or fieldType=="vort
   fieldType="vor"
 elif(fieldType=="n" or fieldType=="nem" or fieldType=="nematic" or fieldType=="dir" or fieldType=="director"):
   fieldType="nem"
+elif(fieldType=="none" or fieldType=="0"):
+  fieldType="none"
 
 makeTransparent = True # Transparent backgrounds make crappy videos, but look good on webpages
 
 ###########################################################
 ### Style/formating stuff
 ###########################################################
+# Use our custom style and colours
+plt.style.use('shendrukGroupStyle')
+import shendrukGroupFormat as ed
 # Colours
 swimmerMap=ed.viridis
 if(fieldType=="vel"):
@@ -81,6 +86,8 @@ elif(fieldType=="vor"):
   fieldMap = ed.bombpops
 elif(fieldType=="nem"):
   fieldMap = ed.plasma
+elif(fieldType=="none"):
+  pass
 else:
   print("Field type %s not known."%(fieldType))
   exit()
@@ -115,7 +122,12 @@ if "nSwim" in input:
 dipole=1
 if "dsSwim" in input:
     dipole=input['dsSwim']
+l=4
+if "sigSwim" in input:
+    l=input['sigSwim']
 
+if input['sigSwim']!=input['roSwim']:
+    print('Warning: your dumbbell might oscillate.')
 ###########################################################
 ### Set arguments
 ###########################################################
@@ -123,6 +135,12 @@ tailFreq=1.0/3.5
 tailWaveLength=(4.0/10.0)*2.0*(1.0+dipole)
 hidgeonLength=1.0
 tailRad=1.0
+
+from matplotlib.colors import LinearSegmentedColormap as lsc
+rb = lsc.from_list("", [ed.onyx,ed.purple,ed.plum,ed.crimson,ed.cinnamon,ed.amber,ed.forestgreen,ed.onyx])
+
+Ncol=50
+col=[rb(float(i/Ncol)) for i in range(Ncol+1)]
 
 ###########################################################
 ### Initialize
@@ -346,75 +364,76 @@ while( velFile ):
       ###########################################################
       ### Velocity
       ###########################################################
-      if avdim=='x':
-        for x in range(xyzSize[0]):
+      if(fieldType!="none"):
+        if avdim=='x':
+          for x in range(xyzSize[0]):
+            for y in range(xyzSize[1]):
+              for z in range(xyzSize[2]):
+                MEAN[0][y][z]=MEAN[0][y][z]+VEL[0][x][y][z]
+                MEAN[1][y][z]=MEAN[1][y][z]+VEL[1][x][y][z]
+                MEAN[2][y][z]=MEAN[2][y][z]+VEL[2][x][y][z]
+                currentMEAN[0][y][z]=currentMEAN[0][y][z]+VEL[0][x][y][z]
+                currentMEAN[1][y][z]=currentMEAN[1][y][z]+VEL[1][x][y][z]
+                currentMEAN[2][y][z]=currentMEAN[2][y][z]+VEL[2][x][y][z]
           for y in range(xyzSize[1]):
             for z in range(xyzSize[2]):
-              MEAN[0][y][z]=MEAN[0][y][z]+VEL[0][x][y][z]
-              MEAN[1][y][z]=MEAN[1][y][z]+VEL[1][x][y][z]
-              MEAN[2][y][z]=MEAN[2][y][z]+VEL[2][x][y][z]
-              currentMEAN[0][y][z]=currentMEAN[0][y][z]+VEL[0][x][y][z]
-              currentMEAN[1][y][z]=currentMEAN[1][y][z]+VEL[1][x][y][z]
-              currentMEAN[2][y][z]=currentMEAN[2][y][z]+VEL[2][x][y][z]
-        for y in range(xyzSize[1]):
-          for z in range(xyzSize[2]):
-            for d in range(3):
-              currentMEAN[d][y][z]/=xyzSize[0]
-      elif avdim=='y':
-        for x in range(xyzSize[0]):
+              for d in range(3):
+                currentMEAN[d][y][z]/=xyzSize[0]
+        elif avdim=='y':
+          for x in range(xyzSize[0]):
+            for y in range(xyzSize[1]):
+              for z in range(xyzSize[2]):
+                MEAN[0][x][z]=MEAN[0][x][z]+VEL[0][x][y][z]
+                MEAN[1][x][z]=MEAN[1][x][z]+VEL[1][x][y][z]
+                MEAN[2][x][z]=MEAN[2][x][z]+VEL[2][x][y][z]
+                currentMEAN[0][x][z]=currentMEAN[0][x][z]+VEL[0][x][y][z]
+                currentMEAN[1][x][z]=currentMEAN[1][x][z]+VEL[1][x][y][z]
+                currentMEAN[2][x][z]=currentMEAN[2][x][z]+VEL[2][x][y][z]
+          for x in range(xyzSize[0]):
+            for z in range(xyzSize[2]):
+              for d in range(3):
+                currentMEAN[d][x][z]/=xyzSize[1]
+        elif avdim=='z':
+          for x in range(xyzSize[0]):
+            for y in range(xyzSize[1]):
+              for z in range(xyzSize[2]):
+                MEAN[0][x][y]=MEAN[0][x][y]+VEL[0][x][y][z]
+                MEAN[1][x][y]=MEAN[1][x][y]+VEL[1][x][y][z]
+                MEAN[2][x][y]=MEAN[2][x][y]+VEL[2][x][y][z]
+                currentMEAN[0][x][y]=currentMEAN[0][x][y]+VEL[0][x][y][z]
+                currentMEAN[1][x][y]=currentMEAN[1][x][y]+VEL[1][x][y][z]
+                currentMEAN[2][x][y]=currentMEAN[2][x][y]+VEL[2][x][y][z]
+          for x in range(xyzSize[0]):
+            for y in range(xyzSize[1]):
+              for d in range(3):
+                currentMEAN[d][x][y]/=xyzSize[2]
+        # Calculate magnitude
+        for x in range(xyzSize[d1]):
+          for y in range(xyzSize[d2]):
+            currentMAG[x][y]=sqrt( currentMEAN[0][x][y]**2+currentMEAN[1][x][y]**2+currentMEAN[2][x][y]**2 )
+        for x in range(xyzSize[d1]):
+          for y in range(xyzSize[d2]):
+            if currentMAG[x][y]>maxV:
+              maxV=currentMAG[x][y]
+            elif currentMAG[x][y]<minV:
+              minV=currentMAG[x][y]
+        #Save the instantaneous or current velocity field frame
+        # Make Mesh
+        if avdim=='x':
           for y in range(xyzSize[1]):
             for z in range(xyzSize[2]):
-              MEAN[0][x][z]=MEAN[0][x][z]+VEL[0][x][y][z]
-              MEAN[1][x][z]=MEAN[1][x][z]+VEL[1][x][y][z]
-              MEAN[2][x][z]=MEAN[2][x][z]+VEL[2][x][y][z]
-              currentMEAN[0][x][z]=currentMEAN[0][x][z]+VEL[0][x][y][z]
-              currentMEAN[1][x][z]=currentMEAN[1][x][z]+VEL[1][x][y][z]
-              currentMEAN[2][x][z]=currentMEAN[2][x][z]+VEL[2][x][y][z]
-        for x in range(xyzSize[0]):
-          for z in range(xyzSize[2]):
-            for d in range(3):
-              currentMEAN[d][x][z]/=xyzSize[1]
-      elif avdim=='z':
-        for x in range(xyzSize[0]):
-          for y in range(xyzSize[1]):
+              XY[0][y][z]=XYZ[d1][0][y][z]
+              XY[1][y][z]=XYZ[d2][0][y][z]
+        elif avdim=='y':
+          for x in range(xyzSize[0]):
             for z in range(xyzSize[2]):
-              MEAN[0][x][y]=MEAN[0][x][y]+VEL[0][x][y][z]
-              MEAN[1][x][y]=MEAN[1][x][y]+VEL[1][x][y][z]
-              MEAN[2][x][y]=MEAN[2][x][y]+VEL[2][x][y][z]
-              currentMEAN[0][x][y]=currentMEAN[0][x][y]+VEL[0][x][y][z]
-              currentMEAN[1][x][y]=currentMEAN[1][x][y]+VEL[1][x][y][z]
-              currentMEAN[2][x][y]=currentMEAN[2][x][y]+VEL[2][x][y][z]
-        for x in range(xyzSize[0]):
-          for y in range(xyzSize[1]):
-            for d in range(3):
-              currentMEAN[d][x][y]/=xyzSize[2]
-      # Calculate magnitude
-      for x in range(xyzSize[d1]):
-        for y in range(xyzSize[d2]):
-          currentMAG[x][y]=sqrt( currentMEAN[0][x][y]**2+currentMEAN[1][x][y]**2+currentMEAN[2][x][y]**2 )
-      for x in range(xyzSize[d1]):
-        for y in range(xyzSize[d2]):
-          if currentMAG[x][y]>maxV:
-            maxV=currentMAG[x][y]
-          elif currentMAG[x][y]<minV:
-            minV=currentMAG[x][y]
-      #Save the instantaneous or current velocity field frame
-      # Make Mesh
-      if avdim=='x':
-        for y in range(xyzSize[1]):
-          for z in range(xyzSize[2]):
-            XY[0][y][z]=XYZ[d1][0][y][z]
-            XY[1][y][z]=XYZ[d2][0][y][z]
-      elif avdim=='y':
-        for x in range(xyzSize[0]):
-          for z in range(xyzSize[2]):
-            XY[0][x][z]=XYZ[d1][x][0][z]
-            XY[1][x][z]=XYZ[d2][x][0][z]
-      elif avdim=='z':
-        for x in range(xyzSize[0]):
-          for y in range(xyzSize[1]):
-            XY[0][x][y]=XYZ[d1][x][y][0]
-            XY[1][x][y]=XYZ[d2][x][y][0]
+              XY[0][x][z]=XYZ[d1][x][0][z]
+              XY[1][x][z]=XYZ[d2][x][0][z]
+        elif avdim=='z':
+          for x in range(xyzSize[0]):
+            for y in range(xyzSize[1]):
+              XY[0][x][y]=XYZ[d1][x][y][0]
+              XY[1][x][y]=XYZ[d2][x][y][0]
 
       ###########################################################
       ### Vorticity
@@ -495,7 +514,8 @@ while( velFile ):
     n=n+1
     plt.subplot(1,1,1)
     #Setup the velocity image
-    quiv = quiver( XY[0][::qx, ::qy], XY[1][::qx, ::qy], currentMEAN[d1][::qx, ::qy], currentMEAN[d2][::qx, ::qy] )
+    if(fieldType!="none"):
+      quiv = quiver( XY[0][::qx, ::qy], XY[1][::qx, ::qy], currentMEAN[d1][::qx, ::qy], currentMEAN[d2][::qx, ::qy] )
     if(fieldType=="vel"):
       image = imshow(currentMAG.T,cmap=fieldMap,origin='lower',aspect=myAspect,vmin=minV,vmax=maxV)
       CB = colorbar(image,shrink=shrink_factor,aspect=20*shrink_factor, pad=0.04)
@@ -504,6 +524,11 @@ while( velFile ):
       image = imshow(VORTZ.T,cmap=fieldMap,origin='lower',aspect=myAspect,vmin=minW,vmax=maxW)
       CB = colorbar(image,shrink=shrink_factor,aspect=20*shrink_factor, pad=0.04)
       CB.ax.set_ylabel(r'Vorticity, $\omega_{%s}$'%(avdim))
+    elif(fieldType=="none"):
+      plt.subplot(1,1,1,facecolor=ed.bggrey)
+      plt.xticks([])
+      plt.yticks([])
+
     elif(fieldType=="nem"):
       for x in range(xyzSize[d1]):
         for y in range(xyzSize[d2]):
@@ -513,23 +538,46 @@ while( velFile ):
     # FIXME: only works for 2d for now, doesnt take into account d1 or d2
     if LOADDEFECTS and (j < len(defects)):
       print(f"Drawing defects {j}/{len(defects)-1}")
-      for defect in defects[j-1]: # j is not 0 indexed reeeeee
+      for defect in defects[j-1]: 
         defect.drawDefect()
     # Plot the swimmers
     for ns in range(numSw):
-      if( fabs(H[ns][d1]-B[ns][d1])<0.5*xyzSize[d1] and fabs(H[ns][d2]-B[ns][d2])<0.5*xyzSize[d2] ):
-        plot( [H[ns][d1],B[ns][d1]],[H[ns][d2],B[ns][d2]],'-',color='k',linewidth=2 )
-      if( fabs(T[ns][d1]-B[ns][d1])<0.5*xyzSize[d1] and fabs(T[ns][d2]-B[ns][d2])<0.5*xyzSize[d2] ):
-        plot( [T[ns][d1],B[ns][d1]],[T[ns][d2],B[ns][d2]],'-',color=swimmerMap(B[ns][dim]/xyzF[dim]),linewidth=2 )
+      
       waveLength=(4.0/5.0)*2.0*(1.0+dipole)
-      theta=arctan2(H[ns][d2]-B[ns][d2],H[ns][d1]-B[ns][d1])
-      X=linspace(0,2.0*(1.0+dipole),20)
+
+      # sets the colour as the orientation
+      theta=arctan2((H[ns][d2]-B[ns][d2]),(H[ns][d1]-B[ns][d1]))
+      # c=col[int(np.mod(theta,np.pi)*Ncol/np.pi)]
+      c=col[int(theta*Ncol/np.pi/2)]
+
+      X=linspace(0,dipole*l,20)
+      X2=linspace(0,l,20)
+
+      # paints the tail, then the stadium-shaped body
       Y=tailRad*(1.0-exp(-pow(X/hidgeonLength,2)))*sin(2.0*pi*X/tailWaveLength + float(n)*tailFreq)
+      Y2a=[sqrt(2*i/6-i*i/36) for i in range(7)]
+      Y2b=linspace(1,1,6)
+
+      Y2c=Y2a[::-1]
+      Y2d=concatenate((Y2a,Y2b))
+      Y2=l*concatenate((Y2d,Y2c))/4
+
+      # Rotating body and tail to the appropriate orientation
       tailX=cos(theta)*X - sin(theta)*Y
       tailY=sin(theta)*X + cos(theta)*Y
-      plot( B[ns][d1]-tailX,B[ns][d2]-tailY,'-',color=swimmerMap(B[ns][dim]/xyzF[dim]),linewidth=2 )
-      plot( H[ns][d1],H[ns][d2],'o',color='k',fillstyle='full' )
-      plot( B[ns][d1],B[ns][d2],'h',color=swimmerMap(B[ns][dim]/xyzF[dim]),fillstyle='full' )
+      bodX=cos(theta)*X2 - sin(theta)*Y2
+      bodY=sin(theta)*X2 + cos(theta)*Y2
+      bodX2=cos(theta)*X2 + sin(theta)*Y2
+      bodY2=sin(theta)*X2 - cos(theta)*Y2
+
+      plot( B[ns][d1]-tailX,B[ns][d2]-tailY,'-',color=c,linewidth=2,alpha=0.5 )
+      plot( B[ns][d1]+bodX,B[ns][d2]+bodY,'-',color=c,linewidth=2 )
+      plot( B[ns][d1]+bodX2,B[ns][d2]+bodY2,'-',color=c,linewidth=2 )
+
+      # Filling the stadium shape   
+      dum1=concatenate((B[ns][d1]+bodX,B[ns][d1]+bodX2))
+      dum2=concatenate((B[ns][d2]+bodY,B[ns][d2]+bodY2))
+      fill(dum1,dum2,c=c,zorder=2)
     xlabel(r'$%s$'%labX)
     ylabel(r'$%s$'%labY)
     plt.axis(xmax=xyzSize[0], xmin=0, ymax=xyzSize[1], ymin=0)
