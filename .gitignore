@@ -16,6 +16,10 @@ Runs/*
 *.pdf
 *.mp4
 
+#Exclude in the userguide
+!docs/logos/**
+!docs/userguide/**
+
 #ignore OS file system bits
 *.DS_Store
 
