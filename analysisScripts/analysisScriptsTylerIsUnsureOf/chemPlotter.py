@@ -67,7 +67,7 @@ def myfunc():
     outfile.close()
     # plot!
     fig,ax = plt.subplots(1)
-    plt.cla
+    plt.clf()
     # make sure dir exists
     if log == True:
         figdir = '/home/s1954660/Desktop/summer/analysis/LOGcurv_chemographs'

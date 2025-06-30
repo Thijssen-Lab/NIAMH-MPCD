@@ -159,7 +159,7 @@ def func(mdinpDataPath, bend, act, chunks, log):
 	# Setup figure object
 	tight_layout()
 	fig,ax = plt.subplots()
-	plt.cla()
+	plt.clf()
 	if log==False:
 		CS3 = imshow(prob.T, cmap=myMap,origin='lower')
 		cb = fig.colorbar(CS3)

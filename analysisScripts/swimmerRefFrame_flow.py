@@ -471,7 +471,7 @@ for x in range(rotSize):
                 avRotMEAN[d][x][y]/=cnt[x][y]
 #Setup the density image
 plt.subplot(1,1,1)
-plt.cla()
+plt.clf()
 #Setup the velocity image
 quiv = quiver( XY[0][::qx, ::qy], XY[1][::qx, ::qy], avRotMEAN[d1][::qx, ::qy], avRotMEAN[d2][::qx, ::qy] )
 velImage = imshow(avRotMAG.T,cmap=myMap,origin='lower',aspect=myAspect,vmin=minV,vmax=maxV)

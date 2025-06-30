@@ -187,7 +187,7 @@ def func(dir):
         # Setup figure object
         tight_layout()
         fig,ax = plt.subplots()
-        plt.cla()
+        plt.clf()
         CS3 = imshow(zeros(shape=(xySize[0],xySize[1]),dtype=float),cmap=myMap,origin='lower')
         #cb = fig.colorbar(CS3)
         for k in range(monoN-1):

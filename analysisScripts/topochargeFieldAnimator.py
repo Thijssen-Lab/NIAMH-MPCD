@@ -246,7 +246,7 @@ while datainfile:
 			# Save frame
 			n=n+1
 			fig1 = plt.figure(1)
-			plt.cla()
+			plt.clf()
 			for x in range(xyzSize[d1]):
 				for y in range(xyzSize[d2]):
 					if( x%qx==0 and y%qy==0 ):

@@ -221,7 +221,7 @@ while nemFile:
 		# Save frame
 		n=n+1
 		print( "\t\tPlot frame %d"%(n) )
-		plt.cla()
+		plt.clf()
 		if(projDim==0):
 			x=int(cm[0])
 			for y in range(xyzSize[1]):

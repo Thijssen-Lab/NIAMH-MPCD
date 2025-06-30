@@ -29,39 +29,43 @@ class Defect:
     angle : float
     _defectGroup : int = -1
 
-    def drawDefect(self, lineLength : float, lineWidth : float, stylePlus="r", 
-                    styleMinus="b", pltObj = plt):
+    def drawDefect(self, multiplier=1, pltObj = plt):
         """
         Draws a defect on a plot.
 
-        :param lineLength: length of the lines used to draw the defect
+        :param multiplier: coefficient which defines the size of the defects
         :type lineLength: float
-        :param lineWidth: width of the lines used to draw the defect
-        :type lineWidth: float
-        :param stylePlus: style of lines used to draw +1/2 defects
-        :param styleMinus: style of lines used to draw -1/2 defects
         :param pltObj: The axes to draw on
         """
         # Note, this only works for 2D plots, and makes no assumption for 
         #   slicing
-        def drawLine(pos, angleRelDefect, length, style):
-            x = pos[0] + length*np.cos(angleRelDefect+self.angle)
-            y = pos[1] + length*np.sin(angleRelDefect+self.angle)
-            return pltObj.plot([pos[0], x], [pos[1], y], style, lw=lineWidth)
+        def drawLine(coordinate, theta, dtheta, distanceStart, length, colour,linewidth,alpha):
+            xstart = coordinate[0] + distanceStart*np.cos(theta + dtheta)
+            ystart = coordinate[1] + distanceStart*np.sin(theta + dtheta)
+            xend = coordinate[0] + (distanceStart+length)*np.cos(theta + dtheta)
+            yend = coordinate[1] + (distanceStart+length)*np.sin(theta + dtheta)
+            return pltObj.plot([xstart,xend],[ystart,yend],color=colour,lw=linewidth,zorder=2,alpha=alpha)
+        
+        def drawCircle(coordinate,radius,colour,linewidth,alpha):
+            allAngles = np.linspace(0,2*np.pi,150)
+            x = coordinate[0] + radius*np.cos(allAngles)
+            y = coordinate[1] + radius*np.sin(allAngles)
+            plt.fill(np.ravel(x), np.ravel(y), 'w',zorder=2)
+            return pltObj.plot(x,y,color=colour,lw=linewidth,zorder=2,alpha=alpha)
 
-        if self.charge > 0:
+        length = 1.5*multiplier
+        radius = 0.5*multiplier
+        linewidth = 2*multiplier
+        if np.sign(self.charge) > 0:
             # +1/2 defect
-            drawLine(self.pos-0.5*lineLength*np.array(
-                [np.cos(self.angle), np.sin(self.angle), 0]), 
-                np.pi/6, lineLength * 1.5, stylePlus)
-            drawLine(self.pos-0.5*lineLength*np.array(
-                [np.cos(self.angle), np.sin(self.angle), 0]), 
-                -np.pi/6, lineLength * 1.5, stylePlus)
-        elif self.charge < 0: 
+            drawLine(self.pos,self.angle,0,radius,length,"limegreen",linewidth,alpha=1)
+            drawCircle(self.pos,radius,"limegreen",linewidth,alpha=1)
+        if np.sign(self.charge) < 0:
             # -1/2 defect
-            drawLine(self.pos, 0, lineLength, styleMinus)
-            drawLine(self.pos, 2*np.pi/3, lineLength, styleMinus)
-            drawLine(self.pos, 4*np.pi/3, lineLength, styleMinus)
+            drawLine(self.pos,self.angle,0.0,radius,length,"#0F52BA",linewidth,alpha=0.75)
+            drawLine(self.pos,self.angle,(2/3)*np.pi,radius,length,"#0F52BA",linewidth,alpha=0.75)
+            drawLine(self.pos,self.angle,(4/3)*np.pi,radius,length,"#0F52BA",linewidth,alpha=0.75)
+            drawCircle(self.pos,radius,"#0F52BA",linewidth,alpha=0.75)
 
     def distTo(self, otherDefect, l = None):
         """

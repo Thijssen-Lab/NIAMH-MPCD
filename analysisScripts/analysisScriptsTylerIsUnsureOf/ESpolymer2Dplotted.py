@@ -305,7 +305,7 @@ while nemFile:
 		# Setup figure object
 		tight_layout()
 		fig,ax = plt.subplots()
-		plt.cla()
+		plt.clf()
 		if(projDim==2):
 			quiver( X,Y,V[0],V[1] )
 			CS3 = imshow(S.T,cmap=myMap,origin='lower')
