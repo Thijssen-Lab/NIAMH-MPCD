@@ -256,7 +256,7 @@ while infile:
 			# Save frame
 			n=n+1
 			fig1 = plt.figure(1)
-			plt.cla()
+			plt.clf()
 			quiver( XY[0][::qx, ::qy], XY[1][::qx, ::qy], 
 					c*MEAN[0][::qx, ::qy], c*MEAN[1][::qx, ::qy], 
 					AVS[::qx, ::qy], cmap=myMap, clim=(0, 1), scale=50/c,
@@ -266,7 +266,7 @@ while infile:
 			# FIXME: only works for 2d for now, doesnt take into account d1 or d2
 			if LOADDEFECTS and (j < len(defects)):
 				for defect in defects[j-1]: # j is not 0 indexed reeeeee
-					defect.drawDefect(c*2, myLW*2)
+					defect.drawDefect()
 			xlabel(r'$%s$'%labX)
 			ylabel(r'$%s$'%labY)
 			plt.axis(xmax=xyzSize[d1], xmin=0, ymax=xyzSize[d2], ymin=0)

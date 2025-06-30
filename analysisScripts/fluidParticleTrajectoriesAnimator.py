@@ -238,7 +238,7 @@ for i in range(len(cPos)):
 
 for t in range(time):
     fig = plt.figure(1)
-    plt.cla()
+    plt.clf()
     for c in range(numFluidParticles):
         if(not LC):
             scatter(fPos[c][t][_x],fPos[c][t][_y])

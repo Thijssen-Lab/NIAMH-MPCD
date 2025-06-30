@@ -273,7 +273,7 @@ while infile:
     ###########################################################
     # Save frame
     plt.subplot(1,1,1)
-    plt.cla()
+    plt.clf()
     # Draw fields
     quiv = quiver( XY[0][::qx, ::qy], XY[1][::qx, ::qy], currentMEAN[d1][::qx, ::qy], currentMEAN[d2][::qx, ::qy] )
     velImage = imshow(currentMAG.T,cmap=myMap,origin='lower',aspect=myAspect,vmin=minV,vmax=maxV,extent=[0,xyzSize[d1],0,xyzSize[d2]])
@@ -289,7 +289,7 @@ while infile:
     if LOADDEFECTS and (j < len(defects)):
       print(f"Drawing defects {j}/{len(defects)-1}")
       for defect in defects[j-1]: # j is not 0 indexed reeeeee
-        defect.drawDefect(0.5*(qx+qy), 2)
+        defect.drawDefect()
     if(j>=start and j<=finish):
       n=n+1
       name='frame%04d.png'%(n)

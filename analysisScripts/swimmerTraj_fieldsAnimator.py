@@ -516,7 +516,7 @@ while( velFile ):
     if LOADDEFECTS and (j < len(defects)):
       print(f"Drawing defects {j}/{len(defects)-1}")
       for defect in defects[j-1]: # j is not 0 indexed reeeeee
-        defect.drawDefect(0.5*(qx+qy), 2)
+        defect.drawDefect()
     # Plot the swimmers
     for ns in range(numSw):
       if( fabs(H[ns][d1]-B[ns][d1])<0.5*xyzSize[d1] and fabs(H[ns][d2]-B[ns][d2])<0.5*xyzSize[d2] ):

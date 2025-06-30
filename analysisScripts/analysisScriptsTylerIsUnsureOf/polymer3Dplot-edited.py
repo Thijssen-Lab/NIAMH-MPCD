@@ -192,7 +192,7 @@ while nemFile:
 		n=n+1
 		print( "\t\tPlot frame %d"%(n) )
 		fig1 = plt.figure(1)
-		plt.cla()
+		plt.clf()
 		for x in range(xyzSize[0]):
 			for y in range(xyzSize[1]):
 				for z in range(xyzSize[2]):

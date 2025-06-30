@@ -121,7 +121,7 @@ def func(mdDataPath, xyz0, xyz1, numMono,log):
     outfile.close()
 
     fig,ax = plt.subplots(1)
-    plt.cla()
+    plt.clf()
     if log==True:
         chemograph = ax.pcolor(curvature,norm=colors.LogNorm(),cmap=myMap)
     else:
