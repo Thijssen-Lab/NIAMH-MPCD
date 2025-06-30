@@ -114,6 +114,5 @@ void outputHist( cell ***CL,int runtime, inputList in,outputFlagsList outFlag,ou
 void closeOutputFiles( spec *SP,bc WALL[],outputFlagsList outFlag,outputFilesList outFiles );
 int writeOutput( int t,outputFlagsList f,int GAL,int zeroNetMom );
 int writeHistograms( int t,outputFlagsList f );
-void printVersionSummary( );
 
 #endif

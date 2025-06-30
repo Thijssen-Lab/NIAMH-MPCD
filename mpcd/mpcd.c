@@ -7,13 +7,14 @@
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
-/* *********** SIMULATES AN MPCD GAS ********* */
+/* *************** NIAMH-MPCD *************** */
 /* ****************************************** */
 /* ****************************************** */
 /* ****************************************** */
 /*
-By Tyler Shendruk's Research Group
-	For the Active and Intelligent Matter Research Group
+NoIsy Algorithm for Mesoscale Hydrodynamics (NIAMH; pronounced 'neev')
+	An implementation of the Multi-Particle Collision Dynamics (MPCD) algorithm
+	By Tyler Shendruk's Research Group
 	At the University of Edinburgh
 
 	Started late October 2008 at the University of Ottawa
@@ -70,7 +71,7 @@ By Tyler Shendruk's Research Group
 /* ****************************************** */
 ///@brief
 ///
-/// Call other functions to implement MPCD.
+/// Call other functions to implement NAIMH-MPCD.
 ///
 /// Declares all the program variable, reads the input file, initializes the system, perform a warm-up loop, then the main loop with checkpoints, before outputting and closing down.
 ///
@@ -137,7 +138,7 @@ int main(int argc, char* argv[]) {
 	/* ****************************************** */
 	/* ****************************************** */
 	#ifdef DBG
-		if( DBUG > DBGRUN ) printf( "\nBegin SRD algorithm\n" );
+		if( DBUG > DBGRUN ) printf( "\nBegin NAIMH-MPCD\n" );
 	#endif
 	/* ****************************************** */
 	/* ****************************************** */

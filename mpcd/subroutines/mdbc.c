@@ -80,7 +80,7 @@ void MD_BCcollision( particleMD *atom,bc WALL[],double KBT,double t_step ) {
 			INTER_backup[i][j] = WALL[i].INTER[j];
 			WALL[i].INTER[j]=0;
 		}
-		// Set the interaction with species zero (since set temporary MPC particle's SPID=0) to MD interaction (index=MAXSPECI+0)
+		// Set the interaction with species zero (since set temporary MPCD particle's SPID=0) to MD interaction (index=MAXSPECI+0)
 		WALL[i].INTER[0]=INTER_backup[i][MAXSPECI+0];
 	}
 

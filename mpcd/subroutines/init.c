@@ -944,7 +944,7 @@ double accessibleVolume( bc WALL[],int SPID ) {
 	int check;			//Count number of failed BCs for each particle
 	double CV,AV;		//CV=control volume; AV=accessible volume
 	double fails,W;		//Count number of failed attempts and W for checking BCs
-	particleMPC pMPC;	//Temporary pointer to fake MPC particle
+	particleMPC pMPC;	//Temporary pointer to fake MPCD particle
 
 	#ifdef DBG
 		if( DBUG >= DBGINIT ) printf("\tNumerically integrating accessible volume\n");

@@ -1,7 +1,7 @@
 ///
 /// @file
 ///
-/// @brief Math functions applied in MPCD.
+/// @brief Math functions applied in NIAMH-MPCD.
 ///
 /// Different math methods are collected there for easy access in any place of the code.
 ///

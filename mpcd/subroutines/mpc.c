@@ -1,9 +1,9 @@
 ///
 /// @file
 /// 
-/// @brief This file contains the core of the MPCD algorithm.
+/// @brief This file contains the core of the NIAMH-MPCD algorithm.
 ///
-/// The file does the majority of MPCD functions. 
+/// The file does the majority of NIAMH-MPCD functions. 
 /// This includes timestep(), which is iterated over repeatedly in main(), as well as the streaming and collision operators. 
 /// It also includes the binning and the calculation of all local (cell-level) fluid properties.
 ///
@@ -67,7 +67,7 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 	double V[_3D],Q[_3D];
 	double **S,eigval[_3D];
 	double mass;
-	particleMPC *pMPC;	//Temporary pointer to MPC particles
+	particleMPC *pMPC;	//Temporary pointer to MPCD particles
 	particleMD *pMD;	//Temporary pointer to MD particles
 	smono *pSW;			//Temporary pointer to swimmer monomers
 
@@ -358,7 +358,7 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 	int numCorners = (int) smrtPow(2,DIM);
 	double R[DIM];
 	double invN;							// Inverse number difference
-	particleMPC tp[numCorners];				// Temporary MPC particles for all corners of a square cell
+	particleMPC tp[numCorners];				// Temporary MPCD particles for all corners of a square cell
 	double W[numCorners];					// W for each of the corners
 	double **S, eigval[_3D];
 	double n[_3D] = {0.,0.,0.};				// surface normal
@@ -783,7 +783,7 @@ void rotate_CL( cell CL,spec *SP,double r0[],double n0[],double dw ) {
 	double r[DIM],r_perp[DIM],n_perp[DIM]; 				//Vectors betweem cm and mpcd particles and axis
 	double n_v[DIM];									//Direction of velocity change
 	double dist,dv;										//Mag of angular velocity on each MPCD particle, distance to line, mag of change in velocity
-	particleMPC *pMPC;									//Temporary pointer to MPC particles
+	particleMPC *pMPC;									//Temporary pointer to MPCD particles
 	double netMom[DIM],tempAngMom[DIM],netAngMom[DIM];	//Sum momentum and angular momentum
 	int cnt;											//Count number of SRD particles
 
@@ -1293,7 +1293,7 @@ void stochrotMPC( cell *CL,int RTECH,double C,double S,double *CLQ,int outP ) {
 	/* ****************************************** */
 	/* *************** Collision **************** */
 	/* ****************************************** */
-	//MPC particles
+	//MPCD particles
 	i=0;
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
@@ -1372,7 +1372,7 @@ void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 	/* ******* Generate random velocities ******* */
 	/* ****************************************** */
 	i=0;
-	// MPC particles
+	// MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -1411,7 +1411,7 @@ void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 	/* *************** Collision **************** */
 	/* ****************************************** */
 	i=0;
-	// MPC particles
+	// MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -1496,7 +1496,7 @@ void andersenROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 	/* ******* Generate random velocities ******* */
 	/* ****************************************** */
 	i=0;
-	//MPC particles
+	//MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -1553,7 +1553,7 @@ void andersenROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 	/* ****************************************** */
 	for( i=0; i<_3D; i++ ) L[i] = 0.;
 	i=0;
-	//MPC particles
+	//MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -1621,7 +1621,7 @@ void andersenROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 	/* *************** Collision **************** */
 	/* ****************************************** */
 	i=0;
-	//MPC particles
+	//MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -1692,7 +1692,7 @@ void langevinMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 	for( j=0; j<DIM; j++ ) WNS[j] = 0.;
 	for( i=0;i<CL->POP;i++ ) for( j=0;j<DIM;j++ ) DV[i][j] = 0.;
 	i=0;
-	//MPC particles
+	//MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -1718,7 +1718,7 @@ void langevinMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 		tmd = tmd->nextSRD;
 		i++;
 	}
-	//MPC particles
+	//MPCD particles
 	tsm = CL->sp;
 	while( tsm!=NULL ) {
 		if( tsm->HorM ) MASS = (double) SS.middM;
@@ -1736,7 +1736,7 @@ void langevinMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 	/* *************** Collision **************** */
 	/* ****************************************** */
 	i=0;
-	//MPC particles
+	//MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -1841,7 +1841,7 @@ void langevinROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 	for( j=0; j<DIM; j++ ) WNS[j] = 0.;
 	for( i=0;i<CL->POP;i++ ) for( j=0;j<DIM;j++ ) DV[i][j] = 0.;
 	i=0;
-	//MPC particles
+	//MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -1867,7 +1867,7 @@ void langevinROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 		tmd = tmd->nextSRD;
 		i++;
 	}
-	//MPC particles
+	//MPCD particles
 	tsm = CL->sp;
 	while( tsm!=NULL ) {
 		if( tsm->HorM ) MASS = (double) SS.middM;
@@ -1906,7 +1906,7 @@ void langevinROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 	/* ****************************************** */
 	for( i=0; i<_3D; i++ ) L[i] = 0.;
 	i=0;
-	//MPC particles
+	//MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -1973,7 +1973,7 @@ void langevinROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,doub
 	/* *************** Collision **************** */
 	/* ****************************************** */
 	i=0;
-	//MPC particles
+	//MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -2061,7 +2061,7 @@ void activeSRD( cell *CL,spec *SP,int RTECH,double C,double S,double *CLQ,int ou
 		tmpc = tmpc->next;
 	}
 	//Rotate velocities towards the vcm
-	//MPC particles
+	//MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		if( fneq( (SP+(tmpc->SPID))->ACT,0.0 ) ) {
@@ -2112,7 +2112,7 @@ void vicsek( cell *CL,spec *SP,double *CLQ,int outP ) {
 	/* ******* Generate random velocities ******* */
 	/* ****************************************** */
 	//Generate (homogeneously) random velocities on the cone (1-ACT)*pi
-	// MPC particles
+	// MPCD particles
 	tmpc = CL->pp;
 	i=0;
 	while( tmpc!=NULL ) {
@@ -2164,7 +2164,7 @@ void chate( cell *CL,spec *SP,double *CLQ,int outP ) {
 	/* ******* Generate random velocities ******* */
 	/* ****************************************** */
 	//Generate (homogeneously) random velocities on the cone (1-ACT)*pi
-	// MPC particles
+	// MPCD particles
 	tmpc = CL->pp;
 	i=0;
 	while( tmpc!=NULL ) {
@@ -2222,7 +2222,7 @@ void vicsekAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 	/* ******* Generate random velocities ******* */
 	/* ****************************************** */
 	//Generate random velocities and give the active shift.
-	// MPC particles
+	// MPCD particles
 	tmpc = CL->pp;
 	i=0;
 	while( tmpc!=NULL ) {
@@ -2250,7 +2250,7 @@ void vicsekAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 	/* ****************************************** */
 	/* *************** Collision **************** */
 	/* ****************************************** */
-	// MPC particles
+	// MPCD particles
 	tmpc = CL->pp;
 	i=0;
 	while( tmpc!=NULL ) {
@@ -2329,7 +2329,7 @@ void chateAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,int
 	/* ******* Generate random velocities ******* */
 	/* ****************************************** */
 	//Generate random velocities and give the active shift.
-	// MPC particles
+	// MPCD particles
 	tmpc = CL->pp;
 	i=0;
 	while( tmpc!=NULL ) {
@@ -2365,7 +2365,7 @@ void chateAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,int
 	/* ****************************************** */
 	/* *************** Collision **************** */
 	/* ****************************************** */
-	// MPC particles
+	// MPCD particles
 	tmpc = CL->pp;
 	i=0;
 	while( tmpc!=NULL ) {
@@ -2426,7 +2426,7 @@ void vicsekLangevinMPC( cell *CL,spec *SP,double KBT,double FRICCO,double Step,d
 	//Generate random velocities
 	for( j=0; j<DIM; j++ ) WNS[j] = 0.;
 	i=0;
-	//MPC particles
+	//MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -2457,7 +2457,7 @@ void vicsekLangevinMPC( cell *CL,spec *SP,double KBT,double FRICCO,double Step,d
 	/* *************** Collision **************** */
 	/* ****************************************** */
 	i=0;
-	//MPC particles
+	//MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -2534,7 +2534,7 @@ void chateLangevinMPC( cell *CL,spec *SP,double KBT,double FRICCO,double Step,do
 	//Generate random velocities
 	for( j=0; j<DIM; j++ ) WNS[j] = 0.;
 	i=0;
-	//MPC particles
+	//MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -2565,7 +2565,7 @@ void chateLangevinMPC( cell *CL,spec *SP,double KBT,double FRICCO,double Step,do
 	/* *************** Collision **************** */
 	/* ****************************************** */
 	i=0;
-	//MPC particles
+	//MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -2665,7 +2665,7 @@ void dipoleAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 	/* ****************************************** */
 	/* ******* Generate random velocities ******* */
 	/* ****************************************** */
-	// MPC particles
+	// MPCD particles
 	tmpc = CL->pp;
 	i=0;
 	while( tmpc!=NULL ) {
@@ -2705,7 +2705,7 @@ void dipoleAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 	/* ****************************************** */
 	/* *************** Collision **************** */
 	/* ****************************************** */
-	// MPC particles
+	// MPCD particles
 	tmpc = CL->pp;
 	i=0;
 	while( tmpc!=NULL ) {
@@ -2915,7 +2915,7 @@ void multiphaseCollPoint(cell *CL, spec *SP, specSwimmer SS, double KBT, int MD_
 	for( j=0; j<NSPECI; j++ ) if( NSP[j]>0.0 ) mixedCell+=1;
 	if( mixedCell>1 ) {
 		// Calculate the gradient of the different species
-		// MPC particles
+		// MPCD particles
 		tmpc = CL->pp;
 		while( tmpc!=NULL ) {
 			id = tmpc->SPID;
@@ -3010,7 +3010,7 @@ void multiphaseCollPoint(cell *CL, spec *SP, specSwimmer SS, double KBT, int MD_
 	/* *************** Collision **************** */
 	/* ****************************************** */
 	i=0;
-	// MPC particles
+	// MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -3122,7 +3122,7 @@ void incompAddVirial( cell *CL,double virialCoB, double virialCoC, double virial
 		/* ******* Generate radial velocities ******* */
 		/* ****************************************** */
 		i=0;
-		// MPC particles
+		// MPCD particles
 		tmpc = CL->pp;
 		while( tmpc!=NULL ) {
 			id = tmpc->SPID;
@@ -3166,7 +3166,7 @@ void incompAddVirial( cell *CL,double virialCoB, double virialCoC, double virial
 		/* *************** Collision **************** */
 		/* ****************************************** */
 		i=0;
-		// MPC particles
+		// MPCD particles
 		tmpc = CL->pp;
 		while( tmpc!=NULL ) {
 			id = tmpc->SPID;
@@ -3265,7 +3265,7 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 	/* ********** Calculate divergence ********** */
 	/* ****************************************** */
 	i=0;
-	//MPC particles
+	//MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -3313,7 +3313,7 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 	#ifdef DBG
 		if ( DBUG == DBGINCOMP ) {
 			i=0;
-			//MPC particles
+			//MPCD particles
 			tmpc = CL->pp;
 			while( tmpc!=NULL ) {
 				id = tmpc->SPID;
@@ -3356,7 +3356,7 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 	/* ********** Swapping Collision ************ */
 	/* ****************************************** */
 	i=0;
-	//MPC particles --- only allow swapping of MPC particles (not MD or swimmers)
+	//MPCD particles --- only allow swapping of MPCD particles (not MD or swimmers)
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -3403,7 +3403,7 @@ void incompSwap( cell *CL,spec *SP,specSwimmer SS ) {
 	#ifdef DBG
 		if ( DBUG == DBGINCOMP ) {
 			i=0;
-			//MPC particles
+			//MPCD particles
 			tmpc = CL->pp;
 			while( tmpc!=NULL ) {
 				id = tmpc->SPID;
@@ -3518,7 +3518,7 @@ void incompSubtractDivergence( cell *CL,spec *SP,specSwimmer SS ) {
 	/* ********** Calculate divergence ********** */
 	/* ****************************************** */
 	i=0;
-	//MPC particles
+	//MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -3576,7 +3576,7 @@ void incompSubtractDivergence( cell *CL,spec *SP,specSwimmer SS ) {
 	/* *************** Collision **************** */
 	/* ****************************************** */
 	i=0;
-	//MPC particles
+	//MPCD particles
 	tmpc = CL->pp;
 	while( tmpc!=NULL ) {
 		id = tmpc->SPID;
@@ -3681,7 +3681,7 @@ void localVCM( double vcm[_3D],cell CL,spec *SP,specSwimmer specS ) {
 
 	// Zero the centre of mass velocity
 	for( i=0; i<DIM; i++ ) vcm[i] = 0.;
-	// MPC particles
+	// MPCD particles
 	if( CL.pp!=NULL ) {
 		tmpc = CL.pp;
 		while( tmpc!=NULL ) {
@@ -3939,7 +3939,7 @@ void localMPCVCM( double vcm[_3D],cell CL,spec *SP ) {
 
 	// Zero the centre of mass velocity
 	for( i=0; i<DIM; i++ ) vcm[i] = 0.;
-	// MPC particles
+	// MPCD particles
 	if( CL.pp!=NULL ) {
 		tmpc = CL.pp;
 		while( tmpc!=NULL ) {
@@ -3971,7 +3971,7 @@ double localMASS( cell CL,spec *SP,specSwimmer specS ) {
 	particleMD  *tmd;
 	smono *tsm;
 
-	// MPC particles
+	// MPCD particles
 	if( CL.pp!=NULL ) {
 		tmpc = CL.pp;
 		while( tmpc!=NULL ) {
@@ -4022,7 +4022,7 @@ double localTEMP( cell CL,spec *SP,specSwimmer specS ) {
 
 	// Zero
 	for( d=0; d<_3D; d++ ) V[d] = 0.0;
-	// MPC particles
+	// MPCD particles
 	if( CL.pp!=NULL ) {
 		tmpc = CL.pp;
 		while( tmpc!=NULL ) {
@@ -4081,7 +4081,7 @@ int localPOP( cell CL ) {
 	particleMD *tmd;
 	smono *tsm;
 
-	// MPC particles
+	// MPCD particles
 	if( CL.pp!=NULL ) {
 		tmpc = CL.pp;
 		while( tmpc!=NULL ) {
@@ -4099,7 +4099,7 @@ int localPOP( cell CL ) {
 			tmd = tmd->nextSRD;
 		}
 	}
-	// MPC particles
+	// MPCD particles
 	if( CL.sp!=NULL ) {
 		tsm = CL.sp;
 		while( tsm!=NULL ) {
@@ -4154,7 +4154,7 @@ void scramble( particleMPC *p ) {
 void localCM( cell *CL,spec *SP,specSwimmer specS ) {
 	int id,d;
 	double mass,cellMass,Q[_3D];
-	particleMPC *pMPC;	//Temporary pointer to MPC particles
+	particleMPC *pMPC;	//Temporary pointer to MPCD particles
 	particleMD *pMD;	//Temporary pointer to MD particles
 	smono *pSW;			//Temporary pointer to swimmer monomers
 
@@ -4220,7 +4220,7 @@ void localCM( cell *CL,spec *SP,specSwimmer specS ) {
 void localCM_SRD( cell CL,spec *SP,double r_cm[] ) {
 	int id,d;
 	double mass,cellMass;
-	particleMPC *pMPC;	//Temporary pointer to MPC particles
+	particleMPC *pMPC;	//Temporary pointer to MPCD particles
 
 	//Zero everything for recounting
 	for( d=0; d<DIM; d++ ) r_cm[d] = 0.;
@@ -4254,7 +4254,7 @@ void localCM_SRD( cell CL,spec *SP,double r_cm[] ) {
 void localMomInertiaTensor( cell *CL,spec *SP,specSwimmer specS ) {
 	int i,j,id,d;
 	double mass,Q[_3D];
-	particleMPC *pMPC;	//Temporary pointer to MPC particles
+	particleMPC *pMPC;	//Temporary pointer to MPCD particles
 	particleMD *pMD;	//Temporary pointer to MD particles
 	smono *pSW;			//Temporary pointer to swimmer monomers
 
@@ -4357,7 +4357,7 @@ void localMomInertiaTensor( cell *CL,spec *SP,specSwimmer specS ) {
 double localMomInertia_SRD( cell CL,spec *SP,double r0[],double n[] ) {
 	int id,d;
 	double mass,momI,d2,r[DIM],r_perp[DIM];
-	particleMPC *pMPC;	//Temporary pointer to MPC particles
+	particleMPC *pMPC;	//Temporary pointer to MPCD particles
 
 	//Zero
 	momI = 0.0;
@@ -4420,7 +4420,7 @@ void cellVelForce( cell *CL,double addVel[3] ) {
 	smono *pSW;			//Temporary pointer to swimmer monomers
 
 	//Give particles a kick
-	// MPC particles
+	// MPCD particles
 	tmpc = CL->pp;
 	// i=0;
 	while( tmpc!=NULL ) {
@@ -4465,7 +4465,7 @@ void cellVelSet( cell *CL,double vel[3] ) {
 	smono *pSW;			//Temporary pointer to swimmer monomers
 
 	//Give particles a kick
-	// MPC particles
+	// MPCD particles
 	tmpc = CL->pp;
 	// i=0;
 	while( tmpc!=NULL ) {
@@ -4517,7 +4517,7 @@ void cellVelSet( cell *CL,double vel[3] ) {
 ///   + MPCD particle collision with BCs (MPC_BCcollision()).
 ///   + Stream/rotate the BCs (stream_BC() and spin_BC()).
 ///   + BC collision with other BCs (BC_BCcollision()).
-///   + Moving BC collision with MPC particles (BC_MPCcollision()).
+///   + Moving BC collision with MPCD particles (BC_MPCcollision()).
 /// - Re-Bin (bin(), binSwimmers() and binMD()).
 /// - Re-Local properties (localPROP()).
 /// @param CL All of the MPCD cells. 
@@ -4855,7 +4855,7 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 	/* ************ SRD TRANSLATION ************* */
 	/* ****************************************** */
 	#ifdef DBG
-		if( DBUG >= DBGTITLE ) printf( "Translate MPC particles.\n" );
+		if( DBUG >= DBGTITLE ) printf( "Translate MPCD particles.\n" );
 	#endif
 	if( MDmode != MPCinMD ) {
 		stream_all( SRDparticles,in.dt );
@@ -4942,7 +4942,7 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 		bcCNT=0;
 		reCNT=0;
 		rethermCNT=0;
-		// Check each BC for collisions MPC particles
+		// Check each BC for collisions MPCD particles
 		for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) {
 			BC_MPCcollision( WALL,i,SRDparticles,SP,in.KBT,in.GRAV,in.dt,simMD,MDmode,in.LC,&bcCNT,&reCNT,&rethermCNT );
 		}
@@ -5011,7 +5011,7 @@ void calcPressureStreaming( cell ***CL,spec *SP ) {
 	int a,b,c,i,j,id;
 	double V[DIM];
 	double mass;
-	particleMPC *pMPC;	//Temporary pointer to MPC particles
+	particleMPC *pMPC;	//Temporary pointer to MPCD particles
 
 	// Calculate POP, MASS and VCM (don't calculate CM. Only if needed - see below)
 	for( a=0; a<XYZ_P1[0]; a++ ) for( b=0; b<XYZ_P1[1]; b++ ) for( c=0; c<XYZ_P1[2]; c++ ) {

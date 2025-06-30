@@ -699,7 +699,7 @@ void readchckpnt(inputList *in, spec **SP, particleMPC **pSRD, cell ****CL, int 
 
 	if(fscanf(finput, "%d %d", MD_mode, &(in->stepsMD) ));	//Read the MD coupling mode
 	else printf("Warning: Failed to read MD coupling.\n");
-	if(fscanf( finput,"%d %d",&GPOP,&NSPECI ));	//Read the number of MPC particles
+	if(fscanf( finput,"%d %d",&GPOP,&NSPECI ));	//Read the number of MPCD particles
 	else printf("Warning: Failed to read total number of particles or number of species.\n");
 
 	if(fscanf( finput,"%d %d %lf %lf %d %d %lf",runtime,warmtime,&(in->C),&(in->S),&(in->GRAV_FLAG),&(in->MAG_FLAG),&(in->tolD) ));//Read program variables
@@ -874,19 +874,23 @@ void readarg( int argc, char* argv[], char ip[],char op[], int *inMode ) {
 					if( op[strln-1]!='/' ) strcat( op,"/" );
                     outProvided = 1;
 					break;
-				case 'v':
-					printVersionSummary( );
 				case 'h':
-					printf("\nMulti-Particle Collision Dynamics\n");
-					printf("Shendruk Lab, University of Edinburgh\n");
-					printf("Originally by Tyler Shendruk\n");
-					printf("for the Polymer Physics Research Group, University of Ottawa\n");
-					printf("\nUsage:\n");
+					printf("\n\n**************************\n");
+					printf("**************************\n");
+					printf("******* NIAMH-MPCD *******\n");
+					printf("**************************\n");
+					printf("**************************\n");
+					printf("\nNoIsy Algorithm for Mesoscale Hydrodynamics \n");
+					printf("Multi-Particle Collision Dynamics\n");
+					printf("University of Edinburgh\nShendruk Lab\n\n");
+					printf("Usage:\n");
 					printf("\t-i\t[path to JSON input file]\t\t\tRequired. See `sampleInputs` for examples.\n");
 					printf("\t-o\t[path to output file directory]\t\t\tRequired.\n");
 					printf("\t-Li\t(legacy) [path to input file directory]\t\tdefault=`mpcd/data/`\n");
 					printf("\t-v\t(legacy) print version summary\n");
 					printf("\t-h\tprint this help menu\n");
+					printf("\nSee the NIAMH-MPCD user guide for detailed guidance:\n");
+					printf("\thttps://github.com/Shendruk-Lab/NIAMH-MPCD/tree/master/docs\n\n\n");
 					exit(EXIT_SUCCESS);
 					break;
 				default:

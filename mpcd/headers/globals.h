@@ -1,7 +1,7 @@
 ///
 /// @file
 ///
-/// @brief Contains global non-constant variables used throughout the code
+/// @brief Contains global non-constant variables used throughout the NIAMH-MPCD code
 ///
 /// Contains all true global variables used throughout the code. Most of these relate to the control volume size, and
 /// size of lists.

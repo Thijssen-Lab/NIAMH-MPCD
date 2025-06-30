@@ -10,7 +10,7 @@
 /* ****************************************** */
 /*
    These functions are the routines that deal
-   with the liquid crystal component of the algorithm
+   with the liquid crystal component of the NIAMH-MPCD algorithm
 */
 
 void LCcollision( cell *CL,spec *SP,double KBT,int zeroMFPot,double dt,double SG,int LC );

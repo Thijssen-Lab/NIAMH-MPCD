@@ -9,7 +9,7 @@
 /* ****************************************** */
 /* ****************************************** */
 /*
-    Subroutines that relate to the fluid's
+    Subroutines that relate to the MPCD fluid's
     thermal energy and the thermostat
 */
 double thermostat( double KBT,double KBTNOW,double t,double RELAX,int TSTECH );

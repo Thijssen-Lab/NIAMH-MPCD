@@ -3,7 +3,7 @@
 ///
 /// @brief Methods for handling random number generation.
 ///
-/// Methods for handling random number generation in MPCD. Most methods are interfaces that call one of the two
+/// Methods for handling random number generation in NIAMH-MPCD. Most methods are interfaces that call one of the two
 /// underlying random number generators:
 /// - The Mersenne Twister, taken from http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/CODES/mt19937ar.c.
 /// - The xoshiro128++ algorithm, taken from https://prng.di.unimi.it/xoshiro128plusplus.c.
@@ -750,13 +750,13 @@ double *ranvec( double *v,int dimension ) {
 }
 
 ///
-/// @brief Randomly picks an integer corresponding to one of all MPC particles.
+/// @brief Randomly picks an integer corresponding to one of all MPCD particles.
 ///
-/// Randomly picks an integer corresponding to one of all MPC particles.
+/// Randomly picks an integer corresponding to one of all MPCD particles.
 ///
-/// @param POP Total population of MPC particles.
+/// @param POP Total population of MPCD particles.
 /// @see genrand_real()
-/// @return The randomly generated integer corresponding to one of all MPC particles.
+/// @return The randomly generated integer corresponding to one of all MPCD particles.
 ///
 int rand_particle( int POP ) {
 	return (int)( genrand_real()*(double)POP );

@@ -3,7 +3,7 @@
 ///
 /// @brief Contains all the global constants, as pre-processor definitions, used in the code.
 ///
-/// This MPCD code avoids the use of explicit numbers where ever possible, and instead makes use of pre-processor defines. These are
+/// This NIAMH-MPCD code avoids the use of explicit numbers where ever possible, and instead makes use of pre-processor defines. These are
 /// stated in this file, with comments explaining each.
 /// Broadly speaking, these are broken up into the following categories:
 /// - Compile options
@@ -261,7 +261,7 @@
 # define ARBAXIS 0
 /// @brief Collision operator option. ORTHAXIS applies the rotatation about one of the three cartesian axes (randomly chosen with the sign of the rotation angle also random.
 # define ORTHAXIS 1
-/// @brief Collision operator option. AT indicates that the Andersen Thermostat version of MPC is used.
+/// @brief Collision operator option. AT indicates that the Andersen Thermostat version of MPCD is used.
 # define MPCAT 2
 /// @brief Collision operator option.  The Andersen version that conserves angular momentum.
 # define RAT 3
@@ -295,7 +295,7 @@
 # define DIPOLE_DIR_SUM 16
 /// @brief Collision operator option. Cell-based dipole force in direction of local director (average of all activities).
 # define DIPOLE_DIR_AV 17
-/// @brief Collision operator option. The Langevin version of MPC that conserves angular momentum.
+/// @brief Collision operator option. The Langevin version of MPCD that conserves angular momentum.
 # define RLANG 19
 /// @brief Collision operator option. Cell-based dipole force in direction of local director (average of all activities with sigmoidal falloff).
 # define DIPOLE_DIR_SIG 20
