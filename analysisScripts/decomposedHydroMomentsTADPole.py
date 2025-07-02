@@ -1,15 +1,13 @@
 from scipy.special import eval_legendre
-from scipy import stats
+
 import json
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import argparse
 from matplotlib.colors import LogNorm
-from numba import jit
-from scipy.optimize import curve_fit
+
 from scipy.interpolate import griddata
-from scipy.interpolate import interpn
 from scipy import integrate
 
 from tqdm import tqdm
@@ -229,7 +227,7 @@ for files in tqdm(filepath):
 
     a2=plt.imshow(xyU2,norm=LogNorm(),label='Vel')
     plt.quiver(u[::skip,::skip],v[::skip,::skip],xyU[::skip,::skip,0].T,-xyU[::skip,::skip,1].T,linewidth=w)
-    plt.savefig(str(files)+'/FlowAroundTADPol.pdf')
+    plt.savefig(str(files)+'/FlowAroundTADPole.pdf')
 # IF YOU HAVE REPEATS: average over repeats in this simple manner
 
 # # Averaging every repeat 
@@ -298,7 +296,6 @@ for files in tqdm(filepath):
     er=-1
     d=Ly
 
-    @jit
     def Interp(x,y):
         return griddata(grid,Ur,(x,y),method='cubic')
 

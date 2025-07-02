@@ -575,14 +575,14 @@ while( velFile ):
       bodX2=cos(theta)*X2 + sin(theta)*Y2
       bodY2=sin(theta)*X2 - cos(theta)*Y2
 
-      plot( B[ns][d1]-tailX,B[ns][d2]-tailY,'-',color=c,linewidth=2,alpha=0.5 )
-      plot( B[ns][d1]+bodX,B[ns][d2]+bodY,'-',color=c,linewidth=2 )
-      plot( B[ns][d1]+bodX2,B[ns][d2]+bodY2,'-',color=c,linewidth=2 )
+      plot( B[ns][d1]-tailX,B[ns][d2]-tailY,'-',color=c,linewidth=2,alpha=0.5,zorder=3 )
+      plot( B[ns][d1]+bodX,B[ns][d2]+bodY,'-',color=c,linewidth=2,zorder=3 )
+      plot( B[ns][d1]+bodX2,B[ns][d2]+bodY2,'-',color=c,linewidth=2,zorder=3 )
 
       # Filling the stadium shape   
       dum1=concatenate((B[ns][d1]+bodX,B[ns][d1]+bodX2))
       dum2=concatenate((B[ns][d2]+bodY,B[ns][d2]+bodY2))
-      fill(dum1,dum2,c=c,zorder=2)
+      fill(dum1,dum2,c=c,zorder=3)
     xlabel(r'$%s$'%labX)
     ylabel(r'$%s$'%labY)
     plt.axis(xmax=xyzSize[0], xmin=0, ymax=xyzSize[1], ymin=0)
