@@ -1,0 +1,116 @@
+.. _tutorials:
+
+Tutorials
+#########
+
+This section contains a series of tutorials that demonstrate how to use NIAMH-MPCD for various simulations. Each tutorial includes a brief description, the input file used, and the expected output from the included :ref:`analysis scripts<Analysis>`. 
+
+Full details of the parameters implemented in the input files can be found in the :ref:`MPCD usage <usageChapter>`, and the output files are described in the :ref:`Outputs <Outputs>` section. 
+
+.. warning::
+
+   The tutorials are designed are intended for educational and refence purposes only. Real simulations should be run for much longer times to obtain meaningful results and in much larger system sizes. 
+
+.. important::
+
+   Here, ``<naimh>`` represents the path to the NAIMH-MPCD ``mpcd.out`` executable, ``<in-dir>`` represents the path to the ``sampleInputs/`` directory  and ``<out-dir>`` represents the path to the directory where the output files will be written. You should replace these with the actual paths on your system. 
+
+   .. note::
+
+      The output data should not be saved in the code (or ``sampleInputs/``) directory.
+
+.. contents:: Tutorials
+   :depth: 2
+   :class: 'this-will-duplicate-information-and-it-is-still-useful-here'
+
+.. _Isoptropic:
+
+First simulation
+****************
+
+.. include:: Isotropic/Isotropic.txt
+
+.. _Overrides:
+
+Overrides
+*********
+
+.. include:: Overrides/Overrides.txt
+
+
+Channel flow
+************
+
+.. include:: ChannelFlow/ChannelFlow.txt
+
+.. _Tracer:
+
+Rarefied gas and tracer particles
+*********************************
+
+.. include:: RarefiedGas/RarefiedGas.txt
+
+.. _Colloid:
+
+Colloid
+*******
+
+.. include:: Colloid/Colloid.txt
+
+TADPole swimmers
+****************
+
+.. include:: Swimmers/swimmers.txt
+
+2D Passive Nematic
+******************
+
+.. include:: PassiveNematic/PassiveNematic.txt
+
+.. _actNemTutorial:
+
+2D Active Nematic
+******************
+
+.. include:: ActiveNematic/ActiveNematic.txt
+
+3D pipe flow
+************
+
+.. include:: Cylinder/3DCylinder.txt
+
+Flow past a 'square' obstacle
+*****************************
+
+.. include:: FlowPastSquareObstacle/FlowPastSquareObstacle.txt
+
+.. _2Dpolymer:
+
+2D polymer
+**********
+
+.. include:: Polymers/2Dpolymer.txt
+
+Many polymers
+*************
+
+.. include:: Polymers/Manypolymer2D.txt
+
+Polymer translocation
+*********************
+
+.. include:: Polymers/polymerTranslocation.txt
+
+.. _WavyWalls:
+
+Wavy Walls
+*****************************
+
+.. include:: WavyWalls/WavyWalls.txt
+
+.. _OtherTutorials:
+
+Extra Tutorials
+***************
+
+.. include:: OtherTutorials/OtherTutorials.txt

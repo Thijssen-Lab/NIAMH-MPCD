@@ -58,7 +58,7 @@ c1 = args.deflength
 myAspect = args.myAspect
 keepFrames = args.keepFrames
 
-makeTransparent = 1 # Transparent backgrounds make crappy videos, but look good on webpages
+makeTransparent = False # Transparent backgrounds make crappy videos, but look good on webpages
 
 ###########################################################
 ### Format and style

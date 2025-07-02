@@ -1,0 +1,13 @@
+Developer's guide
+#################
+
+The MPCD code is well commented and it is expected that researchers will freely modify the code for their own purposes. 
+To aid in this process, we have written a `developer guide <https://github.com/Shendruk-Lab/MPCD/blob/master/docs/DevGuide.md>`_, which is available on the `GitHub repository <https://github.com/Shendruk-Lab/MPCD>`_. 
+
+To generate the developer guide, simply run the makefile with the option ``docs`` in the root directory of the repository (see the :ref:`Installation guide<install>`):
+
+.. code-block:: console
+
+   make docs
+
+The developer guide is generated using Doxygen, which is a tool for generating documentation from annotated C++ sources. Once it is generated, you can view it in your web browser by opening the file ``docs/doxyout/html/index.html``.

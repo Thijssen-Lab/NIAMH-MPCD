@@ -68,7 +68,7 @@ elif(fieldType=="n" or fieldType=="nem" or fieldType=="nematic" or fieldType=="d
 elif(fieldType=="none" or fieldType=="0"):
   fieldType="none"
 
-makeTransparent = True # Transparent backgrounds make crappy videos, but look good on webpages
+makeTransparent = False # Transparent backgrounds make crappy videos, but look good on webpages
 
 ###########################################################
 ### Style/formating stuff

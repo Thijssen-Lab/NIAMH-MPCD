@@ -1,7 +1,7 @@
 # NIAMH-MPCD
 This is the NoIsy Algorithm for Mesoscale Hydrodynamics Multi-Particle Collision Dynamics (NIAMH-MPCD) code developed by the [Shendruk Lab](https://tnshendruk.com). The primary distribution for the simulator is available at [Shendruk-Lab/NIAMH-MPCD](https://github.com/Shendruk-Lab/NIAMH-MPCD).
 
-If you just have obtained the code, and you are looking for documentation on how to use it, you might first want to have a look at the User's Guide at [docs/userguide/html](https://github.com/Shendruk-Lab/NIAMH-MPCD/docs/userguide/html).
+If you just have cloned the NIAMH-MPCD repo and are looking for the userguide, you can find it in [docs/userguide](https://github.com/Shendruk-Lab/NIAMH-MPCD/tree/master/docs/userguide) by opening ``docs/userguide/index.html`` in a browser.
 
 ## Useful Links
 - [Shendruk Lab website](https://tnshendruk.com)

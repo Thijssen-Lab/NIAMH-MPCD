@@ -47,6 +47,8 @@ finish = args.finish
 keepFrames = args.keepFrames
 savePDF = args.savePDF
 
+makeTransparent = False # Transparent backgrounds make crappy videos, but look good on webpages
+
 ###########################################################
 ### Format and style
 ###########################################################
@@ -268,7 +270,7 @@ for t in range(time):
     # uncomment below for snapshots
     plt.axis('off')
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-    savefig( name,bbox_inches='tight',pad_inches=0 )
+    savefig( name,bbox_inches='tight',pad_inches=0,transparent=makeTransparent )
     if savePDF: plt.savefig(namepdf, transparent=True, bbox_inches='tight')
 
 ###########################################################

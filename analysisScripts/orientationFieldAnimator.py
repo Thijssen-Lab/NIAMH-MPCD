@@ -62,7 +62,7 @@ keepFrames = args.keepFrames
 savePDF = args.savePDF
 defectData = args.defectData
 
-makeTransparent = True # Transparent backgrounds make crappy videos, but look good on webpages
+makeTransparent = False # Transparent backgrounds make crappy videos, but look good on webpages
 
 ###########################################################
 ### Format and style

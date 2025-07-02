@@ -1,0 +1,800 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Additional theoretical background" href="../ExtraTheory/ExtraTheory.html" /><link rel="prev" title="Hard-coded options" href="../HardCoded/HardCoded.html" />
+
+    <link rel="shortcut icon" href="../_static/niamh-favicon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2023.03.27 -->
+        <title>Inclusions and solutes - NIAMH-MPCD documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">NIAMH-MPCD  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../_static/niamh-logo.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">NIAMH-MPCD  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Summary/Summary.html">Summary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Algorithm/Algorithm.html">Algorithm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Install/Install.html">Installation guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Install/Run.html">Run guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Input/inputFiles.html">Input guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Tutorials/Tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Usage/Usage.html">MPCD usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../HardCoded/HardCoded.html">Hard-coded options</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Inclusions and solutes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ExtraTheory/ExtraTheory.html">Additional theoretical background</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Outputs/Outputs.html">Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Analysis/Analysis.html">Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../DeveloperGuide/DeveloperGuide.html">Developer’s guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/References.html">Bibliography</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="inclusions-and-solutes">
+<span id="inclusions"></span><h1>Inclusions and solutes<a class="headerlink" href="#inclusions-and-solutes" title="Permalink to this heading">#</a></h1>
+<p>MPCD is ideal for <a class="reference internal" href="../Algorithm/Algorithm.html#dimensionlessnumbers"><span class="std std-ref">moderate Péclet number</span></a>, where advection and diffusion are both significant. However, this implicitly implies that MPCD is ideal for embedded mesoscale particles or solutes that are being advected and diffusing. Indeed the very first applications of MPCD was to simulate polymer solutes suspended in an MPCD solvent <a class="reference internal" href="../References/References.html#malevanets2000" id="id1"><span>[Malevanets2000]</span></a>.</p>
+<section id="mobile-boundary-conditions">
+<span id="mobilebcs"></span><h2>Mobile boundary conditions<a class="headerlink" href="#mobile-boundary-conditions" title="Permalink to this heading">#</a></h2>
+<p>Mobile boundary conditions are a subset of <a class="reference internal" href="../Usage/Usage.html#chapterbc"><span class="std std-ref">boundary conditions</span></a> that can be used to model colloidal particles. MPCD colloids are implemented as boundaries that are able to translate and rotate in response to interactions with the fluid.
+Mobile boundaries have time-dependent position and orientation <span class="math notranslate nohighlight">\(\vec{Q}(t)\)</span> and <span class="math notranslate nohighlight">\(\vec{O}(t)\)</span>.
+Translational and rotational motion are supported through balancing momentum and torque between the BC and colliding particles via the boundary’s velocity <span class="math notranslate nohighlight">\(\vec{v}_{b}(t)\)</span> and angular velocity <span class="math notranslate nohighlight">\(\vec{\omega}_{b}(t)\)</span>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The current version of NIAMH-MPCD only supports mobile boundaries that are <strong>radially symmetric</strong>, i.e. circular disks in 2D and spheres in 3D, with <strong>homeotropic</strong> or <strong>free</strong> anchoring.</p>
+</div>
+<p>Any radially symmetric defect is allowed to translated and rotate by turning on the displacement flag <code class="docutils literal notranslate"><span class="pre">&quot;dsplc&quot;</span></code> <strong>inside</strong> a <code class="docutils literal notranslate"><span class="pre">&quot;bc&quot;</span></code> array:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;BC&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="p">[</span>
+<span class="w">        </span><span class="nt">&quot;dsplc&quot;</span><span class="p">:</span><span class="w">    </span><span class="mi">1</span>
+<span class="w">    </span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The default value is “off” (<code class="docutils literal notranslate"><span class="pre">0</span></code>).</p>
+</div>
+<p>The boundary velocity and angular velocity can each be initialized through the velocity <code class="docutils literal notranslate"><span class="pre">&quot;V&quot;</span></code> and angular velocity <code class="docutils literal notranslate"><span class="pre">&quot;L&quot;</span></code> arrays <strong>inside</strong> a <code class="docutils literal notranslate"><span class="pre">&quot;bc&quot;</span></code> array:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;BC&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="p">[</span>
+<span class="w">        </span><span class="nt">&quot;V&quot;</span><span class="p">:</span><span class="w">    </span><span class="p">[</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;L&quot;</span><span class="p">:</span><span class="w">    </span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mf">0.25</span><span class="p">],</span>
+<span class="w">    </span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The default value for both <code class="docutils literal notranslate"><span class="pre">&quot;V&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;L&quot;</span></code> is <code class="docutils literal notranslate"><span class="pre">[0,0,0]</span></code>.</p>
+</div>
+<p>To exchange momentum and angular momentum with the fluid mobile BCs must be assigned a mass. This is done <strong>inside</strong> each <code class="docutils literal notranslate"><span class="pre">&quot;bc&quot;</span></code> array:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;BC&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="p">[</span>
+<span class="w">        </span><span class="nt">&quot;mass&quot;</span><span class="p">:</span><span class="w">    </span><span class="mf">1005.3</span><span class="p">,</span>
+<span class="w">    </span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The default value for <code class="docutils literal notranslate"><span class="pre">&quot;mass&quot;</span></code> is 1 but it should be set to the same density as the fluid it is displacing.</p>
+</div>
+<section id="motion-from-velocity-rules">
+<h3>Motion from velocity rules<a class="headerlink" href="#motion-from-velocity-rules" title="Permalink to this heading">#</a></h3>
+<p>The boundary velocity and angular velocity each have three contributions</p>
+<div class="math-wrapper docutils container" id="eq-colloidvelangvel">
+<span id="equation-eq-colloidvelangvel"></span><div class="math notranslate nohighlight" id="eq-colloidvelangvel">
+<span id="equation-eq-colloidvelangvel"></span><span class="eqno">(1)<a class="headerlink" href="#eq-colloidvelangvel" title="Permalink to this equation">#</a></span>\[\begin{split}\vec{v}_{b}(t) = \sum_i^{N_{c*}} \left( \Delta \vec{v}_{b,i}^{\mathrm{vel}} + \Delta \vec{v}_{b,i}^\mathrm{ori} \right) + \sum_j^{N_{col*}} \Delta \vec{v}_{b,j}^{\mathrm{col}} \\
+\vec{\omega}_{b}(t) = \sum_i^{N_{c*}} \left( \Delta \vec{\omega}_{b,i}^{\mathrm{vel}} + \Delta \vec{\omega}_{b,i}^\mathrm{ori} \right) + \sum_j^{N_{col*}} \Delta \vec{\omega}_{b,j}^{\mathrm{col}} ,\end{split}\]</div>
+</div>
+<p>coming from incremental contributions due to conserving impulse and angular impulse between each of <span class="math notranslate nohighlight">\(N_{c*}\leq N\)</span> individual particles that have had applied velocity (<span class="math notranslate nohighlight">\(\mathrm{vel}\)</span>) and orientation (<span class="math notranslate nohighlight">\(\mathrm{ori}\)</span>) boundary conditions.
+In addition, boundaries may move into other boundaries. For each of the <span class="math notranslate nohighlight">\(N_{col*}\)</span> overlapping boundaries, denoted by index <span class="math notranslate nohighlight">\(j\)</span>, additional boundary rules must be applied to simulate boundary-boundary interactions.
+Like particles, these also enter as corrections to the boundaries <span class="math notranslate nohighlight">\(\vec{v}_{b}(t)\)</span> and <span class="math notranslate nohighlight">\(\vec{\omega}_{b}(t)\)</span>, through increments denoted by (<span class="math notranslate nohighlight">\(\mathrm{col}\)</span>).
+Colloid-colloid interactions are treated as elastic collisions.</p>
+<p>When <a class="reference internal" href="../Usage/Usage.html#subsection-boundaryrules"><span class="std std-ref">boundary rules</span></a> are applied to a particle, the velocity can be updated through the velocity shift <span class="math notranslate nohighlight">\(D_{v,\hat{\nu}}\)</span> and multiplier operators <span class="math notranslate nohighlight">\(M_{v,\hat{\nu}}\)</span> in the directions specified by <span class="math notranslate nohighlight">\(\hat{\nu}\)</span> — corresponding to a change in the particle’s momentum (if any <span class="math notranslate nohighlight">\(M_{v,\hat{\nu}}\neq 1\)</span> or <span class="math notranslate nohighlight">\(D_{v,\hat{\nu}}\neq 0\)</span>).
+The change of momentum of the particle over the time-step interval <span class="math notranslate nohighlight">\(\delta t\)</span> can be written in terms of the particle impulse <span class="math notranslate nohighlight">\(\vec{J}_i\)</span></p>
+<div class="math-wrapper docutils container" id="eq-impulse">
+<span id="equation-eq-impulse"></span><div class="math notranslate nohighlight" id="eq-impulse">
+<span id="equation-eq-impulse"></span><span class="eqno">(2)<a class="headerlink" href="#eq-impulse" title="Permalink to this equation">#</a></span>\[\vec{p}_i(t+\delta t) - \vec{p}_i(t) = \vec{J}_i.\]</div>
+</div>
+<p>If the boundary is static, then the impulse is absorbed by the boundary. However,
+if the boundary is mobile, then we assume impulse conservation between the particle and boundary, <span class="math notranslate nohighlight">\(\vec{J}_i+\vec{J}_b=0\)</span>.
+Where <span class="math notranslate nohighlight">\(b\)</span> denotes the boundary index.</p>
+<p>In satisfying the impulse conservation, the correction to the colloid’s velocity and angular velocity, due to the applied velocity boundary rules on particle <span class="math notranslate nohighlight">\(i\)</span>, is</p>
+<div class="math-wrapper docutils container" id="eq-impulsetocolloid">
+<span id="equation-eq-impulsetocolloid"></span><div class="math notranslate nohighlight" id="eq-impulsetocolloid">
+<span id="equation-eq-impulsetocolloid"></span><span class="eqno">(3)<a class="headerlink" href="#eq-impulsetocolloid" title="Permalink to this equation">#</a></span>\[\begin{split}\Delta \vec{v}_{b,i}^{\mathrm{vel}} = I_b^{-1}\vec{J}_{b,\hat{n}} \\
+\Delta \vec{\omega}_{b,i}^{\mathrm{vel}} = \vec{r}\times(I_b^{-1}\vec{J}_{b,\hat{t}})\end{split}\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(\vec{J}_{b,\hat{n}}=(\vec{J}_b\cdot\hat{n})\hat{n}\)</span> is the normal component and <span class="math notranslate nohighlight">\(\vec{J}_{b,\hat{t}}=\vec{J}_b-(\vec{J}_b\cdot\hat{n})\hat{n}\)</span> is the tangential component of the impulse.
+The inverse of the moment of inertia tensor is <span class="math notranslate nohighlight">\(I_b^{-1}\)</span>. The vector from the centre of mass to the collision on the wall is <span class="math notranslate nohighlight">\(\vec{r}\)</span>.</p>
+</section>
+<section id="motion-from-orientation-rules">
+<h3>Motion from orientation rules<a class="headerlink" href="#motion-from-orientation-rules" title="Permalink to this heading">#</a></h3>
+<p>The particle-boundary interactions can update the particle orientation through the multiplier operations <span class="math notranslate nohighlight">\(M_{u,\hat{\nu}}\)</span> in the directions specified by <span class="math notranslate nohighlight">\(\hat{\nu}\)</span>.
+The reorientation of particle <span class="math notranslate nohighlight">\(i\)</span> corresponds to a rotational impulse <span class="math notranslate nohighlight">\(\vec{\mathcal{T}}_i\)</span> due to a change in angular momentum over time interval <span class="math notranslate nohighlight">\(\delta t\)</span>.</p>
+<div class="math-wrapper docutils container" id="eq-angularimpulse">
+<span id="equation-eq-angularimpulse"></span><div class="math notranslate nohighlight" id="eq-angularimpulse">
+<span id="equation-eq-angularimpulse"></span><span class="eqno">(4)<a class="headerlink" href="#eq-angularimpulse" title="Permalink to this equation">#</a></span>\[\vec{\omega}_i(t+\delta t) - \vec{\omega}_i(t) = \vec{\mathcal{T}}_i.\]</div>
+</div>
+<p>The equation has a pivot point defined at the particle position on the boundary.</p>
+<p>Similar to the velocity rules, if the boundary is static, then the rotational impulse is absorbed by the boundary.
+However, if the boundary is mobile, then we assume rotational impulse conservation between the particle and boundary.
+It is the rotational impulse that needs to be converted into boundary increments <span class="math notranslate nohighlight">\(\Delta \vec{v}_{b,i}^\mathrm{ori}\)</span> and <span class="math notranslate nohighlight">\(\Delta \vec{\omega}_{b,i}^\mathrm{ori}\)</span> <a class="reference internal" href="../References/References.html#head2024" id="id2"><span>[Head2024]</span></a>.</p>
+<p>For our mobile colloid, <a class="reference internal" href="#eq-angularimpulse"><span class="std std-ref">rotational impulse conservation</span></a> can be recast into a torque balance, through <span class="math notranslate nohighlight">\(\vec{\mathcal{T}}_i=\vec{\Gamma}_i \delta t\)</span></p>
+<div class="math-wrapper docutils container" id="eq-torqueconservation">
+<span id="equation-eq-torqueconservation"></span><div class="math notranslate nohighlight" id="eq-torqueconservation">
+<span id="equation-eq-torqueconservation"></span><span class="eqno">(5)<a class="headerlink" href="#eq-torqueconservation" title="Permalink to this equation">#</a></span>\[\vec{\Gamma}_i + \vec{\Gamma}_{b,i} = 0\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(\vec{\Gamma}_{b,i}\)</span> is the torque that is transferred to the colloid at the position of particle <span class="math notranslate nohighlight">\(i\)</span>.</p>
+<p>For a particle with initial orientation <span class="math notranslate nohighlight">\(\hat{u}_i\)</span> with an anchoring axis <span class="math notranslate nohighlight">\(\hat{\nu}\)</span>, the torque on the particle takes the form</p>
+<div class="math-wrapper docutils container" id="eq-impulse3">
+<span id="equation-eq-impulse3"></span><div class="math notranslate nohighlight" id="eq-impulse3">
+<span id="equation-eq-impulse3"></span><span class="eqno">(6)<a class="headerlink" href="#eq-impulse3" title="Permalink to this equation">#</a></span>\[\vec{\Gamma}_i = \frac{\gamma_R}{\ell_u \delta t} \frac{M_{\nu}-M_{\perp}}{\sqrt{M_\nu^2 + M_\perp^2}}\left(\hat{u}_i \cdot \hat{\nu} \right)\left( \hat{u}_i \times \hat{\nu} \right)\]</div>
+</div>
+<p>with <span class="math notranslate nohighlight">\(\frac{M_{\nu}-M_{\perp}}{\sqrt{M_\nu^2 + M_\perp^2}}=1\)</span> when anchoring is fixed along <span class="math notranslate nohighlight">\(\hat{\nu}\)</span> using <span class="math notranslate nohighlight">\(M_{\nu}=1\)</span> and <span class="math notranslate nohighlight">\(M_{\perp}=0\)</span> (the multiplier perpendicular to <span class="math notranslate nohighlight">\(M_{\nu}\)</span>).</p>
+<p>The torque is only dependent on fixed simulation parameters and the relative alignment of <span class="math notranslate nohighlight">\(\hat{u}_i\)</span> and <span class="math notranslate nohighlight">\(\hat{\nu}\)</span>.
+Defining the alignment as <span class="math notranslate nohighlight">\(\cos\theta_i = \hat{u}_i\cdot \hat{\nu}\)</span>, the torque <span class="math notranslate nohighlight">\(\Gamma_i = \frac{\gamma_R}{\ell_u \delta t} \sin 2\theta\)</span>.
+The torque is odd under <span class="math notranslate nohighlight">\(\Gamma_i(-\theta)=-\Gamma_i(\theta)\)</span>,
+which motivates that the torque transferred to the colloid can be treated as a virtual MPCD particle at the same point,
+oriented in the direction <span class="math notranslate nohighlight">\(\hat{u}_{b,i}\)</span> that has angle <span class="math notranslate nohighlight">\(-\theta\)</span> relative to <span class="math notranslate nohighlight">\(\hat{\nu}\)</span>, and rotates in the opposite sense to <span class="math notranslate nohighlight">\(\hat{u}_i\)</span>.
+This construction satisfies the <a class="reference internal" href="#eq-torqueconservation"><span class="std std-ref">torque conservation equation</span></a>.</p>
+<p>The torque <span class="math notranslate nohighlight">\(\vec{\Gamma}_{b,i}\)</span> on the virtual particle, is converted into a force at the colloidal boundary by,</p>
+<div class="math-wrapper docutils container" id="eq-force">
+<span id="equation-eq-force"></span><div class="math notranslate nohighlight" id="eq-force">
+<span id="equation-eq-force"></span><span class="eqno">(7)<a class="headerlink" href="#eq-force" title="Permalink to this equation">#</a></span>\[\vec{F}_{b,i} = \frac{\vec{\Gamma}_{b,i} \times \hat{u}_{b,i}}{\ell_u}\]</div>
+</div>
+<p>where the above is only valid with the assumption <span class="math notranslate nohighlight">\(\hat{u}_{b,i}\)</span> and <span class="math notranslate nohighlight">\(\vec{F}_{b,i}\)</span> are orthogonal.
+The parameter <span class="math notranslate nohighlight">\(\ell_u\)</span> has units of length, and is the effective length of the rod <code class="docutils literal notranslate"><span class="pre">len</span></code>.
+This assumption is motivated by the anchoring reorientation being purely rotational motion around the pivot point, and hence no colinear contributions between the force and orientation <span class="math notranslate nohighlight">\(\hat{u}_{b,i}\cdot\hat{F}_{b,i} = 0\)</span>.</p>
+<p>Despite being “point-like”, nematic MPCD particles have an orientation and also an effective length. The effective length <span class="math notranslate nohighlight">\(\ell_u\)</span> is necessary to couple the torque on MPCD particle into force on boundaries. The smaller the length of the particle the stronger the force and the longer the particle the weaker the force. To set the effective length, add the following to your input <code class="docutils literal notranslate"><span class="pre">.json</span></code> file in the <code class="docutils literal notranslate"><span class="pre">&quot;bc&quot;</span></code> array:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;len&quot;</span><span class="p">:</span><span class="w">    </span><span class="mf">0.007</span><span class="p">,</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The default value is 0.007.</p>
+</div>
+<p>Since the orientation <span class="math notranslate nohighlight">\(\hat{u}_{b,i}\)</span> is head-tail symmetric, the force has an ambiguous sign under <span class="math notranslate nohighlight">\(\vec{F}(-\hat{u}_{b,i})=-\vec{F}(\hat{u}_{b,i})\)</span>.
+For this reason, the force is chosen to be oriented into the boundary, motivated by nematic colloids moving away from large elastic stress in reducing elastic deformation.</p>
+<p>The increments to the colloid’s velocity and angular velocity are</p>
+<div class="math-wrapper docutils container" id="eq-incrementcolloid">
+<span id="equation-eq-incrementcolloid"></span><div class="math notranslate nohighlight" id="eq-incrementcolloid">
+<span id="equation-eq-incrementcolloid"></span><span class="eqno">(8)<a class="headerlink" href="#eq-incrementcolloid" title="Permalink to this equation">#</a></span>\[\begin{split}\Delta \vec{v}_{b,i}^{\mathrm{ori}} = I_b^{-1} \vec{F}_{b,\hat{n}}\delta t \\
+\Delta \vec{\omega}_{b,i}^{\mathrm{ori}} =  \vec{r}\times (I_b^{-1}\vec{F}_{b,\hat{t}}\delta t)\end{split}\]</div>
+</div>
+<p>where the vector from the centre of mass to the collision on the wall is <span class="math notranslate nohighlight">\(\vec{r}\)</span>,
+<span class="math notranslate nohighlight">\(\vec{F}_{b,\hat{n}}=(\vec{F}_b\cdot\hat{n})\hat{n}\)</span> is the normal component and <span class="math notranslate nohighlight">\(\vec{F}_{b,\hat{t}}=\vec{F}_b-(\vec{F}_b\cdot\hat{n})\hat{n}\)</span> is the tangential component the force.</p>
+</section>
+<section id="external-forcing">
+<h3>External forcing<a class="headerlink" href="#external-forcing" title="Permalink to this heading">#</a></h3>
+<p>An external force can act on the mobile colloids. This is done through an  acceleration, which is set <strong>inside</strong> the <code class="docutils literal notranslate"><span class="pre">&quot;bc&quot;</span></code> array:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;G&quot;</span><span class="p">:</span><span class="w">    </span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.98</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The default value is <code class="docutils literal notranslate"><span class="pre">[0,0,0]</span></code>.</p>
+</div>
+</section>
+</section>
+<section id="molecular-dynamics">
+<span id="chapter11"></span><h2>Molecular dynamics<a class="headerlink" href="#molecular-dynamics" title="Permalink to this heading">#</a></h2>
+<p>Molecular Dynamics (MD) numerically integrates the classical equations of motion for a large number of particles that interact via a set of pair potentials <a class="reference internal" href="../References/References.html#slater2009" id="id3"><span>[Slater2009]</span></a>. It is a common approach to simulate polymer dynamics. Polymer molecules are composed of a large number of equal repeat units called monomers which are connected linearly by bonds.</p>
+<section id="input-fields">
+<span id="mdinput"></span><h3>Input fields<a class="headerlink" href="#input-fields" title="Permalink to this heading">#</a></h3>
+<p>To run hybrid molecular dynamics and MPCD simulations, you must include the path to an MD input file in the <code class="docutils literal notranslate"><span class="pre">.json</span></code> file:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;mdIn&quot;</span><span class="p">:</span><span class="w">  </span><span class="s2">&quot;path/to/md.inp&quot;</span><span class="p">,</span>
+</pre></div>
+</div>
+<p>This also acts as a swithch for enabling MD — If set to “”, then MD is disabled, otherwise MD is enabled with the corresponding input file.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The default value is “”.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">md.inp</span></code> input files are not as flexible as the <code class="docutils literal notranslate"><span class="pre">.json</span></code> input files. The inputs must be at exactly the correct line number to work.</p></li>
+<li><p>The MD input guide is not yet available but simple simulations can be run by modifyin the <a class="reference internal" href="../Tutorials/Tutorials.html#tutorials"><span class="std std-ref">Tutorials</span></a>.</p></li>
+</ul>
+</div>
+</section>
+<section id="md-mpcd-coupling">
+<span id="mdcouplemode"></span><h3>MD/MPCD coupling<a class="headerlink" href="#md-mpcd-coupling" title="Permalink to this heading">#</a></h3>
+<p>The coupling of the MD monomers to the MPCD fluid can be done in two ways. Either the MD beads can be included in the MPCD algorithm or the MPCD particles can be included in the MD calculations.</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-center">
+<colgroup>
+<col style="width: 50.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><figure class="align-center">
+<a class="reference internal image-reference" href="../_images/MDinMPCD.png"><img alt="../_images/MDinMPCD.png" src="../_images/MDinMPCD.png" style="width: 95%;" /></a>
+</figure>
+</td>
+<td><figure class="align-center">
+<a class="reference internal image-reference" href="../_images/MPCDinMD.png"><img alt="../_images/MPCDinMD.png" src="../_images/MPCDinMD.png" style="width: 95%;" /></a>
+</figure>
+</td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#md-in-mpcd-coupling"><span class="std std-ref">MD-in-MPCD Coupling</span></a></p></td>
+<td><p><a class="reference internal" href="#mpcd-in-md-coupling"><span class="std std-ref">MPCD-in-MD Coupling</span></a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<section id="md-in-mpcd-coupling">
+<span id="id4"></span><h4>MD-in-MPCD Coupling<a class="headerlink" href="#md-in-mpcd-coupling" title="Permalink to this heading">#</a></h4>
+<p>The MD monomers can be included in the MPCD collision operations. This scheme is referred to as MD-in-MPCD coupling. In the MD-in-MPCD scheme the MD algorithm integrates the MD monomer trajectories over some number of MD time-steps <span class="math notranslate nohighlight">\(N_{\text{MD}}\)</span>. In a sense, during this period the MD simulation occurs in a vacuum. After this the program exits the MD portion of the algorithm and enters the MPCD side. The MD beads are ported into the MPCD algorithm as point particles and are included in the collision operation. In this way, the MD beads exchange momentum with the fluid. The MPCD particles perform the streaming step (the MD particles do not) before the MD algorithm is reinitiated for another <span class="math notranslate nohighlight">\(N_{\text{MD}}\)</span> MD time-steps.</p>
+<p>Values of <span class="math notranslate nohighlight">\(N_{\text{MD}}\)</span> are typically large (on the order of 10 although smaller values have been used in the literature). This separation of time scales ensures that the momentum transferred to the polymer during the collision step is well distributed throughout the chain.</p>
+</section>
+<section id="mpcd-in-md-coupling">
+<span id="id5"></span><h4>MPCD-in-MD Coupling<a class="headerlink" href="#mpcd-in-md-coupling" title="Permalink to this heading">#</a></h4>
+<p>The second coupling scheme is more accurately described as a hybrid MPCD/MD approach. In the MPCD-in-MD coupling scheme MPCD solvent particles are included in the MD integrator. In the MD portion of the program the monomers interact with one another (monomer-monomer interactions) and also with the solvent fluid particles (monomer-solvent interactions) but the solvent particles do not interact with each other (no solvent-solvent interactions). In this implementation the MPCD fluid particles are cast as MD beads with the same properties as the monomers but this is not necessary. If desired, the program could be altered such that the MPCD particles would be cast as MD beads with different pair potentials than the monomers. The position and velocity of the all MPCD fluid particles is updated in time by the Verlet algorithm. After <span class="math notranslate nohighlight">\(N_{\text{MD}}\)</span> MD time-steps, the MD integrator is exited and the MPCD portion of the program is performed. MPCD fluid particles are binned into cells and exchange momentum by the MPCD collision operator. Since their positions are updated in the MD portion of the program, they do not stream.</p>
+<p>The number of MD steps between an MPCD step can be much smaller that in the MD-in-MPCD scheme.</p>
+<p>In both coupling schemes, the MD particles are typically given a mass <span class="math notranslate nohighlight">\(m_{\text{MD}}\)</span> that is larger than the MPCD particles’ mass in order to achieve efficient coupling.</p>
+<p>The coupling mode has two options: <code class="docutils literal notranslate"><span class="pre">1</span></code> for MD-in-MPCD and <code class="docutils literal notranslate"><span class="pre">2</span></code> for MPCD-in-MD in the <code class="docutils literal notranslate"><span class="pre">.json</span></code> file:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;mdCoupleMode&quot;</span><span class="p">:</span><span class="w">  </span><span class="mi">1</span><span class="p">,</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The default value is 1.</p>
+</div>
+<p>The number of MD steps per MPCD step <span class="math notranslate nohighlight">\(N_{\text{MD}}\)</span> is set in the  <code class="docutils literal notranslate"><span class="pre">.json</span></code> file:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;stepsMD&quot;</span><span class="p">:</span><span class="w">  </span><span class="mi">20</span><span class="p">,</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The default value is 20.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>There is no thermostat or hydrodynamic interactions over the <span class="math notranslate nohighlight">\(N_{\text{MD}}\)</span> MD steps between MPCD collision events.</p>
+</div>
+</section>
+</section>
+<section id="md-solver">
+<h3>MD solver<a class="headerlink" href="#md-solver" title="Permalink to this heading">#</a></h3>
+<p>In NIAMH-MPCD, the MD solver for the dynamics of the monomers is determined by Newtons’ equations of motion (no noise between MPCD collision events). These equations are integrated using the velocity Verlet algorithm. The standard implementation scheme of this algorithm is to</p>
+<ol class="arabic simple">
+<li><p>calculate <span class="math notranslate nohighlight">\({\vec v}(t+1/2 {\Delta}t) = {\vec v}(t) + 1/2 {\vec a}(t){\Delta}t\)</span>.</p></li>
+<li><p>calculate <span class="math notranslate nohighlight">\({\vec x}(t+{\Delta}t) = {\vec x}(t) + {\vec v}(t+1/2{\Delta}t){\Delta}t\)</span>.</p></li>
+<li><p>derive <span class="math notranslate nohighlight">\({\vec a}(t+{\Delta}t)\)</span> from the interaction potentials using <span class="math notranslate nohighlight">\({\vec x}(t+{\Delta}t)\)</span>.</p></li>
+<li><p>calculate <span class="math notranslate nohighlight">\({\vec v}(t+{\Delta}t) = {\vec v}(t+1/2{\Delta}t) + 1/2 {\vec a}(t+{\Delta}t) {\Delta}t\)</span>.</p></li>
+</ol>
+<p>This algorithm gives the particle’s velocity and position at the next time step using the interaction forces from the potentials as <span class="math notranslate nohighlight">\(f = - \nabla U(r_{ij})\)</span> for pairs of particles that are separated by a distance <span class="math notranslate nohighlight">\(r_{ij}\)</span>. The most common pair potentials for simulating polymers are</p>
+<ul class="simple">
+<li><p><strong>Lennard-Jones (LJ) Potential</strong>, <span class="math notranslate nohighlight">\(U_{\text{LJ}}\)</span>: The interaction between two free, uncharged molecules (respectively labelled <span class="math notranslate nohighlight">\(i\)</span> and <span class="math notranslate nohighlight">\(j\)</span>)</p></li>
+</ul>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[U_{\text{LJ}}(r_{ij}) = 4\epsilon \left[ \left(\frac{\sigma}{r_{ij}}\right)^{12} - \left(\frac{\sigma}{r_{ij}}\right)^6 \right],\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(r_{ij}\)</span> is the separation between two monomers, <span class="math notranslate nohighlight">\(\epsilon\)</span> is the well depth and <span class="math notranslate nohighlight">\(\sigma\)</span> is the effective diameter of the pair of MD particles.</p>
+<ul class="simple">
+<li><p><strong>Weeks-Chandler-Andersen (WCA) Potential</strong>, <span class="math notranslate nohighlight">\(U_{\text{WCA}}\)</span>: A purely repulsive, truncated form   of the LJ potential commonly used as a coarse-grained interaction. The LJ potential is shifted and truncated at its minimum value so that it ends smoothly at a distance <span class="math notranslate nohighlight">\(r_c\)</span>. The WCA potential can be written as</p></li>
+</ul>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}U{\text{WCA}}(r_{ij}) = 4\epsilon
+\begin{cases}
+     \left(\frac{\sigma}{r_{ij}}\right)^{12} - \left(\frac{\sigma}{r_{ij}}\right)^6
+    + \frac{1}{4},
+    &amp; r_{ij}&lt;r_c\\
+    0,
+    &amp; r_{ij}&gt;r_c
+\end{cases}\end{split}\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(r_c = \sqrt[6]{2}\sigma\)</span>.</p>
+<ul class="simple" id="fene">
+<li><p><strong>Finitely Extensible Bonds</strong>, <span class="math notranslate nohighlight">\(U_{\text{FENE}}\)</span>: In any coarse-grained model of a polymer, adjacent MD beads must be connected together to form a chain of monomers. The use of harmonic potentials can lead to unphysical bond stretching effects. For this reason, a finitely extensible force with a hard limit on the bond length is utilized <a class="reference internal" href="../References/References.html#wu2014" id="id6"><span>[Wu2014]</span></a>. The most common choice is the finitely extensible nonlinear elastic potential (FENE):</p></li>
+</ul>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[U_{\text{FENE}}(r_{ij})
+= -\frac{k_{\text{FENE}}}{2} {r_0}^2 \ln
+\left( 1-\frac{{r_{ij}}^2}{{r_0}^2} \right),\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(k_{\text{FENE}}\)</span> is a spring constant representing the stiffness of the bond in response to stretching and <span class="math notranslate nohighlight">\(r_0\)</span> is the maximum length of the bonds.</p>
+<ul class="simple" id="bending-potential">
+<li><p><strong>Bond Bending Potential</strong>, <span class="math notranslate nohighlight">\(U_{\text{Bend}}\)</span>: This potential captures the stiffness of the polymer in response to bending force. Since the simulations are coarse-grained these are not intended to represent chemical bending potentials but can give polymer chains microscopic characteristics such as correlations along the back-bone (a non-zero persistence length). There are several bending potentials including angular harmonic, cosine harmonic or cosine expansion <a class="reference internal" href="../References/References.html#bulacu2013" id="id7"><span>[Bulacu2013]</span></a>. For instance angular harmonic is given by</p></li>
+</ul>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[U_{\text{Bend}}(\theta _{ijk}) = \frac{k_{\text {Bend}}}{2} (\theta _{ijk} - \vartheta)^2.\]</div>
+</div>
+<p>The angle <span class="math notranslate nohighlight">\(\theta_{ijk}\)</span> is the angle created by three consecutive monomers <span class="math notranslate nohighlight">\(i, j\)</span> and <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(\vartheta\)</span> is the equilibrium angle. The parameter to modulate the bending stiffness is <span class="math notranslate nohighlight">\(k_{\text{Bend}}\)</span> .</p>
+<ul class="simple" id="coulombic">
+<li><p><strong>Coulombic Potential</strong>, <span class="math notranslate nohighlight">\(U_{\text{Coul}}\)</span>: The bare electrostatic interaction between pairs of particles is given by the Coulombic potential</p></li>
+</ul>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[U_{\text{Coul}}(r_{ij}) = \frac{1}{4 \pi \epsilon_0 \epsilon_r} \frac{Q_i Q_j}{r_{ij}}\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(Q_i\)</span> and <span class="math notranslate nohighlight">\(Q_j\)</span> are the <em>effective</em> charges on each particle after charge reduction due
+to counterion condensation. For mesoscopic simulations, <span class="math notranslate nohighlight">\(\epsilon_0 \epsilon_r\)</span> is an effective dielectric constant that includes screening effects due to the medium. Condensation effects can be encapsulated in the Bjerum length</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\lambda_B = \frac {e^2}{4 \pi \epsilon_0 \epsilon_r K_BT}\]</div>
+</div>
+<p>The Bjerum length is the distance beyond which thermal energy is greater than electrostatic energy. In terms of the Bjerum length, Coulombic interactions can be written</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[U_{\text{Coul}}(r_{ij}) = K_BT \frac{Q_i Q_j}{r_{ij}} \frac{\lambda_B}{r_{ij}}\]</div>
+</div>
+<p>The Coulombic interactions are long-range scaling like <span class="math notranslate nohighlight">\(∼ r_{ij}^{−1}\)</span>. The long-range contributions are important and for this reason, inclusion of electrostatic effects can be computationally expensive. However, in a solvent electrostatic interactions are screened by the electric double layer and so it is not always necessary to use <span class="math notranslate nohighlight">\(U_{\text{Coul}}\)</span>. Often a much shorter-ranged electrostatic interaction will suffice.</p>
+<ul class="simple" id="debye-huckel">
+<li><p><strong>Debye-Huckel Potential</strong>, <span class="math notranslate nohighlight">\(U_{\text{DH}}\)</span>: The electrostatic interactions are typically screened. The Debye-Huckel potential is the approximation for the electrostatic potential of a charged sphere. This electric potential is given in terms of the zeta-potential. Since MD monomers do not conveniently have a zeta-potential could be replaced with the effective charge on the <span class="math notranslate nohighlight">\(i_{th}\)</span> monomer (of radius <span class="math notranslate nohighlight">\(r = \frac {\sigma}{2}\)</span> ) ie. <span class="math notranslate nohighlight">\(Q_{\text{eff}} = 4 \pi \epsilon_0 \epsilon_r r \zeta (1+r/\lambda_{\text{D}})\)</span>. The Debye length, <span class="math notranslate nohighlight">\(\lambda_{\text{D}}\)</span>, is the length scale beyond which Coulombic interactions are screened by the distribution of counterions. Then the potential between two spheres of effective charge <span class="math notranslate nohighlight">\({Q_i}^{eff}\)</span> and <span class="math notranslate nohighlight">\({Q_j}^{eff}\)</span> in the Huckel limit of <span class="math notranslate nohighlight">\(\sigma/\lambda_{\text{D}} \ll 1\)</span> becomes</p></li>
+</ul>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[U_{\text{Coul}}(r_{ij}) \approx K_BT \frac{Q_i Q_j}{e^2} \frac{\lambda_B}{r_{ij}} \exp(\frac{-r_{ij}}{\lambda_{\text{D}}})\]</div>
+</div>
+</section>
+<section id="nematic-fluid">
+<h3>Nematic fluid<a class="headerlink" href="#nematic-fluid" title="Permalink to this heading">#</a></h3>
+<p>When it comes to a nematic background, the orientational order of the fluid also plays an important role. A polymer embedded in an isotropic fluid is just coupled to the flow field through exchanging momentum. But in the case of a nematic fluid the backbone of the polymer can be coupled to the orientation field and the following potential captures this coupling in our model</p>
+<ul class="simple" id="coupling-potential">
+<li><p><strong>Nematic Coupling Potential</strong>, <span class="math notranslate nohighlight">\(U_{\text{Nem}}\)</span>: This potential aligns each bond of the polymer connecting two consecutive monomers with the local nematic orientation. it works similarly to the <a class="reference internal" href="#bending-potential"><span class="std std-ref">Bond Bending Potential</span></a> with one difference. The angle in this case is the angle beween the bond and the local nematic orientation.</p></li>
+</ul>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[U_{\text{Nem}}(\theta _{ijk}) = \frac{k_{\text {Nem}}}{2} (\theta - \vartheta)^2.\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(\vartheta\)</span> is the equilibrium angle which in this case is <strong>zero</strong>. The parameter to modulate the alignment strength is <span class="math notranslate nohighlight">\(k_{\text{Nem}}\)</span>.</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-center">
+<colgroup>
+<col style="width: 100.0%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><figure class="align-center">
+<a class="reference internal image-reference" href="../_images/coupling.png"><img alt="../_images/coupling.png" src="../_images/coupling.png" style="width: 40%;" /></a>
+</figure>
+</td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#coupling-potential"><span class="std std-ref">Nematic Coupling Potential</span></a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+<section id="tadpole-swimmers">
+<span id="swimmers"></span><h2>TADPole swimmers<a class="headerlink" href="#tadpole-swimmers" title="Permalink to this heading">#</a></h2>
+<p>The hydrodynamical interaction of model shaped-anisotropic bacilliform are simulated using the Two-length Active Dumbbell diPole (TADPole) model.</p>
+<p>To model the bacilliform body of swimming microbes, the TADPole model is proposed composed of two monomers (head and middle) simulating the body, subject to an explicit propulsion force applied in the dimer’s polar axis. The two monomers are connected by a spring. The surrounding MPCD fluid sees these monomers point-particles, but excluded volume with other swimmers/obstacles (Lennord-Jones potential) can be turned on (default) or off. Besides that, the swimmer monomers are treated as other MD particles.</p>
+<p>The swimmers can induce hydrodynamical forces on the surrounding MPCD fluid, which captures the far-flow field of swimming microbes. The swimmer has a self-propulsion force, which is applied split evenly between the head and middle monomer to induce self-propulsion. Simultaneously, the head and middle monomer exert an equal drag force on the MPCD particles in the box they inhabit. To make the sum of forces on the fluid force-free, an opposite force to these two drag forces is applied at a localized tail position. This induces the dipole force, which results in the far-flow field of swimming microbes. This opposite force on the fluid is inspired by previous phantom propulsion force models <a class="reference internal" href="../References/References.html#nash2008" id="id8"><span>[Nash2008]</span></a> <a class="reference internal" href="../References/References.html#degraaf2016" id="id9"><span>[deGraaf2016]</span></a>. <a class="reference internal" href="../References/References.html#kozhukhov2022" id="id10"><span>[Kozhukhov2022]</span></a></p>
+<figure class="align-center" id="id11">
+<a class="reference internal image-reference" href="../_images/swimmerschematic1.jpg"><img alt="Logo" src="../_images/swimmerschematic1.jpg" style="width: 650.5px; height: 639.0px;" /></a>
+<figcaption>
+<p><span class="caption-text">Schematic of Dumbbell swimmer. it contains two monomers (head and middle) connected with a FENE spring. The two monomers exert drag forces on their surrounding fluid, while at a localized tail position away from the middle
+an opposite but equal force to these drag forces (the total propulsion force) is also applied on the surrounding fluid. This results in a dipolar far flow field.</span><a class="headerlink" href="#id11" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+<p>Swimmers are included in the code by increasing the number of swimmers to be greater than zero in the <code class="docutils literal notranslate"><span class="pre">.json</span></code> script:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;nSwim&quot;</span><span class="p">:</span><span class="w">            </span><span class="mi">1</span><span class="p">,</span>
+</pre></div>
+</div>
+<section id="tadpole-parameters">
+<span id="tadpoleparam"></span><h3>TADPole parameters<a class="headerlink" href="#tadpole-parameters" title="Permalink to this heading">#</a></h3>
+<p>The following inputs are necesary to define a TADPole swimmer in the <code class="docutils literal notranslate"><span class="pre">.json</span></code> script.</p>
+<ul>
+<li><p>Swimmer type:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">typeSwim=0</span></code> for a fixed swimmer. Important, is that the number of swimmers than needs to be 1.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">typeSwim=1</span></code> gives moving swimmers with no excluded volume interactions.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">typeswim=2</span></code> gives moving swimmers with excluded volume itneractions.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">typeswim=3</span></code> gives only one force on the head, in the direction of the head, producing a monopole force.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">typeswim=4</span></code> Swimmers constrained to be near the y=0 (2D) or z=0 (3D) domain boundary.</p></li>
+</ul>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;typeSwim&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span>
+</pre></div>
+</div>
+</li>
+<li><p>Magnitude of swimmer propulsion force. Sets propulsion speed of swimmers</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;fsSwim&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">10.0</span><span class="p">,</span>
+</pre></div>
+</div>
+</li>
+<li><p>The dipole strenth parameter. Distance from the middle (in multiples of head-middle length/spring seperation) where tail force is applied. (for a pusher DS&gt;0; for a puller DS&lt;0)</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;dsSwim&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">4.0</span><span class="p">,</span>
+</pre></div>
+</div>
+</li>
+<li><p>Spring constant and seperation. This sets the size of the swimmers. The <code class="docutils literal notranslate"><span class="pre">roSwim</span></code> should be the same as the monomer size. Springs are implemented using FENE chains.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;kSwim&quot;</span><span class="p">:</span><span class="w">     </span><span class="mf">30.0</span><span class="p">,</span>
+<span class="nt">&quot;roSwim&quot;</span><span class="p">:</span><span class="w">    </span><span class="mf">2.0</span><span class="p">,</span>
+</pre></div>
+</div>
+</li>
+<li><p>Size of excluded volume of the head/middle monomer part with other swimmers/MD particles. Only works if excluded volume is activated. This is implemented with a Lennord-Jones potential.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;sigSwim&quot;</span><span class="p">:</span><span class="w">  </span><span class="mi">2</span><span class="p">,</span>
+</pre></div>
+</div>
+</li>
+<li><p>Interaction strength of the Lennord-Jones potential used for excluded volume interaction (Lennord-Jones potential).</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;epsSwim&quot;</span><span class="p">:</span><span class="w">  </span><span class="mi">2</span><span class="p">,</span>
+</pre></div>
+</div>
+</li>
+<li><p>A short-range attraction between swimmers can be included. Setting <code class="docutils literal notranslate"><span class="pre">depSwim</span></code> to 0 turns attractions off, 1 makes it an Asakura-Oosawa potential and 2 a square potential.</p>
+<ul class="simple">
+<li><p><strong>Square-Well (SW) Potential</strong>, <span class="math notranslate nohighlight">\(U_{\text{SW}}\)</span>: Square-well attraction between two monomers (respectively labelled <span class="math notranslate nohighlight">\(i\)</span> and <span class="math notranslate nohighlight">\(j\)</span>)</p></li>
+</ul>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}U_{\text{SW}}(r_{ij}) = U_{\text{dep}}
+\begin{cases}
+  \infty &amp; r_{ij}&lt;2\sigma\\
+  - 1 &amp; 2\sigma \leq r_{ij} \leq 2(\sigma+R_\text{dep})\\
+  0 &amp; r_{ij}&gt;2(\sigma+R_\text{dep})
+\end{cases}\end{split}\]</div>
+</div>
+<ul class="simple">
+<li><p><strong>Asakura-Oosawa (AO) Potential</strong>, <span class="math notranslate nohighlight">\(U_{\text{AO}}\)</span>: The depletion attraction between two monomers of radius <span class="math notranslate nohighlight">\(\sigma\)</span> (respectively labelled <span class="math notranslate nohighlight">\(i\)</span> and <span class="math notranslate nohighlight">\(j\)</span>)</p></li>
+</ul>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}U_{\text{AO}}(r_{ij}) = U_{\text{dep}}
+\begin{cases}
+  \infty &amp; r_{ij}&lt;2\sigma\\
+  \left(\frac{- (\sigma+R_\text{dep})}{R_\text{dep}}\right)^3 \left[ 1 - \frac{3}{4}\frac{r_{ij}}{(\sigma+R_\text{dep})} + \frac{1}{16}\left(\frac{r_{ij}}{(\sigma+R_\text{dep})}\right)^3\right] &amp; 2\sigma \leq r_{ij} \leq 2(\sigma+R_\text{dep})\\
+  0 &amp; r_{ij}&gt;2(\sigma+R_\text{dep})
+\end{cases}\end{split}\]</div>
+</div>
+</li>
+</ul>
+<p>The range <span class="math notranslate nohighlight">\(R_\text{dep}\)</span> and the depth <span class="math notranslate nohighlight">\(U_{\text{dep}}\)</span> can be set by <code class="docutils literal notranslate"><span class="pre">rangeSwim</span></code> and <code class="docutils literal notranslate"><span class="pre">depthSwim</span></code> respectively.</p>
+<blockquote>
+<div><div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;depSwim&quot;</span><span class="p">:</span><span class="w">    </span><span class="mi">1</span><span class="p">,</span>
+<span class="nt">&quot;rangeSwim&quot;</span><span class="p">:</span><span class="w">  </span><span class="mf">1.5</span><span class="p">,</span>
+<span class="nt">&quot;depthSwim&quot;</span><span class="p">:</span><span class="w">  </span><span class="mf">10.0</span><span class="p">,</span>
+</pre></div>
+</div>
+</div></blockquote>
+<ul>
+<li><p>Set the initial distribution of swimmer position (0: randomly placed within control volume, 1: Read from file, 2: Centre of controle volume)</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;qDistSwim&quot;</span><span class="p">:</span><span class="w">   </span><span class="mi">0</span><span class="p">,</span>
+</pre></div>
+</div>
+</li>
+<li><p>Set the initial distribution of swimmer orientation (0: random orientation, 1: x-aligned, 2: y-aligned, 3: z-algined, 4: 45 degrees angle. 5: randomly in XY-plane, 6: randomly in XZ-plane, 7: randomly in YZ-plane, 8: Align all particles in the direction of origin towards positive right hand corner of any cartesian plane, 9: Align all particles in the direction of two oppositely charged defects.)</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;oDistSwim&quot;</span><span class="p">:</span><span class="w">   </span><span class="mi">0</span><span class="p">,</span>
+</pre></div>
+</div>
+</li>
+<li><p>Mass of swimmer monomers. This should be approximately the density of the fluid.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;headMSwim&quot;</span><span class="p">:</span><span class="w">  </span><span class="mi">20</span><span class="p">,</span>
+<span class="nt">&quot;midMSwim&quot;</span><span class="p">:</span><span class="w">   </span><span class="mi">20</span><span class="p">,</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<section id="extra-tadpole-input">
+<span id="extraswimmer"></span><h4>Extra TADPole input<a class="headerlink" href="#extra-tadpole-input" title="Permalink to this heading">#</a></h4>
+<p>The following inputs are expansions on the TADPole model. Hence, their default input parameters are set to zero.</p>
+<ul>
+<li><p>Magnitude of torque to set the swimmers as rotlet dipole</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;tsSwim&quot;</span><span class="p">:</span><span class="w">    </span><span class="mf">0.3</span><span class="p">,</span>
+</pre></div>
+</div>
+</li>
+<li><p>If multiphase is enabled, treat swimmer as this type. Currently, make sure both particles are same type.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;hspIdSwim&quot;</span><span class="p">:</span><span class="w">     </span><span class="mi">1</span><span class="p">,</span>
+<span class="nt">&quot;mspIdSwim&quot;</span><span class="p">:</span><span class="w">     </span><span class="mi">2</span><span class="p">,</span>
+</pre></div>
+</div>
+</li>
+<li><p>Run and tumble parameters. In order to make swimmers run and tumble, set runTSwim and tumTSwim to non-zero values. These set the average run and tumble time (in MPCD timesteps) that the particle runs and tumbles respectively. Run and tumble are stochastic processes, drawn from a stochastic exponential distribution.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;runTSwim&quot;</span><span class="p">:</span><span class="w">      </span><span class="mi">50</span><span class="p">,</span>
+<span class="nt">&quot;tumTSwim&quot;</span><span class="p">:</span><span class="w">       </span><span class="mi">5</span><span class="p">,</span>
+</pre></div>
+</div>
+</li>
+<li><p>Tumbling is implemented by reducing the sping size and particle size. For tumbling state, the spring is replaced with a Hookean spring.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;springShrinkSwim&quot;</span><span class="p">:</span><span class="w">      </span><span class="mf">0.2</span><span class="p">,</span>
+<span class="nt">&quot;sizeShrinkSwim&quot;</span><span class="p">:</span><span class="w">        </span><span class="mf">0.2</span><span class="p">,</span>
+</pre></div>
+</div>
+</li>
+<li><p>Shrinkage during tumbling is not instantaniously, rather it is done in smaller steps, which is set here.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;shrTSwim&quot;</span><span class="p">:</span><span class="w">      </span><span class="mi">2</span><span class="p">,</span>
+</pre></div>
+</div>
+</li>
+<li><p>The strength of the magnetic moment on the swimmers (if magnetic field is applied)</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;magMomSwim&quot;</span><span class="p">:</span><span class="w">    </span><span class="mf">0.5</span><span class="p">,</span>
+</pre></div>
+</div>
+</li>
+<li><p>The fixed distance from the wall for <cite>DUMBELL_NEARWALL</cite> mode. Used for <code class="docutils literal notranslate"><span class="pre">timeswim=4</span></code>.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;fixDistSwim&quot;</span><span class="p">:</span><span class="w">   </span><span class="mi">20</span><span class="p">,</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../ExtraTheory/ExtraTheory.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Additional theoretical background</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../HardCoded/HardCoded.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Hard-coded options</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2023, Shendruk Lab
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Inclusions and solutes</a><ul>
+<li><a class="reference internal" href="#mobile-boundary-conditions">Mobile boundary conditions</a><ul>
+<li><a class="reference internal" href="#motion-from-velocity-rules">Motion from velocity rules</a></li>
+<li><a class="reference internal" href="#motion-from-orientation-rules">Motion from orientation rules</a></li>
+<li><a class="reference internal" href="#external-forcing">External forcing</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#molecular-dynamics">Molecular dynamics</a><ul>
+<li><a class="reference internal" href="#input-fields">Input fields</a></li>
+<li><a class="reference internal" href="#md-mpcd-coupling">MD/MPCD coupling</a><ul>
+<li><a class="reference internal" href="#md-in-mpcd-coupling">MD-in-MPCD Coupling</a></li>
+<li><a class="reference internal" href="#mpcd-in-md-coupling">MPCD-in-MD Coupling</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#md-solver">MD solver</a></li>
+<li><a class="reference internal" href="#nematic-fluid">Nematic fluid</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tadpole-swimmers">TADPole swimmers</a><ul>
+<li><a class="reference internal" href="#tadpole-parameters">TADPole parameters</a><ul>
+<li><a class="reference internal" href="#extra-tadpole-input">Extra TADPole input</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/scripts/furo.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    </body>
+</html>
