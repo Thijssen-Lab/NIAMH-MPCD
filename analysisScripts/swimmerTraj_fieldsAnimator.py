@@ -20,6 +20,10 @@ import argparse
 
 from defectHandler import getDefectData
 
+# Use our custom style and colours
+plt.style.use('shendrukGroupStyle')
+import shendrukGroupFormat as ed
+
 ###########################################################
 ### Set up argparse
 ###########################################################
@@ -73,10 +77,6 @@ makeTransparent = False # Transparent backgrounds make crappy videos, but look g
 ###########################################################
 ### Style/formating stuff
 ###########################################################
-# Use our custom style and colours
-plt.style.use('shendrukGroupStyle')
-import shendrukGroupFormat as ed
-
 # Colours
 swimmerMap=ed.viridis
 if(fieldType=="vel"):
