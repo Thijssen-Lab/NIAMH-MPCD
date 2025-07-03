@@ -42,7 +42,6 @@ parser.add_argument('fieldType', type=str, help="Field type: 'vel', or 'nem' for
 parser.add_argument("-s","--start", type=int, help="Starting timestep for averaging", default=1)
 parser.add_argument("-f","--finish", type=int, help="Finishing timestep for averaging", default=9999999)
 parser.add_argument("-c", "--length", type=float, help="Length of director lines", default=0.5)
-parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'",default="auto")
 parser.add_argument("-k", "--keepFrames", type=int, help="0=don't keep (delete) frames; 1=keep frames", default=0)
 parser.add_argument("-p", "--savePDF", type=int, help="1 saves transparent pdfs for papers, 0 for none", default=0)
 parser.add_argument("-d", "--defectData", type=int, help="Show defects (0=False; 1=True)", default="0")
@@ -61,12 +60,12 @@ projection = args.proj
 START_FRAME = args.start
 FINISH_FRAME = args.finish
 fieldType = args.fieldType
-myAspect = args.myAspect
 keepFrames = args.keepFrames
 savePDF = args.savePDF
 defectData = args.defectData
 C = args.length
 
+myAspect = "equal"
 makeTransparent = False # Transparent backgrounds make crappy videos, but look good on webpages
 
 fieldType=fieldType.lower()
@@ -76,8 +75,6 @@ elif(fieldType=="n" or fieldType=="nem" or fieldType=="nematic" or fieldType=="d
   fieldType="nem"
 elif(fieldType=="none" or fieldType=="0"):
   fieldType="none"
-
-# myAspect
 
 ###########################################################
 ### Style/formating stuff
@@ -104,7 +101,7 @@ if fieldType == "vel":
     arrow_args = dict(headlength=5, headwidth=3, headaxislength=4.5)
 elif fieldType == "nem":
     cmap = ed.plasma
-    label = r"Scalar order parameter, $S_c$"
+    label = r"Scalar order, $S$"
     arrow_args = dict(headlength=0, headwidth=0, headaxislength=0)
 else:
     print( "Field type not recognized.")
@@ -126,10 +123,13 @@ if myAspect == 'auto':
 else:
 	shrink_factor = float(xyz_size[dimX])/float(xyz_size[dimY])
 	if xyz_size[dimX] > xyz_size[dimY]:
-		height*= shrink_factor
-	else:
 		width*= shrink_factor
+	else:
+		height*= shrink_factor
 fig,ax = plt.subplots(figsize=(width, height))
+
+print(xyz_size,float(xyz_size[dimX]),float(xyz_size[dimY]),shrink_factor)
+# exit()
 
 md_mpcd = sim_config.get("stepsMD", 50)
 field_out = sim_config["flowOut"] if fieldType == "vel" else sim_config["dirSOut"]
@@ -285,7 +285,7 @@ while True:
             fig,ax = plt.subplots(figsize=(width, height))
             ax.set_xlim(0, xyz_size[dimX])
             ax.set_ylim(0, xyz_size[dimY])
-            ax.set_aspect('equal')
+            ax.set_aspect(myAspect)
 
             slice_idx = int(cm_val[proj_dim]) % xyz_size[proj_dim]
 
@@ -332,7 +332,8 @@ while True:
                 for p, c, o in zip(def_pos, def_cha, def_ori):
                     drawNematicDefect(p, c, o, multiplier=1)
 
-            cb = fig.colorbar(sc, ax=ax,shrink=shrink_factor,aspect=20*shrink_factor,pad=0.04)
+            # cb = fig.colorbar(sc, ax=ax,shrink=1.0/shrink_factor,aspect=20*shrink_factor,pad=0.04)
+            cb = fig.colorbar(sc, ax=ax, pad=0.04)
             cb.ax.set_position([0.8, 0.1, 0.05, 0.8])
             cb.ax.set_ylabel(label, fontsize=FS)
             ax.axis('off')
@@ -353,7 +354,7 @@ if show_defects:
 
 # === Animate ===
 output_name = data_path / (
-    "flow.mp4" if fieldType == "vel" else f"director_def{show_defects}.mp4"
+    "flow_.mp4"%(projection) if fieldType == "vel" else f"director_def{show_defects}_%s.mp4"%(projection)
 )
 call(f"rm -f '{output_name}'", shell=True)
 call(
