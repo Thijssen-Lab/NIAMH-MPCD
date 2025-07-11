@@ -27,24 +27,27 @@ parser = argparse.ArgumentParser(description='Probability density rendering '
 parser.add_argument('dataName', type=str,
 					help="Path to data (should be a histogram output for a "
 						 "vector quantity)")
-parser.add_argument('xaxis', type=str,
-					help="x axis label --- What is this the histogram of?")
-parser.add_argument("start", type=int, help="Starting timestep for averaging")
-parser.add_argument("finish", type=int, help="Finishing timestep for averaging")
-parser.add_argument("-m", "--makeMovie", type=int, default=0,
+parser.add_argument('-X', '--xaxis', type=str,
+					help="x axis label --- What is this the histogram of?", default="")
+parser.add_argument('-s', "--start", type=int, default=0, help="Starting timestep for averaging")
+parser.add_argument('-f', "--finish", type=int, default=9999999, help="Finishing timestep for averaging")
+parser.add_argument("-m", "--makeMovie", type=int, default=1,
 					help="Whether or not to animate temporal data (0 or 1)")
-parser.add_argument("-k", "--keepFrames", type=int,
-                    help="0=don't keep (delete) frames; 1=keep frames",
-                    default=0)
 parser.add_argument("-a", "--plotAv", type=int,
 					help="Whether or not to plot average (0 or 1)",
-					default=0)
+					default=1)
 parser.add_argument("-x", "--includeX", type=int,
 					help="Whether or not to include x (0 or 1)", default=1)
 parser.add_argument("-y", "--includeY", type=int,
 					help="Whether or not to include y (0 or 1)", default=1)
 parser.add_argument("-z", "--includeZ", type=int,
 					help="Whether or not to include z (0 or 1)", default=1)
+parser.add_argument("-k", "--keepFrames", type=int,
+                    help="0=don't keep (delete) frames; 1=keep frames",
+                    default=0)
+parser.add_argument("-g", "--groupStyle", type=int,
+                    help="0=don't use group style; 1=use group style",
+                    default=1)
 args = parser.parse_args()
 
 ###########################################################
@@ -63,6 +66,7 @@ plotAv = args.plotAv
 _x = args.includeX
 _y = args.includeY
 _z = args.includeZ
+groupStyle = args.groupStyle
 
 ###########################################################
 ### Assumed arguments that a user could change
@@ -73,6 +77,10 @@ avOutName=dataName.split(".dat")[0]+"_av"
 ###########################################################
 ### Format and style
 ###########################################################
+if groupStyle:
+	# Use our custom style and colours
+	plt.style.use('shendrukGroupStyle')
+	import shendrukGroupFormat as ed
 #Animation stuff
 bitrate=5000
 framerate=12		#Number of frames per second in the output video

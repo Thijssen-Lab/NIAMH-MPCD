@@ -14,10 +14,6 @@ import os
 import json
 import argparse
 
-# Use our custom style and colours
-plt.style.use('shendrukGroupStyle')
-import shendrukGroupFormat as ed
-
 ###########################################################
 ### Set up argparse
 ###########################################################
@@ -25,27 +21,32 @@ parser = argparse.ArgumentParser(description='Animates 2D fields in swimmers '
                                              'reference frame.')
 parser.add_argument("dataname", type=str, help="Path to the data")
 parser.add_argument("inputname", type=str, help="Path to input .json file")
-parser.add_argument("start", type=int, help="Starting timestep for averaging")
-parser.add_argument("finish", type=int, help="Finishing timestep for averaging")
+parser.add_argument('-s',"--start", type=int, default=0, help="Starting timestep for averaging")
+parser.add_argument('-f',"--finish", type=int, default=9999999, help="Finishing timestep for averaging")
+parser.add_argument('-a',"--avdim", type=str, default='z', help="Dimension to 'slice' over")
+parser.add_argument('-r',"--rotAx", type=int, default=1,
+                    help="0=just shift the swimmer to the centre; "
+                         "1=it aligned in x-direction too")
+parser.add_argument("-F", "--flowtag", type=int,
+                    help="0=flow field (time averaged); 1=velocity field (instantaneous)",
+                    default=0)
 parser.add_argument("--qx", type=int, help="Only show every qx arrow in x",
                     default=1)
 parser.add_argument("--qy", type=int, help="Only show every qy arrow in y",
                     default=1)
-parser.add_argument("avdim", type=str, help="Dimension to 'slice' over")
-parser.add_argument("rotAx", type=int,
-                    help="0=just shift the swimmer to the centre; "
-                         "1=it aligned in x-direction too")
-parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'",
-                    default="auto")
+parser.add_argument("-A", "--myAspect", type=str, help="'auto' or 'equal'",
+                    default="equal")
 parser.add_argument("-m", "--makeAni", type=int,
                     help="0=just make the average (no animation); "
-                         "1=make animation too", default=0)
+                         "1=make animation too", default=1)
 parser.add_argument("-k", "--keepFrames", type=int,
                     help="0=don't keep (delete) frames; 1=keep frames",
                     default=0)
-parser.add_argument("-f", "--flowtag", type=int,
-                    help="0=flow field (time averaged); 1=velocity field (instantaneous)",
-                    default=0)
+parser.add_argument("-p", "--savePDF", type=int, help="1 saves transparent pdfs for papers, 0 for none", default=0)
+parser.add_argument("-c", "--colourbar", type=int, help="1 adds a colourbar to the plot, 0 for none", default=1)
+parser.add_argument("-g", "--groupStyle", type=int,
+                    help="0=don't use group style; 1=use group style",
+                    default=1)
 args = parser.parse_args()
 
 ###########################################################
@@ -66,18 +67,32 @@ myAspect = args.myAspect
 makeAni = args.makeAni
 keepFrames = args.keepFrames
 flowtag = args.flowtag
+savePDF = args.savePDF
+cbFlag = args.colourbar
+groupStyle = args.groupStyle
 
 ###########################################################
 ### Style/formating stuff
 ###########################################################
+if groupStyle:
+  # Use our custom style and colours
+  plt.style.use('shendrukGroupStyle')
+  import shendrukGroupFormat as ed
+
 # Colours
-swimmerMap=ed.viridis
-myMap = ed.truncate_colormap(ed.viridis, minval=0.1, maxval=0.7)
+if groupStyle:
+  swimmerMap=ed.viridis
+  myMap = ed.truncate_colormap(ed.viridis, minval=0.1, maxval=0.7)
+else:
+  swimmerMap = plt.cm.viridis
+  myMap = plt.cm.viridis
 #Animation
 bitrate=5000
 framerate=20		#Number of frames per second in the output video
 codec='libx264'		#Other options include mpeg4
 suffix='.mp4'
+
+makeTransparent = False # Transparent backgrounds make crappy videos, but look good on webpages
 
 ###########################################################
 ### Read json
@@ -140,7 +155,7 @@ else:
   print( "avdim must be 'x', 'y' or 'z' - not %s"%avdim )
   exit()
 ### Setup the animation
-fig1, axes = plt.subplots(nrows=1, ncols=1)
+fig1,ax = plt.subplots(nrows=1, ncols=1)
 # Make labels
 if avdim=='x':
     labX='y'
@@ -399,8 +414,9 @@ while velFile:
       #Setup the velocity image
       quiv = quiver( XY[0][::qx, ::qy], XY[1][::qx, ::qy], rotMEAN[d1][::qx, ::qy], rotMEAN[d2][::qx, ::qy] )
       velImage = imshow(rotMAG.T,cmap=myMap,origin='lower',aspect=myAspect,vmin=minV,vmax=maxV)
-      velCB = colorbar()
-      velCB.ax.set_ylabel(r'Velocity, $\left|\vec{v}\right|$')
+      if cbFlag:
+        velCB = colorbar()
+        velCB.ax.set_ylabel(r'Velocity, $\left|\vec{v}\right|$')
       # Plot the swimmers
       for ns in range(numSw):
         if( fabs(H[ns][d1]-B[ns][d1])<0.5*xyzSize[d1] and fabs(H[ns][d2]-B[ns][d2])<0.5*xyzSize[d2] ):
@@ -416,11 +432,16 @@ while velFile:
         plot( B[ns][d1]-tailX,B[ns][d2]-tailY,'-',color=swimmerMap(B[ns][dim]/xyzF[dim]),linewidth=2 )
         plot( H[ns][d1],H[ns][d2],'o',color='k',fillstyle='full' )
         plot( B[ns][d1],B[ns][d2],'h',color=swimmerMap(B[ns][dim]/xyzF[dim]),fillstyle='full' )
-      xlabel(r'$%s$'%labX)
-      ylabel(r'$%s$'%labY)
       plt.axis(xmax=rotSize, xmin=0, ymax=rotSize, ymin=0)
+      # xlabel(r'$%s$'%labX)
+      # ylabel(r'$%s$'%labY)
+      plt.xticks([])
+      plt.yticks([])
+      ax.axis('off')
       name='frame%04d.png'%(n)
-      savefig( name )
+      namepdf='frame%04d.pdf'%(n)
+      savefig( name, bbox_inches='tight', transparent=makeTransparent )
+      if savePDF: plt.savefig(namepdf, transparent=True, bbox_inches='tight')
       plt.clf()
     #Zero matrix
     VEL= zeros( (3,xyzSize[0],xyzSize[1],xyzSize[2]),dtype=float )
@@ -480,8 +501,9 @@ plt.clf()
 quiv = quiver( XY[0][::qx, ::qy], XY[1][::qx, ::qy], avRotMEAN[d1][::qx, ::qy], avRotMEAN[d2][::qx, ::qy] )
 velImage = imshow(avRotMAG.T,cmap=myMap,origin='lower',aspect=myAspect,vmin=minV,vmax=maxV)
 if(not makeAni):
-    velCB = colorbar()
-    velCB.ax.set_ylabel(r'Velocity, $\left|\vec{v}\right|$')
+    if cbFlag:
+        velCB = colorbar()
+        velCB.ax.set_ylabel(r'Velocity, $\left|\vec{v}\right|$')
 xlabel(r'$%s$'%labX)
 ylabel(r'$%s$'%labY)
 plt.axis(xmax=rotSize, xmin=0, ymax=rotSize, ymin=0)

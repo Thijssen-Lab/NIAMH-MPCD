@@ -20,26 +20,25 @@ import argparse
 
 from defectHandler import getDefectData
 
-# Use our custom style and colours
-plt.style.use('shendrukGroupStyle')
-import shendrukGroupFormat as ed
-
-
 ###########################################################
 ### Set up argsparse
 ###########################################################
 parser = argparse.ArgumentParser(description='Flow field rendering script.')
 parser.add_argument("dataname", type=str, help="Path to the data (should be flowfield.dat)")
 parser.add_argument("inputname", type=str, help="Path to input .json file")
-parser.add_argument("start", type=int, help="Starting timestep for averaging")
-parser.add_argument("finish", type=int, help="Finishing timestep for averaging")
+parser.add_argument('-s',"--start", type=int, default=0, help="Starting timestep for averaging")
+parser.add_argument('-f',"--finish", type=int, default=9999999, help="Finishing timestep for averaging")
+parser.add_argument('-a',"--avdim", type=str, default='z', help="Dimension to average over")
 parser.add_argument("--qx", type=int, help="Only show every qx arrow in x",default=1)
 parser.add_argument("--qy", type=int, help="Only show every qy arrow in y",default=1)
-parser.add_argument("avdim", type=str, help="Dimension to average over")
-parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'",default="auto")
+parser.add_argument("-A", "--myAspect", type=str, help="'auto' or 'equal'",default="equal")
 parser.add_argument("-k", "--keepFrames", type=int, help="0=don't keep (delete) frames; 1=keep frames", default=0)
 parser.add_argument("-p", "--savePDF", type=int, help="1 saves transparent pdfs for papers, 0 for none", default=0)
+parser.add_argument("-c", "--colourbar", type=int, help="1 adds a colourbar to the plot, 0 for none", default=1)
 parser.add_argument("-d", "--defectData", type=str, help="Path to defect data (if any)", default="")
+parser.add_argument("-g", "--groupStyle", type=int,
+                    help="0=don't use group style; 1=use group style",
+                    default=1)
 args = parser.parse_args()
 
 ###########################################################
@@ -58,20 +57,32 @@ avdim = args.avdim
 myAspect = args.myAspect
 keepFrames = args.keepFrames
 savePDF = args.savePDF
+cbFlag = args.colourbar
 defectData = args.defectData
+groupStyle = args.groupStyle
 
 makeTransparent = False # Transparent backgrounds make crappy videos, but look good on webpages
 
 ###########################################################
 ### Format and style
 ###########################################################
-# Colour map to use
-myMap=ed.deepsea
 #Animation stuff
 bitrate=5000
 framerate=12		#Number of frames per second in the output video
 codec='libx264'		#Other options include mpeg4
 suffix='.mp4'
+
+if groupStyle:
+	# Use our custom style and colours
+	plt.style.use('shendrukGroupStyle')
+	import shendrukGroupFormat as ed
+
+# Colour map to use
+if groupStyle:
+	myMap=ed.deepsea
+else:
+	myMap=plt.cm.winter
+
 
 ###########################################################
 ### Initialize
@@ -166,12 +177,17 @@ infile = open(file,"r")
 for i in range(13):
   line = infile.readline()
 
-# fig1, axes = plt.subplots(nrows=1, ncols=1)
-fig1, ax = plt.subplots()
+width=8
+height=6
+if not cbFlag:
+	width=height
+fig1, ax = plt.subplots(figsize=(width, height))
 if myAspect == 'auto':
     shrink_factor = 1.0
-else:
+elif float(xyzSize[d2])<float(xyzSize[d1]):
     shrink_factor = float(xyzSize[d2])/float(xyzSize[d1])
+else:
+    shrink_factor = 1.0
 
 i=0
 j=0
@@ -283,8 +299,9 @@ while infile:
     # Draw fields
     quiv = quiver( XY[0][::qx, ::qy], XY[1][::qx, ::qy], currentMEAN[d1][::qx, ::qy], currentMEAN[d2][::qx, ::qy] )
     velImage = imshow(currentMAG.T,cmap=myMap,origin='lower',aspect=myAspect,vmin=minV,vmax=maxV,extent=[0,xyzSize[d1],0,xyzSize[d2]])
-    velCB=colorbar(velImage,shrink=shrink_factor,aspect=20*shrink_factor, pad=0.04)
-    velCB.ax.set_ylabel(r'Velocity, $\left|\vec{v}\right|$')
+    if cbFlag:
+      velCB=colorbar(velImage,shrink=shrink_factor,aspect=20*shrink_factor, pad=0.04)
+      velCB.ax.set_ylabel(r'Velocity, $\left|\vec{v}\right|$')
     xlabel(r'$%s$'%labX)
     ylabel(r'$%s$'%labY)
     plt.axis(xmax=xyzSize[d1], xmin=0, ymax=xyzSize[d2], ymin=0)
@@ -344,8 +361,9 @@ if not keepFrames:
 print( "Plotting ..." )
 fig, ax = plt.subplots( )
 velImage=imshow(MAG.T,cmap=myMap,origin='lower',aspect=myAspect,extent=[0,xyzSize[d1],0,xyzSize[d2]])
-velCB=colorbar(velImage,shrink=shrink_factor,aspect=20*shrink_factor,pad=0.04)
-velCB.ax.set_ylabel(r'$\left|\left\langle\vec{v}\right\rangle\right|$')
+if cbFlag:
+  velCB=colorbar(velImage,shrink=shrink_factor,aspect=20*shrink_factor,pad=0.04)
+  velCB.ax.set_ylabel(r'$\left|\left\langle\vec{v}\right\rangle\right|$')
 quiver( XY[0][::qx, ::qy], XY[1][::qx, ::qy], MEAN[d1][::qx, ::qy], MEAN[d2][::qx, ::qy] )
 xlabel(r'$%s$'%labX)
 ylabel(r'$%s$'%labY)

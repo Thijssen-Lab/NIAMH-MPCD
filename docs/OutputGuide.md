@@ -73,6 +73,13 @@ Time `t` given in MPCD units. Coordinates `QX`,`QY`,`QZ` given in MPCD index (ed
 | `velOut`          | `velfield.dat`            | Instantaneous velocity field at output times                                             | Time                           | `t`                                                               |
 |                    |                          |                                                                                          | X, Y, Z co-ordinates           | `QX`,`QY`,`QZ`                                                    |
 |                    |                          |                                                                                          | Centre of mass Velocities      | `VcmX`,`VcmY`,`VcmZ`                                              |
+| `densOut`          | `densityfield.dat`            | Instantaneous density field at output times                                             | Time                           | `t`                                                               |
+|                    |                          |                                                                                          | X, Y, Z co-ordinates           | `QX`,`QY`,`QZ`                                                    |
+|                    |                          |                                                                                          | Number of particles and mass      | `pop`,`mass`                                                    |
+|                    |                          |                                                                                          | Number of SRD, MD and swimmer monomers      | `popSRD`, `popMD`, `popSW`                                                    |
+|                    |                          |    
+       | Species populations      | `SP0`                         |
+|                    |                          |    
 | `swFlowOut`          | `swimmerflowfield.dat` | Flow field around the first swimmer averaged between output times                                                 | Time                           | `t`                                                               |
 |                    |                          |                                                                                          | X, Y, Z co-ordinates           | `QX`,`QY`,`QZ`                                                    |
 |                    |                          |                                                                                          | Centre of mass Velocities      | `VcmX`,`VcmY`,`VcmZ`                                              |

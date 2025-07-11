@@ -15,7 +15,7 @@
     "comment":          "TADPole swimmer",
     "typeSwim":         2,
     "comment":          "One swimmer",
-    "nSwim":            2,
+    "nSwim":            1,
     "comment":          "Swimmer monomers have same mass as one mpcd cell of fluid particles",
     "headMSwim":        20,
     "midMSwim":         20,

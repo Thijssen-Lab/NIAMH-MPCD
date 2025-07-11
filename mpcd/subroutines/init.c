@@ -405,6 +405,22 @@ void openvel( FILE **f,char dir[],char fname[],char ext[] ) {
 }
 
 ///
+/// @brief Function that initializes the density field output file.
+///
+/// This function initializes the density field output file.
+/// It opens it up for writing and reading while formatting it with its header.
+///
+/// @param f Return pointer to the density field output file being opened.
+/// @param dir Path to the directory of the density field output file.
+/// @param fname Name of the density field output file.
+/// @param ext Extension of the density field output file.
+///
+void opendensity( FILE **f,char dir[],char fname[],char ext[] ) {
+    openBasic( f,dir,fname,ext );
+    densityheader( *f );
+}
+
+///
 /// @brief Function that initializes the flow field around the swimmer's reference frame output file.
 ///
 /// This function initializes the flow field output file.
@@ -1823,6 +1839,7 @@ void initOutput( char op[],outputFlagsList *outFlag,outputFilesList *outFile,inp
 	char fileenstrophy[]="avEnstrophy";
 	char fileflow[]="flowfield";
 	char filevel[]="velfield";
+	char filedensity[]="densityfield";
 	char fileswflow[]="swimmerflowfield";
 	char filesolids[]="solidtraj";
 	char filetopo[]="topochargefield";
@@ -1895,6 +1912,8 @@ void initOutput( char op[],outputFlagsList *outFlag,outputFilesList *outFile,inp
 	//Initialize the flow and velocity field output files
 	if( (outFlag->FLOWOUT)>=OUT ) openflow( &(outFile->fflow),op,fileflow,fileextension );
 	if( (outFlag->VELOUT)>=OUT ) openvel( &(outFile->fvel),op,filevel,fileextension );
+	//Initialize the density field output files
+	if( (outFlag->DENSITYOUT)>=OUT ) opendensity( &(outFile->fdensity),op,filedensity,fileextension );
 	//Initialize the flowfield around the first swimmer
 	if( (outFlag->SWFLOWOUT)>=OUT ) openswflow( &(outFile->fswflow),op,fileswflow,fileextension );
 	//Initialize the distribution output files

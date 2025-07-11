@@ -292,27 +292,27 @@ This is used to read in simulation parameters.</p>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">start</span></code></dt><dd><p>Starting timestep index for plotting.</p>
+<dt><code class="docutils literal notranslate"><span class="pre">-s</span></code>/ <code class="docutils literal notranslate"><span class="pre">start</span></code></dt><dd><p>Starting timestep index for plotting.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">finish</span></code></dt><dd><p>Ending timestep index for plotting.
+<dt><code class="docutils literal notranslate"><span class="pre">-f</span></code>/ <code class="docutils literal notranslate"><span class="pre">finish</span></code></dt><dd><p>Ending timestep index for plotting.
 Set to a very large number to plot until the end of the simulation.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">avdim</span></code></dt><dd><p>For scripts that will “slice” over a dimension, this is the slicing dimension.
+<dt><code class="docutils literal notranslate"><span class="pre">-a</span></code>/ <code class="docutils literal notranslate"><span class="pre">avdim</span></code></dt><dd><p>For scripts that will “slice” over a dimension, this is the slicing dimension.
 These scripts will average in this dimension, hence the name <code class="docutils literal notranslate"><span class="pre">avdim</span></code>.
 Accepts <code class="docutils literal notranslate"><span class="pre">&quot;x&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;y&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;z&quot;</span></code>.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">-a</span></code>/ <code class="docutils literal notranslate"><span class="pre">--myAspect</span></code></dt><dd><p>(Optional, default <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>)
+<dt><code class="docutils literal notranslate"><span class="pre">-A</span></code>/ <code class="docutils literal notranslate"><span class="pre">--myAspect</span></code></dt><dd><p>(Optional, default <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>)
 The aspect ratio to produce plots in.
-Either <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> for automatic aspect ratio, or <code class="docutils literal notranslate"><span class="pre">&quot;equal&quot;</span></code> for equal aspect ratio.</p>
+Either <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> for automatic aspect ratio (resizes axes to fit the figure size), or <code class="docutils literal notranslate"><span class="pre">&quot;equal&quot;</span></code> for equal aspect ratio (keeps the actual aspect ratio of the simulation domain).</p>
 </dd>
 </dl>
 </li>
@@ -320,6 +320,20 @@ Either <code class="docutils literal notranslate"><span class="pre">&quot;auto&q
 <dt><code class="docutils literal notranslate"><span class="pre">-k</span></code>/ <code class="docutils literal notranslate"><span class="pre">--keepFrames</span></code></dt><dd><p>(Optional, default <code class="docutils literal notranslate"><span class="pre">0</span></code>)
 When producing frames for a movie, whether to keep the frames or delete them after the movie is produced.
 Set to <code class="docutils literal notranslate"><span class="pre">1</span></code> to keep the frames, and <code class="docutils literal notranslate"><span class="pre">0</span></code> to delete frames.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">-p</span></code>/ <code class="docutils literal notranslate"><span class="pre">--savePDF</span></code></dt><dd><p>(Optional, default <code class="docutils literal notranslate"><span class="pre">0</span></code>)
+When producing frames for a movie, save the frames as PDFs to use in papers/talks.
+Set to <code class="docutils literal notranslate"><span class="pre">1</span></code> to save the frames as PDFs, and <code class="docutils literal notranslate"><span class="pre">0</span></code> to not save them.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">-g</span></code>/ <code class="docutils literal notranslate"><span class="pre">--groupStyle</span></code></dt><dd><p>(Optional, default <code class="docutils literal notranslate"><span class="pre">0</span></code>)
+Use the shendrukGroupStyle Matplotlib style file for plotting.
+Set to <code class="docutils literal notranslate"><span class="pre">1</span></code> to use group style, and <code class="docutils literal notranslate"><span class="pre">0</span></code> to not use it.</p>
 </dd>
 </dl>
 </li>
@@ -343,6 +357,9 @@ Only show every <code class="docutils literal notranslate"><span class="pre">qy<
 </dl>
 </li>
 </ul>
+<p>colourbar flag
+shendruk-group-style flag
+scale c better</p>
 </section>
 </section>
 <section id="densityanimator-py">
@@ -353,16 +370,11 @@ Only show every <code class="docutils literal notranslate"><span class="pre">qy<
 </section>
 <section id="command-to-run">
 <h3>Command to run<a class="headerlink" href="#command-to-run" title="Permalink to this heading">#</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">analysisScripts</span><span class="o">/</span><span class="n">densityAnimator</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">dataname</span><span class="p">]</span> <span class="p">[</span><span class="n">inputname</span><span class="p">]</span> <span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="p">[</span><span class="n">finish</span><span class="p">]</span> <span class="p">[</span><span class="n">sliceDim</span><span class="p">]</span> <span class="p">[</span><span class="n">sliceIndex</span><span class="p">]</span> <span class="o">-</span><span class="n">a</span> <span class="p">[</span><span class="n">myAspect</span><span class="p">]</span> <span class="o">-</span><span class="n">k</span> <span class="p">[</span><span class="n">keepFrames</span><span class="p">]</span> <span class="o">-</span><span class="n">N</span> <span class="p">[</span><span class="n">normalise</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">savePDF</span><span class="p">]</span> <span class="o">-</span><span class="n">d</span> <span class="p">[</span><span class="n">defectData</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">analysisScripts</span><span class="o">/</span><span class="n">densityAnimator</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">dataname</span><span class="p">]</span> <span class="p">[</span><span class="n">inputname</span><span class="p">]</span> <span class="o">-</span><span class="n">s</span> <span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">-</span><span class="n">f</span> <span class="p">[</span><span class="n">finish</span><span class="p">]</span> <span class="o">-</span><span class="n">a</span> <span class="p">[</span><span class="n">avDim</span><span class="p">]</span> <span class="o">-</span><span class="n">i</span> <span class="p">[</span><span class="n">sliceIndex</span><span class="p">]</span> <span class="o">-</span><span class="n">A</span> <span class="p">[</span><span class="n">myAspect</span><span class="p">]</span> <span class="o">-</span><span class="n">k</span> <span class="p">[</span><span class="n">keepFrames</span><span class="p">]</span> <span class="o">-</span><span class="n">N</span> <span class="p">[</span><span class="n">normalise</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">savePDF</span><span class="p">]</span> <span class="o">-</span><span class="n">d</span> <span class="p">[</span><span class="n">defectData</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>Most arguments are described in the <a class="reference internal" href="#consistentarguments"><span class="std std-ref">consistent arguments</span></a> section, except <code class="docutils literal notranslate"><span class="pre">sliceDim</span></code>, <code class="docutils literal notranslate"><span class="pre">sliceIndex</span></code> and <code class="docutils literal notranslate"><span class="pre">normalise</span></code>.</p>
+<p>Most arguments are described in the <a class="reference internal" href="#consistentarguments"><span class="std std-ref">consistent arguments</span></a> section, except <code class="docutils literal notranslate"><span class="pre">sliceIndex</span></code> and <code class="docutils literal notranslate"><span class="pre">normalise</span></code>.</p>
 <ul class="simple">
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">sliceDim</span></code>:</dt><dd><p>Dimension to ‘slice’ over for averaging. For example, for xy plane most likely we would use ‘z’ paramter.</p>
-</dd>
-</dl>
-</li>
 <li><dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">sliceIndex</span></code>:</dt><dd><p>Index of the plane to be sliced for averaging. Set the number of frames to skip between. If you want all frames to be plotted set 0.</p>
 </dd>
@@ -388,7 +400,7 @@ Only show every <code class="docutils literal notranslate"><span class="pre">qy<
 </section>
 <section id="id3">
 <h3>Command to run<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">analysisScripts</span><span class="o">/</span><span class="n">flowFieldAnimator</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">dataname</span><span class="p">]</span> <span class="p">[</span><span class="n">inputname</span><span class="p">]</span> <span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="p">[</span><span class="n">finish</span><span class="p">]</span> <span class="p">[</span><span class="n">avdim</span><span class="p">]</span> <span class="o">--</span><span class="n">qx</span> <span class="p">[</span><span class="n">QX</span><span class="p">]</span> <span class="o">--</span><span class="n">qy</span> <span class="p">[</span><span class="n">QY</span><span class="p">]</span> <span class="o">-</span><span class="n">a</span> <span class="p">[</span><span class="n">myAspect</span><span class="p">]</span> <span class="o">-</span><span class="n">k</span> <span class="p">[</span><span class="n">keepFrames</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">savePDF</span><span class="p">]</span> <span class="o">-</span><span class="n">d</span> <span class="p">[</span><span class="n">defectData</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">analysisScripts</span><span class="o">/</span><span class="n">flowFieldAnimator</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">dataname</span><span class="p">]</span> <span class="p">[</span><span class="n">inputname</span><span class="p">]</span> <span class="o">-</span><span class="n">s</span> <span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">-</span><span class="n">f</span> <span class="p">[</span><span class="n">finish</span><span class="p">]</span> <span class="o">-</span><span class="n">a</span> <span class="p">[</span><span class="n">avdim</span><span class="p">]</span> <span class="o">--</span><span class="n">qx</span> <span class="p">[</span><span class="n">QX</span><span class="p">]</span> <span class="o">--</span><span class="n">qy</span> <span class="p">[</span><span class="n">QY</span><span class="p">]</span> <span class="o">-</span><span class="n">A</span> <span class="p">[</span><span class="n">myAspect</span><span class="p">]</span> <span class="o">-</span><span class="n">k</span> <span class="p">[</span><span class="n">keepFrames</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">savePDF</span><span class="p">]</span> <span class="o">-</span><span class="n">d</span> <span class="p">[</span><span class="n">defectData</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Most arguments are described in the <a class="reference internal" href="#consistentarguments"><span class="std std-ref">consistent arguments</span></a> section.</p>
@@ -406,7 +418,7 @@ Only show every <code class="docutils literal notranslate"><span class="pre">qy<
 </section>
 <section id="id6">
 <h3>Command to run<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">analysisScripts</span><span class="o">/</span><span class="n">orientationFieldAnimator</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">dataname</span><span class="p">]</span> <span class="p">[</span><span class="n">inputname</span><span class="p">]</span> <span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="p">[</span><span class="n">finish</span><span class="p">]</span> <span class="p">[</span><span class="n">avdim</span><span class="p">]</span> <span class="o">--</span><span class="n">qx</span> <span class="p">[</span><span class="n">qx</span><span class="p">]</span> <span class="o">--</span> <span class="n">qy</span> <span class="p">[</span><span class="n">qy</span><span class="p">]</span> <span class="o">-</span><span class="n">c</span> <span class="p">[</span><span class="n">length</span><span class="p">]</span> <span class="o">--</span><span class="n">a</span> <span class="p">[</span><span class="n">myAspect</span><span class="p">]</span> <span class="o">-</span><span class="n">k</span> <span class="p">[</span><span class="n">keepFrames</span><span class="p">]</span> <span class="o">-</span><span class="n">d</span> <span class="p">[</span><span class="n">defectData</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">analysisScripts</span><span class="o">/</span><span class="n">orientationFieldAnimator</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">dataname</span><span class="p">]</span> <span class="p">[</span><span class="n">inputname</span><span class="p">]</span> <span class="o">-</span><span class="n">s</span> <span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">-</span><span class="n">f</span> <span class="p">[</span><span class="n">finish</span><span class="p">]</span> <span class="o">-</span><span class="n">a</span> <span class="p">[</span><span class="n">avdim</span><span class="p">]</span> <span class="o">--</span><span class="n">qx</span> <span class="p">[</span><span class="n">qx</span><span class="p">]</span> <span class="o">--</span> <span class="n">qy</span> <span class="p">[</span><span class="n">qy</span><span class="p">]</span> <span class="o">-</span><span class="n">l</span> <span class="p">[</span><span class="n">length</span><span class="p">]</span> <span class="o">-</span><span class="n">A</span> <span class="p">[</span><span class="n">myAspect</span><span class="p">]</span> <span class="o">-</span><span class="n">k</span> <span class="p">[</span><span class="n">keepFrames</span><span class="p">]</span> <span class="o">-</span><span class="n">d</span> <span class="p">[</span><span class="n">defectData</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Most arguments are described in the <a class="reference internal" href="#consistentarguments"><span class="std std-ref">common</span></a> section. The exceptions are as follows:</p>
@@ -440,7 +452,7 @@ Otherwise, attempt to load and then draw defects from file.</p>
 </section>
 <section id="id9">
 <h3>Command to run<a class="headerlink" href="#id9" title="Permalink to this heading">#</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">analysisScripts</span><span class="o">/</span><span class="n">probDistScalar</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">dataname</span><span class="p">]</span> <span class="p">[</span><span class="n">xaxis</span><span class="p">]</span> <span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="p">[</span><span class="n">finish</span><span class="p">]</span> <span class="o">-</span><span class="n">a</span> <span class="p">[</span><span class="n">plotAv</span><span class="p">]</span> <span class="o">-</span><span class="n">m</span> <span class="p">[</span><span class="n">makeMovie</span><span class="p">]</span> <span class="o">-</span><span class="n">k</span> <span class="p">[</span><span class="n">keepFrames</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">analysisScripts</span><span class="o">/</span><span class="n">probDistScalar</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">dataname</span><span class="p">]</span> <span class="o">-</span><span class="n">X</span> <span class="p">[</span><span class="n">xaxis</span><span class="p">]</span> <span class="o">-</span><span class="n">s</span> <span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">-</span><span class="n">f</span> <span class="p">[</span><span class="n">finish</span><span class="p">]</span> <span class="o">-</span><span class="n">a</span> <span class="p">[</span><span class="n">plotAv</span><span class="p">]</span> <span class="o">-</span><span class="n">m</span> <span class="p">[</span><span class="n">makeMovie</span><span class="p">]</span> <span class="o">-</span><span class="n">k</span> <span class="p">[</span><span class="n">keepFrames</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Most arguments are described in the <a class="reference internal" href="#consistentarguments"><span class="std std-ref">consistent arguments</span></a> section, except</p>
@@ -476,7 +488,7 @@ Otherwise, attempt to load and then draw defects from file.</p>
 </section>
 <section id="id12">
 <h3>Command to run<a class="headerlink" href="#id12" title="Permalink to this heading">#</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">analysisScripts</span><span class="o">/</span><span class="n">probDistScalar</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">dataname</span><span class="p">]</span> <span class="p">[</span><span class="n">xaxis</span><span class="p">]</span> <span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="p">[</span><span class="n">finish</span><span class="p">]</span> <span class="o">-</span><span class="n">a</span> <span class="p">[</span><span class="n">plotAv</span><span class="p">]</span> <span class="o">-</span><span class="n">m</span> <span class="p">[</span><span class="n">makeMovie</span><span class="p">]</span> <span class="o">-</span><span class="n">k</span> <span class="p">[</span><span class="n">keepFrames</span><span class="p">]</span> <span class="o">-</span><span class="n">x</span> <span class="p">[</span><span class="n">includeX</span><span class="p">]</span> <span class="o">-</span><span class="n">y</span> <span class="p">[</span><span class="n">includeY</span><span class="p">]</span> <span class="o">-</span><span class="n">z</span> <span class="p">[</span><span class="n">includeZ</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">analysisScripts</span><span class="o">/</span><span class="n">probDistScalar</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">dataname</span><span class="p">]</span> <span class="o">-</span><span class="n">X</span> <span class="p">[</span><span class="n">xaxis</span><span class="p">]</span> <span class="o">-</span><span class="n">s</span> <span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">-</span><span class="n">f</span> <span class="p">[</span><span class="n">finish</span><span class="p">]</span> <span class="o">-</span><span class="n">a</span> <span class="p">[</span><span class="n">plotAv</span><span class="p">]</span> <span class="o">-</span><span class="n">m</span> <span class="p">[</span><span class="n">makeMovie</span><span class="p">]</span> <span class="o">-</span><span class="n">k</span> <span class="p">[</span><span class="n">keepFrames</span><span class="p">]</span> <span class="o">-</span><span class="n">x</span> <span class="p">[</span><span class="n">includeX</span><span class="p">]</span> <span class="o">-</span><span class="n">y</span> <span class="p">[</span><span class="n">includeY</span><span class="p">]</span> <span class="o">-</span><span class="n">z</span> <span class="p">[</span><span class="n">includeZ</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Most arguments are described in the <a class="reference internal" href="#consistentarguments"><span class="std std-ref">consistent arguments</span></a> section, except</p>
@@ -526,7 +538,7 @@ Otherwise, attempt to load and then draw defects from file.</p>
 </section>
 <section id="id15">
 <h3>Command to run<a class="headerlink" href="#id15" title="Permalink to this heading">#</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">analysisScripts</span><span class="o">/</span><span class="n">ensAvPlotter</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">dataname</span><span class="p">]</span> <span class="p">[</span><span class="n">yaxis</span><span class="p">]</span>  <span class="o">-</span><span class="n">c</span> <span class="p">[</span><span class="n">columns</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">analysisScripts</span><span class="o">/</span><span class="n">ensAvPlotter</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">dataname</span><span class="p">]</span> <span class="o">-</span><span class="n">y</span> <span class="p">[</span><span class="n">yaxis</span><span class="p">]</span>  <span class="o">-</span><span class="n">c</span> <span class="p">[</span><span class="n">columns</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>None of these arguments are described in the <a class="reference internal" href="#consistentarguments"><span class="std std-ref">consistent arguments</span></a> section.</p>
@@ -561,7 +573,7 @@ Otherwise, attempt to load and then draw defects from file.</p>
 </section>
 <section id="id18">
 <h3>Command to run<a class="headerlink" href="#id18" title="Permalink to this heading">#</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">analysisScripts</span><span class="o">/</span><span class="n">autocorrPlotter</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">dataname</span><span class="p">]</span> <span class="p">[</span><span class="n">yaxis</span><span class="p">]</span> <span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="p">[</span><span class="n">finish</span><span class="p">]</span> <span class="o">-</span><span class="n">a</span> <span class="p">[</span><span class="n">plotAv</span><span class="p">]</span> <span class="o">-</span><span class="n">m</span> <span class="p">[</span><span class="n">makeMovie</span><span class="p">]</span> <span class="o">-</span><span class="n">k</span> <span class="p">[</span><span class="n">keepFrames</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">analysisScripts</span><span class="o">/</span><span class="n">autocorrPlotter</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">dataname</span><span class="p">]</span> <span class="p">[</span><span class="n">yaxis</span><span class="p">]</span> <span class="o">-</span><span class="n">s</span> <span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">-</span><span class="n">f</span> <span class="p">[</span><span class="n">finish</span><span class="p">]</span> <span class="o">-</span><span class="n">a</span> <span class="p">[</span><span class="n">plotAv</span><span class="p">]</span> <span class="o">-</span><span class="n">m</span> <span class="p">[</span><span class="n">makeMovie</span><span class="p">]</span> <span class="o">-</span><span class="n">k</span> <span class="p">[</span><span class="n">keepFrames</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Most arguments are described in the <a class="reference internal" href="#consistentarguments"><span class="std std-ref">consistent arguments</span></a> section, except</p>
@@ -596,7 +608,7 @@ Otherwise, attempt to load and then draw defects from file.</p>
 </section>
 <section id="id21">
 <h3>Command to run<a class="headerlink" href="#id21" title="Permalink to this heading">#</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">analysisScripts</span><span class="o">/</span><span class="n">swimmerTraj_fieldsAnimator</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">dataPath</span><span class="p">]</span> <span class="p">[</span><span class="n">inputname</span><span class="p">]</span> <span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="p">[</span><span class="n">finish</span><span class="p">]</span> <span class="p">[</span><span class="n">avDim</span><span class="p">]</span> <span class="p">[</span><span class="n">fieldType</span><span class="p">]</span><span class="o">--</span><span class="n">qx</span> <span class="p">[</span><span class="n">QX</span><span class="p">]</span> <span class="o">--</span><span class="n">qy</span> <span class="p">[</span><span class="n">QY</span><span class="p">]</span> <span class="o">-</span><span class="n">a</span> <span class="p">[</span><span class="n">myAspect</span><span class="p">]</span> <span class="o">-</span><span class="n">k</span> <span class="p">[</span><span class="n">keepFrames</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">savePDF</span><span class="p">]</span> <span class="o">-</span><span class="n">d</span> <span class="p">[</span><span class="n">defectData</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">analysisScripts</span><span class="o">/</span><span class="n">swimmerTraj_fieldsAnimator</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">dataPath</span><span class="p">]</span> <span class="p">[</span><span class="n">inputname</span><span class="p">]</span> <span class="p">[</span><span class="n">fieldType</span><span class="p">]</span> <span class="o">-</span><span class="n">s</span> <span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">-</span><span class="n">f</span> <span class="p">[</span><span class="n">finish</span><span class="p">]</span> <span class="o">-</span><span class="n">a</span> <span class="p">[</span><span class="n">avDim</span><span class="p">]</span> <span class="o">--</span><span class="n">qx</span> <span class="p">[</span><span class="n">QX</span><span class="p">]</span> <span class="o">--</span><span class="n">qy</span> <span class="p">[</span><span class="n">QY</span><span class="p">]</span> <span class="o">-</span><span class="n">A</span> <span class="p">[</span><span class="n">myAspect</span><span class="p">]</span> <span class="o">-</span><span class="n">k</span> <span class="p">[</span><span class="n">keepFrames</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">savePDF</span><span class="p">]</span> <span class="o">-</span><span class="n">d</span> <span class="p">[</span><span class="n">defectData</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Most arguments are described in the <a class="reference internal" href="#consistentarguments"><span class="std std-ref">consistent arguments</span></a> section, except <code class="docutils literal notranslate"><span class="pre">dataPath</span></code> and <code class="docutils literal notranslate"><span class="pre">fieldType</span></code></p>
@@ -626,7 +638,7 @@ Otherwise, attempt to load and then draw defects from file.</p>
 </section>
 <section id="id24">
 <h3>Command to run<a class="headerlink" href="#id24" title="Permalink to this heading">#</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">analysisScripts</span><span class="o">/</span><span class="n">swimmerRefFrame_flow</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">dataPath</span><span class="p">]</span> <span class="p">[</span><span class="n">inputname</span><span class="p">]</span> <span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="p">[</span><span class="n">finish</span><span class="p">]</span> <span class="p">[</span><span class="n">avDim</span><span class="p">]</span> <span class="p">[</span><span class="n">rotAx</span><span class="p">]</span><span class="o">--</span><span class="n">qx</span> <span class="p">[</span><span class="n">QX</span><span class="p">]</span> <span class="o">--</span><span class="n">qy</span> <span class="p">[</span><span class="n">QY</span><span class="p">]</span> <span class="o">-</span><span class="n">a</span> <span class="p">[</span><span class="n">myAspect</span><span class="p">]</span> <span class="o">-</span><span class="n">k</span> <span class="p">[</span><span class="n">keepFrames</span><span class="p">]</span> <span class="o">-</span><span class="n">f</span> <span class="p">[</span><span class="n">flowtag</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">analysisScripts</span><span class="o">/</span><span class="n">swimmerRefFrame_flow</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">dataPath</span><span class="p">]</span> <span class="p">[</span><span class="n">inputname</span><span class="p">]</span> <span class="o">-</span><span class="n">s</span> <span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">-</span><span class="n">f</span> <span class="p">[</span><span class="n">finish</span><span class="p">]</span> <span class="o">-</span><span class="n">z</span> <span class="p">[</span><span class="n">avDim</span><span class="p">]</span> <span class="o">-</span><span class="n">r</span> <span class="p">[</span><span class="n">rotAx</span><span class="p">]</span> <span class="o">--</span><span class="n">qx</span> <span class="p">[</span><span class="n">QX</span><span class="p">]</span> <span class="o">--</span><span class="n">qy</span> <span class="p">[</span><span class="n">QY</span><span class="p">]</span> <span class="o">-</span><span class="n">A</span> <span class="p">[</span><span class="n">myAspect</span><span class="p">]</span> <span class="o">-</span><span class="n">k</span> <span class="p">[</span><span class="n">keepFrames</span><span class="p">]</span> <span class="o">-</span><span class="n">f</span> <span class="p">[</span><span class="n">flowtag</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Most arguments are described in the <a class="reference internal" href="#consistentarguments"><span class="std std-ref">consistent arguments</span></a> section, except <code class="docutils literal notranslate"><span class="pre">dataPath</span></code> <code class="docutils literal notranslate"><span class="pre">rotAx</span></code>, and <code class="docutils literal notranslate"><span class="pre">flowtag</span></code></p>
@@ -669,7 +681,7 @@ An option to get these in MPCD is to output topological charge fields, which are
 <p>A method to visualise these fields is to use this script.</p>
 <section id="id26">
 <h3>Command to run<a class="headerlink" href="#id26" title="Permalink to this heading">#</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">analysisScripts</span><span class="o">/</span><span class="n">topochargeFieldAnimator</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">directorData</span><span class="p">]</span> <span class="p">[</span><span class="n">topoData</span><span class="p">]</span> <span class="p">[</span><span class="n">inputname</span><span class="p">]</span> <span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="p">[</span><span class="n">finish</span><span class="p">]</span> <span class="p">[</span><span class="n">avdim</span><span class="p">]</span> <span class="o">--</span><span class="n">qx</span> <span class="p">[</span><span class="n">qx</span><span class="p">]</span> <span class="o">--</span> <span class="n">qy</span> <span class="p">[</span><span class="n">qy</span><span class="p">]</span> <span class="o">-</span><span class="n">c</span> <span class="p">[</span><span class="n">length</span><span class="p">]</span> <span class="o">-</span><span class="n">d</span> <span class="p">[</span><span class="n">deflength</span><span class="p">]</span> <span class="o">-</span><span class="n">a</span> <span class="p">[</span><span class="n">myAspect</span><span class="p">]</span> <span class="o">-</span><span class="n">k</span> <span class="p">[</span><span class="n">keepFrames</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">analysisScripts</span><span class="o">/</span><span class="n">topochargeFieldAnimator</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">directorData</span><span class="p">]</span> <span class="p">[</span><span class="n">topoData</span><span class="p">]</span> <span class="p">[</span><span class="n">inputname</span><span class="p">]</span> <span class="o">-</span><span class="n">s</span> <span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">-</span><span class="n">f</span> <span class="p">[</span><span class="n">finish</span><span class="p">]</span> <span class="o">-</span><span class="n">a</span> <span class="p">[</span><span class="n">avdim</span><span class="p">]</span> <span class="o">--</span><span class="n">qx</span> <span class="p">[</span><span class="n">qx</span><span class="p">]</span> <span class="o">--</span> <span class="n">qy</span> <span class="p">[</span><span class="n">qy</span><span class="p">]</span> <span class="o">-</span><span class="n">l</span> <span class="p">[</span><span class="n">length</span><span class="p">]</span> <span class="o">-</span><span class="n">d</span> <span class="p">[</span><span class="n">deflength</span><span class="p">]</span> <span class="o">-</span><span class="n">A</span> <span class="p">[</span><span class="n">myAspect</span><span class="p">]</span> <span class="o">-</span><span class="n">k</span> <span class="p">[</span><span class="n">keepFrames</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Most arguments are described in the <a class="reference internal" href="#consistentarguments"><span class="std std-ref">common</span></a> section. The exceptions are as follows:</p>
@@ -716,17 +728,21 @@ The script projects 3D simulation data onto a 2D plane, based on a user-specifie
 <p class="admonition-title">Note</p>
 <ul class="simple">
 <li><p>This script <em>requires</em> a polymer VMD file (with <code class="docutils literal notranslate"><span class="pre">-vmd.vtf</span></code> in its name) to function properly. It will fail if the file is not present in the input directory.</p></li>
-<li><p>It fails for more than one polymer.</p></li>
 </ul>
 </div>
+</section>
+<section id="id29">
+<h3>Command to run<a class="headerlink" href="#id29" title="Permalink to this heading">#</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">analysisScripts</span><span class="o">/</span><span class="n">polymerAnimator</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">datapath</span><span class="p">]</span> <span class="p">[</span><span class="n">fieldType</span><span class="p">]</span> <span class="o">-</span><span class="n">s</span> <span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">-</span><span class="n">f</span> <span class="p">[</span><span class="n">finish</span><span class="p">]</span> <span class="o">-</span><span class="n">a</span> <span class="p">[</span><span class="n">avdim</span><span class="p">]</span> <span class="o">--</span><span class="n">qx</span> <span class="p">[</span><span class="n">qx</span><span class="p">]</span> <span class="o">--</span> <span class="n">qy</span> <span class="p">[</span><span class="n">qy</span><span class="p">]</span> <span class="o">-</span><span class="n">l</span> <span class="p">[</span><span class="n">length</span><span class="p">]</span> <span class="o">-</span><span class="n">A</span> <span class="p">[</span><span class="n">myAspect</span><span class="p">]</span> <span class="o">-</span><span class="n">k</span> <span class="p">[</span><span class="n">keepFrames</span><span class="p">]</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">savePDF</span><span class="p">]</span> <span class="o">-</span><span class="n">d</span> <span class="p">[</span><span class="n">defectData</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Most arguments are described in the <a class="reference internal" href="#consistentarguments"><span class="std std-ref">consistent arguments</span></a> section, except <code class="docutils literal notranslate"><span class="pre">datapath</span></code> and <code class="docutils literal notranslate"><span class="pre">fieldType</span></code>.</p>
 </section>
 <section id="arguments">
 <h3>Arguments<a class="headerlink" href="#arguments" title="Permalink to this heading">#</a></h3>
 <ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">&lt;data_path&gt;</span></code> – Path to the folder (must contain <code class="docutils literal notranslate"><span class="pre">input.json</span></code>, field data, and polymer <code class="docutils literal notranslate"><span class="pre">VTF</span></code> file).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&lt;show_defects&gt;</span></code> – <code class="docutils literal notranslate"><span class="pre">0</span></code> or <code class="docutils literal notranslate"><span class="pre">1</span></code> to toggle plotting of nematic defects (requires <code class="docutils literal notranslate"><span class="pre">defects.dat</span></code>).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&lt;field&gt;</span></code> – Choose between <code class="docutils literal notranslate"><span class="pre">flowfield</span></code> and <code class="docutils literal notranslate"><span class="pre">directorfield</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&lt;projection&gt;</span></code> – Axis along which the system is sliced: <code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">y</span></code>, or <code class="docutils literal notranslate"><span class="pre">z</span></code>.</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">datapath</span></code>: Path to the folder (must contain <code class="docutils literal notranslate"><span class="pre">input.json</span></code>, field data, and polymer <code class="docutils literal notranslate"><span class="pre">VTF</span></code> file).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fieldType</span></code> – Choose between <code class="docutils literal notranslate"><span class="pre">vel</span></code> (if want to plot the velocity field from <code class="docutils literal notranslate"><span class="pre">flowfield.dat</span></code>) or <code class="docutils literal notranslate"><span class="pre">dir</span></code> (if want director field from <code class="docutils literal notranslate"><span class="pre">directorfield.dat</span></code>).</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Even in 2D simulations, a projection axis must be specified.</p>
@@ -741,24 +757,24 @@ The script projects 3D simulation data onto a 2D plane, based on a user-specifie
 </section>
 <section id="decomposedhydromomentstadpole-py">
 <h2>decomposedHydroMomentsTADPole.py<a class="headerlink" href="#decomposedhydromomentstadpole-py" title="Permalink to this heading">#</a></h2>
-<section id="id29">
-<h3>Purpose<a class="headerlink" href="#id29" title="Permalink to this heading">#</a></h3>
+<section id="id30">
+<h3>Purpose<a class="headerlink" href="#id30" title="Permalink to this heading">#</a></h3>
 <p>The ‘decomposedHydroMomentsTADPole’ Python script is designed to analyze the moments of the flows generated by swimmers (ensemble and time averaged). It will produce two figures and analysed data.</p>
 </section>
-<section id="id30">
-<h3>Command to run<a class="headerlink" href="#id30" title="Permalink to this heading">#</a></h3>
+<section id="id31">
+<h3>Command to run<a class="headerlink" href="#id31" title="Permalink to this heading">#</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">decomposedHydroMomentsTADPole</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">dataPath</span><span class="p">]</span>
 </pre></div>
 </div>
 </section>
-<section id="id31">
-<h3>Arguments<a class="headerlink" href="#id31" title="Permalink to this heading">#</a></h3>
+<section id="id32">
+<h3>Arguments<a class="headerlink" href="#id32" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">&lt;dataPath&gt;</span></code> – Path to the folder (must contain <code class="docutils literal notranslate"><span class="pre">swflowfield.dat</span></code>, which is outputted from NIAMH-MPCD by adding the <cite>“swFlowOut”</cite> tag to your <cite>.json</cite> input file.</p></li>
 </ul>
 </section>
-<section id="id32">
-<h3>Outputs<a class="headerlink" href="#id32" title="Permalink to this heading">#</a></h3>
+<section id="id33">
+<h3>Outputs<a class="headerlink" href="#id33" title="Permalink to this heading">#</a></h3>
 <p>This will output a plot of the flow around the swimmers (<code class="docutils literal notranslate"><span class="pre">FlowArountTADPole.png</span></code>), the decomposed moment data files (<code class="docutils literal notranslate"><span class="pre">url2.npy</span></code>) and a plot of the dipolar component of the flow around TADPoles as a function of distance from the hydrodynamic centre of the TADPole (<code class="docutils literal notranslate"><span class="pre">DipolarComponent.pdf</span></code>).</p>
 </section>
 </section>
@@ -886,15 +902,16 @@ The script projects 3D simulation data onto a 2D plane, based on a user-specifie
 </li>
 <li><a class="reference internal" href="#polymer-2dprojection-py">polymer-2Dprojection.py</a><ul>
 <li><a class="reference internal" href="#id28">Purpose</a></li>
+<li><a class="reference internal" href="#id29">Command to run</a></li>
 <li><a class="reference internal" href="#arguments">Arguments</a></li>
 <li><a class="reference internal" href="#outputs">Outputs</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#decomposedhydromomentstadpole-py">decomposedHydroMomentsTADPole.py</a><ul>
-<li><a class="reference internal" href="#id29">Purpose</a></li>
-<li><a class="reference internal" href="#id30">Command to run</a></li>
-<li><a class="reference internal" href="#id31">Arguments</a></li>
-<li><a class="reference internal" href="#id32">Outputs</a></li>
+<li><a class="reference internal" href="#id30">Purpose</a></li>
+<li><a class="reference internal" href="#id31">Command to run</a></li>
+<li><a class="reference internal" href="#id32">Arguments</a></li>
+<li><a class="reference internal" href="#id33">Outputs</a></li>
 </ul>
 </li>
 </ul>

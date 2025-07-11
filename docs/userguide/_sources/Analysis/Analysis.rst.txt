@@ -87,26 +87,43 @@ The following arguments are (generally) consistent between scripts:
     Path to the input data file.
     Usually a ``.dat`` file.
     The exact file will vary from script to script.
+
 - ``inputname`` 
     Path to the input ``.json`` file corresponding to the given data.
     This is used to read in simulation parameters.
-- ``start`` 
+
+- ``-s``/ ``start`` 
     Starting timestep index for plotting.
-- ``finish`` 
+
+- ``-f``/ ``finish`` 
     Ending timestep index for plotting.
     Set to a very large number to plot until the end of the simulation.
-- ``avdim`` 
+
+- ``-a``/ ``avdim`` 
     For scripts that will "slice" over a dimension, this is the slicing dimension.
     These scripts will average in this dimension, hence the name ``avdim``.
     Accepts ``"x"``, ``"y"``, or ``"z"``.
-- ``-a``/ ``--myAspect`` 
+
+- ``-A``/ ``--myAspect`` 
     (Optional, default ``"auto"``)
     The aspect ratio to produce plots in. 
-    Either ``"auto"`` for automatic aspect ratio, or ``"equal"`` for equal aspect ratio.
+    Either ``"auto"`` for automatic aspect ratio (resizes axes to fit the figure size), or ``"equal"`` for equal aspect ratio (keeps the actual aspect ratio of the simulation domain).
+
 - ``-k``/ ``--keepFrames`` 
     (Optional, default ``0``)
     When producing frames for a movie, whether to keep the frames or delete them after the movie is produced.
     Set to ``1`` to keep the frames, and ``0`` to delete frames.
+
+- ``-p``/ ``--savePDF`` 
+    (Optional, default ``0``)
+    When producing frames for a movie, save the frames as PDFs to use in papers/talks.
+    Set to ``1`` to save the frames as PDFs, and ``0`` to not save them.
+
+- ``-g``/ ``--groupStyle`` 
+    (Optional, default ``0``)
+    Use the shendrukGroupStyle Matplotlib style file for plotting.
+    Set to ``1`` to use group style, and ``0`` to not use it. 
+
 - ``-d``/ ``--defectData`` 
     (Optional, default ``None``)
     Path to defect data file, if any.
@@ -119,6 +136,15 @@ The following arguments are (generally) consistent between scripts:
 - ``qy``:
     (Optional, default ``1``) 
     Only show every ``qy``-th spatial step in the :math:`\hat{y}` direction.
+
+
+
+
+colourbar flag
+shendruk-group-style flag
+scale c better
+
+
 
 densityAnimator.py 
 ******************

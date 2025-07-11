@@ -16,26 +16,25 @@ import argparse
 
 from defectHandler import getDefectData
 
-# Use our custom style and colours
-plt.style.use('shendrukGroupStyle')
-import shendrukGroupFormat as ed
-
-
 ###########################################################
 ### Set up argsparse
 ###########################################################
 parser = argparse.ArgumentParser(description='Density field rendering script.')
-parser.add_argument("dataname", type=str, help="Path to the data (should be coarsegrain.dat)")
+parser.add_argument("dataname", type=str, help="Path to the data (should be densityfield.dat)")
 parser.add_argument("inputname", type=str, help="Path to input .json file")
-parser.add_argument("start", type=int, help="Starting timestep for averaging")
-parser.add_argument("finish", type=int, help="Finishing timestep for averaging")
-parser.add_argument("sliceDim", type=str, help="Dimension to 'slice' over for averaging")
-parser.add_argument("sliceIndex", type=int, help="Index of the plane to be sliced for averaging")
-parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'", default='auto')
+parser.add_argument('-s',"--start", type=int, default=0, help="Starting timestep for averaging")
+parser.add_argument('-f',"--finish", type=int, default=9999999, help="Finishing timestep for averaging")
+parser.add_argument('-a',"--avdim", type=str, default='z', help="Dimension to 'average'/'slice' over for averaging")
+parser.add_argument('-i',"--sliceIndex", type=int, default=0, help="Index of the plane to be sliced for averaging")
+parser.add_argument("-A", "--myAspect", type=str, help="'auto' or 'equal'", default='equal')
 parser.add_argument("-k", "--keepFrames", type=int, help="0=don't keep (delete) frames; 1=keep frames", default=0)
 parser.add_argument("-N", "--normalise", type=int, help="Normalise the colourbar (1) or not (0)", default=0)
 parser.add_argument("-p", "--savePDF", type=int, help="1 saves transparent pdfs for papers, 0 for none", default=0)
+parser.add_argument("-c", "--colourbar", type=int, help="1 adds a colourbar to the plot, 0 for none", default=1)
 parser.add_argument("-d", "--defectData", type=str, help="Path to defect data (if any)", default="")
+parser.add_argument("-g", "--groupStyle", type=int,
+                    help="0=don't use group style; 1=use group style",
+                    default=1)
 args = parser.parse_args()
 
 ###########################################################
@@ -48,21 +47,31 @@ dataName = args.dataname
 inputName = args.inputname
 start = args.start
 finish = args.finish
-sliceDim = args.sliceDim
+avdim = args.avdim
 sliceIndex = args.sliceIndex
 myAspect = args.myAspect
 keepFrames = args.keepFrames
 normalise = args.normalise
 savePDF = args.savePDF
+cbFlag = args.colourbar
 defectData = args.defectData
+groupStyle = args.groupStyle
 
 makeTransparent = False # Transparent backgrounds make crappy videos, but look good on webpages
 
 ###########################################################
 ### Format and style
 ###########################################################
-# Colour map to use # TODO: adjust this!
-myMap=ed.plasma # colour map used when species=1
+if groupStyle:
+	# Use our custom style and colours
+	plt.style.use('shendrukGroupStyle')
+	import shendrukGroupFormat as ed
+# colour map used when species=1
+if groupStyle:
+	myMap=ed.plasma 
+else:
+	myMap=plt.cm.plasma
+
 pop0Col = np.array([0, 1, 0]) # colour to show when ONLY pop0 is present (RGB)
 pop1Col = np.array([1, 0, 0]) # colour to show when ONLY pop1 is present (RGB)
 def getRGBAColField(totalPop, maxTotalPop, popProp):
@@ -122,25 +131,25 @@ if species > 2:
 ###########################################################
 ### Initialize
 ###########################################################
-if sliceDim=='x':
-	print("Note, for now we assume sliceDim=z! Edit the script to fix this as necessary")
+if avdim=='x':
+	print("Note, for now we assume avdim=z! Edit the script to fix this as necessary")
 	dim=0
 	d1=1
 	d2=2
-elif sliceDim=='y':
-	print("Note, for now we assume sliceDim=z! Edit the script to fix this as necessary")
+elif avdim=='y':
+	print("Note, for now we assume avdim=z! Edit the script to fix this as necessary")
 	dim=1
 	d1=0
 	d2=2
-elif sliceDim=='z':
+elif avdim=='z':
 	dim=2
 	d1=0
 	d2=1
 else:
-	print( "sliceDim must be 'x', 'y' or 'z' - not %s"%sliceDim )
+	print( "avdim must be 'x', 'y' or 'z' - not %s"%avdim )
 	exit()
 if sliceIndex>=xyzSize[dim]:
-	print( "sliceIndex must be within the system: sliceIndex=%d but %s system size=%d"%(sliceIndex,sliceDim,xyzSize[dim]) )
+	print( "sliceIndex must be within the system: sliceIndex=%d but %s system size=%d"%(sliceIndex,avdim,xyzSize[dim]) )
 	exit()
 
 # Data
@@ -169,24 +178,31 @@ if defectData != "":
 	print("Finished loading defects")
 
 # Figure
-fig1 = plt.figure(1)
+width=8
+height=6
+if not cbFlag:
+	width=height
+fig1, ax = plt.subplots(figsize=(width, height))
 if myAspect == 'auto':
     shrink_factor = 1.0
-else:
+elif float(xyzSize[d2])<float(xyzSize[d1]):
     shrink_factor = float(xyzSize[d2])/float(xyzSize[d1])
+else:
+    shrink_factor = 1.0
+
 ###########################################################
 ### Read the data for animation
 ###########################################################
 
 ### Setup the animation
 # Make labels
-if sliceDim=='x':
+if avdim=='x':
 	labX='y'
 	labY='z'
-elif sliceDim=='y':
+elif avdim=='y':
 	labX='x'
 	labY='z'
-elif sliceDim=='z':
+elif avdim=='z':
 	labX='x'
 	labY='y'
 
@@ -210,7 +226,7 @@ while infile:
 	else:
 		if currTStep>=start:
 			currLine = line.split("\t")
-			t,Qx,Qy,Qz,Vcmx,Vcmy,Vcmz,pop = [currLine[i] for i in range(8)] # get core data
+			t,Qx,Qy,Qz,pop,mass,popSRD,popMD,popSW = [currLine[i] for i in range(9)] # get core data
 			TOTPOP[int(Qx)][int(Qy)][int(Qz)] = float(pop)
 
 			if species == 2: # now handle multispecies info
@@ -225,7 +241,7 @@ while infile:
 			aaa=0
 		else:
 			# compute the information for the slice we want to render
-			##NOTE: for now, assuming sliceDim=z and z=0 for simplicity
+			##NOTE: for now, assuming avdim=z and z=0 for simplicity
 			sliceTOTPOP = TOTPOP[:,:,sliceIndex]
 			sliceMax = np.max(sliceTOTPOP) # maximum population in the slice
 			if species == 2: # for multispecies
@@ -246,11 +262,12 @@ while infile:
 
 			#Create the colorbar
 			CS3 = imshow(renderTOTPOP.T,vmin=0,cmap=myMap,aspect=myAspect,extent=[0,xyzSize[d1],0,xyzSize[d2]])
-			cb=colorbar(CS3,shrink=shrink_factor,aspect=20*shrink_factor,pad=0.04)
-			if normalise:
-				cb.ax.set_ylabel(r'Number, $N_C / N_C^\mathrm{max}$')
-			else:
-				cb.ax.set_ylabel(r'Number, $N_C$')
+			if cbFlag:
+				cb=colorbar(CS3,shrink=shrink_factor,aspect=20*shrink_factor,pad=0.04)
+				if normalise:
+					cb.ax.set_ylabel(r'Number, $N_C / N_C^\mathrm{max}$')
+				else:
+					cb.ax.set_ylabel(r'Number, $N_C$')
 
 			# perform matplotlib bits and save
 			xlabel(r'$%s$'%labX)
@@ -286,14 +303,14 @@ infile.close()
 #Animate
 print( "Animating ..." )
 # single species
-name='density_%s%d%s'%(sliceDim,sliceIndex,suffix)
+name='density_%s%d%s'%(avdim,sliceIndex,suffix)
 myCommand="rm %s"%name
 call(myCommand,shell=True)
 myCommand = "ffmpeg -f image2 -r %d"%(framerate)+" -i frame_s=1_%04d.png"+" -vcodec %s -b %dk -r %d %s"%(codec,bitrate,framerate,name)
 call(myCommand,shell=True)
 
 if species == 2: # for multispecies
-	name='density_s=%d_%s%d%s'%(species,sliceDim,sliceIndex,suffix)
+	name='density_s=%d_%s%d%s'%(species,avdim,sliceIndex,suffix)
 	myCommand="rm %s"%name
 	call(myCommand,shell=True)
 	myCommand = "ffmpeg -f image2 -r %d"%(framerate)+" -i frame_s=2_%04d.png"+" -vcodec %s -b %dk -r %d %s"%(codec,bitrate,framerate,name)

@@ -17,10 +17,6 @@ import os
 import json
 import argparse
 
-# Use our custom style and colours
-plt.style.use('shendrukGroupStyle')
-import shendrukGroupFormat as ed
-
 ###########################################################
 ### Set up argparse
 ###########################################################
@@ -28,15 +24,19 @@ parser = argparse.ArgumentParser(description='Topological charge field rendering
 parser.add_argument("directorData", type=str, help="Path to the director data")
 parser.add_argument("topoData", type=str, help="Path to the topological charge data")
 parser.add_argument("inputname", type=str, help="Path to input .json file")
-parser.add_argument("start", type=int, help="Starting timestep for averaging")
-parser.add_argument("finish", type=int, help="Finishing timestep for averaging")
+parser.add_argument('-s',"--start", type=int, default=0, help="Starting timestep for averaging")
+parser.add_argument('-f',"--finish", type=int, default=9999999, help="Finishing timestep for averaging")
+parser.add_argument('-a',"--avdim", type=str, default='z', help="Dimension to 'slice' over")
 parser.add_argument("--qx", type=int, help="Only show every qx arrow in x", default=1)
 parser.add_argument("--qy", type=int, help="Only show every qy arrow in y", default=1)
-parser.add_argument("avdim", type=str, help="Dimension to 'slice' over")
-parser.add_argument("-c", "--length", type=float, help="Length of director lines", default=0.5)
-parser.add_argument("-d", "--deflength", type=float, help="Length of nematic pointer lines", default=1.5)
-parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'", default="auto")
+parser.add_argument("-l", "--length", type=float, help="Length of director lines", default=0.95)
+parser.add_argument("-d", "--deflength", type=float, help="Length of nematic pointer lines", default=1.25)
+parser.add_argument("-A", "--myAspect", type=str, help="'auto' or 'equal'", default="equal")
 parser.add_argument("-k", "--keepFrames", type=int, help="0=don't keep (delete) frames; 1=keep frames", default=0)
+parser.add_argument("-c", "--colourbar", type=int, help="1 adds a colourbar to the plot, 0 for none", default=1)
+parser.add_argument("-g", "--groupStyle", type=int,
+                    help="0=don't use group style; 1=use group style",
+                    default=1)
 args = parser.parse_args()
 
 ###########################################################
@@ -53,20 +53,32 @@ finish = args.finish
 qx = args.qx
 qy = args.qy
 avdim = args.avdim
-c = args.length
-c1 = args.deflength
+myLength = args.length
+defLength = args.deflength
 myAspect = args.myAspect
 keepFrames = args.keepFrames
+cbFlag = args.colourbar
+groupStyle = args.groupStyle
 
 makeTransparent = False # Transparent backgrounds make crappy videos, but look good on webpages
 
 ###########################################################
 ### Format and style
 ###########################################################
+if groupStyle:
+	# Use our custom style and colours
+	plt.style.use('shendrukGroupStyle')
+	import shendrukGroupFormat as ed
 # Colour map to use
-myMap=ed.plasma
+if groupStyle:
+	myMap=ed.plasma
+else:
+	myMap=plt.cm.plasma
 # Adjust line width
 myLW=1.0
+# adjust line length
+myLength *= sqrt(min(qx, qy))
+defLength *= sqrt(min(qx, qy))/2.0
 #Animation stuff
 bitrate=5000
 framerate=4		#Number of frames per second in the output video
@@ -124,15 +136,26 @@ ANGLE = zeros(shape=(xyzSize[d1],xyzSize[d2]),dtype=float)
 
 ### Setup the animation
 # Figure
-fig1 = plt.figure(1)
+width=8
+height=6
+if not cbFlag:
+	width=height
 if myAspect == 'auto':
-    shrink_factor = 1.0
+	shrink_factor = 1.0
 else:
-    shrink_factor = float(xyzSize[d2])/float(xyzSize[d1])
+	shrink_factor = float(xyzSize[d2])/float(xyzSize[d1])
+	if xyzSize[d1] > xyzSize[d2]:
+		height *= shrink_factor
+	else:
+		width /= shrink_factor
+		shrink_factor = 1.0
+# Create the figure
+fig1, ax = plt.subplots(figsize=(width, height))
 #Create the colorbar
 CS3 = imshow(AVS.T,cmap=myMap,vmin=-0.5, vmax=0.5,aspect=myAspect,extent=[0,xyzSize[d1],0,xyzSize[d2]])
-cb=colorbar(CS3,shrink=shrink_factor,aspect=20*shrink_factor,pad=0.04)
-cb.ax.set_ylabel(r'Topological charge, $q$')
+if cbFlag:
+	cb=colorbar(CS3,shrink=1,aspect=20*shrink_factor,pad=0.04)
+	cb.ax.set_ylabel(r'Topo. charge, $q$')
 # Make labels
 if avdim=='x':
 	labX='y'
@@ -258,28 +281,31 @@ while datainfile:
 			n=n+1
 			fig1 = plt.figure(1)
 			plt.clf()
+			quiver( XY[0][::qx, ::qy], XY[1][::qx, ::qy], 
+					myLength*MEAN[0][::qx, ::qy], myLength*MEAN[1][::qx, ::qy], 
+					CHARGE[::qx, ::qy]+0.5, cmap=myMap, clim=(0, 1), scale=50/myLength,width=0.005*myLW, headlength=0, headwidth=0,headaxislength=0, pivot='middle')
 			for x in range(xyzSize[d1]):
 				for y in range(xyzSize[d2]):
 					if( x%qx==0 and y%qy==0 ):
 						#plot the field data
-						plot( [ XY[0][x][y]-c*MEAN[d1][x][y],XY[0][x][y]+c*MEAN[d1][x][y] ],[ XY[1][x][y]-c*MEAN[d2][x][y],XY[1][x][y]+c*MEAN[d2][x][y] ],color=myMap(CHARGE[x][y]+0.5,1),linewidth=myLW )
 						#plot +1/2 defects as lines 
 						if (CHARGE[x][y] > 1.0e-6):
-							plt.arrow(XY[0][x][y], XY[1][x][y], 0.5*c1*math.cos(ANGLE[x][y]), 0.5*c1*math.sin(ANGLE[x][y]), color='k')
-							plt.arrow(XY[0][x][y], XY[1][x][y], -0.5*c1*math.cos(ANGLE[x][y]), -0.5*c1*math.sin(ANGLE[x][y]), color='k')
+							plt.arrow(XY[0][x][y], XY[1][x][y], 0.5*defLength*math.cos(ANGLE[x][y]), 0.5*defLength*math.sin(ANGLE[x][y]), color='k')
+							plt.arrow(XY[0][x][y], XY[1][x][y], -0.5*defLength*math.cos(ANGLE[x][y]), -0.5*defLength*math.sin(ANGLE[x][y]), color='k')
 						#plot -1/2 defects with three lines (per symmetry)
 						if (CHARGE[x][y] < -1.0e-6):
-							plt.arrow(XY[0][x][y], XY[1][x][y], 0.5*c1*math.cos(ANGLE[x][y]), 0.5*c1*math.sin(ANGLE[x][y]), color='k')
-							plt.arrow(XY[0][x][y], XY[1][x][y], 0.5*c1*math.cos(ANGLE[x][y] + math.pi*2/3), 0.5*c1*math.sin(ANGLE[x][y] + math.pi*2/3), color='k')
-							plt.arrow(XY[0][x][y], XY[1][x][y], 0.5*c1*math.cos(ANGLE[x][y] - math.pi*2/3), 0.5*c1*math.sin(ANGLE[x][y] - math.pi*2/3), color='k')
+							plt.arrow(XY[0][x][y], XY[1][x][y], 0.5*defLength*math.cos(ANGLE[x][y]), 0.5*defLength*math.sin(ANGLE[x][y]), color='k')
+							plt.arrow(XY[0][x][y], XY[1][x][y], 0.5*defLength*math.cos(ANGLE[x][y] + math.pi*2/3), 0.5*defLength*math.sin(ANGLE[x][y] + math.pi*2/3), color='k')
+							plt.arrow(XY[0][x][y], XY[1][x][y], 0.5*defLength*math.cos(ANGLE[x][y] - math.pi*2/3), 0.5*defLength*math.sin(ANGLE[x][y] - math.pi*2/3), color='k')
+			if cbFlag:
+				cb=colorbar(CS3,shrink=1,aspect=20*shrink_factor,pad=0.04)
+				cb.ax.set_ylabel(r'Topo. charge, $q$')
 			xlabel(r'$%s$'%labX)
 			ylabel(r'$%s$'%labY)
 			plt.axis(xmax=xyzSize[d1], xmin=0, ymax=xyzSize[d2], ymin=0)
 			name='frame%04d.png'%(n)
-			if makeTransparent:
-				savefig( name,bbox_inches='tight',pad_inches=0, transparent=True )
-			else:
-				savefig( name,bbox_inches='tight',pad_inches=0 )
+			plt.axis('off') 
+			savefig( name,bbox_inches='tight',pad_inches=0, transparent=makeTransparent )
 		#Zero matrix
 		DIR= zeros( (3,xyzSize[0],xyzSize[1],xyzSize[2]),dtype=float )
 		MEAN = zeros(shape=(3,xyzSize[d1],xyzSize[d2]),dtype=float)

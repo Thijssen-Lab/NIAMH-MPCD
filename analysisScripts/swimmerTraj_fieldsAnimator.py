@@ -20,10 +20,6 @@ import argparse
 
 from defectHandler import getDefectData
 
-# Use our custom style and colours
-plt.style.use('shendrukGroupStyle')
-import shendrukGroupFormat as ed
-
 ###########################################################
 ### Set up argparse
 ###########################################################
@@ -31,16 +27,20 @@ parser = argparse.ArgumentParser(
   description='Animate swimmers and 2D fields, averaging over user defined direction.')
 parser.add_argument('dataPath', type=str, help="Path to the data")
 parser.add_argument('inputName', type=str, help="Input json file to read inputs")
-parser.add_argument('start', type=int, help="Average after this number")
-parser.add_argument('finish', type=int, help="Average before this number")
+parser.add_argument('fieldType', type=str, help="Field type: 'vel', 'vor' or 'nem' for velocity, vorticity or director field, respectively. For a blank canvas, select 'none'.")
+parser.add_argument('-s',"--start", type=int, default=0, help="Average after this number")
+parser.add_argument('-f',"--finish", type=int, default=9999999, help="Average before this number")
+parser.add_argument('-a',"--avdim", type=str, default='z', help="Dimension to average over")
 parser.add_argument("--qx", type=int, help="Only show every qx arrow in x", default=1)
 parser.add_argument("--qy", type=int, help="Only show every qy arrow in y",default=1)
-parser.add_argument('avdim', type=str, help="Dimension to average over")
-parser.add_argument('fieldType', type=str, help="Field type: 'vel', 'vor' or 'nem' for velocity, vorticity or director field, respectively. For a blank canvas, select 'none'.")
-parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'", default="auto")
+parser.add_argument("-A", "--myAspect", type=str, help="'auto' or 'equal'", default="equal")
 parser.add_argument("-k", "--keepFrames", type=int, help="0=don't keep (delete) frames; 1=keep frames", default=0)
 parser.add_argument("-p", "--savePDF", type=int, help="1 saves transparent pdfs for papers, 0 for none", default=0)
 parser.add_argument("-d", "--defectData", type=str, help="Path to defect data (if any)", default="")
+parser.add_argument("-c", "--colourbar", type=int, help="1 adds a colourbar to the plot, 0 for none", default=1)
+parser.add_argument("-g", "--groupStyle", type=int,
+                    help="0=don't use group style; 1=use group style",
+                    default=1)
 args = parser.parse_args()
 
 ###########################################################
@@ -61,6 +61,8 @@ myAspect = args.myAspect
 keepFrames = args.keepFrames
 savePDF = args.savePDF
 defectData = args.defectData
+cbFlag = args.colourbar
+groupStyle = args.groupStyle
 
 fieldType=fieldType.lower()
 if(fieldType=="v" or fieldType=="vel" or fieldType=="velocity"):
@@ -77,19 +79,43 @@ makeTransparent = False # Transparent backgrounds make crappy videos, but look g
 ###########################################################
 ### Style/formating stuff
 ###########################################################
+if groupStyle:
+  # Use our custom style and colours
+  plt.style.use('shendrukGroupStyle')
+  import shendrukGroupFormat as ed
+
 # Colours
-swimmerMap=ed.viridis
 if(fieldType=="vel"):
-  fieldMap = ed.truncate_colormap(ed.viridis, minval=0.1, maxval=0.7)
+  if groupStyle:
+    fieldMap = ed.truncate_colormap(ed.viridis, minval=0.1, maxval=0.7)
+  else:
+    fieldMap = plt.cm.viridis
 elif(fieldType=="vor"):
-  fieldMap = ed.bombpops
+  if groupStyle:
+    fieldMap = ed.bombpops
+  else:
+    fieldMap = plt.cm.bwr
 elif(fieldType=="nem"):
-  fieldMap = ed.plasma
+  if groupStyle:
+    fieldMap = ed.plasma
+  else:
+    fieldMap = plt.cm.plasma
 elif(fieldType=="none"):
   pass
 else:
   print("Field type %s not known."%(fieldType))
   exit()
+if groupStyle:
+  myGrey=ed.bggrey
+else:
+  myGrey=[0.95, 0.95, 0.95]
+
+from matplotlib.colors import LinearSegmentedColormap as lsc
+if groupStyle:
+  rb = lsc.from_list("", [ed.onyx,ed.purple,ed.plum,ed.crimson,ed.cinnamon,ed.amber,ed.forestgreen,ed.onyx])
+else:
+   rb = lsc.from_list("", ['black','darkviolet','purple','crimson','darkorange','gold','darkgreen','black']) 
+
 #Animation
 bitrate=5000
 framerate=20		#Number of frames per second in the output video
@@ -118,6 +144,12 @@ if "domain" in input:
 numSw=0
 if "nSwim" in input:
     numSw=input['nSwim']
+else:
+   print("Simulation does not have swimmers. Exiting.")
+   exit()
+if numSw==0:
+    print("Simulation does not have swimmers. Exiting.")
+    exit()
 dipole=1
 if "dsSwim" in input:
     dipole=input['dsSwim']
@@ -125,7 +157,7 @@ l=4
 if "sigSwim" in input:
     l=input['sigSwim']
 
-if input['sigSwim']!=input['roSwim']:
+if input["sigSwim"]!=input["roSwim"]:
     print('Warning: your dumbbell might oscillate.')
 ###########################################################
 ### Set arguments
@@ -134,9 +166,6 @@ tailFreq=1.0/3.5
 tailWaveLength=(4.0/10.0)*2.0*(1.0+dipole)
 hidgeonLength=1.0
 tailRad=1.0
-
-from matplotlib.colors import LinearSegmentedColormap as lsc
-rb = lsc.from_list("", [ed.onyx,ed.purple,ed.plum,ed.crimson,ed.cinnamon,ed.amber,ed.forestgreen,ed.onyx])
 
 Ncol=50
 col=[rb(float(i/Ncol)) for i in range(Ncol+1)]
@@ -184,15 +213,15 @@ if(fieldType=="nem"):
 # Setup figure
 width=8
 height=6
-if myAspect == 'auto':
-	shrink_factor = 1.0
-else:
-	shrink_factor = float(xyzSize[d2])/float(xyzSize[d1])
-	if xyzSize[d1] > xyzSize[d2]:
-		height*= shrink_factor
-	else:
-		width*= shrink_factor
+if not cbFlag:
+	width=height
 fig1, ax = plt.subplots(figsize=(width, height))
+if myAspect == 'auto':
+    shrink_factor = 1.0
+elif float(xyzSize[d1])>float(xyzSize[d2]):
+    shrink_factor = float(xyzSize[d2])/float(xyzSize[d1])
+else:
+    shrink_factor = 1.0
 
 ###########################################################
 ### defect handling if needed
@@ -517,23 +546,21 @@ while( velFile ):
     ###########################################################
     # Save frame
     n=n+1
-    plt.subplot(1,1,1)
     #Setup the velocity image
     if(fieldType!="none"):
       quiv = quiver( XY[0][::qx, ::qy], XY[1][::qx, ::qy], currentMEAN[d1][::qx, ::qy], currentMEAN[d2][::qx, ::qy] )
     if(fieldType=="vel"):
       image = imshow(currentMAG.T,cmap=fieldMap,origin='lower',aspect=myAspect,vmin=minV,vmax=maxV)
-      CB = colorbar(image,shrink=shrink_factor,aspect=20*shrink_factor, pad=0.04)
-      CB.ax.set_ylabel(r'Velocity, $\left|\vec{v}\right|$')
+      if cbFlag:
+        CB = colorbar(image,shrink=shrink_factor,aspect=20*shrink_factor, pad=0.04)
+        CB.ax.set_ylabel(r'Velocity, $\left|\vec{v}\right|$')
     elif(fieldType=="vor"):
       image = imshow(VORTZ.T,cmap=fieldMap,origin='lower',aspect=myAspect,vmin=minW,vmax=maxW)
-      CB = colorbar(image,shrink=shrink_factor,aspect=20*shrink_factor, pad=0.04)
-      CB.ax.set_ylabel(r'Vorticity, $\omega_{%s}$'%(avdim))
+      if cbFlag:
+        CB = colorbar(image,shrink=shrink_factor,aspect=20*shrink_factor, pad=0.04)
+        CB.ax.set_ylabel(r'Vorticity, $\omega_{%s}$'%(avdim))
     elif(fieldType=="none"):
-      plt.subplot(1,1,1,facecolor=ed.bggrey)
-      plt.xticks([])
-      plt.yticks([])
-
+      plt.subplot(1,1,1,facecolor=myGrey,aspect=myAspect)
     elif(fieldType=="nem"):
       for x in range(xyzSize[d1]):
         for y in range(xyzSize[d2]):
@@ -545,16 +572,14 @@ while( velFile ):
       print(f"Drawing defects {j}/{len(defects)-1}")
       for defect in defects[j-1]: 
         defect.drawDefect()
+
     # Plot the swimmers
     for ns in range(numSw):
-      
       waveLength=(4.0/5.0)*2.0*(1.0+dipole)
-
       # sets the colour as the orientation
       theta=arctan2((H[ns][d2]-B[ns][d2]),(H[ns][d1]-B[ns][d1]))
       # c=col[int(np.mod(theta,np.pi)*Ncol/np.pi)]
       c=col[int(theta*Ncol/np.pi/2)]
-
       X=linspace(0,dipole*l,20)
       X2=linspace(0,l,20)
 
@@ -583,8 +608,12 @@ while( velFile ):
       dum1=concatenate((B[ns][d1]+bodX,B[ns][d1]+bodX2))
       dum2=concatenate((B[ns][d2]+bodY,B[ns][d2]+bodY2))
       fill(dum1,dum2,c=c,zorder=3)
-    xlabel(r'$%s$'%labX)
-    ylabel(r'$%s$'%labY)
+    
+    plt.xticks([])
+    plt.yticks([])
+    # xlabel(r'$%s$'%labX)
+    # ylabel(r'$%s$'%labY)
+    ax.axis('off')
     plt.axis(xmax=xyzSize[0], xmin=0, ymax=xyzSize[1], ymin=0)
     name='frame%04d.png'%(n)
     namepdf='frame%04d.pdf'%(n)

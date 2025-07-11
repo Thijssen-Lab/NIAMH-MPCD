@@ -81,6 +81,8 @@ Tag             | Type          | Default Value | Description
 `coarseOut`     | int           | 0             | Coarse grain data (cell velocity, densities, density of each species) field
 `flowOut`       | int           | 0             | Flow field averaged between output times
 `velOut`        | int           | 0             | Instantaneous velocity field
+`densOut`       | int           | 0             | Instantaneous density field
+`velOut`        | int           | 0             | Instantaneous velocity field
 `swFlowOut`     | int           | 0             | Flow field averaged between output times, in the first bacteria's reference frame
 `avVelOut`      | int           | 0             | Total average MPCD velocity. System-averaged single value
 `avOriOut`      | int           | 0             | Total average MPCD orientation. System-averaged vector value

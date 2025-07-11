@@ -71,6 +71,7 @@ seismic = lsc.from_list("", [saphire,white,cardinal])
 xmas = lsc.from_list("", [cardinaldarker,white,forestgreen])
 cool = lsc.from_list("", [capri,ruby])
 deepsea = lsc.from_list("", [purple,ceruleandarker,limegreen])
+defectHighlighter = lsc.from_list("", [saphire,cobalt,limegreen,amber,cinnamon,cardinaldarker])
 
 # Worse custom colour maps
 bombpops = lsc.from_list("", [cerulean,white,ruby])

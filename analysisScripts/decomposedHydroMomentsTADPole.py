@@ -228,21 +228,6 @@ for files in tqdm(filepath):
     a2=plt.imshow(xyU2,norm=LogNorm(),label='Vel')
     plt.quiver(u[::skip,::skip],v[::skip,::skip],xyU[::skip,::skip,0].T,-xyU[::skip,::skip,1].T,linewidth=w)
     plt.savefig(str(files)+'/FlowAroundTADPole.pdf')
-# IF YOU HAVE REPEATS: average over repeats in this simple manner
-
-# # Averaging every repeat 
-# xyUtot=xyU
-# cnt=0
-# for files in tqdm(filepath):
-#     Exp=files
-
-#     xyU=np.load(Exp+'/xyU.npy')
-#     xyUtot+=xyU
-#     cnt+=1
-
-# xyUtot/=cnt
-
-# np.save(Exp+'/../xyU',xyUtot)
 
 # Extracting the dipolar component of the flow, then plotting its radial evolution.
 for files in tqdm(filepath):

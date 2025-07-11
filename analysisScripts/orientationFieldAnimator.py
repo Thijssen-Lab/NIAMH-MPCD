@@ -19,10 +19,6 @@ import argparse
 
 from defectHandler import getDefectData
 
-# Use our custom style and colours
-plt.style.use('shendrukGroupStyle')
-import shendrukGroupFormat as ed
-
 ###########################################################
 ### Set up argsparse
 ###########################################################
@@ -31,16 +27,20 @@ parser = argparse.ArgumentParser(description='Orientation field rendering '
 parser.add_argument("dataname", type=str, help="Path to the data (should be "
 											   "directorfield.dat)")
 parser.add_argument("inputname", type=str, help="Path to input .json file")
-parser.add_argument("start", type=int, help="Starting timestep for averaging")
-parser.add_argument("finish", type=int, help="Finishing timestep for averaging")
+parser.add_argument('-s',"--start", type=int, default=0, help="Starting timestep for averaging")
+parser.add_argument('-f',"--finish", type=int, default=9999999, help="Finishing timestep for averaging")
+parser.add_argument('-a',"--avdim", type=str, default='z', help="Dimension to 'slice' over")
 parser.add_argument("--qx", type=int, help="Only show every qx arrow in x", default=1)
 parser.add_argument("--qy", type=int, help="Only show every qy arrow in y",default=1)
-parser.add_argument("avdim", type=str, help="Dimension to 'slice' over")
-parser.add_argument("-c", "--length", type=float, help="Length of director lines", default=0.5)
-parser.add_argument("-a", "--myAspect", type=str, help="'auto' or 'equal'", default="auto")
+parser.add_argument("-l", "--length", type=float, help="Length of director lines", default=1.0)
+parser.add_argument("-A", "--myAspect", type=str, help="'auto' or 'equal'", default="equal")
 parser.add_argument("-k", "--keepFrames", type=int, help="0=don't keep (delete) frames; 1=keep frames", default=0)
 parser.add_argument("-p", "--savePDF", type=int, help="1 saves transparent pdfs for papers, 0 for none", default=0)
+parser.add_argument("-c", "--colourbar", type=int, help="1 adds a colourbar to the plot, 0 for none", default=1)
 parser.add_argument("-d", "--defectData", type=str, help="Path to defect data (if any)", default="")
+parser.add_argument("-g", "--groupStyle", type=int,
+                    help="0=don't use group style; 1=use group style",
+                    default=1)
 args = parser.parse_args()
 
 ###########################################################
@@ -56,23 +56,33 @@ finish = args.finish
 qx = args.qx
 qy = args.qy
 avdim = args.avdim
-c = args.length
+myLength = args.length
 myAspect = args.myAspect
 keepFrames = args.keepFrames
 savePDF = args.savePDF
+cbFlag = args.colourbar
 defectData = args.defectData
+groupStyle = args.groupStyle
 
 makeTransparent = False # Transparent backgrounds make crappy videos, but look good on webpages
 
 ###########################################################
 ### Format and style
 ###########################################################
+if groupStyle:
+	# Use our custom style and colours
+	plt.style.use('shendrukGroupStyle')
+	import shendrukGroupFormat as ed
 # Colour map to use
-myMap=ed.plasma
+if groupStyle:
+	myMap=ed.plasma 
+	# myMap=ed.defectHighlighter
+else:
+	myMap=plt.cm.plasma
 # Adjust line width
 myLW=1.0
 # adjust line length
-c *= (qx+qy)/2
+myLength *= sqrt(min(qx, qy))
 #Animation stuff
 bitrate=5000
 framerate=12		#Number of frames per second in the output video
@@ -131,19 +141,24 @@ AVS = zeros(shape=(xyzSize[d1],xyzSize[d2]),dtype=float)
 # Figure
 width=8
 height=6
+if not cbFlag:
+	width=height
 if myAspect == 'auto':
 	shrink_factor = 1.0
 else:
 	shrink_factor = float(xyzSize[d2])/float(xyzSize[d1])
 	if xyzSize[d1] > xyzSize[d2]:
-		height*= shrink_factor
+		height *= shrink_factor
 	else:
-		width*= shrink_factor
+		width /= shrink_factor
+		shrink_factor = 1.0
+# Create the figure
 fig1, ax = plt.subplots(figsize=(width, height))
 #Create the colorbar
 CS3 = imshow(AVS.T,cmap=myMap,vmin=0, vmax=1,aspect=myAspect,extent=[0,xyzSize[d1],0,xyzSize[d2]])
-cb=colorbar(CS3,shrink=shrink_factor,aspect=20*shrink_factor,pad=0.04)
-cb.ax.set_ylabel(r'Scalar order, $S$')
+if cbFlag:
+	cb=colorbar(CS3,shrink=1,aspect=20*shrink_factor,pad=0.04)
+	cb.ax.set_ylabel(r'Scalar order, $S$')
 # Make labels
 if avdim=='x':
 	labX='y'
@@ -269,24 +284,26 @@ while infile:
 			# Save frame
 			n=n+1
 			plt.subplot(1,1,1)
-			plt.clf()
+			plt.cla() 	# Not plt.clf(), to keep the colorbar
 			quiver( XY[0][::qx, ::qy], XY[1][::qx, ::qy], 
-					c*MEAN[0][::qx, ::qy], c*MEAN[1][::qx, ::qy], 
-					AVS[::qx, ::qy], cmap=myMap, clim=(0, 1), scale=50/c,
+					myLength*MEAN[0][::qx, ::qy], myLength*MEAN[1][::qx, ::qy], 
+					AVS[::qx, ::qy], cmap=myMap, clim=(0, 1), scale=50/myLength,
 					width=0.005*myLW, headlength=0, headwidth=0, 
 					headaxislength=0, pivot='middle')
-			fig1.canvas.draw()
+			# fig1.canvas.draw()
 			# load defects and draw them as necessary
 			# FIXME: only works for 2d for now, doesnt take into account d1 or d2
 			if LOADDEFECTS and (j < len(defects)):
 				for defect in defects[j-1]: # j is not 0 indexed reeeeee
 					defect.drawDefect()
+			if cbFlag:
+				cb=colorbar(CS3,shrink=1,aspect=20*shrink_factor,pad=0.04)
+				cb.ax.set_ylabel(r'Scalar order, $S$')
 			xlabel(r'$%s$'%labX)
 			ylabel(r'$%s$'%labY)
 			plt.axis(xmax=xyzSize[d1], xmin=0, ymax=xyzSize[d2], ymin=0)
 			name='frame%04d.png'%(n)
 			namepdf='frame%04d.pdf'%(n)
-			# uncomment below for snapshots
 			plt.axis('off') 
 			plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
 			savefig( name, bbox_inches='tight', pad_inches=0, transparent=makeTransparent )

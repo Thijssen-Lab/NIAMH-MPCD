@@ -15,24 +15,23 @@ from scipy import integrate
 import os
 import argparse
 
-# Use our custom style and colours
-plt.style.use('shendrukGroupStyle')
-import shendrukGroupFormat as ed
-
 ###########################################################
 ### Set up argsparse
 ###########################################################
 parser = argparse.ArgumentParser(description='Ensemble-average rendering script.')
 parser.add_argument('dataName', type=str,
 					help="Path to data (any ensemble-averaged MPCD output)")
-parser.add_argument('yaxis', type=str,help="y axis label")
+parser.add_argument('-Y', '--yaxis', type=str, help="y axis label", default="")
 parser.add_argument('-c','--columns', nargs='+', type=str,
 					help="data --- What columns would you like to plot? 0 will be x-axis, 1 will be y-axis, etc. If you want to plot multiple columns, use -c 0 1 2 ...",
 					default=['1'])
+parser.add_argument("-g", "--groupStyle", type=int,
+                    help="0=don't use group style; 1=use group style",
+                    default=1)
 args = parser.parse_args()
 
 ###########################################################
-### Initialize
+### Arguements
 ###########################################################
 print("Arguments:")
 for arg, value in vars(args).items():
@@ -40,6 +39,11 @@ for arg, value in vars(args).items():
 dataName = args.dataName
 cols = args.columns
 yaxis = args.yaxis
+groupStyle = args.groupStyle
+
+###########################################################
+### Initialize
+###########################################################
 if not os.path.isfile(dataName):
 	print("%s not found."%dataName)
 	exit()
@@ -55,6 +59,14 @@ for i in range(numC):
 		print("Column %s is negative."%cols[i])
 		exit()
 avOutName=dataName.split(".dat")[0]+"_av"
+
+###########################################################
+### Format and style
+###########################################################
+if groupStyle:
+	# Use our custom style and colours
+	plt.style.use('shendrukGroupStyle')
+	import shendrukGroupFormat as ed
 
 ###########################################################
 ### Initialize/Read header

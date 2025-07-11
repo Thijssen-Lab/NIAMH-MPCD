@@ -357,6 +357,26 @@ void flowheader( FILE *fout ) {
 }
 
 ///
+/// @brief Prints column headers for density data output files.
+///
+/// Column headers are produced for density .dat files to display raw data in a table format.
+/// Time, t, is the first column header.
+/// QX, QY, and QZ are indices of spatial positions in Cartesian co-ordinates.
+/// POP and MASS are number and mass of all particles in the cells.
+/// POPSRD, POPMD, and POPSW are the number of particles in the cell for SRD, MD monomers and swimmers, respectively.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+///
+/// @brief Prints column headers for density data output files.
+///
+void densityheader( FILE *fout ) {
+	int n=0;
+	fprintf( fout,"   t\t   QX\t   QY\t   QZ\tpop\t\tmass\t\tpopSRD\t\tpopMD\t\tpopSW" );
+	for( n=0; n<NSPECI; n++ ) fprintf( fout,"\t\tSP%d",n );
+	fprintf( fout,"\n" );
+}
+
+///
 /// @brief Prints column headers for angular velocity and orientation data output files.
 ///
 /// Column headers are produced for angular velocity .dat files to display raw data in a table format.
@@ -1153,6 +1173,7 @@ void stateinput( inputList in,spec SP[],bc WALL[],specSwimmer SS,outputFlagsList
 		fprintf( fsynopsis,"Print coarse data every %i time steps\n",out.COAROUT );
 		fprintf( fsynopsis,"Print flow data: %i\n",out.FLOWOUT );
         fprintf( fsynopsis,"Print velocity data: %i\n",out.VELOUT );
+		fprintf( fsynopsis,"Print density data: %i\n",out.DENSITYOUT );
 		fprintf( fsynopsis,"Print flow around first swimmer data: %i\n",out.SWFLOWOUT );
 		fprintf( fsynopsis,"Print averaged flow data: %i\n",out.AVVELOUT );
 		fprintf( fsynopsis,"Print averaged orientation data: %i\n",out.AVORIOUT );
@@ -1708,6 +1729,31 @@ void velout( FILE *fout,cell ***CL, double t) {
 #ifdef FFLSH
     fflush(fout);
 #endif
+}
+
+///
+/// @brief Outputs density field data calculated as cell populations.
+///
+/// This function outputs the number of particles in each cell and the mass of the particles.
+///
+/// @param fout This is a pointer to the output .dat file name to be produced.
+/// @param CL This is a pointer to the co-ordinates and cell of each particle.
+/// @param t This is the time step.
+/// @see outputResults()
+///
+void densityout( FILE *fout,cell ***CL, double t) {
+	int n=0,i=0,j=0,k=0;
+
+	for( i=0; i<XYZ[0]; i++ ) for( j=0; j<XYZ[1]; j++ ) for( k=0; k<XYZ[2]; k++ ) {
+		fprintf( fout,"%12.5e\t", t); // print time
+		fprintf( fout, "%5d\t%5d\t%5d\t",i,j,k );
+		fprintf( fout, "%5d\t%12.5e\t%5d\t%5d\t%5d\t",CL[i][j][k].POP,CL[i][j][k].MASS,CL[i][j][k].POPSRD,CL[i][j][k].POPMD,CL[i][j][k].POPSW );
+		for( n=0; n<NSPECI; n++ ) fprintf( fout, "\t%5d",CL[i][j][k].SP[n] );
+		fprintf( fout,"\n" );
+	}
+	#ifdef FFLSH
+		fflush(fout);
+	#endif
 }
 
 ///
@@ -2301,7 +2347,7 @@ void checkpoint(FILE *fout, inputList in, spec *SP, particleMPC *pSRD, int MD_mo
 	// fprintf( fout,"%d %s\n",MDmode,mdInputFile );					//MD
 
 	//Output variables
-	fprintf( fout,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %f\n",DBUG,outFlag.TRAJOUT,outFlag.printSP,outFlag.COAROUT,outFlag.FLOWOUT,outFlag.SWFLOWOUT,outFlag.VELOUT,outFlag.AVVELOUT,outFlag.AVORIOUT,outFlag.ORDEROUT,outFlag.QTENSOUT,outFlag.QKOUT,outFlag.AVSOUT,outFlag.SOLOUT,outFlag.ENOUT,outFlag.ENFIELDOUT,outFlag.ENNEIGHBOURS,outFlag.ENSTROPHYOUT,outFlag.DENSOUT,outFlag.CVVOUT,outFlag.CNNOUT,outFlag.CWWOUT,outFlag.CDDOUT,outFlag.CSSOUT,outFlag.CPPOUT,outFlag.BINDER,outFlag.BINDERBIN,outFlag.SYNOUT,outFlag.CHCKPNT,outFlag.CHCKPNTrcvr,outFlag.CHCKPNTTIMER );
+	fprintf( fout,"%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %f\n",DBUG,outFlag.TRAJOUT,outFlag.printSP,outFlag.COAROUT,outFlag.FLOWOUT,outFlag.SWFLOWOUT,outFlag.VELOUT,outFlag.DENSITYOUT,outFlag.AVVELOUT,outFlag.AVORIOUT,outFlag.ORDEROUT,outFlag.QTENSOUT,outFlag.QKOUT,outFlag.AVSOUT,outFlag.SOLOUT,outFlag.ENOUT,outFlag.ENFIELDOUT,outFlag.ENNEIGHBOURS,outFlag.ENSTROPHYOUT,outFlag.DENSOUT,outFlag.CVVOUT,outFlag.CNNOUT,outFlag.CWWOUT,outFlag.CDDOUT,outFlag.CSSOUT,outFlag.CPPOUT,outFlag.BINDER,outFlag.BINDERBIN,outFlag.SYNOUT,outFlag.CHCKPNT,outFlag.CHCKPNTrcvr,outFlag.CHCKPNTTIMER );
 	fprintf( fout,"%d %d\n",outFlag.SPOUT,outFlag.PRESOUT );
 	fprintf( fout,"%d %d %d %d %d %d %d\n",outFlag.HISTVELOUT,outFlag.HISTSPEEDOUT,outFlag.HISTVORTOUT,outFlag.HISTENSTROUT,outFlag.HISTDIROUT,outFlag.HISTSOUT,outFlag.HISTNOUT );
 	fprintf( fout,"%d %d %d %d %d\n",outFlag.ENERGYSPECTOUT,outFlag.ENSTROPHYSPECTOUT,outFlag.TOPOOUT,outFlag.DEFECTOUT,outFlag.DISCLINOUT );
@@ -2643,6 +2689,7 @@ void outputResults(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], 
 	if(outFlag.printSP>0) if( outFlag.TRAJOUT>=OUT  && runtime%outFlag.TRAJOUT==0 ) coordout( outFiles.fdetail,outFlag.printSP,time_now,SRDparticles,SP );
 	if( outFlag.FLOWOUT>=OUT && runtime%outFlag.FLOWOUT==0 ) flowout( outFiles.fflow,CL,outFlag.FLOWOUT, time_now);
 	if( outFlag.VELOUT>=OUT && runtime%outFlag.VELOUT==0 ) velout( outFiles.fvel, CL, time_now);
+	if( outFlag.DENSITYOUT>=OUT && runtime%outFlag.DENSITYOUT==0 ) densityout( outFiles.fdensity,CL,time_now);
 	if( outFlag.SWFLOWOUT>=OUT && runtime%outFlag.SWFLOWOUT==0 && runtime!=0) swflowout( outFiles.fswflow,CL,outFlag.SWFLOWOUT, time_now);
 	if( outFlag.COAROUT>=OUT && runtime%outFlag.COAROUT==0 ) coarseout( outFiles.fcoarse,time_now,CL );
 	if(in.LC!=ISOF) if( outFlag.ORDEROUT>=OUT && runtime%outFlag.ORDEROUT==0 ) orderout( outFiles.forder,time_now,CL,in.LC );
