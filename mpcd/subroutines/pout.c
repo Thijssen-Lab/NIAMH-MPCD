@@ -805,7 +805,7 @@ void flowheader( FILE *fout ) {
 /// @param fout This is a pointer to the output .dat file name to be produced.
 ///
 void solidsheader( FILE *fout ) {
-	fprintf( fout,"t \tQX\t\tQY\t\tQZ\t\tVX\t\tVY\t\tVZ\t\tOX\t\tOY\t\tOZ\t\tLX\t\tLY\t\tLZ\n" );
+	fprintf( fout,"t \tQX\t\tQY\t\tQZ\t\tVX\t\tVY\t\tVZ\t\tOX\t\tOY\t\tOZ\t\tLX\t\tLY\t\tLZ\t\tdVX\t\tdVY\t\tdVZ\n" );
 }
 
 ///
