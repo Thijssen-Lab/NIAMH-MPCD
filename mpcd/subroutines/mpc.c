@@ -665,17 +665,95 @@ void acc_BC( bc *WALL,double t,double GRAV[] ) {
 /// @param runtime The current timestep. At the moment, I am hardcoding the optical trap position. Currently only works in 2D
 
 ///
-void acc_Opt_Trap_BC( bc *WALL,double t , double KOPT, int runtime) {
+void acc_Opt_Trap_BC( bc *WALL,double t, int runtime, double t_on, double t_off, double KOPT, double VOPT, double mass, double IQ[]) {
 	int i;
-	double KOPT_force[DIM];
+	double OPT_force[DIM];
+	double delta_x;
+	double delta_y;
+	double time;
 
-    //if ((runtime*0.02)<50){KOPT_force[0]=-2*(WALL->Q[0]-runtime*0.02-XYZ[0]/2);}
-    //else {KOPT_force[0]=-2*(WALL->Q[0]-50-XYZ[0]/2);}
-    KOPT_force[0]=-2*(WALL->Q[0]-XYZ[0]/2);
-    KOPT_force[1]=-2*(WALL->Q[1]-XYZ[1]/2);
-    //printf("time is %d, Force is %f and %f\n",runtime, KOPT_force[0],KOPT_force[1]);
-    //printf("Pos is %f and %f, Des is %f and %f\n",WALL->Q[0],WALL->Q[1], (runtime*0.0005+XYZ[0]/2), (runtime*0.0005));
-    for( i=0; i<DIM; i++ ) WALL->V[i] = acc( t,KOPT*KOPT_force[i],WALL->V[i] );
+	time = runtime*t;
+
+	if (runtime < t_on) {
+		delta_x=WALL->Q[0]-IQ[0];
+		delta_y=WALL->Q[1]-IQ[1];
+		OPT_force[0] = -KOPT*delta_x;
+		OPT_force[1] = -KOPT*delta_y;
+		printf("Not yet turned on\n");
+		printf("delta_x and delta_y is %f and %f\n", delta_x,delta_y);
+		printf("trap pos is x= %f\n",IQ[0]);
+	} else if (runtime >= t_on && runtime <= t_off) {
+		delta_x=WALL->Q[0]-(IQ[0]+VOPT*(time-t_on*t));
+		delta_y=WALL->Q[1]-IQ[1];
+		OPT_force[0] = -KOPT*delta_x;
+		OPT_force[1] = -KOPT*delta_y;
+		printf("TURNED ON\n");
+		printf("delta_x and delta_y is %f and %f\n", delta_x,delta_y);
+		printf("trap pos is x= %f\n",IQ[0]+VOPT*(time-t_on*t));
+	} else if (runtime > t_off) {
+		delta_x=WALL->Q[0]-(IQ[0]+VOPT*(t_off*t-t_on*t));
+		delta_y=WALL->Q[1]-IQ[1];
+		OPT_force[0] = -KOPT*delta_x;
+		OPT_force[1] = -KOPT*delta_y;
+		printf("TURNED OFF\n");
+		printf("delta_x and delta_y is %f and %f\n", delta_x,delta_y);
+		printf("trap pos is x= %f\n",IQ[0]+VOPT*(t_off*t-t_on*t));
+	}
+	printf("t_on is %f\n",t_on*t);
+	printf("t_off is %f\n",t_off*t);
+	printf("time is %f\n",time);
+	for( i=0; i<DIM; i++ ) WALL->V[i] =WALL->V[i] + t * OPT_force[i];
+	for( i=0; i<DIM; i++ ) WALL->F[i] = OPT_force[i];
+}
+///
+/// @brief Apply a force to keep the particle in the optical trap but with acceleration
+///
+/// This function simply updates the velocity vector (in `DIM` dimensions) of a single wall (boundary condition).
+/// @param WALL One of the walls (boundary conditions).
+/// @param t The time interval for which the wall (boundary condition) accelerates.
+/// @param The spring constant of the trap
+/// @param The current timestep. At the moment, I am hardcoding the optical trap position. Currently only works in 2D
+
+
+void acc_Opt_Trap_Acc_BC( bc *WALL,double t, int runtime, double t_on, double t_off, double KOPT, double VOPT, double mass, double IQ[]) {
+	int i;
+	double OPT_force[DIM];
+	double delta_x;
+	double delta_y;
+	double time;
+
+	time = runtime*t;
+
+	if (runtime < t_on) {
+		delta_x=WALL->Q[0]-IQ[0];
+		delta_y=WALL->Q[1]-IQ[1];
+		OPT_force[0] = -KOPT*delta_x;
+		OPT_force[1] = -KOPT*delta_y;
+		printf("Not yet turned on\n");
+		printf("delta_x and delta_y is %f and %f\n", delta_x,delta_y);
+		printf("trap pos is x= %f\n",IQ[0]);
+	} else if (runtime >= t_on && runtime <= t_off) {
+		delta_x=WALL->Q[0]-(IQ[0]+VOPT*pow((time-t_on*t),2));
+		delta_y=WALL->Q[1]-IQ[1];
+		OPT_force[0] = -KOPT*delta_x;
+		OPT_force[1] = -KOPT*delta_y;
+		printf("TURNED ON\n");
+		printf("delta_x and delta_y is %f and %f\n", delta_x,delta_y);
+		printf("trap pos is x= %f\n",IQ[0]+VOPT*pow((time-t_on*t),2));
+	} else if (runtime > t_off) {
+		delta_x=WALL->Q[0]-(IQ[0]+VOPT*pow((t_off*t-t_on*t),2));
+		delta_y=WALL->Q[1]-IQ[1];
+		OPT_force[0] = -KOPT*delta_x;
+		OPT_force[1] = -KOPT*delta_y;
+		printf("TURNED OFF\n");
+		printf("delta_x and delta_y is %f and %f\n", delta_x,delta_y);
+		printf("trap pos is x= %f\n",IQ[0]+VOPT*pow((t_off*t-t_on*t),2));
+	}
+	printf("t_on is %f\n",t_on*t);
+	printf("t_off is %f\n",t_off*t);
+	printf("time is %f\n",time);
+	for( i=0; i<DIM; i++ ) WALL->V[i] =WALL->V[i] + t * OPT_force[i];
+	for( i=0; i<DIM; i++ ) WALL->F[i] = OPT_force[i];
 }
 
 
@@ -5008,7 +5086,26 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 	#endif
 	//Accelerate each of the BCs
 	if( in.GRAV_FLAG ) for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) acc_BC( (WALL+i),in.dt,(WALL+i)->G );
-	if( in.Opt_Trap_FLAG ) for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) acc_Opt_Trap_BC( (WALL+i),in.dt,(WALL+i)->KOPT,runtime );
+	// if( in.Opt_Trap_FLAG ) for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) acc_Opt_Trap_BC( (WALL+i),in.dt,(WALL+i)->KOPT,runtime );
+	if (in.Opt_Trap_FLAG) {
+		printf("Opt_Trap_FLAG is true\n");
+		for (int i = 0; i < NBC; i++) {
+			if ((WALL + i)->DSPLC) {
+				acc_Opt_Trap_BC((WALL + i), in.dt, runtime, (WALL + i)->t_on, (WALL + i)->t_off, (WALL + i)->KOPT, (WALL + i)->VOPT, (WALL + i)->MASS, (WALL + i)->IQ);
+			}
+		}
+	}
+
+	if (in.Opt_Trap_Acc_FLAG) {
+		printf("Opt_Trap_Acc_FLAG is true\n");
+		for (int i = 0; i < NBC; i++) {
+			if ((WALL + i)->DSPLC) {
+				acc_Opt_Trap_Acc_BC((WALL + i), in.dt, runtime, (WALL + i)->t_on, (WALL + i)->t_off, (WALL + i)->KOPT, (WALL + i)->VOPT, (WALL + i)->MASS, (WALL + i)->IQ);
+			}
+		}
+	}
+
+
 }
 	/* ****************************************** */
 	/* ***************** RE-BIN ***************** */

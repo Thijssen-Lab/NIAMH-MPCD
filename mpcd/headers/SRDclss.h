@@ -159,7 +159,9 @@ typedef struct bc {
 
 	// The surfaces coordinates
 	double Q[3];		    ///< The BC's position --- json `'Q'`.
+	double IQ[3];			///< The BC's initial position
 	double V[3];		    ///< The BC's velocity --- json `'V'`.
+	double F[3];
 	double O[3];		    ///< The BC's orientation (angle about x,y,z) --- json `'O'`.
 	double L[3];		    ///< The BC's angular velocity --- json `'L'`.
 	double G[3];		    ///< The BC's external acceleration --- json `'G'`.
@@ -169,6 +171,10 @@ typedef struct bc {
 	double dV[3];		    ///< The BC's change in velocity due to collisions.
 	double dL[3];		    ///< The BC's change in angular velocity due to collisions.
 	double KOPT;			///< Optical trap strength;
+	double VOPT;			///< Optical trap velocity;
+	double t_on;			///< Optical trap start movement
+	double t_off;			///< Optical trap end movement
+
 
 
 	// Qualities of the object
@@ -408,7 +414,8 @@ typedef struct inputList {
 	double MAG[_3D];			///< Constant external magnetic field to torque nematogens --- json `'mag'`.
 	int GRAV_FLAG;              ///< Flag for if no acceleration.
 	int Opt_Trap_FLAG;          ///< Flag for optical trap on colloid
-    int MAG_FLAG;		        ///< Flag for if no torque.
+    int Opt_Trap_Acc_FLAG;		///< Flag for optical trap on colloid
+	int MAG_FLAG;		        ///< Flag for if no torque.
 	double FRICCO;				///< Friction coefficient for Langevin thermostat --- json `'fricCoef'`.
 	int TSTECH;					///< Temperature scaling technique --- json `'tsTech'`.
 	double TAU;					///< The temperature relaxation time scale --- json `'tau'`.

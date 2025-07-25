@@ -492,10 +492,18 @@ void bcin( FILE *fbc,bc *WALL,char fname[] ) {
 	read=fscanf( fbc,"%lf %s",&l,LABEL );
 	checkRead( read,"bc",fname);
 	WALL->R = l;
-
 	read=fscanf( fbc,"%lf %s",&l,LABEL );
 	checkRead( read,"bc",fname);
 	WALL->KOPT = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->VOPT = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->t_on = l;
+	read=fscanf( fbc,"%lf %s",&l,LABEL );
+	checkRead( read,"bc",fname);
+	WALL->t_off = l;
 	read=fscanf( fbc,"%lf %s",&l,LABEL );
 	checkRead( read,"bc",fname);	
 	WALL->DN = l;
@@ -776,7 +784,7 @@ void readchckpnt(inputList *in, spec **SP, particleMPC **pSRD, cell ****CL, int 
 	for( i=0; i<NBC; i++ ) {
 		if(fscanf( finput,"%d %d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&((*WALL+i)->COLL_TYPE), &((*WALL+i)->PHANTOM), &((*WALL+i)->E), &((*WALL+i)->Q[0]), &((*WALL+i)->Q[1]), &((*WALL+i)->Q[2]), &((*WALL+i)->V[0]), &((*WALL+i)->V[1]), &((*WALL+i)->V[2]), &((*WALL+i)->O[0]), &((*WALL+i)->O[1]), &((*WALL+i)->O[2]) ));
 		else printf("Warning: Failed to read BC %d.\n",i);
-		if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &((*WALL+i)->L[0]), &((*WALL+i)->L[1]), &((*WALL+i)->L[2]), &((*WALL+i)->G[0]), &((*WALL+i)->G[1]), &((*WALL+i)->G[2]), &((*WALL+i)->A[0]), &((*WALL+i)->A[1]), &((*WALL+i)->A[2]), &((*WALL+i)->AINV[0]), &((*WALL+i)->AINV[1]), &((*WALL+i)->AINV[2]), &((*WALL+i)->P[0]),&((*WALL+i)->P[1]),&((*WALL+i)->P[2]),&((*WALL+i)->P[3]), &((*WALL+i)->R), &((*WALL+i)->B[0]),&((*WALL+i)->B[1]),&((*WALL+i)->B[2]), &((*WALL+i)->KOPT) ));
+		if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &((*WALL+i)->L[0]), &((*WALL+i)->L[1]), &((*WALL+i)->L[2]), &((*WALL+i)->G[0]), &((*WALL+i)->G[1]), &((*WALL+i)->G[2]), &((*WALL+i)->A[0]), &((*WALL+i)->A[1]), &((*WALL+i)->A[2]), &((*WALL+i)->AINV[0]), &((*WALL+i)->AINV[1]), &((*WALL+i)->AINV[2]), &((*WALL+i)->P[0]), &((*WALL+i)->P[1]), &((*WALL+i)->P[2]),&((*WALL+i)->P[3]), &((*WALL+i)->R), &((*WALL+i)->KOPT), &((*WALL+i)->VOPT), &((*WALL+i)->t_on), &((*WALL+i)->t_off)));
 		else printf("Warning: Failed to read BC %d.\n",i);
 		if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &((*WALL+i)->DN), &((*WALL+i)->DT), &((*WALL+i)->DVN), &((*WALL+i)->DVT), &((*WALL+i)->DVxyz[0]), &((*WALL+i)->DVxyz[1]), &((*WALL+i)->DVxyz[2]), &((*WALL+i)->MVN), &((*WALL+i)->MVT), &((*WALL+i)->MUN), &((*WALL+i)->MUT), &((*WALL+i)->MUxyz[0]), &((*WALL+i)->MUxyz[1]), &((*WALL+i)->MUxyz[2]) ));
 		else printf("Warning: Failed to read BC %d.\n",i);
@@ -1056,6 +1064,8 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 	// first set of primitives
 	in->KBT = getJObjDou(jObj, "kbt", 1, jsonTagList); // kbt
 	in->dt = getJObjDou(jObj, "dt", 0.1, jsonTagList); // dt
+	in->Opt_Trap_FLAG = getJObjInt(jObj, "Opt_Trap_FLAG", 0, jsonTagList); // optical trap flag for colloid
+	in->Opt_Trap_Acc_FLAG = getJObjInt(jObj, "Opt_Trap_Acc_FLAG", 0, jsonTagList); // optical trap flag for colloid
 	in->simSteps = getJObjInt(jObj, "simSteps", 2000, jsonTagList); // simSteps
 	in->warmupSteps = getJObjInt(jObj, "warmUp", 0, jsonTagList); // warmupSteps
 	in->RFRAME = getJObjInt(jObj, "rFrame", 1, jsonTagList); // RFRAME
@@ -1302,6 +1312,9 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 			// some more primitives
 			currWall->R = getJObjDou(objElem, "R", 2, jsonTagList); // r - NECESSARY
 			currWall->KOPT = getJObjDou(objElem, "KOPT", 0.0, jsonTagList); // OPTICAL TRAP STRENGTH
+            currWall->VOPT = getJObjDou(objElem, "VOPT", 0.0, jsonTagList); // OPTICAL TRAP STRENGTH
+			currWall->t_on = getJObjDou(objElem, "t_on", 0.0, jsonTagList); // OPTICAL TRAP STRENGTH
+			currWall->t_off = getJObjDou(objElem, "t_off", 1.0, jsonTagList); // OPTICAL TRAP STRENGTH
 			currWall->DN = getJObjDou(objElem, "DN", 1, jsonTagList); // dn - NECESSARY
 			currWall->DT = getJObjDou(objElem, "DT", 0, jsonTagList); // dt
 			currWall->DVN = getJObjDou(objElem, "DVN", 0, jsonTagList); // dvn
@@ -1548,6 +1561,9 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 				currWall->P[j] = 1;
 			}
             currWall->KOPT = 0.0; // Optical trap strength for colloid
+			currWall->VOPT = 0.0;
+			currWall->t_on = 0.0;
+			currWall->t_off = 0.0;
 			currWall->DT = 0; // dt
 			currWall->DVN = 0; // dvn
 			currWall->DVT = 0; // dvt
