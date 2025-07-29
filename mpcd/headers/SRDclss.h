@@ -159,7 +159,7 @@ typedef struct bc {
 
 	// The surfaces coordinates
 	double Q[3];		    ///< The BC's position --- json `'Q'`.
-	double IQ[3];			///< The BC's initial position
+	double IQ[3];			///< The BC's position at start of simulation
 	double V[3];		    ///< The BC's velocity --- json `'V'`.
 	double F[3];
 	double O[3];		    ///< The BC's orientation (angle about x,y,z) --- json `'O'`.
@@ -172,8 +172,8 @@ typedef struct bc {
 	double dL[3];		    ///< The BC's change in angular velocity due to collisions.
 	double KOPT;			///< Optical trap strength;
 	double VOPT;			///< Optical trap velocity;
-	double t_on;			///< Optical trap start movement
-	double t_off;			///< Optical trap end movement
+	double t_on;			///< The time when velocity is applied to BC
+	double t_off;			///< The time when velocity is no longer applied to BC
 
 
 
