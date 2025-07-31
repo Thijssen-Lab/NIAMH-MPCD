@@ -30,8 +30,8 @@ void rewind_BC( bc *WALL,double time );
 
 void acc_BC( bc *WALL,double t,double GRAV[] );
 // void acc_Opt_Trap_BC( bc *WALL,double t,double KOPT, int runtime );
-void acc_Opt_Trap_BC( bc *WALL,double t, int runtime, double t_on, double t_off, double KOPT, double VOPT, double mass, double IQ[]);
-void acc_Opt_Trap_Acc_BC( bc *WALL,double t, int runtime, double t_on, double t_off, double KOPT, double VOPT, double mass, double IQ[]);
+void acc_Opt_Trap_BC( bc *WALL,double t, int runtime, double t_on, double t_off, double KOPT, double VOPT[], double mass, double IQ[]);
+void acc_Opt_Trap_Acc_BC( bc *WALL,double t, int runtime, double t_on, double t_off, double KOPT, double VOPT[], double mass, double IQ[]);
 void acc_P( particleMPC *p,double t,double GRAV[] );
 void acc_all( particleMPC *pp,double t,double GRAV[] );
 void gridShift_all( double SHIFT[],int shiftBack,particleMPC *SRDparticles,bc WALL[],simptr simMD,swimmer swimmers[],int MD_mode );

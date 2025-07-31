@@ -171,7 +171,7 @@ typedef struct bc {
 	double dV[3];		    ///< The BC's change in velocity due to collisions.
 	double dL[3];		    ///< The BC's change in angular velocity due to collisions.
 	double KOPT;			///< Optical trap strength;
-	double VOPT;			///< Optical trap velocity;
+	double VOPT[3];			///< Optical trap velocity;
 	double t_on;			///< The time when velocity is applied to BC
 	double t_off;			///< The time when velocity is no longer applied to BC
 
