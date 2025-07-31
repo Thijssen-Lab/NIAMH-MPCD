@@ -1426,6 +1426,9 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 			if (fneq(currWall->KOPT, 0.0)) {  // only do optical trap parsing if kOpt is not set
 				currWall->ENABLEOPT = 1;
 
+				// set initial position of the trap to the colloid position
+				for (j = 0; j < _3D; j++) currWall->QOpt[j] = currWall->Q[j];
+
 				// Optical trap velocity array
 				cJSON *arrVOPT = NULL;
 				getCJsonArray(objElem, &arrVOPT, "vOpt", jsonTagList, arrayList, 0);
