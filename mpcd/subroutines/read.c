@@ -506,10 +506,10 @@ void bcin( FILE *fbc,bc *WALL,char fname[] ) {
 	WALL->VOPT[2] = l;
 	read=fscanf( fbc,"%lf %s",&l,LABEL );
 	checkRead( read,"bc",fname);
-	WALL->t_on = l;
+	WALL->tOnOpt = l;
 	read=fscanf( fbc,"%lf %s",&l,LABEL );
 	checkRead( read,"bc",fname);
-	WALL->t_off = l;
+	WALL->tOffOpt = l;
 	read=fscanf( fbc,"%lf %s",&l,LABEL );
 	checkRead( read,"bc",fname);	
 	WALL->DN = l;
@@ -790,7 +790,7 @@ void readchckpnt(inputList *in, spec **SP, particleMPC **pSRD, cell ****CL, int 
 	for( i=0; i<NBC; i++ ) {
 		if(fscanf( finput,"%d %d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",&((*WALL+i)->COLL_TYPE), &((*WALL+i)->PHANTOM), &((*WALL+i)->E), &((*WALL+i)->Q[0]), &((*WALL+i)->Q[1]), &((*WALL+i)->Q[2]), &((*WALL+i)->V[0]), &((*WALL+i)->V[1]), &((*WALL+i)->V[2]), &((*WALL+i)->O[0]), &((*WALL+i)->O[1]), &((*WALL+i)->O[2]) ));
 		else printf("Warning: Failed to read BC %d.\n",i);
-		if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &((*WALL+i)->L[0]), &((*WALL+i)->L[1]), &((*WALL+i)->L[2]), &((*WALL+i)->G[0]), &((*WALL+i)->G[1]), &((*WALL+i)->G[2]), &((*WALL+i)->A[0]), &((*WALL+i)->A[1]), &((*WALL+i)->A[2]), &((*WALL+i)->AINV[0]), &((*WALL+i)->AINV[1]), &((*WALL+i)->AINV[2]), &((*WALL+i)->P[0]), &((*WALL+i)->P[1]), &((*WALL+i)->P[2]),&((*WALL+i)->P[3]), &((*WALL+i)->R), &((*WALL+i)->B[0]), &((*WALL+i)->B[1]), &((*WALL+i)->B[2]), &((*WALL+i)->KOPT), &((*WALL+i)->VOPT), &((*WALL+i)->t_on), &((*WALL+i)->t_off)));
+		if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &((*WALL+i)->L[0]), &((*WALL+i)->L[1]), &((*WALL+i)->L[2]), &((*WALL+i)->G[0]), &((*WALL+i)->G[1]), &((*WALL+i)->G[2]), &((*WALL+i)->A[0]), &((*WALL+i)->A[1]), &((*WALL+i)->A[2]), &((*WALL+i)->AINV[0]), &((*WALL+i)->AINV[1]), &((*WALL+i)->AINV[2]), &((*WALL+i)->P[0]),&((*WALL+i)->P[1]),&((*WALL+i)->P[2]),&((*WALL+i)->P[3]), &((*WALL+i)->R), &((*WALL+i)->B[0]),&((*WALL+i)->B[1]),&((*WALL+i)->B[2]) ));
 		else printf("Warning: Failed to read BC %d.\n",i);
 		if(fscanf( finput,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf", &((*WALL+i)->DN), &((*WALL+i)->DT), &((*WALL+i)->DVN), &((*WALL+i)->DVT), &((*WALL+i)->DVxyz[0]), &((*WALL+i)->DVxyz[1]), &((*WALL+i)->DVxyz[2]), &((*WALL+i)->MVN), &((*WALL+i)->MVT), &((*WALL+i)->MUN), &((*WALL+i)->MUT), &((*WALL+i)->MUxyz[0]), &((*WALL+i)->MUxyz[1]), &((*WALL+i)->MUxyz[2]) ));
 		else printf("Warning: Failed to read BC %d.\n",i);
@@ -1070,8 +1070,6 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 	// first set of primitives
 	in->KBT = getJObjDou(jObj, "kbt", 1, jsonTagList); // kbt
 	in->dt = getJObjDou(jObj, "dt", 0.1, jsonTagList); // dt
-	in->Opt_Trap_FLAG = getJObjInt(jObj, "Opt_Trap_FLAG", 0, jsonTagList); // optical trap flag for colloid
-	in->Opt_Trap_Acc_FLAG = getJObjInt(jObj, "Opt_Trap_Acc_FLAG", 0, jsonTagList); // optical trap flag for colloid
 	in->simSteps = getJObjInt(jObj, "simSteps", 2000, jsonTagList); // simSteps
 	in->warmupSteps = getJObjInt(jObj, "warmUp", 0, jsonTagList); // warmupSteps
 	in->RFRAME = getJObjInt(jObj, "rFrame", 1, jsonTagList); // RFRAME
@@ -1315,25 +1313,8 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 				exit(EXIT_FAILURE);
 			}
 
-			// Optical trap velocity array
-			cJSON *arrVOPT = NULL;
-			getCJsonArray(objElem, &arrVOPT, "VOPT", jsonTagList, arrayList, 0);
-			if (arrVOPT != NULL) { // if trap velocity has been found then ....
-				if (cJSON_GetArraySize(arrVOPT) != DIM) { // check dimensionality if valid
-					printf("Error: VOPT must be of same dimension as domain");
-					exit(EXIT_FAILURE);
-				}
-
-				for (j = 0; j < DIM; j++) { //get the value
-					currWall->VOPT[j] = cJSON_GetArrayItem(arrVOPT, j)->valuedouble;
-				}
-			}
-
 			// some more primitives
 			currWall->R = getJObjDou(objElem, "R", 2, jsonTagList); // r - NECESSARY
-			currWall->KOPT = getJObjDou(objElem, "KOPT", 0.0, jsonTagList); // OPTICAL TRAP STRENGTH
-			currWall->t_on = getJObjDou(objElem, "t_on", 0.0, jsonTagList); // OPTICAL TRAP START OF MOVEMENT TIME
-			currWall->t_off = getJObjDou(objElem, "t_off", 1.0, jsonTagList); // OPTICAL TRAP END OF MOVEMENT TIME
 			currWall->DN = getJObjDou(objElem, "DN", 1, jsonTagList); // dn - NECESSARY
 			currWall->DT = getJObjDou(objElem, "DT", 0, jsonTagList); // dt
 			currWall->DVN = getJObjDou(objElem, "DVN", 0, jsonTagList); // dvn
@@ -1437,6 +1418,48 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 				}
 			} else for (j = 0; j < _3D; j++) { // get the value
 					currWall->B[j] = 0.0;
+			}
+
+			// Optical trap related parameters
+			// if kopt is present, then we assume the wall has a trap attached
+			currWall->KOPT = getJObjDou(objElem, "kOPT", 0.0, jsonTagList); // OPTICAL TRAP STRENGTH
+			if (fneq(currWall->KOPT, 0.0)) {  // only do optical trap parsing if kOpt is not set
+				currWall->ENABLEOPT = 1;
+
+				// Optical trap velocity array
+				cJSON *arrVOPT = NULL;
+				getCJsonArray(objElem, &arrVOPT, "vOpt", jsonTagList, arrayList, 0);
+				if (arrVOPT != NULL) { // if trap velocity has been found then ....
+					if (cJSON_GetArraySize(arrVOPT) != _3D) { // check dimensionality if valid
+						printf("Error: VOPT must be 3D (even in 2D simulations).\n");
+						exit(EXIT_FAILURE);
+					}
+
+					for (j = 0; j < _3D; j++) { // get the value
+						currWall->VOPT[j] = cJSON_GetArrayItem(arrVOPT, j)->valuedouble;
+					}
+				} else {  // vOpt must be set!
+					printf("Error: Could not find vOpt in BC %d.\n", i);
+					exit(EXIT_FAILURE);
+				}
+
+				// parse moving time
+				cJSON *arrMoveTime = NULL;
+				getCJsonArray(objElem, &arrMoveTime, "optMoveTime", jsonTagList, arrayList, 0);
+				if (arrMoveTime != NULL) { // if moveTime has been found then ....
+					if (cJSON_GetArraySize(arrMoveTime) != _2D) { // check dimensionality if valid
+						printf("Error: MoveTime must be 2D.\n");
+						exit(EXIT_FAILURE);
+					}
+
+					currWall->tOnOpt = cJSON_GetArrayItem(arrMoveTime, 0)->valueint;
+					currWall->tOffOpt = cJSON_GetArrayItem(arrMoveTime, 1)->valueint;
+				} else {  // moveTime must be set!
+					printf("Error: Could not find moveTime in BC %d.\n", i);
+					exit(EXIT_FAILURE);
+				}
+			} else {
+				currWall->ENABLEOPT = 0;
 			}
 
 			// Handle BC overrides /////////////////////////////////////////////
@@ -1583,8 +1606,8 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 			for (j = 0; j < DIM; j++) { // VOPT array
 				currWall->VOPT[j] = 0.0;
 			}
-			currWall->t_on = 0.0;
-			currWall->t_off = 0.0;
+			currWall->tOnOpt = 0.0;
+			currWall->tOffOpt = 0.0;
 			currWall->DT = 0; // dt
 			currWall->DVN = 0; // dvn
 			currWall->DVT = 0; // dvt

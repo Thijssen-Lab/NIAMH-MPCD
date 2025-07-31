@@ -159,9 +159,7 @@ typedef struct bc {
 
 	// The surfaces coordinates
 	double Q[3];		    ///< The BC's position --- json `'Q'`.
-	double IQ[3];			///< The BC's position at start of simulation
 	double V[3];		    ///< The BC's velocity --- json `'V'`.
-	double F[3];
 	double O[3];		    ///< The BC's orientation (angle about x,y,z) --- json `'O'`.
 	double L[3];		    ///< The BC's angular velocity --- json `'L'`.
 	double G[3];		    ///< The BC's external acceleration --- json `'G'`.
@@ -170,12 +168,15 @@ typedef struct bc {
 	double O_old[3];	    ///< The BC's last orientation.
 	double dV[3];		    ///< The BC's change in velocity due to collisions.
 	double dL[3];		    ///< The BC's change in angular velocity due to collisions.
-	double KOPT;			///< Optical trap strength;
-	double VOPT[3];			///< Optical trap velocity;
-	double t_on;			///< The time when velocity is applied to BC
-	double t_off;			///< The time when velocity is no longer applied to BC
 
-
+    // Optical trap parameters
+    int ENABLEOPT; 			///< Flag to enable optical trap (0-no; 1-yes) --- Implicitly turned on if KOPT set.
+	double KOPT;			///< Optical trap strength --- json `'kOpt'`.
+	double VOPT[3];			///< Optical trap velocity --- json `'vOpt'`. (REQUIRED if KOPT is set)
+	double QOpt[3];			///< The optical trap position (starts at the BC's position)
+	double F[3];			///< Force on the colloid from an optical trap
+	int tOnOpt;				///< The timestep optical trap begins moving --- json first elem of `'optMoveTime'`.
+	int tOffOpt;			///< The timestep optical trap stops moving --- json second elem of `'optMoveTime'`.
 
 	// Qualities of the object
 	int DSPLC;				///< Flags whether BC can be pushed around by particles (0-no; 1-yes) --- json `'dsplc'`.
@@ -413,8 +414,6 @@ typedef struct inputList {
 	double GRAV[_3D];			///< Constant acceleration from external force --- json `'grav'`.
 	double MAG[_3D];			///< Constant external magnetic field to torque nematogens --- json `'mag'`.
 	int GRAV_FLAG;              ///< Flag for if no acceleration.
-	int Opt_Trap_FLAG;          ///< Flag for optical trap on colloid
-    int Opt_Trap_Acc_FLAG;		///< Flag for optical trap on colloid
 	int MAG_FLAG;		        ///< Flag for if no torque.
 	double FRICCO;				///< Friction coefficient for Langevin thermostat --- json `'fricCoef'`.
 	int TSTECH;					///< Temperature scaling technique --- json `'tsTech'`.
