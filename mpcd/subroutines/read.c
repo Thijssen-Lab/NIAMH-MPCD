@@ -1606,6 +1606,7 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 				currWall->P[j] = 1;
 			}
             currWall->KOPT = 0.0; // Optical trap strength for colloid
+			currWall->ENABLEOPT = 0;
 			for (j = 0; j < DIM; j++) { // VOPT array
 				currWall->VOPT[j] = 0.0;
 			}

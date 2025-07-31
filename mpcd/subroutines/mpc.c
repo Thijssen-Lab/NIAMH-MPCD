@@ -5029,23 +5029,6 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 			acc_Opt_Trap_BC((WALL+i), in.dt, runtime, (WALL+i)->tOnOpt, (WALL+i)->tOffOpt, (WALL+i)->KOPT, (WALL+i)->VOPT, (WALL+i)->MASS);
 		}
 	}
-	if (in.Opt_Trap_FLAG) {
-		printf("Opt_Trap_FLAG is true\n");
-		for (int i = 0; i < NBC; i++) {
-			if ((WALL + i)->DSPLC) {
-				acc_Opt_Trap_BC((WALL + i), in.dt, runtime, (WALL + i)->tOnOpt, (WALL + i)->tOffOpt, (WALL + i)->KOPT, (WALL + i)->VOPT, (WALL + i)->MASS);
-			}
-		}
-	}
-
-	if (in.Opt_Trap_Acc_FLAG) {
-		printf("Opt_Trap_Acc_FLAG is true\n");
-		for (int i = 0; i < NBC; i++) {
-			if ((WALL + i)->DSPLC) {
-				acc_Opt_Trap_Acc_BC((WALL + i), in.dt, runtime, (WALL + i)->tOnOpt, (WALL + i)->tOffOpt, (WALL + i)->KOPT, (WALL + i)->VOPT, (WALL + i)->MASS, (WALL + i)->QOpt);
-			}
-		}
-	}
 
 
 }
