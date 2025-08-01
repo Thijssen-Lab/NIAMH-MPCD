@@ -170,10 +170,10 @@ typedef struct bc {
 	double dL[3];		    ///< The BC's change in angular velocity due to collisions.
 
     // Optical trap parameters
-    int ENABLEOPT; 			///< Flag to enable optical trap (0-no; 1-yes) --- Implicitly turned on if KOPT set.
+    int ENABLEOPT; 			///< Flag to enable optical trap (0-no; 1-yes) --- Implicitly turned on if kOpt set.
 	double KOPT;			///< Optical trap strength --- json `'kOpt'`.
-	double VOPT[3];			///< Optical trap velocity --- json `'vOpt'`. (REQUIRED if KOPT is set)
-	double QOpt[3];			///< The optical trap position (starts at the BC's position)
+	double VOPT[3];			///< Optical trap velocity --- json `'vOpt'`. (REQUIRED if kOpt is set)
+	double QOPT[3];			///< The optical trap position (starts at the BC's position)
 	double F[3];			///< Force on the colloid from an optical trap
 	int tOnOpt;				///< The timestep optical trap begins moving --- json first elem of `'optMoveTime'`.
 	int tOffOpt;			///< The timestep optical trap stops moving --- json second elem of `'optMoveTime'`.

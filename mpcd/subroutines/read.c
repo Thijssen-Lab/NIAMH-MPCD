@@ -1422,19 +1422,19 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 
 			// Optical trap related parameters
 			// if kopt is present, then we assume the wall has a trap attached
-			currWall->KOPT = getJObjDou(objElem, "kOPT", 0.0, jsonTagList); // OPTICAL TRAP STRENGTH
+			currWall->KOPT = getJObjDou(objElem, "kOpt", 0.0, jsonTagList); // OPTICAL TRAP STRENGTH
 			if (fneq(currWall->KOPT, 0.0)) {  // only do optical trap parsing if kOpt is not set
 				currWall->ENABLEOPT = 1;
 
 				// set initial position of the trap to the colloid position
-				for (j = 0; j < _3D; j++) currWall->QOpt[j] = currWall->Q[j];
+				for (j = 0; j < _3D; j++) currWall->QOPT[j] = currWall->Q[j];
 
 				// Optical trap velocity array
 				cJSON *arrVOPT = NULL;
 				getCJsonArray(objElem, &arrVOPT, "vOpt", jsonTagList, arrayList, 0);
 				if (arrVOPT != NULL) { // if trap velocity has been found then ....
 					if (cJSON_GetArraySize(arrVOPT) != _3D) { // check dimensionality if valid
-						printf("Error: VOPT must be 3D (even in 2D simulations).\n");
+						printf("Error: vOpt must be 3D (even in 2D simulations).\n");
 						exit(EXIT_FAILURE);
 					}
 

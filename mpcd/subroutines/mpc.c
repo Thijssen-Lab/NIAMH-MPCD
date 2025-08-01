@@ -677,13 +677,13 @@ void acc_Opt_Trap_BC( bc *WALL,double dt, int runtime, double t_on, double t_off
 	// move the trap if in runtime
 	if (runtime >= t_on && runtime <= t_off) {
 		for (i = 0; i < DIM; ++i) {
-			WALL->QOpt[i] += VOPT[i] * dt;  // move the trap
+			WALL->QOPT[i] += VOPT[i] * dt;  // move the trap
 		}
 	}
 
 	// calculate the force on the colloid
 	for (i = 0; i < DIM; ++i) {
-		dQ[i] = WALL->Q[i] - WALL->QOpt[i];  // distance between colloid and trap
+		dQ[i] = WALL->Q[i] - WALL->QOPT[i];  // distance between colloid and trap
 		OPT_force[i] = -KOPT * dQ[i] / mass;  // Hooke's law for the trap
 
 		WALL->V[i] = acc(dt, OPT_force[i],WALL->V[i]);
