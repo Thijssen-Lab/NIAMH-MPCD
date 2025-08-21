@@ -2037,10 +2037,8 @@ void initializeSIM(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], 
 	maxXYZ=(int) sqrt( (double)(XYZ[0]*XYZ[0]+XYZ[1]*XYZ[1]+XYZ[2]*XYZ[2]) );
 
 	in->GRAV_FLAG = 0;
-	in->Opt_Trap_FLAG = 0;
 	if( fneq(in->GRAV[0],0.0) || fneq(in->GRAV[1],0.0) || fneq(in->GRAV[2],0.0) ) in->GRAV_FLAG = 1;
 	for( i=0; i<NBC; i++ ) if( fneq((WALL+i)->G[0],0.0) || fneq((WALL+i)->G[1],0.0) || fneq((WALL+i)->G[2],0.0) ) in->GRAV_FLAG = 1;
-	for( i=0; i<NBC; i++ ) if( fneq((WALL+i)->KOPT,0.0) ) in->Opt_Trap_FLAG = 1;
 	// Flag whether or not to do BC re-orientations
 	for( i=0; i<NBC; i++ ) {
 		(WALL+i)->REORIENT = 1;

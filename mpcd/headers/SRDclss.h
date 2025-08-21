@@ -168,8 +168,15 @@ typedef struct bc {
 	double O_old[3];	    ///< The BC's last orientation.
 	double dV[3];		    ///< The BC's change in velocity due to collisions.
 	double dL[3];		    ///< The BC's change in angular velocity due to collisions.
-	double KOPT;			///< Optical trap strength;
 
+    // Optical trap parameters
+    int ENABLEOPT; 			///< Flag to enable optical trap (0-no; 1-yes) --- Implicitly turned on if kOpt set.
+	double KOPT;			///< Optical trap strength --- json `'kOpt'`.
+	double VOPT[3];			///< Optical trap velocity --- json `'vOpt'`. (REQUIRED if kOpt is set)
+	double QOPT[3];			///< The optical trap position (starts at the BC's position)
+	double F[3];			///< Force on the colloid from an optical trap
+	int tOnOpt;				///< The timestep optical trap begins moving --- json first elem of `'optMoveTime'`.
+	int tOffOpt;			///< The timestep optical trap stops moving --- json second elem of `'optMoveTime'`.
 
 	// Qualities of the object
 	int DSPLC;				///< Flags whether BC can be pushed around by particles (0-no; 1-yes) --- json `'dsplc'`.
@@ -407,8 +414,7 @@ typedef struct inputList {
 	double GRAV[_3D];			///< Constant acceleration from external force --- json `'grav'`.
 	double MAG[_3D];			///< Constant external magnetic field to torque nematogens --- json `'mag'`.
 	int GRAV_FLAG;              ///< Flag for if no acceleration.
-	int Opt_Trap_FLAG;          ///< Flag for optical trap on colloid
-    int MAG_FLAG;		        ///< Flag for if no torque.
+	int MAG_FLAG;		        ///< Flag for if no torque.
 	double FRICCO;				///< Friction coefficient for Langevin thermostat --- json `'fricCoef'`.
 	int TSTECH;					///< Temperature scaling technique --- json `'tsTech'`.
 	double TAU;					///< The temperature relaxation time scale --- json `'tau'`.

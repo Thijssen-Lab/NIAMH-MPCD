@@ -655,29 +655,41 @@ void acc_BC( bc *WALL,double t,double GRAV[] ) {
 	int i;
 	for( i=0; i<DIM; i++ ) WALL->V[i] = acc( t,GRAV[i],WALL->V[i] );
 }
+
 ///
 /// @brief Apply a force to keep the particle in the optical trap
 ///
 /// This function simply updates the velocity vector (in `DIM` dimensions) of a single wall (boundary condition).
 /// @param WALL One of the walls (boundary conditions).
-/// @param t The time interval for which the wall (boundary condition) accelerates.
-/// @param KOPT The spring constant of the trap
-/// @param runtime The current timestep. At the moment, I am hardcoding the optical trap position. Currently only works in 2D
-
+/// @param dt The time interval for which the wall (boundary condition) accelerates (ie, the timestep)
+/// @param t_on The time at which the optical trap is turned on
+/// @param t_off The time at which the optical trap is turned off
+/// @param KOPT The spring constant of the optical trap
+/// @param VOPT The velocity vector of the optical trap (only applied in DIM dimensions)
+/// @param mass The mass of the colloid
+/// @param runtime The current timestep of the simulation
 ///
-void acc_Opt_Trap_BC( bc *WALL,double t , double KOPT, int runtime) {
+void acc_Opt_Trap_BC( bc *WALL,double dt, int runtime, double t_on, double t_off, double KOPT, double VOPT[], double mass) {
 	int i;
-	double KOPT_force[DIM];
+	double OPT_force[DIM];  // temp holder for force on the colloid from trap
+	double dQ[DIM];  // delta position between trap and colloid
 
-    //if ((runtime*0.02)<50){KOPT_force[0]=-2*(WALL->Q[0]-runtime*0.02-XYZ[0]/2);}
-    //else {KOPT_force[0]=-2*(WALL->Q[0]-50-XYZ[0]/2);}
-    KOPT_force[0]=-2*(WALL->Q[0]-XYZ[0]/2);
-    KOPT_force[1]=-2*(WALL->Q[1]-XYZ[1]/2);
-    //printf("time is %d, Force is %f and %f\n",runtime, KOPT_force[0],KOPT_force[1]);
-    //printf("Pos is %f and %f, Des is %f and %f\n",WALL->Q[0],WALL->Q[1], (runtime*0.0005+XYZ[0]/2), (runtime*0.0005));
-    for( i=0; i<DIM; i++ ) WALL->V[i] = acc( t,KOPT*KOPT_force[i],WALL->V[i] );
+	// move the trap if in runtime
+	if (runtime >= t_on && runtime <= t_off) {
+		for (i = 0; i < DIM; ++i) {
+			WALL->QOPT[i] += VOPT[i] * dt;  // move the trap
+		}
+	}
+
+	// calculate the force on the colloid
+	for (i = 0; i < DIM; ++i) {
+		dQ[i] = WALL->Q[i] - WALL->QOPT[i];  // distance between colloid and trap
+		OPT_force[i] = -KOPT * dQ[i] / mass;  // Hooke's law for the trap
+
+		WALL->V[i] = acc(dt, OPT_force[i],WALL->V[i]);
+		WALL->F[i] = OPT_force[i];  // update the force on the colloid
+	}
 }
-
 
 /// 
 /// @brief Accelerating the velocity of a single MPCD particle. 
@@ -5008,7 +5020,17 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 	#endif
 	//Accelerate each of the BCs
 	if( in.GRAV_FLAG ) for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) acc_BC( (WALL+i),in.dt,(WALL+i)->G );
-	if( in.Opt_Trap_FLAG ) for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) acc_Opt_Trap_BC( (WALL+i),in.dt,(WALL+i)->KOPT,runtime );
+	// if( in.Opt_Trap_FLAG ) for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) acc_Opt_Trap_BC( (WALL+i),in.dt,(WALL+i)->KOPT,runtime );
+
+	// apply optical trap forces if enabled
+	for (i = 0; i < NBC; ++i) {
+		if ((WALL+i)->DSPLC && (WALL+i)->ENABLEOPT) {
+			// Apply optical trap forces
+			acc_Opt_Trap_BC((WALL+i), in.dt, runtime, (WALL+i)->tOnOpt, (WALL+i)->tOffOpt, (WALL+i)->KOPT, (WALL+i)->VOPT, (WALL+i)->MASS);
+		}
+	}
+
+
 }
 	/* ****************************************** */
 	/* ***************** RE-BIN ***************** */
