@@ -895,7 +895,7 @@ void BC_Swimmercollision(bc WALL[],int BCcurrent,swimmer swimmers[],specSwimmer 
 		#endif
 		// chooseP( WALL[BCcurrent],pp,&time,&W,&chosenP,t_step,GRAV );
 
-		chooseNS(WALL,BCcurrent,SS,swimmers,&W,&chosenNS,HM);
+		chooseNS(WALL,BCcurrent,SS,swimmers,&W,&chosenNS,&HM);
 
 		#ifdef DBG
 			//if( DBUG == DBGBCMPC ) printf( "BC=%d; particle=%d; W=%e\n",BCcurrent,chosenP,W );
@@ -1115,7 +1115,7 @@ void swimmer_BCcollision( smono *atom,bc WALL[],specSwimmer SS,double t_step ,in
 void chooseBC_swimmer( bc WALL[],smono *atom,double *t_min,double *chosenW,int *chosenBC,double time,double t_step ) {
 	int i,flag;
 	double t1,t2,tc;
-	double tempW,shift[DIM];
+	double tempW,shift[_3D];
 
 	*t_min = time;
 	*chosenW=1.;
@@ -1175,10 +1175,10 @@ void chooseBC_swimmer( bc WALL[],smono *atom,double *t_min,double *chosenW,int *
 /// @see			chooseBC()
 ///
 
-void chooseNS( bc WALL[],int BCcurrent, specSwimmer SS,swimmer swimmers[],double *chosenW,int *chosenNS, int HM) {
+void chooseNS( bc WALL[],int BCcurrent, specSwimmer SS,swimmer swimmers[],double *chosenW,int *chosenNS, int *HM) {
  	int i;
 	double tempW = 1.0;
-	double shift[DIM];
+	double shift[_3D];
 	*chosenW = 1.0;
     //heads
 	for( i=0; i<NS; i++ ) {
@@ -1192,7 +1192,7 @@ void chooseNS( bc WALL[],int BCcurrent, specSwimmer SS,swimmer swimmers[],double
         	printf("WorkNS head smaller %d\n",i);
             *chosenNS = i;
             *chosenW = tempW;
-            HM =1;
+            *HM =1;
 			break;
 		}
 
@@ -1211,7 +1211,7 @@ void chooseNS( bc WALL[],int BCcurrent, specSwimmer SS,swimmer swimmers[],double
         	printf("WorkNS middle smaller %d\n",i);
             *chosenNS = i;
             *chosenW = tempW;
-            HM =-1;
+            *HM =-1;
 			break;
 		}
 

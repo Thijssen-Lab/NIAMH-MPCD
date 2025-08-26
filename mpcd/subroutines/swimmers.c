@@ -169,7 +169,7 @@ void setswimmers( specSwimmer *SS,swimmer *swimmers,bc WALL[],int stepsMD,double
 
 	int i,j,d,flag;
 	double U[DIM],W;
-    double shift[DIM];
+    double shift[_3D];
 
 	SS->iheadM=1.0/(double)SS->headM;
 	SS->imiddM=1.0/(double)SS->middM;
