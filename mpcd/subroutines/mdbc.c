@@ -1012,7 +1012,7 @@ void swimmer_BCcollision( smono *atom,bc WALL[],specSwimmer SS,double t_step ,in
 	int cnt=0;				//Count the loop iterations
 	double n[_3D] = {0.,0.,0.};	//Normal to the surface
 	double W,W1=0.0;
-	double shift[DIM];
+	double shift[_3D];
 	double RX=0.0,RY=0.0,RZ=0.0;
 
 	t_delta = 0.;
