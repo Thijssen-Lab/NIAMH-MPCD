@@ -1643,7 +1643,7 @@ void velBC_swimmer( smono *atom,bc *WALL,specSwimmer SS,double n[_3D] ) {
 	for( i=0; i<_3D; i++ ) atom->V[i] += V[i] * J * IMpart;
 	if( WALL->DSPLC ) {
 		//Set the velocity of BC
-		for( i=0; i<DIM; i++ ) WALL->V[i] -= V[i] * J * IMwall;
+		for( i=0; i<DIM; i++ ) WALL->dV[i] -= V[i] * J * IMwall;
 		//Set the angular velocity of BC
 		//Since VN isn't being used, use VN as the difference
 		for( i=0; i<_3D; i++ ) VN[i] = atom_POS[i] - WALL->Q[i];
