@@ -80,6 +80,6 @@ void checkSim( FILE *fsynopsis,int SYNOUT,inputList in,spec *SP,bc *WALL,specSwi
 
 void initOutput( char op[],outputFlagsList *outFlag,outputFilesList *outFile,inputList in,spec *SP, bc WALL[] );
 void initializeSIM(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simptr simMD, specSwimmer *specS, swimmer *swimmers, int argc, char* argv[], inputList *in, time_t *to, clock_t *co, int *runtime, int *warmtime, double *AVVEL, kinTheory *theorySP, kinTheory *theoryGl, double *KBTNOW, double *AVS, double *S4, double *stdN, double AVNOW[_3D], double AVV[_3D], double avDIR[_3D], outputFlagsList outFlags, int MD_mode, FILE *fsynopsis, char ip[] );
-void initializeRecovery(cell ***CL, particleMPC *SRDparticles, spec SP[], specSwimmer specS, int RTECH, int LC, int MD_mode, int SYNOUT, FILE *fsynopsis );
+void initializeRecovery(cell ***CL, particleMPC *SRDparticles, spec SP[], specSwimmer specS, int RTECH, int LC, int MD_mode, int SYNOUT, FILE *fsynopsis, int noHI2 );
 
 #endif

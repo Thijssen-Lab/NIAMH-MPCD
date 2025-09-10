@@ -61,7 +61,7 @@
 /// @param LC Flags whether or not the nematic liquid crystal is turned on.
 /// @note localPROP() calculates <b>all</b> local parameters. For single properties, other routines exist. See localMASS() for example
 ///
-void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
+void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC,int noHI2 ) {
 	int a,b,c,d,id;
 	int i;
 	double V[_3D],Q[_3D];
@@ -145,13 +145,15 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 					CL[a][b][c].POPSW ++;
 					if( pSW->HorM ) mass = (double) specS.middM;
 					else mass = (double) specS.headM;
-					CL[a][b][c].MASS += mass;
-					//ALEXTODO: run line below only if flag is NOT set
-					for( d=0; d<DIM; d++ ) CL[a][b][c].VCM[d] +=  pSW->V[d] * mass;
+					if( noHI2!=1) {
+						CL[a][b][c].MASS += mass;
+						//ALEXTODO: run line below only if flag is NOT set
+						for( d=0; d<DIM; d++ ) CL[a][b][c].VCM[d] +=  pSW->V[d] * mass;
 
-					if (computeCM){
-						for( d=0; d<DIM; d++ ) Q[d] = pSW->Q[d];
-						for( d=0; d<DIM; d++ ) CL[a][b][c].CM[d] += Q[d] * mass;
+						if (computeCM){
+							for( d=0; d<DIM; d++ ) Q[d] = pSW->Q[d];
+							for( d=0; d<DIM; d++ ) CL[a][b][c].CM[d] += Q[d] * mass;
+						}
 					}
 
 					//Increment link in list
@@ -1440,14 +1442,15 @@ void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 		if( tsm->HorM ) MASS = (double) SS.middM;
 		else MASS = (double) SS.headM;
 		//ALEXTODO: (think) this should not run if flag is set (for mom. conserv.)
-		for( j=0; j<DIM; j++ ) RV[i][j] = genrand_gaussMB( KBT,MASS );
-		if( noHI2!=1 ) for( j=0; j<DIM; j++ ) RS[j] += MASS*RV[i][j];	
-		else SWIMMASS += MASS;
+		if( noHI2!=1 ) {
+			for( j=0; j<DIM; j++ ) RV[i][j] = genrand_gaussMB( KBT,MASS );
+			for( j=0; j<DIM; j++ ) RS[j] += MASS*RV[i][j];	
+		}
 		tsm = tsm->next;
 		i++;
 	}
 	// Normalize
-	for( j=0; j<DIM; j++ ) RS[j] /= CL->MASS - SWIMMASS;
+	for( j=0; j<DIM; j++ ) RS[j] /= CL->MASS;
 
 	/* ****************************************** */
 	/* *************** Collision **************** */
@@ -4720,7 +4723,7 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 	#endif
 	//Calculate the local properties of each cell (VCM,KBT,POPulation,Mass)
 	//Do this AFTER acceleration so that use accelerated VCM in collision
-	localPROP( CL,SP,*SS,in.RTECH,in.LC );
+	localPROP( CL,SP,*SS,in.RTECH,in.LC,in.noHI_2 );
 	/* ****************************************** */
 	/* *********** ADD GHOST PARTICLES ********** */
 	/* ****************************************** */
@@ -5058,7 +5061,7 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 	// Bin MD particles
 	if( MDmode ) binMD( CL );
 	//Recalculate localPROP to ensure updated cell properties
-	localPROP( CL,SP,*SS,in.RTECH,in.LC );
+	localPROP( CL,SP,*SS,in.RTECH,in.LC,in.noHI_2 );
 	/* ****************************************** */
 	/* ********** SAVE SOME PROPERTIES ********** */
 	/* ****************************************** */

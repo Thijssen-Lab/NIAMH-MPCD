@@ -207,7 +207,7 @@ int main(int argc, char* argv[]) {
 			if( DBUG >= DBGINIT ) printf("Simulation recovery initialization\n");
 		#endif
 		if( outFlags.SYNOUT == OUT ) fprintf( outFiles.fsynopsis,"Begin recovery initialization\n" );
-		initializeRecovery( CL, SRDparticles, SPECIES, specS, inputVar.RTECH, inputVar.LC, MDmode, outFlags.SYNOUT, outFiles.fsynopsis );
+		initializeRecovery( CL, SRDparticles, SPECIES, specS, inputVar.RTECH, inputVar.LC, MDmode, outFlags.SYNOUT, outFiles.fsynopsis, inputVar.noHI_2 );
 	}
 	else {
 		#ifdef DBG

@@ -2923,7 +2923,7 @@ void outputResults(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], 
 	// Bin MD particles
 	if( MD_mode ) binMD(CL );
 	//Calculate the local properties of each cell (VCM,in.KBT,POPulation,Mass)
-	localPROP( CL,SP,SS,in.RTECH,in.LC );
+	localPROP( CL,SP,SS,in.RTECH,in.LC,in.noHI_2 );
 	avVel( CL,AVNOW );
 	avOri( SRDparticles,AVORI );
 	//Calculate velocity gradient

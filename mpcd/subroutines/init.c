@@ -2092,7 +2092,7 @@ void initializeSIM(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], 
 	bininSwimmers( *specS,swimmers,CL );
 	if(outFlags.SYNOUT == OUT) fprintf(fsynopsis,"\nMPCD particles binned for first time.\n" );
 	if( MD_mode ) bininMD(simMD, CL );
-	localPROP( CL,SP,*specS,in->RTECH,in->LC );
+	localPROP( CL,SP,*specS,in->RTECH,in->LC,in->noHI_2 );
 	*S4=0.;
 	*stdN=0.;
 	if( outFlags.AVSOUT>=OUT ) {
@@ -2167,7 +2167,7 @@ void initializeSIM(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], 
 /// @param SYNOUT Integer specifying if a synopsis file is requires.
 /// @param fsynopsis Synopsis file.
 ///
-void initializeRecovery(cell ***CL, particleMPC *SRDparticles, spec SP[], specSwimmer specS, int RTECH, int LC, int MD_mode, int SYNOUT, FILE *fsynopsis ) {
+void initializeRecovery(cell ***CL, particleMPC *SRDparticles, spec SP[], specSwimmer specS, int RTECH, int LC, int MD_mode, int SYNOUT, FILE *fsynopsis,int noHI2 ) {
 	//int i;
 	if(SYNOUT == OUT) fprintf(fsynopsis,"\nSimulation recovered from checkpoint.\n" );
 	// MD isn't checkpointed so can't recover MD simulation
@@ -2184,6 +2184,6 @@ void initializeRecovery(cell ***CL, particleMPC *SRDparticles, spec SP[], specSw
 	#endif
 	binin( SRDparticles,CL );
 	if(SYNOUT == OUT) fprintf(fsynopsis,"\nMPCD particles binned for first time.\n" );
-	localPROP( CL,SP,specS,RTECH,LC );
+	localPROP( CL,SP,specS,RTECH,LC,noHI2 );
 }
 

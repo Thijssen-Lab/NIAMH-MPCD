@@ -77,7 +77,7 @@ void localMPCVCM( double vcm[_3D],cell CL,spec *SP );
 double localMASS( cell CL,spec *SP,specSwimmer specS );
 double localTEMP( cell CL,spec *SP,specSwimmer specS );
 int localPOP( cell CL );
-void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC );
+void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC,int noHI2 );
 void sumFLOW( cell ***CL );
 void sumSWFLOW( cell ***CL, swimmer *sw, specSwimmer *ss);
 void localFLOW( cell ***CL,spec *SP );
