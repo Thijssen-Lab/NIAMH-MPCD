@@ -140,6 +140,9 @@ void readin( char fpath[],inputList *in,spec **SP,particleMPC **pSRD,cell ****CL
 	//Read the number of species
 	read=fscanf( finput,"%d %s",&NSPECI,STR );
 	checkRead( read,"number of species",inSTR);
+	//Read if noHI2 is included
+	read=fscanf( finput,"%d %s",&(in->noHI_2),STR );
+	checkRead( read,"Hydrodynamics",inSTR);
 	//Allocate the needed amount of memory for the species SP
 	(*SP) = (spec*) calloc( NSPECI, sizeof( spec ) );
 	for( i=0; i<NSPECI; i++ ) {
@@ -1084,6 +1087,7 @@ void readJson( char fpath[], inputList *in, spec **SP, kinTheory **theory, parti
 	in->FRICCO = getJObjDou(jObj, "fricCoef", 1.0, jsonTagList); // fricCo
 	in->tolD = getJObjDou(jObj, "tolD", 0.01, jsonTagList); //defect tolerance
 	in->noHI = getJObjInt(jObj, "noHI", 0, jsonTagList); // noHI
+	in->noHI_2 = getJObjInt(jObj, "noHI_2", 0, jsonTagList); // noNI_2
 	in->inCOMP = getJObjInt(jObj, "incomp", 0, jsonTagList); // inCOMP
 	in->MULTIPHASE = getJObjInt(jObj, "multiphase", 0, jsonTagList); // multiPhase
 

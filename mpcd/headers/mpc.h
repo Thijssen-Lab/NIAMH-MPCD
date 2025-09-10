@@ -49,7 +49,7 @@ void cellVelForce( cell *CL,double addVel[3] );
 void cellVelSet( cell *CL,double vel[3] );
 
 void stochrotMPC( cell *CL,int RTECH,double C,double S,double *CLQ,int outP );
-void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int outP );
+void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int outP,int noHI2 );
 void andersenROT( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int outP );
 void andersenMULTIPHASE( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int outP );
 void langevinMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double FRICCO,double Step,double *CLQ,int outP );
@@ -60,7 +60,7 @@ void vicsekLangevinMPC( cell *CL,spec *SP,double KBT,double FRICCO,double Step,d
 void chateAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,int outP );
 void chateLangevinMPC( cell *CL,spec *SP,double KBT,double FRICCO,double Step,double RELAX,double *CLQ,int outP );
 void dipoleAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,int outP );
-void MPCcollision(cell *CL, spec *SP, specSwimmer SS, double KBT, int RTECH, double C, double S, double FRICCO, double TimeStep, int MD_mode, int LC, double RELAX, double *CLQ, int outP );
+void MPCcollision(cell *CL, spec *SP, specSwimmer SS, double KBT, int RTECH, double C, double S, double FRICCO, double TimeStep, int MD_mode, int LC, double RELAX, double *CLQ, int outP,int noHI2 );
 
 void incompColl(cell *CL, spec *SP, specSwimmer SS, int INCOMPmode, int MD_mode, double *CLQ, int outP );
 void incompAddVirial( cell *CL,double virialCoB, double virialCoC, double virialCoD, spec *SP,specSwimmer SS );

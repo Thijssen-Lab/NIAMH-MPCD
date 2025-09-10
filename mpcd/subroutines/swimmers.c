@@ -1055,7 +1055,7 @@ void allSwimmersMagTorque( specSwimmer SS,swimmer swimmers[],double timeStep,int
 /// @see swimmerForceDipole()
 /// @see swimmerRotletDipole()
 ///
-void swimmerDipole( specSwimmer SS,swimmer swimmers[],cell ***CL,spec SP[],double timeStep,particleMPC *SRDparticles,bc WALL[],simptr simMD ) {
+void swimmerDipole( specSwimmer SS,swimmer swimmers[],cell ***CL,spec SP[],double timeStep,particleMPC *SRDparticles,bc WALL[],simptr simMD,int noHI2 ) {
 	int i,d;
 	int aH,bH,cH,aT,bT,cT;
 	double r[DIM],QT[_3D];	// Position of tail
@@ -1074,7 +1074,7 @@ void swimmerDipole( specSwimmer SS,swimmer swimmers[],cell ***CL,spec SP[],doubl
 				printf( "Apply Force Dipole to Swimmer %d\n",i);
 			}
 		#endif
-		if( !feq(fabs(SS.FS),0.0) )	swimmerForceDipole( SS,(swimmers+i),CL,SP,timeStep );
+		if( !feq(fabs(SS.FS),0.0) )	swimmerForceDipole( SS,(swimmers+i),CL,SP,timeStep,noHI2 );
 
 		/* ****************************************** */
 		/* ********** ROTLET/TORQUE DIPOLE ********** */
@@ -1154,7 +1154,7 @@ void swimmerDipole( specSwimmer SS,swimmer swimmers[],cell ***CL,spec SP[],doubl
 			/* ************* ROTLET DIPOLE ************** */
 			/* ****************************************** */
 			// Apply the rotlet to a cell centred on the swimmers head
-			swimmerRotletDipole( SS,(swimmers+i),CL,SP,timeStep );
+			swimmerRotletDipole( SS,(swimmers+i),CL,SP,timeStep,noHI2 );
 
 			/* ****************************************** */
 			/* ************ GRID SHIFT BACK ************* */
@@ -1196,7 +1196,7 @@ void swimmerDipole( specSwimmer SS,swimmer swimmers[],cell ***CL,spec SP[],doubl
 /// @param SP Fluid particle properties.
 /// @param timeStep The time in MPCD units of one iteration of the MPCD algorithm.
 ///
-void swimmerForceDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double timeStep ) {
+void swimmerForceDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double timeStep,int noHI2 ) {
 
     int a=0,b=0,c=0,d=0;
     double r[DIM],n[DIM],acc[DIM],QT[_3D];
@@ -1262,7 +1262,7 @@ void swimmerForceDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double 
   			pMPC = CL[a][b][c].pp;
   			while(pMPC != NULL) {
 					m=SP[pMPC->SPID].MASS;
-  				for( d=0; d<DIM; d++ ) pMPC->V[d] += acc[d]*timeStep*m;
+  				if( noHI2!=1) for( d=0; d<DIM; d++ ) pMPC->V[d] += acc[d]*timeStep*m;
   				//Increment link in list
   				pMPC = pMPC->next;
   			}
@@ -1305,7 +1305,7 @@ void swimmerForceDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double 
 /// @param SP Fluid particle properties.
 /// @param timeStep The time in MPCD units of one iteration of the MPCD algorithm.
 ///
-void swimmerRotletDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double timeStep ) {
+void swimmerRotletDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double timeStep,int noHI2 ) {
 
 	int a=0,b=0,c=0,d=0;
 	double q_sw[_3D];				//Position of the swimmers' head or tail
@@ -1325,7 +1325,7 @@ void swimmerRotletDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double
 	for( d=0; d<DIM; d++ ) r_mh[d] = sw->H.Q[d] - sw->M.Q[d];
 	swimmerPBC_dr( r_mh );
 	normCopy( r_mh,n_mh,DIM );
-	if(SS.TYPE!=DUMBBELL_MONOF) {
+	if(SS.TYPE!=DUMBBELL_MONOF && noHI2!=1) {
 
 		//Apply the rotlet to the HEAD
 		//Save position of head
@@ -1349,7 +1349,6 @@ void swimmerRotletDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double
 			// Calculate the moment of inertia about the centre of mass and direction of swimmer
 			momI=localMomInertia_SRD( CL[a][b][c],SP,r_cm,n_mh );
 			//Calculate the change in angular speed
-			dw = timeStep*SS.TS/momI;
 			#ifdef DBG
 				if( DBUG == DBGSWIMMERTORQUE ) {
 					printf( "\t\tI=%lf, dw=%lf, CM=",momI,dw );
@@ -1387,7 +1386,6 @@ void swimmerRotletDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double
 			// Calculate the moment of inertia about the centre of mass and direction of swimmer
 			momI=localMomInertia_SRD( CL[a][b][c],SP,r_cm,n_mh );
 			//Calculate the change in angular speed
-			dw = -timeStep*SS.TS/momI;
 			#ifdef DBG
 				if( DBUG == DBGSWIMMERTORQUE ) {
 					printf( "\t\tI=%lf, dw=%lf, CM=",momI,dw);

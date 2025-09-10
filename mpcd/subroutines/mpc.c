@@ -146,6 +146,7 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC ) {
 					if( pSW->HorM ) mass = (double) specS.middM;
 					else mass = (double) specS.headM;
 					CL[a][b][c].MASS += mass;
+					//ALEXTODO: run line below only if flag is NOT set
 					for( d=0; d<DIM; d++ ) CL[a][b][c].VCM[d] +=  pSW->V[d] * mass;
 
 					if (computeCM){
@@ -1385,9 +1386,10 @@ void stochrotMPC( cell *CL,int RTECH,double C,double S,double *CLQ,int outP ) {
 /// @param CLQ The geometric centre of `CL`, the MPCD cell.
 /// @param outP Flag whether or not to output the pressure.
 ///
-void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int outP ) {
+void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int outP,int noHI2 ) {
 	int i,j,id;
 	double MASS;
+	double SWIMMASS;						//Total mass of swimmers
 	double RV[CL->POP][DIM];				//Random velocities
 	double RS[DIM];							//Sum of random velocities
 	double DV[CL->POP][DIM];				//Damping velocity
@@ -1403,6 +1405,9 @@ void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 		DV[i][j] = 0.0;
 	}
 	
+	// Set swimmer mass as zero initially
+	SWIMMASS = 0.0;
+
 	/* ****************************************** */
 	/* ******* Generate random velocities ******* */
 	/* ****************************************** */
@@ -1434,13 +1439,15 @@ void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 	while( tsm!=NULL ) {
 		if( tsm->HorM ) MASS = (double) SS.middM;
 		else MASS = (double) SS.headM;
+		//ALEXTODO: (think) this should not run if flag is set (for mom. conserv.)
 		for( j=0; j<DIM; j++ ) RV[i][j] = genrand_gaussMB( KBT,MASS );
-		for( j=0; j<DIM; j++ ) RS[j] += MASS*RV[i][j];
+		if( noHI2!=1 ) for( j=0; j<DIM; j++ ) RS[j] += MASS*RV[i][j];	
+		else SWIMMASS += MASS;
 		tsm = tsm->next;
 		i++;
 	}
 	// Normalize
-	for( j=0; j<DIM; j++ ) RS[j] /= CL->MASS;
+	for( j=0; j<DIM; j++ ) RS[j] /= CL->MASS - SWIMMASS;
 
 	/* ****************************************** */
 	/* *************** Collision **************** */
@@ -1471,7 +1478,13 @@ void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 	// Swimmer monomers
 	tsm = CL->sp;
 	while( tsm!=NULL ) {
-		for( j=0; j<DIM; j++ ) tsm->V[j] = CL->VCM[j] + RV[i][j] - RS[j];
+		if( noHI2!=1 ) {
+			//ALEXTODO: run line below only if flag is NOT set
+			for( j=0; j<DIM; j++ ) tsm->V[j] = CL->VCM[j] + RV[i][j] - RS[j];
+		} else {
+			//ALEXTODO: if flag is set, then do:
+			for( j=0; j<DIM; j++ ) tsm->V[j] = CL->VCM[j];
+		}
 		//Increment link in list
 		tsm = tsm->next;
 		i++;
@@ -2809,7 +2822,7 @@ void dipoleAndersenMPC( cell *CL,spec *SP,double KBT,double RELAX,double *CLQ,in
 /// @see chateAndersenMPC()
 /// @see chateLangevinMPC()
 ///
-void MPCcollision(cell *CL, spec *SP, specSwimmer SS, double KBT, int RTECH, double C, double S, double FRICCO, double TimeStep, int MD_mode, int LC, double RELAX, double *CLQ, int outP ) {
+void MPCcollision(cell *CL, spec *SP, specSwimmer SS, double KBT, int RTECH, double C, double S, double FRICCO, double TimeStep, int MD_mode, int LC, double RELAX, double *CLQ, int outP, int noHI2 ) {
 	particleMD *tmd;	//Temporary particleMD
 
 	tmd = CL->MDpp;
@@ -2823,7 +2836,7 @@ void MPCcollision(cell *CL, spec *SP, specSwimmer SS, double KBT, int RTECH, dou
 	//Newtonian Fluid
 	else{
 		//Passive MPC operators
-		if( RTECH == MPCAT ) andersenMPC( CL,SP,SS,KBT,CLQ,outP );
+		if( RTECH == MPCAT ) andersenMPC( CL,SP,SS,KBT,CLQ,outP,noHI2 );
 		else if( RTECH == RAT ) andersenROT( CL,SP,SS,KBT,CLQ,outP );
 		else if( RTECH == LANG ) langevinMPC( CL,SP,SS,KBT,FRICCO,TimeStep,CLQ,outP );
 		else if( RTECH == RLANG ) langevinROT( CL,SP,SS,KBT,FRICCO,TimeStep,CLQ,outP );
@@ -4790,7 +4803,7 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
             }
         }
 
-        if( CL[i][j][k].POP > 1 ) MPCcollision(&CL[i][j][k], SP, *SS, in.KBT, in.RTECH, in.C, in.S, in.FRICCO, in.dt, MD_mode, in.LC, in.TAU, CLQ, outPressure );
+        if( CL[i][j][k].POP > 1 ) MPCcollision(&CL[i][j][k], SP, *SS, in.KBT, in.RTECH, in.C, in.S, in.FRICCO, in.dt, MD_mode, in.LC, in.TAU, CLQ, outPressure, in.noHI_2 );
 	}
 
 	// Apply the multiphase interactions
@@ -4884,7 +4897,7 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 		if( DBUG == DBGSWIMMER || DBUG == DBGSWIMMERDEETS ) printf( "\tApply swimmer dipole.\n" );
 	#endif
 	//Apply swimmer dipole (both force and torque dipoles)
-	swimmerDipole( *SS,swimmers,CL,SP,in.dt,SRDparticles,WALL,simMD );
+	swimmerDipole( *SS,swimmers,CL,SP,in.dt,SRDparticles,WALL,simMD,in.noHI_2 );
 	//Allow streaming and boundary conditions before re-binning
 	/* ****************************************** */
 	/* ************ SRD TRANSLATION ************* */
