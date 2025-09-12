@@ -142,10 +142,10 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC,int noHI2
 			if( CL[a][b][c].sp!=NULL) {
 				pSW = CL[a][b][c].sp;
 				while( pSW!=NULL ) {
-					CL[a][b][c].POPSW ++;
 					if( pSW->HorM ) mass = (double) specS.middM;
 					else mass = (double) specS.headM;
 					if( noHI2!=1) {
+						CL[a][b][c].POPSW ++;
 						CL[a][b][c].MASS += mass;
 						//ALEXTODO: run line below only if flag is NOT set
 						for( d=0; d<DIM; d++ ) CL[a][b][c].VCM[d] +=  pSW->V[d] * mass;
@@ -4015,7 +4015,7 @@ void localMPCVCM( double vcm[_3D],cell CL,spec *SP ) {
 /// @param specS The species-wide information about swimmers.
 /// @return The local mass of a cell (including MPCD, MD and swimmer particles).
 ///
-double localMASS( cell CL,spec *SP,specSwimmer specS ) {
+double localMASS( cell CL,spec *SP,specSwimmer specS,int noHI2 ) {
 	int id;
 	double M = 0.0;
 	particleMPC *tmpc;
@@ -4042,7 +4042,7 @@ double localMASS( cell CL,spec *SP,specSwimmer specS ) {
 		}
 	}
 	// swimmer particles
-	if( CL.sp!=NULL ) {
+	if( CL.sp!=NULL && noHI2!=1 ) {
 		tsm = CL.sp;
 		while( tsm!=NULL ) {
 			if( tsm->HorM ) M += (double) specS.middM;
@@ -4126,7 +4126,7 @@ double localTEMP( cell CL,spec *SP,specSwimmer specS ) {
 /// @param CL An MPCD cell (including the linked list of particles in each cell). 
 /// @return Total number of particles in this cell.
 ///
-int localPOP( cell CL ) {
+int localPOP( cell CL,int noHI2 ) {
 	int i = 0;
 	particleMPC *tmpc;
 	particleMD *tmd;
@@ -4151,7 +4151,7 @@ int localPOP( cell CL ) {
 		}
 	}
 	// MPC particles
-	if( CL.sp!=NULL ) {
+	if( CL.sp!=NULL && noHI2!=1) {
 		tsm = CL.sp;
 		while( tsm!=NULL ) {
 			i++;
@@ -4202,7 +4202,7 @@ void scramble( particleMPC *p ) {
 /// @param specS The species-wide information about swimmers.
 /// @note It assumes the cell mass has already been computed.
 ///
-void localCM( cell *CL,spec *SP,specSwimmer specS ) {
+void localCM( cell *CL,spec *SP,specSwimmer specS,int noHI2 ) {
 	int id,d;
 	double mass,cellMass,Q[_3D];
 	particleMPC *pMPC;	//Temporary pointer to MPC particles
@@ -4242,7 +4242,7 @@ void localCM( cell *CL,spec *SP,specSwimmer specS ) {
 			}
 		}
 		// Swimmer particles
-		if( CL->sp!=NULL ) {
+		if( CL->sp!=NULL && noHI2!=1 ) {
 			pSW = CL->sp;
 			while(pSW!=NULL) {
 				if( pSW->HorM ) mass = (double) specS.middM;
@@ -4797,7 +4797,7 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 		CLQ[0]=i+0.5;
 		CLQ[1]=j+0.5;
 		CLQ[2]=k+0.5;
-
+		                                                                                                                                                                                                                       
         // handle active layer logic
         if (in.MFPLAYERH > 0) {
             for (l = 0; l < NSPECI; l++) { // if not inside a layer, set activity to 0

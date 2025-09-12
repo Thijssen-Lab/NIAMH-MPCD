@@ -74,14 +74,14 @@ void activeMD(simptr simMD, cell ***CL, spec *SP, inputList in);
 
 void localVCM( double vcm[_3D],cell CL,spec *SP,specSwimmer specS);
 void localMPCVCM( double vcm[_3D],cell CL,spec *SP );
-double localMASS( cell CL,spec *SP,specSwimmer specS );
+double localMASS( cell CL,spec *SP,specSwimmer specS,int noHI2 );
 double localTEMP( cell CL,spec *SP,specSwimmer specS );
-int localPOP( cell CL );
+int localPOP( cell CL,int noHI2 );
 void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC,int noHI2 );
 void sumFLOW( cell ***CL );
 void sumSWFLOW( cell ***CL, swimmer *sw, specSwimmer *ss);
 void localFLOW( cell ***CL,spec *SP );
-void localCM( cell *CL,spec *SP,specSwimmer specS );
+void localCM( cell *CL,spec *SP,specSwimmer specS,int noHI2 );
 void localCM_SRD( cell CL,spec *SP,double r_cm[] );
 void localMomInertiaTensor( cell *CL,spec *SP,specSwimmer specS );
 double localMomInertia_SRD( cell CL,spec *SP,double r0[],double n[] );

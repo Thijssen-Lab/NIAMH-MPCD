@@ -1138,12 +1138,12 @@ void swimmerDipole( specSwimmer SS,swimmer swimmers[],cell ***CL,spec SP[],doubl
 			bT = (int)QT[1];
 			cT = (int)QT[2];
 			// Calculate new cell properties for head/tail cells
-			CL[aH][bH][cH].POP = localPOP( CL[aH][bH][cH] );
-			CL[aH][bH][cH].MASS = localMASS( CL[aH][bH][cH],SP,SS );
-			localCM( &CL[aH][bH][cH],SP,SS );
-			CL[aT][bT][cT].POP = localPOP( CL[aT][bT][cT] );
-			CL[aT][bT][cT].MASS = localMASS( CL[aT][bT][cT],SP,SS );
-			localCM( &CL[aT][bT][cT],SP,SS );
+			CL[aH][bH][cH].POP = localPOP( CL[aH][bH][cH],noHI2 );
+			CL[aH][bH][cH].MASS = localMASS( CL[aH][bH][cH],SP,SS,noHI2 );
+			localCM( &CL[aH][bH][cH],SP,SS,noHI2 );
+			CL[aT][bT][cT].POP = localPOP( CL[aT][bT][cT],noHI2 );
+			CL[aT][bT][cT].MASS = localMASS( CL[aT][bT][cT],SP,SS,noHI2 );
+			localCM( &CL[aT][bT][cT],SP,SS,noHI2 );
 			#ifdef DBG
 				if( DBUG == DBGSWIMMERTORQUE ) {
 					printf( "\tNumber of SRD particles in shifted head pos = %d\n",CL[aH][bH][cH].POP );
@@ -1175,12 +1175,12 @@ void swimmerDipole( specSwimmer SS,swimmer swimmers[],cell ***CL,spec SP[],doubl
 			// Bin swimmer monomers
 			binSwimmers( CL,0 );
 			// Re-calculate old cell properties for head/tail cells
-			CL[aH][bH][cH].POP = localPOP( CL[aH][bH][cH] );
-			CL[aH][bH][cH].MASS = localMASS( CL[aH][bH][cH],SP,SS );
-			localCM( &CL[aH][bH][cH],SP,SS );
-			CL[aT][bT][cT].POP = localPOP( CL[aT][bT][cT] );
-			CL[aT][bT][cT].MASS = localMASS( CL[aT][bT][cT],SP,SS );
-			localCM( &CL[aT][bT][cT],SP,SS );
+			CL[aH][bH][cH].POP = localPOP( CL[aH][bH][cH],noHI2 );
+			CL[aH][bH][cH].MASS = localMASS( CL[aH][bH][cH],SP,SS,noHI2 );
+			localCM( &CL[aH][bH][cH],SP,SS,noHI2 );
+			CL[aT][bT][cT].POP = localPOP( CL[aT][bT][cT],noHI2 );
+			CL[aT][bT][cT].MASS = localMASS( CL[aT][bT][cT],SP,SS,noHI2 );
+			localCM( &CL[aT][bT][cT],SP,SS,noHI2 );
 		}
 	}
 }
@@ -1262,7 +1262,7 @@ void swimmerForceDipole( specSwimmer SS,swimmer *sw,cell ***CL,spec SP[],double 
   			pMPC = CL[a][b][c].pp;
   			while(pMPC != NULL) {
 					m=SP[pMPC->SPID].MASS;
-  				if( noHI2!=1) for( d=0; d<DIM; d++ ) pMPC->V[d] += acc[d]*timeStep*m;
+  				if( noHI2!=1 ) for( d=0; d<DIM; d++ ) pMPC->V[d] += acc[d]*timeStep*m;
   				//Increment link in list
   				pMPC = pMPC->next;
   			}
