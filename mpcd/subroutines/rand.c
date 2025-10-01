@@ -23,6 +23,7 @@
 # include <stdint.h>
 
 # include "../headers/definitions.h"
+#include "../headers/globals.h"
 # include "../headers/SRDclss.h"
 # include "../headers/mtools.h"
 # include "../headers/pout.h"
@@ -476,16 +477,24 @@ float genrand_gauss( void ) {
    StDev of 1. From
    http://www.taygeta.com/random/gaussian.html
 */
-	float x1,x2,w,y1;
-  // 	float y2;
-	do{
-		x1 = 2. * genrand_real() - 1.;
-		x2 = 2. * genrand_real() - 1.;
-		w = x1*x1+x2*x2;
-	} while( w >= 1. );
-	w = sqrt( (-2. * log( w )) / w );
-	y1 = x1*w;
-	return y1;
+	if (BMHASSPARE) {  // if a spare value is cached from a previous run, use it
+		BMHASSPARE = 0;
+		return BMSPARE;
+	} else {  // otherwise, repeat the BM algorithm, caching the spare
+		float x1,x2,w,y1;
+		do{
+			x1 = 2. * genrand_real() - 1.;
+			x2 = 2. * genrand_real() - 1.;
+			w = x1*x1+x2*x2;
+		} while( w >= 1. );
+		w = sqrt( (-2. * log( w )) / w );
+		y1 = x1*w;  // first generated random number
+
+		BMSPARE = x2*w;  // second generated random number
+		BMHASSPARE = 1;
+
+		return y1;
+	}
 }
 
 ///
