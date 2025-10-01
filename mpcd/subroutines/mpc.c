@@ -148,7 +148,7 @@ void localPROP( cell ***CL,spec *SP,specSwimmer specS,int RTECH,int LC,int noHI2
 						CL[a][b][c].POPSW ++;
 						CL[a][b][c].MASS += mass;
 						//ALEXTODO: run line below only if flag is NOT set
-						for( d=0; d<DIM; d++ ) CL[a][b][c].VCM[d] +=  pSW->V[d] * mass;
+						for( d=0; d<DIM; d++ ) CL[a][b][c].VCM[d] += pSW->V[d] * mass;
 
 						if (computeCM){
 							for( d=0; d<DIM; d++ ) Q[d] = pSW->Q[d];
