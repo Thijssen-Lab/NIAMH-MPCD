@@ -686,9 +686,10 @@ void acc_Opt_Trap_BC( bc *WALL,double dt, int runtime, double t_on, double t_off
 
 	// calculate the force on the colloid
 	for (i = 0; i < DIM; ++i) {
-		dQ[i] = WALL->Q[i] - WALL->QOPT[i];  // distance between colloid and trap
+		dQ[i] = WALL->Q_old[i] - WALL->QOPT[i];  // distance between colloid and trap
 		OPT_force[i] = -KOPT * dQ[i] / mass;  // Hooke's law for the trap
 
+		WALL->dV[i] += dt*OPT_force[i];
 		WALL->V[i] = acc(dt, OPT_force[i],WALL->V[i]);
 		WALL->F[i] = OPT_force[i];  // update the force on the colloid
 	}
@@ -5023,6 +5024,15 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 		if( DBUG >= DBGTITLE ) printf( "Impulse on BCs from BC-translations.\n" );
 	#endif
 	//Apply impulse from BC_MPCcollision()
+
+	// apply optical trap forces if enabled
+	for (i = 0; i < NBC; ++i) {
+		if ((WALL+i)->DSPLC && (WALL+i)->ENABLEOPT) {
+			// Apply optical trap forces
+			acc_Opt_Trap_BC((WALL+i), in.dt, runtime, (WALL+i)->tOnOpt, (WALL+i)->tOffOpt, (WALL+i)->KOPT, (WALL+i)->VOPT, (WALL+i)->MASS);
+		}
+	}
+
 	for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) {
 		for( j=0; j<DIM; j++ ) (WALL+i)->V[j] += (WALL+i)->dV[j];
 		//THERE SHOULD BE NO dL since BC_MPCcollision() ignores ang mom
@@ -5038,13 +5048,6 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 	if( in.GRAV_FLAG ) for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) acc_BC( (WALL+i),in.dt,(WALL+i)->G );
 	// if( in.Opt_Trap_FLAG ) for( i=0; i<NBC; i++ ) if( (WALL+i)->DSPLC ) acc_Opt_Trap_BC( (WALL+i),in.dt,(WALL+i)->KOPT,runtime );
 
-	// apply optical trap forces if enabled
-	for (i = 0; i < NBC; ++i) {
-		if ((WALL+i)->DSPLC && (WALL+i)->ENABLEOPT) {
-			// Apply optical trap forces
-			acc_Opt_Trap_BC((WALL+i), in.dt, runtime, (WALL+i)->tOnOpt, (WALL+i)->tOffOpt, (WALL+i)->KOPT, (WALL+i)->VOPT, (WALL+i)->MASS);
-		}
-	}
 
 
 }
