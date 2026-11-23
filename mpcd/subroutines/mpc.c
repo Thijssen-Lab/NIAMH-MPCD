@@ -381,6 +381,14 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 
 	// Loop over cells
 	for( a=0; a<=XYZ[0]; a++ ) for( b=0; b<=XYZ[1]; b++ ) for( c=0; c<=XYZ[2];c ++ ) {
+		// Reinitialise hacky buffers
+		CL[a][b][c].ghostCount = 0;
+		CL[a][b][c].occludedWall = -1;  // -1 default indicates this cell has no occlusion
+		for ( i=0; i<DIM; i++ ) {
+			CL[a][b][c].ghostVel[i] = 0.0;
+			CL[a][b][c].ghostResidual[i] = 0.0;
+		}
+
 		// Each cell has a temporary particle assigned to each corner
 		// If the boundary cuts a cell (i.e. a corner particle is found inside a boundary)
 		// Then this routine operates (to fill cell up with ghost particles, or apply strong anchoring)
@@ -473,7 +481,12 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 				// Corner loop. Does the cell get cut by a BC?
 				for ( j=0; j<numCorners; j++ ){
 					W[j] = calcW( WALL[i], tp[j] );
-					if ( W[j] < 0.0 ) flagW = 1; // cell is cut by BC
+					if ( W[j] < 0.0 ) {
+						flagW = 1; // cell is cut by BC
+						CL[a][b][c].occludedWall = i;  // identify the wall that cut the cell
+						// Note, if you have a cell with multiple occlusions, this will result in some false-negatives.
+						// But, we don't care for this project since we don't even have a channel.
+					}
 				}
 
 				// Apply ghost anchoring (see description at top of routine).
@@ -549,15 +562,52 @@ void ghostPart( cell ***CL,bc WALL[],double KBT,int LC, spec *SP) {
 			} // End boundary loop
 
 			// Apply ghost particles for centre of mass velocity
-			if ( flagW ){
-				if( CL[a][b][c].POP < GnDNST && CL[a][b][c].POP > 0 ) {
-					invN = 1.0/(GnDNST-(double)CL[a][b][c].POP);
-					for( d=0; d<DIM; d++ ) {
-						R[d] = genrand_gaussMB( KBT, invN );
-						CL[a][b][c].VCM[d] += R[d];
-						CL[a][b][c].VCM[d] /= GnDNST;
+			if ( flagW ){  // if cell is cut by a wall (ie, is occluded)
+				// convenience gets
+				/// NOTE: MAKING THE ASSUMPTION THAT YOU ONLY USE A SINGLE SPECIES HERE. AND THAT IS SPECIES 0!!!!!!!!
+				const double MPCDNumDens = SP[0].nDNST; // mean number density of MPCD particle
+				const double mpcdPartMass = SP[0].MASS;
+				const double cellPop = CL[a][b][c].POPSRD;
+				const double cellMass = CL[a][b][c].MASS;
+				const int occludedWallIdx = CL[a][b][c].occludedWall;
+
+				// local calculations
+				int ghostCount = ceil(cellPop - MPCDNumDens);  // number of ghosts we need to make
+
+				// check if local population is less than mean density. If so, need to set ghost particles
+				if (ghostCount > 0 && cellPop > 0) {
+					// Compute altered VCM from ghost particles:
+					// U_{VCM} = (M_C * U_{VCM} + m_g(V_g + V_b)) / (M_C + m_g*N_g)
+					// M_C = cell total mass, m_g = ghost part mass, V_g = ghost contribution to velocity (gaussian),
+					//		V_b = wall velocity, N_g = number of ghost particles
+
+					// First compute V_g and buffer it to the cell's store (which was reset at beginning of this function)
+					for (k=0; k < ghostCount; k++) {
+						for (d=0; d<DIM; d++) CL[a][b][c].ghostVel[d] += genrand_gaussMB(KBT, mpcdPartMass);
+						// Old code used a shortcut: using LoLN, make only a single gauss call.
 					}
+
+					// now apply directly to VCM because we're lazy
+					for (d=0; d<DIM; d++) {
+						double numerator = cellMass * CL[a][b][c].VCM[d] + mpcdPartMass * (CL[a][b][c].ghostVel[d] + WALL[occludedWallIdx].V[d]);
+						double denominator = cellMass + mpcdPartMass*ghostCount;
+						CL[a][b][c].VCM[d] = numerator / denominator;
+					}
+				} else {
+					// If DON'T have to set ghost particles, reset to the "no ghosts applied" flag for the boundary
+					//	so other functions know not to run ghost logic.
+					CL[a][b][c].occludedWall = -1;
 				}
+
+				// old code
+				// if( CL[a][b][c].POP < GnDNST && CL[a][b][c].POP > 0 ) {
+				// 	invN = 1.0/(GnDNST-(double)CL[a][b][c].POP);
+				// 	for( d=0; d<DIM; d++ ) {
+				// 		R[d] = genrand_gaussMB( KBT, invN );
+				// 		CL[a][b][c].VCM[d] += R[d];
+				// 		CL[a][b][c].VCM[d] /= GnDNST;
+				// 	}
+				// }
 			}
 		}
 	} // End cell loop
@@ -1393,7 +1443,7 @@ void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 	double MASS;
 	double SWIMMASS;						//Total mass of swimmers
 	double RV[CL->POP][DIM];				//Random velocities
-	double RS[DIM];							//Sum of random velocities
+	double RS[DIM];							//Sum of random velocities. THIS IS THE VELOCITY RESIDUAL, DIRECTLY APPLIED TO ALL THINGS.
 	double DV[CL->POP][DIM];				//Damping velocity
 	double dp[CL->POP][DIM],relQ[CL->POP][DIM];	//For pressure
 	particleMPC *tmpc;						//Temporary particleMPC
@@ -1451,6 +1501,37 @@ void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 	}
 	// Normalize
 	for( j=0; j<DIM; j++ ) RS[j] /= CL->MASS;
+
+	// Beginning of hacks
+	// We need to transform the collided residual sum (RS) based off ghost particles
+	// KRIS: to check, RS was U_\xi from the board? i'm assuming as such
+	if (CL->occludedWall != -1) {  // if ghost particles were generated for this cell...
+		// transform the residual:
+		// U_\xi = (M_C * U_\xi + m_g * V_g) / (M_C + m_g * N_g)
+		//		M_C = cell mass, U_\xi = residual, m_g = ghost particle mass (assumed species 0 mass),
+		//		V_g = ghost generated velocity for cell (buffered), N_g = number of ghosts (buffered)
+
+		/*
+			WAITWAITWAIT, a thought
+			The whole point of the residual is to have conservation of linear momentum within a collision operation.
+			That is, \Xi_i from my thesis needs to have zero net momentum summed over particles i in a cell.
+
+			BUT, here, we're modifying the residual, whereas the ghost particles haven't actually taken part in the
+			collision operation per the schema we worked out the other day. Sure, the ghost particles enter the VCM for
+			the phantom correction, but that's not quite the same here.
+
+			So, does this schema still conserve linear momentum?
+		*/
+
+		for (j=0; j<DIM; j++) {
+			double numerator = CL->MASS * RS[j] + SP[0].MASS * CL->ghostVel[j];
+			double denominator = CL->MASS + SP[0].MASS * CL->ghostCount;
+			RS[j] = numerator / denominator;
+
+			// buffer RS to cell for later usage
+			CL->ghostResidual[j] = RS[j];
+		}
+	}
 
 	/* ****************************************** */
 	/* *************** Collision **************** */
@@ -4728,6 +4809,29 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 	/* *********** ADD GHOST PARTICLES ********** */
 	/* ****************************************** */
 	ghostPart( CL,WALL,in.KBT,in.LC,SP );
+
+
+	// Hacks here for ghost particle correction to walls; no sub-functions we die like academic software eNgInEeRs
+	// Loop over all cells
+	int a, b, c;
+	for( a=0; a<=XYZ[0]; a++ ) for( b=0; b<=XYZ[1]; b++ ) for( c=0; c<=XYZ[2]; c++ ) {
+		cell *currCell = &CL[a][b][c];
+		if (currCell->occludedWall != -1) {  // if the cell was occluded, and thus ghosts need to be applied to walls..
+			// Need to implement the following:
+			// V_b = V_b + (m_g * (N_g(U_{cm} - U_\xi) - V_b)/M) ;
+			//		V_b = wall velocity, m_g = ghost particle mass, N_g = number of ghosts in this cell (buffered),
+			//		U_{cm} = center of mass velocity for this cell, U_\xi = transformed residual from ghosts (buffered),
+			//		M = mass of wall
+
+			bc *occludedWall = &WALL[currCell->occludedWall];
+			double ghostMass = SP[0].MASS;
+			for (i=0; i<DIM; i++) {
+				double wallVel = occludedWall->V[i];
+				occludedWall->V[i] = wallVel + (ghostMass * (currCell->ghostCount*(currCell->VCM[i] - currCell->ghostResidual[i]) - wallVel)/occludedWall->MASS);
+			}
+		}
+	}
+
 
 	/* ****************************************** */
 	/* *********LIQUID CRYSTAL COLLISION ******** */

@@ -297,6 +297,12 @@ typedef struct cell {
 	struct particleMPC *pp;		///< Pointer to first SRD particle in list.
 	struct particleMD *MDpp;	///< Pointer to first MD particle in list.
 	struct smono *sp;			///< Pointer to first swimmer monomer particle in list.
+
+	// Hacky buffers for ghost particle fix
+	double ghostVel[3];		///< Buffer for sums of ghost particle velocity (V_g from board notes).
+	int ghostCount;			///< Buffer for number of ghost particles in this cell (mean dens - POP; N_g from board notes)
+	int occludedWall;		///< Index of the wall that occludes this cell (-1 if no wall/ no need to do ghost logic)
+	double ghostResidual[3]; ///< Buffer for ghost particle included residual velocity (FROM PLAIN ANDERSEN; U_\Xi from board)
 } cell;
 
 ///
