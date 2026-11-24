@@ -1504,24 +1504,11 @@ void andersenMPC( cell *CL,spec *SP,specSwimmer SS,double KBT,double *CLQ,int ou
 
 	// Beginning of hacks
 	// We need to transform the collided residual sum (RS) based off ghost particles
-	// KRIS: to check, RS was U_\xi from the board? i'm assuming as such
 	if (CL->occludedWall != -1) {  // if ghost particles were generated for this cell...
 		// transform the residual:
 		// U_\xi = (M_C * U_\xi + m_g * V_g) / (M_C + m_g * N_g)
 		//		M_C = cell mass, U_\xi = residual, m_g = ghost particle mass (assumed species 0 mass),
 		//		V_g = ghost generated velocity for cell (buffered), N_g = number of ghosts (buffered)
-
-		/*
-			WAITWAITWAIT, a thought
-			The whole point of the residual is to have conservation of linear momentum within a collision operation.
-			That is, \Xi_i from my thesis needs to have zero net momentum summed over particles i in a cell.
-
-			BUT, here, we're modifying the residual, whereas the ghost particles haven't actually taken part in the
-			collision operation per the schema we worked out the other day. Sure, the ghost particles enter the VCM for
-			the phantom correction, but that's not quite the same here.
-
-			So, does this schema still conserve linear momentum?
-		*/
 
 		for (j=0; j<DIM; j++) {
 			double numerator = CL->MASS * RS[j] + SP[0].MASS * CL->ghostVel[j];
@@ -4818,16 +4805,16 @@ void timestep(cell ***CL, particleMPC *SRDparticles, spec SP[], bc WALL[], simpt
 		cell *currCell = &CL[a][b][c];
 		if (currCell->occludedWall != -1) {  // if the cell was occluded, and thus ghosts need to be applied to walls..
 			// Need to implement the following:
-			// V_b = V_b + (m_g * (N_g(U_{cm} - U_\xi) - V_b)/M) ;
+			// V_b = V_b + (m_g * (N_g(U_{cm} - U_\xi) - V_g)/M) ;
 			//		V_b = wall velocity, m_g = ghost particle mass, N_g = number of ghosts in this cell (buffered),
 			//		U_{cm} = center of mass velocity for this cell, U_\xi = transformed residual from ghosts (buffered),
-			//		M = mass of wall
+			//		V_g = ghost velocity sum (buffered), M = mass of wall
 
 			bc *occludedWall = &WALL[currCell->occludedWall];
 			double ghostMass = SP[0].MASS;
 			for (i=0; i<DIM; i++) {
 				double wallVel = occludedWall->V[i];
-				occludedWall->V[i] = wallVel + (ghostMass * (currCell->ghostCount*(currCell->VCM[i] - currCell->ghostResidual[i]) - wallVel)/occludedWall->MASS);
+				occludedWall->V[i] = wallVel + (ghostMass * (currCell->ghostCount*(currCell->VCM[i] - currCell->ghostResidual[i]) - currCell->ghostVel[i])/occludedWall->MASS);
 			}
 		}
 	}
